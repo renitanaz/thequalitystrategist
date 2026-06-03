@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Quality Strategist</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --olive:       #6B7C3A;
+  --olive-dark:  #4A5828;
+  --olive-deep:  #2E3A18;
+  --cream:       #F5F7F0;
+  --warm-white:  #FAFCF5;
+  --ink:         #1A1F14;
+  --ink2:        #3D4235;
+  --ink3:        #6B7060;
+  --ink4:        #9A9E90;
+  --border:      rgba(26,31,20,0.1);
+  --border2:     rgba(26,31,20,0.06);
+  --purple:      #7A4A9A; --purple-l: #EDE0F5;
+  --gold:        #9A6E1A; --gold-l:   #F5EDD6;
+  --blue:        #2A5C9A; --blue-l:   #DDE8F5;
+  --rose:        #9A2A4A; --rose-l:   #F5DDE5;
+  --teal:        #1A6B54; --teal-l:   #D8EEE8;
+  --terra:       #8A4A2A; --terra-l:  #F5E4D8;
+  --ff-serif: 'Lora', Georgia, serif;
+  --ff-sans:  'DM Sans', system-ui, sans-serif;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html { scroll-behavior: smooth; font-size: 16px; }
+
+body {
+  font-family: var(--ff-sans);
+  background: var(--cream);
+  color: var(--ink);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+a { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--cream); }
+::-webkit-scrollbar-thumb { background: var(--olive); border-radius: 4px; }
+
+/* ─── NAV ─── */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(245,247,240,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 6vw;
+}
+.nav-inner {
+  max-width: 1000px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 62px;
+}
+.nav-logo {
+  font-family: var(--ff-serif);
+  font-size: 17px; color: var(--ink);
+  letter-spacing: -0.3px;
+  display: flex; align-items: center; gap: 8px;
+}
+.nav-logo-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--olive); flex-shrink: 0;
+}
+.nav-links { display: flex; gap: 32px; list-style: none; }
+.nav-links a {
+  font-size: 12px; font-weight: 500;
+  letter-spacing: 0.8px; text-transform: uppercase;
+  color: var(--ink3); transition: color 0.2s;
+  position: relative; padding-bottom: 2px;
+}
+.nav-links a::after {
+  content: ''; position: absolute; bottom: 0; left: 0;
+  width: 0; height: 1.5px; background: var(--olive);
+  transition: width 0.25s var(--ease);
+}
+.nav-links a:hover { color: var(--olive); }
+.nav-links a:hover::after { width: 100%; }
+
+/* ─── HERO ─── */
+.hero {
+  max-width: 1000px; margin: 0 auto;
+  padding: 96px 6vw 80px;
+  display: grid; grid-template-columns: 1fr auto;
+  gap: 48px; align-items: center;
+}
+.hero-left { max-width: 620px; }
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 11px; font-weight: 500; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--olive);
+  margin-bottom: 24px;
+}
+.hero-eyebrow-line { width: 24px; height: 1.5px; background: var(--olive); }
+.hero-title {
+  font-family: var(--ff-serif);
+  font-size: clamp(42px, 5.5vw, 64px);
+  line-height: 1.1; color: var(--ink);
+  margin-bottom: 10px; letter-spacing: -1px;
+}
+.hero-title em { font-style: italic; color: var(--olive); }
+.hero-tagline {
+  font-family: var(--ff-serif);
+  font-size: clamp(15px, 1.8vw, 18px);
+  color: var(--ink3); font-style: italic;
+  margin-bottom: 32px; line-height: 1.6;
+}
+.hero-sub {
+  font-size: 16px; color: var(--ink2);
+  line-height: 1.8; margin-bottom: 36px; max-width: 520px;
+}
+.hero-badges { display: flex; flex-wrap: wrap; gap: 8px; }
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 20px;
+  font-size: 12px; font-weight: 500; letter-spacing: 0.2px;
+}
+.badge-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.b-olive  { background: #DDE5C8; color: var(--olive-dark); }
+.b-purple { background: var(--purple-l); color: var(--purple); }
+.b-gold   { background: var(--gold-l);   color: var(--gold); }
+
+.hero-right {
+  display: flex; flex-direction: column; gap: 12px;
+  align-items: flex-end;
+}
+.hero-stat {
+  background: var(--warm-white);
+  border: 1px solid var(--border);
+  border-radius: 14px; padding: 18px 24px;
+  text-align: right; min-width: 160px;
+  transition: transform 0.2s var(--ease);
+}
+.hero-stat:hover { transform: translateX(-4px); }
+.hero-stat-num {
+  font-family: var(--ff-serif);
+  font-size: 28px; font-weight: 600; color: var(--olive);
+  line-height: 1;
+}
+.hero-stat-label { font-size: 11px; color: var(--ink4); margin-top: 4px; }
+
+/* ─── DIVIDER ─── */
+.divider { border: none; border-top: 1px solid var(--border2); }
+
+/* ─── SECTION SHARED ─── */
+section { padding: 80px 6vw; }
+.section-inner { max-width: 1000px; margin: 0 auto; }
+.section-label {
+  font-size: 10px; font-weight: 500; letter-spacing: 2.5px;
+  text-transform: uppercase; color: var(--ink4); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 10px;
+}
+.section-label::before {
+  content: ''; width: 16px; height: 1.5px; background: var(--olive); flex-shrink: 0;
+}
+.section-title {
+  font-family: var(--ff-serif);
+  font-size: clamp(28px, 3.5vw, 40px);
+  color: var(--ink); margin-bottom: 10px; letter-spacing: -0.5px;
+}
+.section-sub {
+  font-size: 15px; color: var(--ink3);
+  margin-bottom: 44px; max-width: 500px; line-height: 1.75;
+}
+
+/* ─── TAG ─── */
+.tag {
+  font-size: 10px; font-weight: 500; letter-spacing: 0.8px;
+  text-transform: uppercase; padding: 3px 10px;
+  border-radius: 10px; display: inline-block; margin-bottom: 12px;
+}
+.tag-olive  { background: #DDE5C8; color: var(--olive-dark); }
+.tag-purple { background: var(--purple-l); color: var(--purple); }
+.tag-gold   { background: var(--gold-l);   color: var(--gold); }
+.tag-blue   { background: var(--blue-l);   color: var(--blue); }
+.tag-rose   { background: var(--rose-l);   color: var(--rose); }
+.tag-teal   { background: var(--teal-l);   color: var(--teal); }
+.tag-terra  { background: var(--terra-l);  color: var(--terra); }
+
+/* ─── MEET ME (About + Contact combined) ─── */
+#meetme { background: var(--warm-white); }
+.meetme-grid {
+  display: grid; grid-template-columns: 1.1fr 0.9fr;
+  gap: 64px; align-items: start;
+}
+.meetme-text p {
+  font-size: 16px; color: var(--ink2);
+  line-height: 1.85; margin-bottom: 18px;
+}
+.meetme-text p strong { color: var(--ink); font-weight: 500; }
+.meetme-text p:last-child { margin-bottom: 0; }
+.meetme-right { display: flex; flex-direction: column; gap: 24px; }
+.meetme-card {
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: 18px; padding: 28px;
+  position: sticky; top: 80px;
+}
+.meetme-card-title {
+  font-family: var(--ff-serif);
+  font-size: 15px; color: var(--ink);
+  margin-bottom: 18px; padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.meetme-stat {
+  display: flex; align-items: flex-start;
+  gap: 14px; padding: 10px 0;
+  border-bottom: 1px solid var(--border2);
+}
+.meetme-stat:last-child { border-bottom: none; padding-bottom: 0; }
+.meetme-stat-num {
+  font-family: var(--ff-serif);
+  font-size: 19px; font-weight: 600;
+  color: var(--olive); min-width: 52px; line-height: 1.2;
+}
+.meetme-stat-label { font-size: 13px; color: var(--ink3); line-height: 1.5; }
+.meetme-connect { display: flex; flex-direction: column; gap: 10px; }
+.meetme-connect-title {
+  font-family: var(--ff-serif);
+  font-size: 15px; color: var(--ink); margin-bottom: 4px;
+}
+.contact-link {
+  display: flex; align-items: center; gap: 14px;
+  padding: 13px 16px;
+  background: var(--cream); border: 1px solid var(--border);
+  border-radius: 12px; font-size: 14px; color: var(--ink2);
+  transition: border-color 0.2s, color 0.2s, transform 0.2s;
+  cursor: pointer;
+}
+.contact-link:hover {
+  border-color: var(--olive); color: var(--olive);
+  transform: translateX(4px);
+}
+.contact-link-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: #DDE5C8; display: flex;
+  align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600;
+  color: var(--olive-dark); flex-shrink: 0;
+}
+.meetme-form { display: flex; flex-direction: column; gap: 14px; margin-top: 8px; }
+.meetme-form-title {
+  font-family: var(--ff-serif);
+  font-size: 15px; color: var(--ink); margin-bottom: 2px;
+}
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group label {
+  font-size: 11px; font-weight: 500;
+  letter-spacing: 0.8px; color: var(--ink4);
+  text-transform: uppercase;
+}
+.form-group input, .form-group textarea {
+  background: var(--warm-white);
+  border: 1.5px solid var(--border);
+  border-radius: 10px; padding: 11px 14px;
+  font-family: var(--ff-sans); font-size: 14px;
+  color: var(--ink); outline: none;
+  transition: border-color 0.2s; resize: none;
+}
+.form-group input:focus, .form-group textarea:focus {
+  border-color: var(--olive);
+}
+.form-group textarea { height: 100px; }
+.submit-btn {
+  padding: 13px 28px; background: var(--olive);
+  color: #fff; border: none; border-radius: 10px;
+  font-family: var(--ff-sans); font-size: 14px;
+  font-weight: 500; cursor: pointer;
+  letter-spacing: 0.3px;
+  transition: background 0.2s, transform 0.2s;
+  align-self: flex-start;
+}
+.submit-btn:hover { background: var(--olive-dark); transform: translateY(-1px); }
+
+/* ─── BLOGS ─── */
+#blogs { background: var(--cream); }
+.blog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+.blog-card {
+  background: var(--warm-white);
+  border: 1px solid var(--border);
+  border-radius: 16px; padding: 28px;
+  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
+  cursor: pointer; display: flex; flex-direction: column;
+}
+.blog-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(26,31,20,0.08);
+}
+.blog-card h3 {
+  font-family: var(--ff-serif);
+  font-size: 18px; line-height: 1.4;
+  color: var(--ink); margin-bottom: 10px; flex: 1;
+}
+.blog-card p { font-size: 13px; color: var(--ink4); line-height: 1.7; }
+.blog-meta {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  margin-top: 20px; font-size: 12px; color: var(--ink4);
+  padding-top: 16px; border-top: 1px solid var(--border2);
+}
+.blog-arrow {
+  font-size: 14px; color: var(--olive);
+  transition: transform 0.2s; display: inline-block;
+}
+.blog-card:hover .blog-arrow { transform: translateX(4px); }
+
+/* ─── PLAYLIST ─── */
+#playlist { background: var(--warm-white); }
+.playlist-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+.playlist-card {
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden;
+  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
+  cursor: pointer;
+}
+.playlist-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(26,31,20,0.08);
+}
+.playlist-thumb {
+  width: 100%; height: 160px;
+  display: flex; align-items: center;
+  justify-content: center; position: relative;
+}
+.playlist-thumb-1 { background: linear-gradient(135deg, #DDE5C8, #EDE0F5); }
+.playlist-thumb-2 { background: linear-gradient(135deg, #DDE8F5, #D8EEE8); }
+.playlist-thumb-3 { background: linear-gradient(135deg, #F5EDD6, #F5DDE5); }
+.play-btn {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: rgba(255,255,255,0.9);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 16px rgba(26,31,20,0.15);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.playlist-card:hover .play-btn {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(26,31,20,0.2);
+}
+.play-icon {
+  width: 0; height: 0;
+  border-top: 9px solid transparent;
+  border-bottom: 9px solid transparent;
+  border-left: 15px solid var(--olive);
+  margin-left: 4px;
+}
+.playlist-thumb-badge {
+  position: absolute; top: 12px; left: 12px;
+  font-size: 10px; font-weight: 500; letter-spacing: 0.8px;
+  text-transform: uppercase;
+  background: rgba(255,255,255,0.88);
+  color: var(--ink2); padding: 3px 9px;
+  border-radius: 8px;
+}
+.playlist-info { padding: 20px; }
+.playlist-info h3 {
+  font-family: var(--ff-serif);
+  font-size: 16px; color: var(--ink);
+  margin-bottom: 6px; line-height: 1.4;
+}
+.playlist-info p { font-size: 12px; color: var(--ink4); }
+
+/* ─── JUST LIKE REAL ─── */
+#justlikereal { background: var(--cream); }
+.jlr-quote {
+  font-family: var(--ff-serif);
+  font-size: clamp(16px, 2vw, 20px);
+  font-style: italic; color: var(--ink3);
+  max-width: 600px; margin-bottom: 48px;
+  padding-left: 20px;
+  border-left: 3px solid var(--olive);
+  line-height: 1.75;
+}
+.jlr-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 16px;
+}
+.jlr-card {
+  border-radius: 16px; padding: 28px;
+  border: 1px solid var(--border);
+  transition: transform 0.25s var(--ease);
+  cursor: pointer;
+}
+.jlr-card:hover { transform: translateY(-3px); }
+.jlr-card:nth-child(1) { background: #DDE5C8; }
+.jlr-card:nth-child(2) { background: var(--purple-l); }
+.jlr-card:nth-child(3) { background: var(--gold-l); }
+.jlr-card:nth-child(4) { background: var(--blue-l); }
+.jlr-icon { font-size: 26px; margin-bottom: 14px; }
+.jlr-card h3 {
+  font-family: var(--ff-serif);
+  font-size: 16px; color: var(--ink);
+  margin-bottom: 8px;
+}
+.jlr-card p { font-size: 13px; color: var(--ink2); line-height: 1.7; }
+
+/* ─── FOOTER ─── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 28px 6vw;
+}
+.footer-inner {
+  max-width: 1000px; margin: 0 auto;
+  display: flex; align-items: center;
+  justify-content: space-between;
+}
+.footer-logo {
+  font-family: var(--ff-serif);
+  font-size: 15px; color: var(--ink2);
+  display: flex; align-items: center; gap: 7px;
+}
+.footer-logo-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--olive);
+}
+.footer-copy { font-size: 12px; color: var(--ink4); }
+
+/* ─── ANIMATIONS ─── */
+.fade-up {
+  opacity: 0; transform: translateY(24px);
+  transition: opacity 0.6s var(--ease), transform 0.6s var(--ease);
+}
+.fade-up.visible { opacity: 1; transform: none; }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 768px) {
+  .hero { grid-template-columns: 1fr; }
+  .hero-right { flex-direction: row; align-items: flex-start; flex-wrap: wrap; }
+  .hero-stat { min-width: 130px; text-align: left; }
+  .meetme-grid { grid-template-columns: 1fr; }
+  .meetme-card { position: static; }
+  .nav-links { gap: 18px; }
+  .nav-links a { font-size: 11px; }
+  .footer-inner { flex-direction: column; gap: 10px; text-align: center; }
+}
+@media (max-width: 480px) {
+  .nav-links { gap: 12px; }
+  section { padding: 60px 5vw; }
+  .hero { padding: 64px 5vw 56px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo">
+      <div class="nav-logo-dot"></div>
+      The Quality Strategist
+    </div>
+    <ul class="nav-links">
+      <li><a href="#blogs">Blogs</a></li>
+      <li><a href="#playlist">Playlist</a></li>
+      <li><a href="#justlikereal">JustLikeReal</a></li>
+      <li><a href="#meetme">Meet Me</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" style="padding-top:96px;padding-bottom:80px">
+  <div class="hero-left fade-up">
+    <div class="hero-eyebrow">
+      <span class="hero-eyebrow-line"></span>
+      Explorer · Quality · AI · Strategy · People · Life
+    </div>
+    <h1 class="hero-title">The Quality<br><em>Strategist.</em></h1>
+    <p class="hero-tagline">Smarter systems. Faster feedback. Better outcomes.</p>
+    <p class="hero-sub">I sit at the edge of quality engineering and artificial intelligence — not to automate judgment away, but to make human insight sharper, faster, and more impactful.</p>
+    <div class="hero-badges">
+      <span class="badge b-olive"><span class="badge-dot"></span>WCAG Accessibility</span>
+      <span class="badge b-purple"><span class="badge-dot"></span>AI-Assisted Testing</span>
+      <span class="badge b-gold"><span class="badge-dot"></span>Quality Strategy</span>
+    </div>
+  </div>
+  <div class="hero-right fade-up" style="transition-delay:0.15s">
+    <div class="hero-stat">
+      <div class="hero-stat-num">10+</div>
+      <div class="hero-stat-label">Years in QA</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">WCAG</div>
+      <div class="hero-stat-label">2.1 AA/AAA</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">AI+</div>
+      <div class="hero-stat-label">Quality workflows</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<hr class="divider">
+
+<!-- BLOGS -->
+<section id="blogs">
+  <div class="section-inner">
+    <div class="section-label">Blogs & Insights</div>
+    <h2 class="section-title">Thoughts on quality, AI & craft.</h2>
+    <p class="section-sub">Short reads on what I'm learning, questioning, and building at the edge of QA and AI.</p>
+    <div class="blog-grid">
+      <div class="blog-card fade-up">
+        <span class="tag tag-olive">Accessibility</span>
+        <h3>Why contrast ratios are still failing real users in 2025</h3>
+        <p>WCAG 3:1 for non-text elements sounds simple. In practice, it's a constant battle between design and compliance — and users always pay the price.</p>
+        <div class="blog-meta">
+          <span>5 min read</span>
+          <span class="blog-arrow">→</span>
+        </div>
+      </div>
+      <div class="blog-card fade-up" style="transition-delay:0.08s">
+        <span class="tag tag-purple">AI + QA</span>
+        <h3>What axe DevTools AI gets right — and what it still misses</h3>
+        <p>I ran the same audit manually and with AI assistance. The gaps were revealing about where human judgment still wins, every time.</p>
+        <div class="blog-meta">
+          <span>7 min read</span>
+          <span class="blog-arrow">→</span>
+        </div>
+      </div>
+      <div class="blog-card fade-up" style="transition-delay:0.16s">
+        <span class="tag tag-blue">Strategy</span>
+        <h3>The QA mindset is exactly what AI teams need right now</h3>
+        <p>Think like a tester: challenge assumptions, document edge cases, and never trust the happy path. AI pipelines desperately need this thinking.</p>
+        <div class="blog-meta">
+          <span>4 min read</span>
+          <span class="blog-arrow">→</span>
+        </div>
+      </div>
+      <div class="blog-card fade-up" style="transition-delay:0.24s">
+        <span class="tag tag-rose">Craft</span>
+        <h3>Feedback loops as a design principle — not just a QA tool</h3>
+        <p>Faster feedback isn't just a testing goal. It's a systems design principle that changes how teams build, ship, and improve everything.</p>
+        <div class="blog-meta">
+          <span>6 min read</span>
+          <span class="blog-arrow">→</span>
+        </div>
+      </div>
+      <div class="blog-card fade-up" style="transition-delay:0.08s">
+        <span class="tag tag-gold">People</span>
+        <h3>Quality culture starts with psychological safety, not checklists</h3>
+        <p>No amount of tooling fixes a team that's afraid to surface problems early. Culture is the real quality system.</p>
+        <div class="blog-meta">
+          <span>5 min read</span>
+          <span class="blog-arrow">→</span>
+        </div>
+      </div>
+      <div class="blog-card fade-up" style="transition-delay:0.16s">
+        <span class="tag tag-teal">AI</span>
+        <h3>Prompting Claude for test case generation — a QA practitioner's guide</h3>
+        <p>AI is only as good as the questions you ask it. Here's how I structure prompts to get useful, edge-case-aware test scenarios.</p>
+        <div class="blog-meta">
+          <span>8 min read</span>
+          <span class="blog-arrow">→</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- PLAYLIST -->
+<section id="playlist">
+  <div class="section-inner">
+    <div class="section-label">Playlist</div>
+    <h2 class="section-title">Projects, demos & videos.</h2>
+    <p class="section-sub">A curated collection of work — walkthroughs, case studies, and experiments worth watching.</p>
+    <div class="playlist-grid">
+      <div class="playlist-card fade-up">
+        <div class="playlist-thumb playlist-thumb-1">
+          <div class="play-btn"><div class="play-icon"></div></div>
+          <span class="playlist-thumb-badge">Case Study</span>
+        </div>
+        <div class="playlist-info">
+          <span class="tag tag-olive" style="margin-bottom:8px">Accessibility</span>
+          <h3>Accessibility audit walkthrough — Android banking app</h3>
+          <p>Live screen recording · 18 min</p>
+        </div>
+      </div>
+      <div class="playlist-card fade-up" style="transition-delay:0.1s">
+        <div class="playlist-thumb playlist-thumb-2">
+          <div class="play-btn"><div class="play-icon"></div></div>
+          <span class="playlist-thumb-badge">Demo</span>
+        </div>
+        <div class="playlist-info">
+          <span class="tag tag-purple" style="margin-bottom:8px">AI + QA</span>
+          <h3>Using AI to generate test cases from Figma specs</h3>
+          <p>Workflow demo · 11 min</p>
+        </div>
+      </div>
+      <div class="playlist-card fade-up" style="transition-delay:0.2s">
+        <div class="playlist-thumb playlist-thumb-3">
+          <div class="play-btn"><div class="play-icon"></div></div>
+          <span class="playlist-thumb-badge">Project</span>
+        </div>
+        <div class="playlist-info">
+          <span class="tag tag-gold" style="margin-bottom:8px">Tool</span>
+          <h3>WCAG color contrast checker — built with AI assistance</h3>
+          <p>Project overview · 9 min</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- JUST LIKE REAL -->
+<section id="justlikereal">
+  <div class="section-inner">
+    <div class="section-label">JustLikeReal</div>
+    <h2 class="section-title">The human behind the work.</h2>
+    <p class="jlr-quote">"Not everything worth sharing fits a resume. This is the corner where I'm just me — no frameworks, no deliverables, no KPIs."</p>
+    <div class="jlr-grid">
+      <div class="jlr-card fade-up">
+        <div class="jlr-icon">📖</div>
+        <h3>What I'm reading</h3>
+        <p>Books, long reads, and rabbit holes that have nothing to do with software — and everything to do with how I see the world.</p>
+      </div>
+      <div class="jlr-card fade-up" style="transition-delay:0.08s">
+        <div class="jlr-icon">🌍</div>
+        <h3>Places & moments</h3>
+        <p>Snapshots from wherever life takes me. Travel slows down the mind in ways no productivity tool ever could.</p>
+      </div>
+      <div class="jlr-card fade-up" style="transition-delay:0.16s">
+        <div class="jlr-icon">🎵</div>
+        <h3>Sounds & vibes</h3>
+        <p>Music that sets the tone for deep work, long walks, and everything in between. Mood is a quality signal too.</p>
+      </div>
+      <div class="jlr-card fade-up" style="transition-delay:0.24s">
+        <div class="jlr-icon">💬</div>
+        <h3>Random thoughts</h3>
+        <p>Unpolished observations. The kind you'd share over coffee, not in a LinkedIn post. Real talk, real me.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<hr class="divider">
+
+<!-- MEET ME (About + Contact combined) -->
+<section id="meetme">
+  <div class="section-inner">
+    <div class="section-label">Meet me</div>
+    <div class="meetme-grid">
+      <div class="meetme-text fade-up">
+        <h2 class="section-title">A quality thinker<br>in an AI world.</h2>
+        <p>I've spent over a decade making sure software works the way <strong>real people</strong> expect it to — not just how specs describe it. That human intuition? AI can't replace it. But it can absolutely amplify it.</p>
+        <p>My work lives at the intersection of <strong>rigorous quality standards</strong> and emerging AI tools. I test smarter, document better, and advocate harder for the users who depend on accessible, reliable software.</p>
+        <p>I believe that in the age of AI, the most important skill is knowing <strong>what to question.</strong> That's what quality thinking gives you. That's what I bring to every system, team, and product I touch.</p>
+        <p>Beyond the work, I'm an explorer — of ideas, places, sounds, and people. That curiosity is what keeps my quality lens fresh.</p>
+
+        <div class="meetme-form fade-up" style="margin-top:40px;transition-delay:0.1s">
+          <div class="meetme-form-title">Send me a message</div>
+          <div class="form-group">
+            <label>Your name</label>
+            <input type="text" placeholder="How should I call you?">
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" placeholder="your@email.com">
+          </div>
+          <div class="form-group">
+            <label>Message</label>
+            <textarea placeholder="What's on your mind?"></textarea>
+          </div>
+          <button class="submit-btn">Send message →</button>
+        </div>
+      </div>
+
+      <div class="meetme-right fade-up" style="transition-delay:0.12s">
+        <div class="meetme-card">
+          <div class="meetme-card-title">At a glance</div>
+          <div class="meetme-stat">
+            <div class="meetme-stat-num">10+</div>
+            <div class="meetme-stat-label">Years in QA & accessibility testing</div>
+          </div>
+          <div class="meetme-stat">
+            <div class="meetme-stat-num">WCAG</div>
+            <div class="meetme-stat-label">2.1 AA/AAA compliance specialist</div>
+          </div>
+          <div class="meetme-stat">
+            <div class="meetme-stat-num">AI+</div>
+            <div class="meetme-stat-label">Integrating AI into QA workflows</div>
+          </div>
+          <div class="meetme-stat">
+            <div class="meetme-stat-num">Web</div>
+            <div class="meetme-stat-label">& Android native app testing</div>
+          </div>
+          <div class="meetme-stat">
+            <div class="meetme-stat-num">∞</div>
+            <div class="meetme-stat-label">Curiosity about systems & people</div>
+          </div>
+        </div>
+
+        <div class="meetme-connect">
+          <div class="meetme-connect-title">Let's connect</div>
+          <div class="contact-link">
+            <div class="contact-link-icon">in</div>
+            LinkedIn — connect professionally
+          </div>
+          <div class="contact-link">
+            <div class="contact-link-icon">@</div>
+            Email me directly
+          </div>
+          <div class="contact-link">
+            <div class="contact-link-icon">▶</div>
+            Watch my latest video
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">
+      <div class="footer-logo-dot"></div>
+      The Quality Strategist
+    </div>
+    <div class="footer-copy">Built with intention. Tested with care. © 2025</div>
+  </div>
+</footer>
+
+<script>
+// Scroll-triggered fade-up animations
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+// Trigger hero immediately
+document.querySelectorAll('.hero .fade-up').forEach(el => {
+  setTimeout(() => el.classList.add('visible'), 100);
+});
+
+// Contact form
+document.querySelector('.submit-btn').addEventListener('click', function() {
+  this.textContent = 'Message sent! ✓';
+  this.style.background = '#4A5828';
+  setTimeout(() => {
+    this.textContent = 'Send message →';
+    this.style.background = '';
+  }, 3000);
+});
+</script>
+</body>
+</html>
