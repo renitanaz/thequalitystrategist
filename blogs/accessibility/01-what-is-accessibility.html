@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Accessibility Is Not Just a Disability Issue — The Quality Strategist</title>
+  <meta name="description" content="What accessibility actually means, the situational impairment model, and why QA is the last line of defence — not the only one." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0d0d0d;
+      --bg2:      #161616;
+      --bg3:      #1e1e1e;
+      --border:   #2e2e2e;
+      --text:     #f0f0f0;       /* was #e8e8e8 — fine */
+      --text-2:   #c8c8c8;       /* body copy — up from #999, now ~8:1 */
+      --text-3:   #8a8a8a;       /* secondary labels — up from #555, ~4.6:1 */
+      --green:    #4ade80;
+      --green-bg: rgba(74,222,128,0.07);
+      --blue:     #60a5fa;
+      --blue-bg:  rgba(96,165,250,0.07);
+      --amber:    #fbbf24;
+      --amber-bg: rgba(251,191,36,0.07);
+      --purple:   #a78bfa;
+      --purple-bg:rgba(167,139,250,0.07);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      line-height: 1.8;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── SKIP LINK ── */
+    .skip-link {
+      position: absolute;
+      top: -100%;
+      left: 1rem;
+      background: var(--green);
+      color: #000;
+      padding: 0.5rem 1rem;
+      border-radius: 0 0 6px 6px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      text-decoration: none;
+      z-index: 999;
+    }
+    .skip-link:focus { top: 0; }
+
+    /* ── NAV ── */
+    nav.site-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13,13,13,0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+    }
+    .nav-logo {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1rem;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .nav-logo:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; border-radius: 3px; }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      color: var(--text-3);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; border-radius: 3px; }
+
+    /* ── HERO ── */
+    .blog-header {
+      max-width: 740px;
+      margin: 0 auto;
+      padding: 4rem 2rem 2.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .breadcrumb {
+      font-size: 0.78rem;
+      color: var(--text-3);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .breadcrumb a { color: var(--text-3); text-decoration: none; transition: color 0.2s; }
+    .breadcrumb a:hover { color: var(--text-2); }
+    .breadcrumb a:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; border-radius: 2px; }
+
+    .blog-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.25rem; }
+    .tag {
+      font-size: 0.7rem;
+      padding: 3px 10px;
+      border-radius: 99px;
+      background: var(--bg3);
+      color: var(--text-3);
+      border: 1px solid var(--border);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+    .tag.accent { background: var(--green-bg); color: var(--green); border-color: rgba(74,222,128,0.25); }
+
+    .blog-header h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(1.85rem, 4vw, 2.6rem);
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin-bottom: 1.25rem;
+    }
+    .blog-header h1 em { font-style: italic; color: var(--green); }
+
+    .blog-meta {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      font-size: 0.82rem;
+      color: var(--text-3);
+      flex-wrap: wrap;
+    }
+    .blog-meta .series { color: var(--text-2); font-weight: 500; }
+
+    /* ── HERO ILLUSTRATION ── */
+    .hero-visual {
+      max-width: 740px;
+      margin: 0 auto;
+      padding: 2.5rem 2rem 0;
+    }
+    .hero-svg-wrap {
+      width: 100%;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--bg2);
+    }
+
+    /* ── BODY ── */
+    main.blog-body {
+      display: block;
+      max-width: 740px;
+      margin: 0 auto;
+      padding: 3rem 2rem 5rem;
+    }
+
+    /* ── TOC ── */
+    .toc {
+      display: block;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.5rem 1.75rem;
+      margin: 0 0 3rem 0;
+    }
+    .toc-title {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--text-3);
+      font-weight: 500;
+      margin-bottom: 0.9rem;
+    }
+    .toc ol { padding-left: 1.25rem; }
+    .toc ol li { margin-bottom: 0.45rem; }
+    .toc ol li a { font-size: 0.88rem; color: var(--text-2); text-decoration: none; transition: color 0.2s; }
+    .toc ol li a:hover { color: var(--green); }
+    .toc ol li a:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; border-radius: 2px; }
+
+    /* ── SECTION HEADINGS ── */
+    .blog-body h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.5rem;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      margin: 3.5rem 0 1.1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .h2-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+    .icon-green { background: var(--green-bg); }
+    .icon-blue  { background: var(--blue-bg);  }
+    .icon-amber { background: var(--amber-bg); }
+    .icon-purple{ background: var(--purple-bg);}
+
+    .blog-body h3 {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--text);
+      margin: 1.75rem 0 0.5rem;
+    }
+
+    .blog-body p {
+      color: var(--text-2);
+      margin-bottom: 1.25rem;
+      font-weight: 300;
+    }
+    .blog-body p strong { color: var(--text); font-weight: 500; }
+
+    .blog-body ul, .blog-body ol {
+      padding-left: 1.5rem;
+      margin-bottom: 1.25rem;
+      color: var(--text-2);
+      font-weight: 300;
+    }
+    .blog-body li { margin-bottom: 0.45rem; }
+    .blog-body li strong { color: var(--text); font-weight: 500; }
+
+    /* ── CALLOUT ── */
+    .callout {
+      display: block;
+      background: var(--green-bg);
+      border-left: 3px solid var(--green);
+      border-radius: 0 10px 10px 0;
+      padding: 1.25rem 1.5rem;
+      margin: 1.75rem 0;
+      font-size: 1rem;
+      color: var(--text);
+      font-style: italic;
+      line-height: 1.6;
+    }
+
+    /* ── TAKEAWAY ── */
+    .takeaway {
+      display: block;
+      background: var(--green-bg);
+      border: 1px solid rgba(74,222,128,0.2);
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      margin: 1.75rem 0;
+    }
+    .takeaway .label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--green);
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+    .takeaway p { color: var(--text-2); font-size: 0.93rem; margin: 0; }
+
+    /* ── IMPAIRMENT CARDS (visual alternative to plain table) ── */
+    .impairment-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 1.75rem 0;
+    }
+    .imp-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.1rem 1.25rem;
+    }
+    .imp-card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.85rem;
+    }
+    .imp-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+    .imp-card-title {
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+    .imp-rows { display: flex; flex-direction: column; gap: 6px; }
+    .imp-row {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      font-size: 0.8rem;
+    }
+    .imp-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 5px;
+    }
+    .dot-red    { background: #f87171; }
+    .dot-yellow { background: #fbbf24; }
+    .dot-green  { background: #4ade80; }
+    .imp-row-label {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-3);
+      font-weight: 500;
+      min-width: 72px;
+      margin-top: 1px;
+    }
+    .imp-row-val { color: var(--text-2); line-height: 1.4; }
+
+    /* ── RESPONSIBILITY TABLE ── */
+    .table-wrap {
+      display: block;
+      overflow-x: auto;
+      margin: 1.75rem 0;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    thead th {
+      background: var(--bg2);
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-3);
+      font-weight: 500;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    tbody td {
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-2);
+      vertical-align: top;
+      line-height: 1.55;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody td:first-child { color: var(--text); font-weight: 500; }
+    tbody tr:hover td { background: var(--bg2); }
+
+    /* ── MISCONCEPTION CARDS ── */
+    .misconception {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.1rem 1.25rem;
+      margin-bottom: 10px;
+    }
+    .misconception-q {
+      font-size: 0.92rem;
+      font-weight: 500;
+      color: #f87171;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+    .misconception-q::before { content: '✗'; font-size: 0.85rem; margin-top: 1px; flex-shrink: 0; }
+    .misconception-a {
+      font-size: 0.88rem;
+      color: var(--text-2);
+      line-height: 1.6;
+      padding-left: 1.2rem;
+    }
+    .misconception-a strong { color: var(--text); }
+
+    /* ── FRAMEWORK CARDS ── */
+    .principle-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 1.5rem 0;
+    }
+    .principle-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.1rem 1.1rem;
+    }
+    .principle-num {
+      font-size: 1.5rem;
+      font-family: 'DM Serif Display', serif;
+      color: var(--green);
+      margin-bottom: 0.4rem;
+      line-height: 1;
+    }
+    .principle-title {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+    .principle-desc { font-size: 0.8rem; color: var(--text-2); line-height: 1.5; }
+
+    /* ── QA ROLE VISUAL ── */
+    .role-flow {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin: 1.75rem 0;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+    .role-step {
+      flex: 1;
+      min-width: 90px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem 0.6rem;
+      text-align: center;
+    }
+    .role-step.highlight {
+      border-color: var(--green);
+      background: var(--green-bg);
+    }
+    .role-step-label {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-3);
+      font-weight: 500;
+      margin-bottom: 3px;
+    }
+    .role-step.highlight .role-step-label { color: var(--green); }
+    .role-step-name {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+    .role-arrow {
+      color: var(--text-3);
+      font-size: 0.85rem;
+      padding: 0 4px;
+      flex-shrink: 0;
+    }
+
+    /* ── GLOSSARY ── */
+    .glossary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 1.75rem 0;
+    }
+    .gloss-item {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+    }
+    .gloss-term {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--blue);
+      margin-bottom: 3px;
+      letter-spacing: 0.02em;
+    }
+    .gloss-def { font-size: 0.8rem; color: var(--text-2); line-height: 1.5; }
+
+    /* ── SERIES NAV ── */
+    .series-nav {
+      display: block;
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+    .series-nav .label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--text-3);
+      font-weight: 500;
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+    .next-blog {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      text-decoration: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .next-blog:hover { border-color: #444; background: var(--bg3); }
+    .next-blog:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; border-radius: 10px; }
+    .next-title { font-size: 0.95rem; font-weight: 500; color: var(--text); }
+    .next-sub { font-size: 0.8rem; color: var(--text-3); margin-top: 3px; }
+    .arrow { color: var(--text-3); font-size: 1.1rem; flex-shrink: 0; }
+
+    /* ── REFERENCES ── */
+    .references {
+      display: block;
+      margin-top: 2.5rem;
+      padding: 1.5rem 1.75rem;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    .ref-title {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--text-3);
+      font-weight: 500;
+      margin-bottom: 1rem;
+    }
+    .references ul { list-style: none; padding: 0; }
+    .references ul li { margin-bottom: 0.5rem; }
+    .references ul li a {
+      font-size: 0.85rem;
+      color: var(--text-2);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: color 0.2s;
+    }
+    .references ul li a:hover { color: var(--green); }
+    .references ul li a:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; border-radius: 2px; }
+    .references ul li a::before { content: '↗'; font-size: 0.75rem; color: var(--text-3); }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem;
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--text-3);
+    }
+    footer a { color: var(--text-3); text-decoration: none; }
+    footer a:hover { color: var(--text-2); }
+    footer a:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; border-radius: 2px; }
+
+    .visually-hidden {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 620px) {
+      nav.site-nav { padding: 0 1.25rem; }
+      .nav-links { display: none; }
+      .blog-header, .hero-visual, main.blog-body { padding-left: 1.25rem; padding-right: 1.25rem; }
+      .blog-header { padding-top: 2.5rem; }
+      .impairment-grid { grid-template-columns: 1fr; }
+      .principle-cards { grid-template-columns: 1fr; }
+      .glossary-grid { grid-template-columns: 1fr; }
+      .role-flow { flex-wrap: wrap; gap: 6px; }
+      .role-arrow { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<!-- NAV -->
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <ul class="nav-links" role="list">
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#playlist">Playlist</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#justlikereal">JustLikeReal</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#meetme">Meet Me</a></li>
+  </ul>
+</nav>
+
+<!-- HEADER -->
+<header class="blog-header">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a>
+    <span aria-hidden="true">›</span>
+    <span>Accessibility From Day Zero</span>
+    <span aria-hidden="true">›</span>
+    <span aria-current="page">01 of 36</span>
+  </nav>
+  <div class="blog-tags" aria-label="Blog categories">
+    <span class="tag accent">Accessibility</span>
+    <span class="tag">Foundation</span>
+    <span class="tag">WCAG</span>
+    <span class="tag">QA</span>
+  </div>
+  <h1>Accessibility Is Not Just a Disability Issue — <em>It's a Design Problem</em></h1>
+  <div class="blog-meta">
+    <span class="series">Series: Accessibility From Day Zero</span>
+    <span aria-hidden="true">·</span>
+    <span>Blog 01 of 36</span>
+    <span aria-hidden="true">·</span>
+    <span>8 min read</span>
+  </div>
+</header>
+
+<!-- HERO ILLUSTRATION -->
+<div class="hero-visual" aria-hidden="true">
+  <div class="hero-svg-wrap">
+    <svg viewBox="0 0 740 200" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;height:auto;">
+      <defs>
+        <linearGradient id="hg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#0d1f14"/>
+          <stop offset="100%" stop-color="#0d0d1f"/>
+        </linearGradient>
+      </defs>
+      <rect width="740" height="200" fill="url(#hg)"/>
+      <!-- grid lines -->
+      <g stroke="#1e2e20" stroke-width="1">
+        <line x1="0" y1="50"  x2="740" y2="50"/>
+        <line x1="0" y1="100" x2="740" y2="100"/>
+        <line x1="0" y1="150" x2="740" y2="150"/>
+        <line x1="185" y1="0" x2="185" y2="200"/>
+        <line x1="370" y1="0" x2="370" y2="200"/>
+        <line x1="555" y1="0" x2="555" y2="200"/>
+      </g>
+      <!-- person icons at different sizes suggesting impairment contexts -->
+      <!-- Visual -->
+      <circle cx="92" cy="80" r="18" fill="none" stroke="#4ade80" stroke-width="1.5" opacity="0.6"/>
+      <circle cx="92" cy="73" r="5" fill="#4ade80" opacity="0.5"/>
+      <line x1="92" y1="78" x2="92" y2="94" stroke="#4ade80" stroke-width="1.5" opacity="0.5"/>
+      <line x1="92" y1="84" x2="80" y2="92" stroke="#4ade80" stroke-width="1.5" opacity="0.5"/>
+      <line x1="92" y1="84" x2="104" y2="92" stroke="#4ade80" stroke-width="1.5" opacity="0.5"/>
+      <text x="92" y="120" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#4ade80" opacity="0.8">Visual</text>
+      <!-- Motor -->
+      <circle cx="277" cy="80" r="18" fill="none" stroke="#60a5fa" stroke-width="1.5" opacity="0.6"/>
+      <circle cx="277" cy="73" r="5" fill="#60a5fa" opacity="0.5"/>
+      <line x1="277" y1="78" x2="277" y2="94" stroke="#60a5fa" stroke-width="1.5" opacity="0.5"/>
+      <line x1="277" y1="84" x2="265" y2="92" stroke="#60a5fa" stroke-width="1.5" opacity="0.5"/>
+      <line x1="277" y1="84" x2="289" y2="92" stroke="#60a5fa" stroke-width="1.5" opacity="0.5"/>
+      <text x="277" y="120" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#60a5fa" opacity="0.8">Motor</text>
+      <!-- Hearing -->
+      <circle cx="462" cy="80" r="18" fill="none" stroke="#fbbf24" stroke-width="1.5" opacity="0.6"/>
+      <circle cx="462" cy="73" r="5" fill="#fbbf24" opacity="0.5"/>
+      <line x1="462" y1="78" x2="462" y2="94" stroke="#fbbf24" stroke-width="1.5" opacity="0.5"/>
+      <line x1="462" y1="84" x2="450" y2="92" stroke="#fbbf24" stroke-width="1.5" opacity="0.5"/>
+      <line x1="462" y1="84" x2="474" y2="92" stroke="#fbbf24" stroke-width="1.5" opacity="0.5"/>
+      <text x="462" y="120" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#fbbf24" opacity="0.8">Hearing</text>
+      <!-- Cognitive -->
+      <circle cx="647" cy="80" r="18" fill="none" stroke="#a78bfa" stroke-width="1.5" opacity="0.6"/>
+      <circle cx="647" cy="73" r="5" fill="#a78bfa" opacity="0.5"/>
+      <line x1="647" y1="78" x2="647" y2="94" stroke="#a78bfa" stroke-width="1.5" opacity="0.5"/>
+      <line x1="647" y1="84" x2="635" y2="92" stroke="#a78bfa" stroke-width="1.5" opacity="0.5"/>
+      <line x1="647" y1="84" x2="659" y2="92" stroke="#a78bfa" stroke-width="1.5" opacity="0.5"/>
+      <text x="647" y="120" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#a78bfa" opacity="0.8">Cognitive</text>
+      <!-- bottom tagline -->
+      <text x="370" y="170" text-anchor="middle" font-family="DM Serif Display,serif" font-size="14" fill="#f0f0f0" opacity="0.4">Build for one. Design for everyone.</text>
+    </svg>
+  </div>
+</div>
+
+<!-- BLOG BODY -->
+<main class="blog-body" id="main-content">
+
+  <!-- TOC -->
+  <nav class="toc" aria-label="Table of contents">
+    <div class="toc-title" id="toc-heading">In this blog</div>
+    <ol aria-labelledby="toc-heading">
+      <li><a href="#what-is-accessibility">What accessibility actually means</a></li>
+      <li><a href="#situational-impairment">The situational impairment model</a></li>
+      <li><a href="#microsoft-framework">The Microsoft inclusive design framework</a></li>
+      <li><a href="#why-qa">Why QA is the last line of defence</a></li>
+      <li><a href="#shared-responsibility">The shared responsibility model</a></li>
+      <li><a href="#misconceptions">Common misconceptions</a></li>
+      <li><a href="#regulatory">Regulatory context</a></li>
+      <li><a href="#wcag">What WCAG 2.1 AA is</a></li>
+      <li><a href="#glossary">Key terms glossary</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <h2 id="what-is-accessibility">
+    <span class="h2-icon icon-green" aria-hidden="true">🎯</span>
+    1. What Accessibility Actually Means
+  </h2>
+
+  <p>Accessibility means designing websites, apps, and content so that <strong>everyone — including people with disabilities — can use them</strong>.</p>
+  <p>That definition is correct but incomplete. It creates the mental model that accessibility is a niche concern — something you do for the 15–20% of people who have a declared disability. That framing is why accessibility gets deprioritised.</p>
+  <p>The more accurate definition:</p>
+
+  <div class="callout" role="note">
+    Accessibility is designing so that every person, in every context, can use what you build.
+  </div>
+
+  <p>The moment you accept that definition, accessibility stops being a checkbox and becomes a quality standard — the same way performance or security is a quality standard.</p>
+
+  <!-- 2 -->
+  <h2 id="situational-impairment">
+    <span class="h2-icon icon-blue" aria-hidden="true">👥</span>
+    2. The Situational Impairment Model
+  </h2>
+
+  <p>Disabilities are not binary. They exist on a spectrum — and they are not always permanent. Microsoft's Inclusive Design Framework categorises impairment into three types.</p>
+
+  <div class="impairment-grid" role="list" aria-label="Impairment types and examples">
+
+    <div class="imp-card" role="listitem">
+      <div class="imp-card-header">
+        <div class="imp-icon" style="background:rgba(74,222,128,0.1)">👁</div>
+        <div class="imp-card-title">Visual</div>
+      </div>
+      <div class="imp-rows">
+        <div class="imp-row">
+          <span class="imp-dot dot-red" aria-label="Permanent"></span>
+          <span class="imp-row-label">Permanent</span>
+          <span class="imp-row-val">Blind, low vision, colour blindness</span>
+        </div>
+        <div class="imp-row">
+          <span class="imp-dot dot-yellow" aria-label="Temporary"></span>
+          <span class="imp-row-label">Temporary</span>
+          <span class="imp-row-val">Eye surgery, eye infection</span>
+        </div>
+        <div class="imp-row">
+          <span class="imp-dot dot-green" aria-label="Situational"></span>
+          <span class="imp-row-label">Situational</span>
+          <span class="imp-row-val">Forgot glasses, screen glare</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="imp-card" role="listitem">
+      <div class="imp-card-header">
+        <div class="imp-icon" style="background:rgba(96,165,250,0.1)">🤚</div>
+        <div class="imp-card-title">Motor</div>
+      </div>
+      <div class="imp-rows">
+        <div class="imp-row">
+          <span class="imp-dot dot-red" aria-label="Permanent"></span>
+          <span class="imp-row-label">Permanent</span>
+          <span class="imp-row-val">One arm, paralysis, tremor</span>
+        </div>
+        <div class="imp-row">
+          <span class="imp-dot dot-yellow" aria-label="Temporary"></span>
+          <span class="imp-row-label">Temporary</span>
+          <span class="imp-row-val">Broken wrist, RSI</span>
+        </div>
+        <div class="imp-row">
+          <span class="imp-dot dot-green" aria-label="Situational"></span>
+          <span class="imp-row-label">Situational</span>
+          <span class="imp-row-val">Holding a baby, bumpy train</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="imp-card" role="listitem">
+      <div class="imp-card-header">
+        <div class="imp-icon" style="background:rgba(251,191,36,0.1)">👂</div>
+        <div class="imp-card-title">Hearing</div>
+      </div>
+      <div class="imp-rows">
+        <div class="imp-row">
+          <span class="imp-dot dot-red" aria-label="Permanent"></span>
+          <span class="imp-row-label">Permanent</span>
+          <span class="imp-row-val">Deaf, hard of hearing</span>
+        </div>
+        <div class="imp-row">
+          <span class="imp-dot dot-yellow" aria-label="Temporary"></span>
+          <span class="imp-row-label">Temporary</span>
+          <span class="imp-row-val">Ear infection, swimmer's ear</span>
+        </div>
+        <div class="imp-row">
+          <span class="imp-dot dot-green" aria-label="Situational"></span>
+          <span class="imp-row-label">Situational</span>
+          <span class="imp-row-val">Noisy environment, no headphones</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="imp-card" role="listitem">
+      <div class="imp-card-header">
+        <div class="imp-icon" style="background:rgba(167,139,250,0.1)">🧠</div>
+        <div class="imp-card-title">Cognitive</div>
+      </div>
+      <div class="imp-rows">
+        <div class="imp-row">
+          <span class="imp-dot dot-red" aria-label="Permanent"></span>
+          <span class="imp-row-label">Permanent</span>
+          <span class="imp-row-val">Dyslexia, ADHD, memory impairment</span>
+        </div>
+        <div class="imp-row">
+          <span class="imp-dot dot-yellow" aria-label="Temporary"></span>
+          <span class="imp-row-label">Temporary</span>
+          <span class="imp-row-val">Concussion, post-illness fatigue</span>
+        </div>
+        <div class="imp-row">
+          <span class="imp-dot dot-green" aria-label="Situational"></span>
+          <span class="imp-row-label">Situational</span>
+          <span class="imp-row-val">Distracted, stressed, new language</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="takeaway" role="note">
+    <div class="label">Takeaway</div>
+    <p>When you build for the permanent impairment case, you solve for everyone. Captions built for deaf users are now used by millions watching videos in public without headphones. Kerb cuts built for wheelchair users are used daily by parents with prams and delivery workers. Accessibility features are usability features.</p>
+  </div>
+
+  <!-- 3 -->
+  <h2 id="microsoft-framework">
+    <span class="h2-icon icon-purple" aria-hidden="true">🔷</span>
+    3. The Microsoft Inclusive Design Framework
+  </h2>
+
+  <p>Microsoft's framework makes the impairment model concrete with three design principles:</p>
+
+  <div class="principle-cards" role="list" aria-label="Microsoft inclusive design principles">
+    <div class="principle-card" role="listitem">
+      <div class="principle-num">01</div>
+      <div class="principle-title">Recognise exclusion</div>
+      <p class="principle-desc">Exclusion happens when we solve for the average user and ignore the edges. The edges are larger than most teams assume.</p>
+    </div>
+    <div class="principle-card" role="listitem">
+      <div class="principle-num">02</div>
+      <div class="principle-title">Learn from diversity</div>
+      <p class="principle-desc">Constraints drive better design. Designing for keyboard-only users forces clarity that benefits everyone.</p>
+    </div>
+    <div class="principle-card" role="listitem">
+      <div class="principle-num">03</div>
+      <div class="principle-title">Solve for one, extend to many</div>
+      <p class="principle-desc">Solutions for permanent impairments extend naturally to temporary and situational cases. One solution, every context.</p>
+    </div>
+  </div>
+
+  <p>A keyboard-accessible form benefits a permanent motor impairment user, someone with a broken wrist, a power user who prefers keyboard, and anyone whose mouse just stopped working. One solution. Every context.</p>
+
+  <!-- 4 -->
+  <h2 id="why-qa">
+    <span class="h2-icon icon-amber" aria-hidden="true">🛡</span>
+    4. Why QA Is the Last Line of Defence
+  </h2>
+
+  <p>QA's role in accessibility is frequently misunderstood. Two failure modes are common.</p>
+
+  <div class="role-flow" role="img" aria-label="Delivery pipeline showing QA as the last line of defence before production">
+    <div class="role-step"><div class="role-step-label">PM</div><div class="role-step-name">Discovery</div></div>
+    <div class="role-arrow" aria-hidden="true">→</div>
+    <div class="role-step"><div class="role-step-label">UX</div><div class="role-step-name">Design</div></div>
+    <div class="role-arrow" aria-hidden="true">→</div>
+    <div class="role-step"><div class="role-step-label">Author</div><div class="role-step-name">Content</div></div>
+    <div class="role-arrow" aria-hidden="true">→</div>
+    <div class="role-step"><div class="role-step-label">Dev</div><div class="role-step-name">Build</div></div>
+    <div class="role-arrow" aria-hidden="true">→</div>
+    <div class="role-step highlight"><div class="role-step-label">QA</div><div class="role-step-name">Last gate</div></div>
+    <div class="role-arrow" aria-hidden="true">→</div>
+    <div class="role-step"><div class="role-step-label">Live</div><div class="role-step-name">Production</div></div>
+  </div>
+
+  <h3>Failure mode 1: QA is the only accessibility gate</h3>
+  <p>Everything lands in QA for accessibility to be checked. Every defect was created upstream and is now expensive to fix. QA becomes a remediation team, not a quality gate.</p>
+
+  <h3>Failure mode 2: QA is excluded entirely</h3>
+  <p>Accessibility is declared a "developer responsibility" and QA is not given the tools, time, or mandate to test it. Defects reach production.</p>
+
+  <p>The correct model: QA is the <strong>last line of defence — not the only line</strong>. QA validates that upstream gates were enforced, runs checks that tools cannot replicate, logs defects precisely, and holds the sign-off gate.</p>
+
+  <!-- 5 -->
+  <h2 id="shared-responsibility">
+    <span class="h2-icon icon-green" aria-hidden="true">📋</span>
+    5. The Shared Responsibility Model
+  </h2>
+
+  <p>Accessibility is not one person's job. It fails when it becomes one person's job.</p>
+
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">Accessibility ownership by role and delivery phase</caption>
+      <thead>
+        <tr>
+          <th scope="col">Role</th>
+          <th scope="col">Phase</th>
+          <th scope="col">Primary responsibility</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Product Owner / PM</td><td>Discovery</td><td>Identify regulatory obligations, define WCAG conformance target, sign off on accessibility acceptance criteria</td></tr>
+        <tr><td>UX / Designer</td><td>Design</td><td>Validate colour contrast, specify focus indicators, annotate tab order, define heading hierarchy</td></tr>
+        <tr><td>Content Author</td><td>Authoring</td><td>Ensure alt text, headings, and link text are correct in the CMS</td></tr>
+        <tr><td>Developer</td><td>Development</td><td>Implement semantic HTML, apply ARIA correctly, enable keyboard support, run linting</td></tr>
+        <tr><td>QA</td><td>Testing</td><td>Run manual keyboard and screen reader testing, validate exit criteria, log defects</td></tr>
+        <tr><td>Maintenance</td><td>Post-production</td><td>Monitor production for regressions, maintain audit trail</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>When one role drops their responsibility, the defect moves to the next phase and becomes more expensive to fix. A missing alt text at authoring costs seconds. Found in QA it needs a content fix, deploy, retest, and sign-off. In production it carries legal risk.</p>
+
+  <!-- 6 -->
+  <h2 id="misconceptions">
+    <span class="h2-icon icon-blue" aria-hidden="true">✗</span>
+    6. Common Misconceptions
+  </h2>
+
+  <div class="misconception">
+    <div class="misconception-q">"Accessibility is only for blind users."</div>
+    <div class="misconception-a">False. It covers visual, motor, hearing, and cognitive impairments — permanent, temporary, and situational. <strong>Keyboard accessibility has nothing to do with vision.</strong></div>
+  </div>
+
+  <div class="misconception">
+    <div class="misconception-q">"We have a small disabled user base so it doesn't matter."</div>
+    <div class="misconception-a">False. You cannot measure your disabled user base — users do not declare impairments. Situational impairments apply to everyone. In many jurisdictions it is <strong>a legal requirement regardless of audience size</strong>.</div>
+  </div>
+
+  <div class="misconception">
+    <div class="misconception-q">"Automated tools handle accessibility testing."</div>
+    <div class="misconception-a">False. Automated tools catch <strong>30–50% of accessibility issues</strong>. Focus visibility, keyboard usability, screen reader context, and cognitive load require human testing. This is the primary reason QA exists in this process.</div>
+  </div>
+
+  <div class="misconception">
+    <div class="misconception-q">"Accessibility is a one-time fix."</div>
+    <div class="misconception-a">False. Content changes, components are rebuilt, integrations update. Accessibility requires <strong>ongoing governance — not a single audit</strong>.</div>
+  </div>
+
+  <!-- 7 -->
+  <h2 id="regulatory">
+    <span class="h2-icon icon-amber" aria-hidden="true">⚖</span>
+    7. Regulatory Context
+  </h2>
+
+  <p>Accessibility is increasingly a legal requirement, not just a best practice.</p>
+
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">Accessibility regulations by region</caption>
+      <thead>
+        <tr><th scope="col">Region</th><th scope="col">Standard</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>USA</td><td>ADA (Americans with Disabilities Act) — applies to digital products</td></tr>
+        <tr><td>European Union</td><td>EN 301 549 — equivalent to WCAG 2.1 AA</td></tr>
+        <tr><td>UK</td><td>Equality Act 2010</td></tr>
+        <tr><td>Australia</td><td>Disability Discrimination Act 1992</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>In most jurisdictions, the baseline requirement maps to <strong>WCAG 2.1 AA conformance</strong> — the standard this series tests against throughout.</p>
+
+  <!-- 8 -->
+  <h2 id="wcag">
+    <span class="h2-icon icon-purple" aria-hidden="true">📐</span>
+    8. What WCAG 2.1 AA Is
+  </h2>
+
+  <p>The Web Content Accessibility Guidelines (WCAG) 2.1 is the W3C standard defining what an accessible digital product looks like. It is organised around four principles — <strong>Perceivable, Operable, Understandable, Robust (POUR)</strong>. Level AA is the conformance level required by most legal frameworks. Blog 03 covers WCAG 2.1 AA in full — every criterion and how to test it.</p>
+
+  <!-- 9 -->
+  <h2 id="glossary">
+    <span class="h2-icon icon-green" aria-hidden="true">📖</span>
+    9. Key Terms Glossary
+  </h2>
+
+  <div class="glossary-grid" role="list" aria-label="Accessibility glossary">
+    <div class="gloss-item" role="listitem"><div class="gloss-term">WCAG</div><div class="gloss-def">Web Content Accessibility Guidelines</div></div>
+    <div class="gloss-item" role="listitem"><div class="gloss-term">ARIA</div><div class="gloss-def">Accessible Rich Internet Applications — markup that describes UI to assistive technologies</div></div>
+    <div class="gloss-item" role="listitem"><div class="gloss-term">Semantic HTML</div><div class="gloss-def">HTML elements that carry meaning (&lt;button&gt;, &lt;nav&gt;) vs generic &lt;div&gt;</div></div>
+    <div class="gloss-item" role="listitem"><div class="gloss-term">Screen reader</div><div class="gloss-def">Software that reads content aloud — NVDA, JAWS, VoiceOver, TalkBack</div></div>
+    <div class="gloss-item" role="listitem"><div class="gloss-term">Keyboard trap</div><div class="gloss-def">A UI component you can Tab into but cannot Tab out of</div></div>
+    <div class="gloss-item" role="listitem"><div class="gloss-term">Contrast ratio</div><div class="gloss-def">Luminance difference between foreground and background — min 4.5:1 for body text</div></div>
+    <div class="gloss-item" role="listitem"><div class="gloss-term">Focus indicator</div><div class="gloss-def">The visual outline showing which element has keyboard focus</div></div>
+    <div class="gloss-item" role="listitem"><div class="gloss-term">AT</div><div class="gloss-def">Assistive technology — any tool users with disabilities rely on</div></div>
+    <div class="gloss-item" role="listitem"><div class="gloss-term">A11y</div><div class="gloss-def">Numeronym for accessibility — A + 11 letters + y</div></div>
+    <div class="gloss-item" role="listitem"><div class="gloss-term">POUR</div><div class="gloss-def">Perceivable, Operable, Understandable, Robust — the four WCAG principles</div></div>
+  </div>
+
+  <!-- SERIES NAV -->
+  <div class="series-nav">
+    <span class="label">Up next in the series</span>
+    <a href="02-cost-of-shift-right.html" class="next-blog">
+      <div>
+        <div class="next-title">Blog 02 — The True Cost of Accessibility Debt</div>
+        <div class="next-sub">Why a defect found in production costs 30–100× more than the same defect at discovery</div>
+      </div>
+      <span class="arrow" aria-hidden="true">→</span>
+    </a>
+  </div>
+
+  <!-- REFERENCES -->
+  <aside class="references" aria-label="References">
+    <div class="ref-title">References</div>
+    <ul role="list">
+      <li><a href="https://www.w3.org/TR/WCAG21/" target="_blank" rel="noopener noreferrer">WCAG 2.1 — Official W3C specification</a></li>
+      <li><a href="https://inclusive.microsoft.design/" target="_blank" rel="noopener noreferrer">Microsoft Inclusive Design Framework</a></li>
+      <li><a href="https://webaim.org/projects/screenreadersurvey/" target="_blank" rel="noopener noreferrer">WebAIM — Screen Reader User Survey</a></li>
+      <li><a href="https://www.w3.org/WAI/fundamentals/accessibility-intro/" target="_blank" rel="noopener noreferrer">W3C — Introduction to Web Accessibility</a></li>
+    </ul>
+  </aside>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; Built with intention. Tested with care. &nbsp;·&nbsp; © 2025
+  </p>
+</footer>
+
+</body>
+</html>
