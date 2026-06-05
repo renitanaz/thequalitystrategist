@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The True Cost of Accessibility Debt | The Quality Strategist</title>
+  <meta name="description" content="The phase-by-phase cost multiplier: why a defect found in production costs 30–100× more than the same defect at discovery, and how to use this argument to get your team to act earlier." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0d0d0d;
+      --bg2:      #161616;
+      --bg3:      #1e1e1e;
+      --border:   #2e2e2e;
+      --text:     #f0f0f0;
+      --text-2:   #c8c8c8;
+      --text-3:   #8a8a8a;
+      --green:    #4ade80;
+      --green-bg: rgba(74,222,128,0.07);
+      --blue:     #60a5fa;
+      --blue-bg:  rgba(96,165,250,0.07);
+      --amber:    #fbbf24;
+      --amber-bg: rgba(251,191,36,0.07);
+      --purple:   #a78bfa;
+      --purple-bg:rgba(167,139,250,0.07);
+      --red:      #f87171;
+      --red-bg:   rgba(248,113,113,0.07);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      line-height: 1.8;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .skip-link {
+      position: absolute; top: -100%; left: 1rem;
+      background: var(--green); color: #000;
+      padding: 0.5rem 1rem; border-radius: 0 0 6px 6px;
+      font-size: 0.85rem; font-weight: 500;
+      text-decoration: none; z-index: 999;
+    }
+    .skip-link:focus { top: 0; }
+
+    nav.site-nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(13,13,13,0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 56px;
+    }
+    .nav-logo {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1rem; color: var(--text); text-decoration: none;
+    }
+    .nav-logo:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; border-radius: 3px; }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { color: var(--text-3); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; border-radius: 3px; }
+
+    .blog-header {
+      max-width: 740px; margin: 0 auto;
+      padding: 4rem 2rem 2.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .breadcrumb {
+      font-size: 0.78rem; color: var(--text-3);
+      margin-bottom: 1.5rem;
+      display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+    }
+    .breadcrumb a { color: var(--text-3); text-decoration: none; transition: color 0.2s; }
+    .breadcrumb a:hover { color: var(--text-2); }
+    .breadcrumb a:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; border-radius: 2px; }
+
+    .blog-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.25rem; }
+    .tag {
+      font-size: 0.7rem; padding: 3px 10px; border-radius: 99px;
+      background: var(--bg3); color: var(--text-3);
+      border: 1px solid var(--border);
+      letter-spacing: 0.04em; text-transform: uppercase; font-weight: 500;
+    }
+    .tag.accent { background: var(--amber-bg); color: var(--amber); border-color: rgba(251,191,36,0.25); }
+
+    .blog-header h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(1.85rem, 4vw, 2.6rem);
+      line-height: 1.2; letter-spacing: -0.02em;
+      color: var(--text); margin-bottom: 1.25rem;
+    }
+    .blog-header h1 em { font-style: italic; color: var(--amber); }
+
+    .blog-meta {
+      display: flex; align-items: center; gap: 1.25rem;
+      font-size: 0.82rem; color: var(--text-3); flex-wrap: wrap;
+    }
+    .blog-meta .series { color: var(--text-2); font-weight: 500; }
+
+    /* HERO VISUAL */
+    .hero-visual {
+      max-width: 740px; margin: 0 auto;
+      padding: 2.5rem 2rem 0;
+    }
+    .hero-svg-wrap {
+      width: 100%; border-radius: 12px; overflow: hidden;
+      border: 1px solid var(--border); background: var(--bg2);
+    }
+
+    main.blog-body {
+      display: block; max-width: 740px;
+      margin: 0 auto; padding: 3rem 2rem 5rem;
+    }
+
+    .toc {
+      display: block; background: var(--bg2);
+      border: 1px solid var(--border); border-radius: 10px;
+      padding: 1.5rem 1.75rem; margin: 0 0 3rem 0;
+    }
+    .toc-title {
+      font-size: 0.7rem; text-transform: uppercase;
+      letter-spacing: 0.09em; color: var(--text-3);
+      font-weight: 500; margin-bottom: 0.9rem;
+    }
+    .toc ol { padding-left: 1.25rem; }
+    .toc ol li { margin-bottom: 0.45rem; }
+    .toc ol li a { font-size: 0.88rem; color: var(--text-2); text-decoration: none; transition: color 0.2s; }
+    .toc ol li a:hover { color: var(--amber); }
+    .toc ol li a:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; border-radius: 2px; }
+
+    .blog-body h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.5rem; letter-spacing: -0.01em;
+      color: var(--text); margin: 3.5rem 0 1.1rem;
+      padding-top: 1rem; border-top: 1px solid var(--border);
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .icon-green  { background: var(--green-bg); }
+    .icon-blue   { background: var(--blue-bg); }
+    .icon-amber  { background: var(--amber-bg); }
+    .icon-purple { background: var(--purple-bg); }
+    .icon-red    { background: var(--red-bg); }
+
+    .blog-body h3 { font-size: 1rem; font-weight: 500; color: var(--text); margin: 1.75rem 0 0.5rem; }
+    .blog-body p { color: var(--text-2); margin-bottom: 1.25rem; font-weight: 300; }
+    .blog-body p strong { color: var(--text); font-weight: 500; }
+    .blog-body ul, .blog-body ol { padding-left: 1.5rem; margin-bottom: 1.25rem; color: var(--text-2); font-weight: 300; }
+    .blog-body li { margin-bottom: 0.45rem; }
+    .blog-body li strong { color: var(--text); font-weight: 500; }
+
+    .callout {
+      display: block; background: var(--amber-bg);
+      border-left: 3px solid var(--amber);
+      border-radius: 0 10px 10px 0;
+      padding: 1.25rem 1.5rem; margin: 1.75rem 0;
+      font-size: 1rem; color: var(--text);
+      font-style: italic; line-height: 1.6;
+    }
+
+    .takeaway {
+      display: block; background: var(--green-bg);
+      border: 1px solid rgba(74,222,128,0.2);
+      border-radius: 10px; padding: 1.25rem 1.5rem; margin: 1.75rem 0;
+    }
+    .takeaway .label {
+      font-size: 0.7rem; text-transform: uppercase;
+      letter-spacing: 0.09em; color: var(--green);
+      font-weight: 500; margin-bottom: 0.5rem;
+    }
+    .takeaway p { color: var(--text-2); font-size: 0.93rem; margin: 0; }
+
+
+    /* ── LEARNINGS ── */
+    .learning-cards { display: flex; flex-direction: column; gap: 16px; margin: 1.75rem 0; }
+    .learning-card {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.5rem 1.75rem;
+    }
+    .learning-header {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 0.85rem;
+    }
+    .learning-num {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.6rem; color: var(--amber);
+      line-height: 1; min-width: 32px;
+    }
+    .learning-phase {
+      font-size: 0.72rem; font-weight: 500;
+      text-transform: uppercase; letter-spacing: 0.07em;
+      color: var(--text-3);
+      background: var(--bg3); border: 1px solid var(--border);
+      padding: 3px 10px; border-radius: 99px;
+    }
+    .learning-title {
+      font-size: 1rem; font-weight: 500;
+      color: var(--text); margin-bottom: 0.85rem;
+      line-height: 1.4;
+    }
+    .learning-body {
+      font-size: 0.88rem; color: var(--text-2);
+      line-height: 1.7; margin-bottom: 0.85rem;
+      font-weight: 300;
+    }
+    .learning-lesson {
+      background: var(--amber-bg); border: 1px solid rgba(251,191,36,0.15);
+      border-radius: 8px; padding: 0.9rem 1.1rem;
+      font-size: 0.85rem; color: var(--text-2);
+      line-height: 1.6; margin-top: 0.5rem;
+    }
+
+    .learning-illustration {
+      margin-top: 1.25rem;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .learning-lesson-label {
+      display: block; font-size: 0.68rem;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--amber); font-weight: 500; margin-bottom: 4px;
+    }
+
+    /* COST MULTIPLIER VISUAL */
+    .cost-phases {
+      display: flex; flex-direction: column;
+      gap: 10px; margin: 1.75rem 0;
+    }
+    .cost-phase {
+      display: flex; align-items: center;
+      gap: 14px; background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 16px;
+      transition: border-color 0.2s;
+    }
+    .cost-phase:hover { border-color: #3e3e3e; }
+    .cost-phase-num {
+      font-size: 0.68rem; font-weight: 500;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--text-3); min-width: 52px;
+    }
+    .cost-phase-name {
+      font-size: 0.88rem; font-weight: 500;
+      color: var(--text); min-width: 180px; flex-shrink: 0;
+    }
+    .cost-phase-bar-wrap {
+      flex: 1; background: var(--bg3);
+      border-radius: 4px; height: 8px; overflow: hidden;
+    }
+    .cost-phase-bar { height: 100%; border-radius: 4px; }
+    .cost-phase-label {
+      font-size: 0.82rem; font-weight: 500;
+      min-width: 70px; text-align: right;
+    }
+
+    /* WHAT HAPPENS CARDS */
+    .what-happens {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px; margin: 1.75rem 0;
+    }
+    .wh-card {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1.1rem 1.25rem;
+    }
+    .wh-card-phase {
+      font-size: 0.68rem; font-weight: 500;
+      text-transform: uppercase; letter-spacing: 0.07em;
+      color: var(--text-3); margin-bottom: 6px;
+    }
+    .wh-card-title {
+      font-size: 0.88rem; font-weight: 500;
+      color: var(--text); margin-bottom: 8px;
+    }
+    .wh-card-detail { font-size: 0.8rem; color: var(--text-2); line-height: 1.5; }
+    .wh-card-cost {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.4rem; margin-top: 10px;
+    }
+
+    /* TABLE */
+    .table-wrap {
+      display: block; overflow-x: auto;
+      margin: 1.75rem 0; border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    thead th {
+      background: var(--bg2); padding: 10px 14px;
+      text-align: left; font-size: 0.68rem;
+      text-transform: uppercase; letter-spacing: 0.07em;
+      color: var(--text-3); font-weight: 500;
+      border-bottom: 1px solid var(--border); white-space: nowrap;
+    }
+    tbody td {
+      padding: 11px 14px; border-bottom: 1px solid var(--border);
+      color: var(--text-2); vertical-align: top; line-height: 1.55;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody td:first-child { color: var(--text); font-weight: 500; }
+    tbody tr:hover td { background: var(--bg2); }
+
+    /* ARGUMENT CARDS */
+    .argument-cards {
+      display: flex; flex-direction: column; gap: 10px; margin: 1.75rem 0;
+    }
+    .arg-card {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1.1rem 1.25rem;
+      display: flex; gap: 14px; align-items: flex-start;
+    }
+    .arg-icon {
+      width: 36px; height: 36px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; flex-shrink: 0; margin-top: 2px;
+    }
+    .arg-title { font-size: 0.9rem; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+    .arg-detail { font-size: 0.82rem; color: var(--text-2); line-height: 1.55; }
+
+    /* SERIES NAV */
+    .series-nav { display: block; margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+    .series-nav .label {
+      font-size: 0.7rem; text-transform: uppercase;
+      letter-spacing: 0.09em; color: var(--text-3);
+      font-weight: 500; margin-bottom: 0.75rem; display: block;
+    }
+    .nav-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .nav-blog {
+      display: flex; align-items: center; gap: 1rem;
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1.1rem 1.25rem;
+      text-decoration: none; transition: border-color 0.2s, background 0.2s;
+    }
+    .nav-blog:hover { border-color: #444; background: var(--bg3); }
+    .nav-blog:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; border-radius: 10px; }
+    .nav-blog.prev { flex-direction: row-reverse; justify-content: flex-end; }
+    .nav-blog-arrow { color: var(--text-3); font-size: 1rem; flex-shrink: 0; }
+    .nav-blog-title { font-size: 0.88rem; font-weight: 500; color: var(--text); }
+    .nav-blog-sub { font-size: 0.75rem; color: var(--text-3); margin-top: 2px; }
+
+    .references {
+      display: block; margin-top: 2.5rem;
+      padding: 1.5rem 1.75rem; background: var(--bg2);
+      border: 1px solid var(--border); border-radius: 10px;
+    }
+    .ref-title {
+      font-size: 0.7rem; text-transform: uppercase;
+      letter-spacing: 0.09em; color: var(--text-3);
+      font-weight: 500; margin-bottom: 1rem;
+    }
+    .references ul { list-style: none; padding: 0; }
+    .references ul li { margin-bottom: 0.5rem; }
+    .references ul li a {
+      font-size: 0.85rem; color: var(--text-2); text-decoration: none;
+      display: inline-flex; align-items: center; gap: 0.4rem; transition: color 0.2s;
+    }
+    .references ul li a:hover { color: var(--green); }
+    .references ul li a:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; border-radius: 2px; }
+    .references ul li a::before { content: '↗'; font-size: 0.75rem; color: var(--text-3); }
+
+    footer {
+      border-top: 1px solid var(--border); padding: 2rem;
+      text-align: center; font-size: 0.78rem; color: var(--text-3);
+    }
+    footer a { color: var(--text-3); text-decoration: none; }
+    footer a:hover { color: var(--text-2); }
+    footer a:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; border-radius: 2px; }
+
+    .visually-hidden {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+    }
+
+    @media (max-width: 620px) {
+      nav.site-nav { padding: 0 1.25rem; }
+      .nav-links { display: none; }
+      .blog-header, .hero-visual, main.blog-body { padding-left: 1.25rem; padding-right: 1.25rem; }
+      .blog-header { padding-top: 2.5rem; }
+      .what-happens { grid-template-columns: 1fr; }
+      .nav-pair { grid-template-columns: 1fr; }
+      .cost-phase-name { min-width: 120px; }
+    }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <ul class="nav-links" role="list">
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#playlist">Playlist</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#justlikereal">JustLikeReal</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#meetme">Meet Me</a></li>
+  </ul>
+</nav>
+
+<header class="blog-header">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a>
+    <span aria-hidden="true">›</span>
+    <span>Shift-Left Accessibility</span>
+    <span aria-hidden="true">›</span>
+    <span aria-current="page">02 of 36</span>
+  </nav>
+  <div class="blog-tags" aria-label="Blog categories">
+    <span class="tag accent">Shift-Left</span>
+    <span class="tag">Foundation</span>
+    <span class="tag">Cost</span>
+    <span class="tag">Strategy</span>
+  </div>
+  <h1>The True Cost of Accessibility Debt: <em>Why Finding It Late Costs 100×</em></h1>
+  <div class="blog-meta">
+    <span class="series">Series: Shift-Left Accessibility</span>
+    <span aria-hidden="true">·</span>
+    <span>Blog 02 of 36</span>
+    <span aria-hidden="true">·</span>
+    <span>7 min read</span>
+  </div>
+</header>
+
+<!-- HERO SVG -->
+<div class="hero-visual" aria-hidden="true">
+  <div class="hero-svg-wrap">
+    <svg viewBox="0 0 740 200" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;height:auto;">
+      <defs>
+        <linearGradient id="hg2" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#1a0d00"/>
+          <stop offset="100%" stop-color="#0d0d1a"/>
+        </linearGradient>
+      </defs>
+      <rect width="740" height="200" fill="url(#hg2)"/>
+      <g stroke="#2a1a0a" stroke-width="1">
+        <line x1="0" y1="50"  x2="740" y2="50"/>
+        <line x1="0" y1="100" x2="740" y2="100"/>
+        <line x1="0" y1="150" x2="740" y2="150"/>
+      </g>
+      <!-- phase bars growing left to right -->
+      <rect x="20"  y="120" width="40"  height="40" rx="4" fill="#4ade80" opacity="0.7"/>
+      <text x="40"  y="115" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80" opacity="0.9">1×</text>
+      <text x="40"  y="174" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#8a8a8a">Discovery</text>
+
+      <rect x="150" y="104" width="40" height="56" rx="4" fill="#a3e635" opacity="0.7"/>
+      <text x="170" y="99"  text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#a3e635" opacity="0.9">3–5×</text>
+      <text x="170" y="174" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#8a8a8a">Design</text>
+
+      <rect x="280" y="90"  width="40" height="70" rx="4" fill="#fbbf24" opacity="0.7"/>
+      <text x="300" y="85"  text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#fbbf24" opacity="0.9">4–6×</text>
+      <text x="300" y="174" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#8a8a8a">CMS</text>
+
+      <rect x="410" y="60"  width="40" height="100" rx="4" fill="#fb923c" opacity="0.7"/>
+      <text x="430" y="55"  text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#fb923c" opacity="0.9">10–15×</text>
+      <text x="430" y="174" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#8a8a8a">Dev</text>
+
+      <rect x="540" y="35"  width="40" height="125" rx="4" fill="#f87171" opacity="0.7"/>
+      <text x="560" y="30"  text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" opacity="0.9">20–30×</text>
+      <text x="560" y="174" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#8a8a8a">QA</text>
+
+      <rect x="670" y="10"  width="40" height="150" rx="4" fill="#f43f5e" opacity="0.8"/>
+      <text x="690" y="7"   text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#f43f5e" opacity="0.9">30–100×</text>
+      <text x="690" y="174" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#8a8a8a">Production</text>
+
+      <text x="370" y="193" text-anchor="middle" font-family="DM Serif Display,serif" font-size="12" fill="#f0f0f0" opacity="0.3">Every phase you skip costs more than the last.</text>
+    </svg>
+  </div>
+</div>
+
+<main class="blog-body" id="main-content">
+
+  <nav class="toc" aria-label="Table of contents">
+    <div class="toc-title" id="toc-heading">In this blog</div>
+    <ol aria-labelledby="toc-heading">
+      <li><a href="#the-problem">The problem with shift-right</a></li>
+      <li><a href="#multiplier">The phase-by-phase cost multiplier</a></li>
+      <li><a href="#learnings">Learnings from experience</a></li>
+      <li><a href="#what-happens">What actually happens at each phase</a></li>
+      <li><a href="#real-example">A real defect traced through every phase</a></li>
+      <li><a href="#hidden-costs">The hidden costs nobody talks about</a></li>
+      <li><a href="#argument">How to make the case to your team</a></li>
+      <li><a href="#prevention">What prevention looks like in practice</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <h2 id="the-problem">
+    1. The Problem With Shift-Right
+  </h2>
+
+  <p>Most teams treat accessibility as a testing activity. It gets added to the sprint near the end, or more commonly it appears in a post-launch audit, and then the question becomes: how do we fix all this?</p>
+
+  <p>That question is expensive to answer. Not because fixing accessibility is inherently hard, but because the further you find a defect from its origin, the more work surrounds the fix itself.</p>
+
+  <div class="callout" role="note">
+    A defect found at discovery costs 1× to fix. The same defect found in production costs 30–100×. Accessibility is no different from any other quality dimension.
+  </div>
+
+  <p>This isn't a theory. It comes from decades of software defect cost research — and it applies directly to accessibility because accessibility defects have the same root cause structure as any other defect: a decision made without the right constraint in mind.</p>
+
+  <!-- 2 -->
+  <h2 id="multiplier">
+    2. The Phase-by-Phase Cost Multiplier
+  </h2>
+
+  <p>The table below shows the relative cost to fix an accessibility defect depending on which phase it is detected. These are multipliers (not fixed prices) because the base cost depends on the nature of the defect.</p>
+
+  <div class="cost-phases" role="list" aria-label="Cost multiplier by phase">
+
+    <div class="cost-phase" role="listitem">
+      <div class="cost-phase-num">Phase 0</div>
+      <div class="cost-phase-name">Discovery &amp; Strategy</div>
+      <div class="cost-phase-bar-wrap"><div class="cost-phase-bar" style="width:2%;background:#4ade80"></div></div>
+      <div class="cost-phase-label" style="color:#4ade80">1×</div>
+    </div>
+
+    <div class="cost-phase" role="listitem">
+      <div class="cost-phase-num">Phase 1</div>
+      <div class="cost-phase-name">UX Research &amp; Design</div>
+      <div class="cost-phase-bar-wrap"><div class="cost-phase-bar" style="width:8%;background:#a3e635"></div></div>
+      <div class="cost-phase-label" style="color:#a3e635">3–5×</div>
+    </div>
+
+    <div class="cost-phase" role="listitem">
+      <div class="cost-phase-num">Phase 2</div>
+      <div class="cost-phase-name">CMS Modelling &amp; Authoring</div>
+      <div class="cost-phase-bar-wrap"><div class="cost-phase-bar" style="width:12%;background:#fbbf24"></div></div>
+      <div class="cost-phase-label" style="color:#fbbf24">4–6×</div>
+    </div>
+
+    <div class="cost-phase" role="listitem">
+      <div class="cost-phase-num">Phase 3</div>
+      <div class="cost-phase-name">Development</div>
+      <div class="cost-phase-bar-wrap"><div class="cost-phase-bar" style="width:30%;background:#fb923c"></div></div>
+      <div class="cost-phase-label" style="color:#fb923c">10–15×</div>
+    </div>
+
+    <div class="cost-phase" role="listitem">
+      <div class="cost-phase-num">Phase 4</div>
+      <div class="cost-phase-name">QA &amp; Testing</div>
+      <div class="cost-phase-bar-wrap"><div class="cost-phase-bar" style="width:56%;background:#f87171"></div></div>
+      <div class="cost-phase-label" style="color:#f87171">20–30×</div>
+    </div>
+
+    <div class="cost-phase" role="listitem">
+      <div class="cost-phase-num">Phase 5</div>
+      <div class="cost-phase-name">Live / Production</div>
+      <div class="cost-phase-bar-wrap"><div class="cost-phase-bar" style="width:100%;background:#f43f5e"></div></div>
+      <div class="cost-phase-label" style="color:#f43f5e">30–100×</div>
+    </div>
+
+  </div>
+
+  <div class="takeaway" role="note">
+    <div class="label">The rule</div>
+    <p>Every phase gate you hold saves multiples of the cost at the next phase. Catching something in design instead of development is a 2–5× saving. Catching it in development instead of QA is a 2–3× saving. Catching it before production is anywhere from a 2–7× saving, plus legal risk avoided.</p>
+  </div>
+
+
+  <!-- LEARNINGS -->
+  <h2 id="learnings">3. Learnings From Experience</h2>
+
+  <p>The multiplier table above is not theoretical. Here are two situations where I saw this cost play out firsthand: one avoidable, one not.</p>
+
+  <div class="learning-cards">
+
+    <div class="learning-card">
+      <div class="learning-header">
+        <div class="learning-num">01</div>
+        <div class="learning-phase">Phase 2: CMS Modelling</div>
+      </div>
+      <h3 class="learning-title">Not restricting heading types in the CMS: discovered too late</h3>
+      <p class="learning-body">On one project, the CMS rich text editor was left open (authors could use any heading level, including H1, anywhere in the body). No restrictions were set during the content modelling phase.</p>
+      <p class="learning-body">By the time this was flagged — during QA — a significant volume of content had already been migrated. Every migrated page that contained an incorrect heading structure needed to be identified, reviewed, and corrected individually. The content model then had to be updated to restrict heading levels, which required re-validation of all previously published entries.</p>
+      <p class="learning-body">The fix itself (restricting heading levels in the CMS) was straightforward and would have taken a few hours at the modelling stage. The remediation after migration took days across multiple people. A Phase 2 decision left unaddressed became a Phase 4 crisis.</p>
+      <div class="learning-lesson">
+        <span class="learning-lesson-label">The lesson</span>
+        Heading level restrictions, alt text field requirements, and CMS content rules must be defined and enforced before any content is authored or migrated. Not after.
+      </div>
+
+      <div class="learning-illustration" aria-hidden="true">
+        <svg viewBox="0 0 680 300" width="100%" style="display:block;border-radius:8px;overflow:hidden;margin-top:1.25rem;">
+          <title>Illustration: content author happily using H1 everywhere while QA engineer watches in horror through window</title>
+          <rect width="680" height="300" fill="#fafcf5"/>
+          <!-- room outline -->
+          <rect x="40" y="40" width="380" height="230" rx="4" fill="#f5f7f0" stroke="#3d4235" stroke-width="1.5"/>
+          <!-- window on wall -->
+          <rect x="360" y="70" width="80" height="80" rx="2" fill="#dde8f5" stroke="#3d4235" stroke-width="1.5"/>
+          <line x1="400" y1="70" x2="400" y2="150" stroke="#3d4235" stroke-width="1"/>
+          <line x1="360" y1="110" x2="440" y2="110" stroke="#3d4235" stroke-width="1"/>
+          <!-- desk -->
+          <rect x="80" y="195" width="260" height="12" rx="2" fill="#c8b89a" stroke="#3d4235" stroke-width="1"/>
+          <rect x="95" y="207" width="12" height="50" rx="2" fill="#c8b89a" stroke="#3d4235" stroke-width="1"/>
+          <rect x="315" y="207" width="12" height="50" rx="2" fill="#c8b89a" stroke="#3d4235" stroke-width="1"/>
+          <!-- monitor -->
+          <rect x="130" y="128" width="160" height="100" rx="4" fill="#1a1f14" stroke="#3d4235" stroke-width="1.5"/>
+          <rect x="190" y="228" width="40" height="8" rx="1" fill="#3d4235"/>
+          <rect x="175" y="236" width="70" height="4" rx="2" fill="#3d4235"/>
+          <!-- CMS screen -->
+          <rect x="138" y="136" width="144" height="84" rx="2" fill="#f5f7f0"/>
+          <!-- H1 rows -->
+          <rect x="143" y="141" width="22" height="8" rx="2" fill="#f87171"/>
+          <text x="154" y="148" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#fff" font-weight="600">H1</text>
+          <line x1="168" y1="145" x2="275" y2="145" stroke="#3d4235" stroke-width="1.5"/>
+          <rect x="143" y="154" width="22" height="8" rx="2" fill="#f87171"/>
+          <text x="154" y="161" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#fff" font-weight="600">H1</text>
+          <line x1="168" y1="158" x2="255" y2="158" stroke="#3d4235" stroke-width="1.5"/>
+          <rect x="143" y="167" width="22" height="8" rx="2" fill="#f87171"/>
+          <text x="154" y="174" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#fff" font-weight="600">H1</text>
+          <line x1="168" y1="171" x2="270" y2="171" stroke="#3d4235" stroke-width="1.5"/>
+          <rect x="143" y="180" width="22" height="8" rx="2" fill="#f87171"/>
+          <text x="154" y="187" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#fff" font-weight="600">H1</text>
+          <line x1="168" y1="184" x2="258" y2="184" stroke="#3d4235" stroke-width="1.5"/>
+          <rect x="143" y="193" width="22" height="8" rx="2" fill="#f87171"/>
+          <text x="154" y="200" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#fff" font-weight="600">H1</text>
+          <line x1="168" y1="197" x2="265" y2="197" stroke="#3d4235" stroke-width="1.5"/>
+          <!-- author figure (happy, seated) -->
+          <circle cx="105" cy="155" r="16" fill="#f5e6d0" stroke="#3d4235" stroke-width="1.5"/>
+          <path d="M98 159 Q105 165 112 159" fill="none" stroke="#3d4235" stroke-width="1.2"/>
+          <path d="M100 153 Q102 150 104 153" fill="none" stroke="#3d4235" stroke-width="1"/>
+          <path d="M106 153 Q108 150 110 153" fill="none" stroke="#3d4235" stroke-width="1"/>
+          <line x1="105" y1="171" x2="105" y2="200" stroke="#3d4235" stroke-width="1.5"/>
+          <line x1="105" y1="180" x2="128" y2="192" stroke="#3d4235" stroke-width="1.5"/>
+          <line x1="105" y1="180" x2="82" y2="188" stroke="#3d4235" stroke-width="1.5"/>
+          <line x1="105" y1="200" x2="90" y2="215" stroke="#3d4235" stroke-width="1.5"/>
+          <line x1="105" y1="200" x2="120" y2="215" stroke="#3d4235" stroke-width="1.5"/>
+          <!-- author speech bubble -->
+          <rect x="60" y="100" width="130" height="26" rx="6" fill="#fff" stroke="#3d4235" stroke-width="1"/>
+          <path d="M100 126 L96 134 L106 126" fill="#fff" stroke="#3d4235" stroke-width="1"/>
+          <text x="125" y="118" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#3d4235">H1 for everything!</text>
+          <!-- QA engineer outside window, horrified -->
+          <circle cx="400" cy="88" r="14" fill="#f5e6d0" stroke="#3d4235" stroke-width="1.5"/>
+          <circle cx="395" cy="86" r="3" fill="#3d4235"/>
+          <circle cx="405" cy="86" r="3" fill="#3d4235"/>
+          <circle cx="395" cy="86" r="1.2" fill="#fff"/>
+          <circle cx="405" cy="86" r="1.2" fill="#fff"/>
+          <ellipse cx="400" cy="93" rx="4" ry="3" fill="#3d4235"/>
+          <line x1="400" y1="102" x2="400" y2="135" stroke="#3d4235" stroke-width="1.5"/>
+          <line x1="400" y1="112" x2="385" y2="118" stroke="#3d4235" stroke-width="1.5"/>
+          <line x1="400" y1="112" x2="415" y2="118" stroke="#3d4235" stroke-width="1.5"/>
+          <ellipse cx="383" cy="119" rx="4" ry="3" fill="#f5e6d0" stroke="#3d4235" stroke-width="1"/>
+          <ellipse cx="417" cy="119" rx="4" ry="3" fill="#f5e6d0" stroke="#3d4235" stroke-width="1"/>
+          <!-- QA speech bubble -->
+          <rect x="438" y="55" width="165" height="40" rx="6" fill="#fff0f0" stroke="#f87171" stroke-width="1"/>
+          <path d="M440 75 L432 78 L440 82" fill="#fff0f0" stroke="#f87171" stroke-width="1"/>
+          <text x="520" y="73" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#7f1d1d">That's... all H1.</text>
+          <text x="520" y="86" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#7f1d1d">All 847 of them.</text>
+          <!-- QA checklist -->
+          <rect x="450" y="110" width="80" height="60" rx="3" fill="#fff" stroke="#3d4235" stroke-width="1"/>
+          <text x="490" y="124" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#3d4235" font-weight="600">QA Checklist</text>
+          <line x1="458" y1="132" x2="522" y2="132" stroke="#d0d4c8" stroke-width="0.5"/>
+          <text x="462" y="143" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">✗ One H1 per page</text>
+          <text x="462" y="154" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">✗ No skipped levels</text>
+          <text x="462" y="165" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">✗ Heading hierarchy</text>
+          <!-- sweat drops -->
+          <circle cx="427" cy="78" r="2.5" fill="#60a5fa" opacity="0.7"/>
+          <circle cx="431" cy="70" r="2" fill="#60a5fa" opacity="0.5"/>
+          <circle cx="423" cy="70" r="1.5" fill="#60a5fa" opacity="0.4"/>
+          <!-- caption -->
+          <text x="340" y="285" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#9a9e90" font-style="italic">"Nobody told them H1 was supposed to be used once."</text>
+        </svg>
+      </div>
+
+    </div>
+
+    <div class="learning-card">
+      <div class="learning-header">
+        <div class="learning-num">02</div>
+        <div class="learning-phase">Phase 1: Design</div>
+      </div>
+      <h3 class="learning-title">Colour contrast validated at design, and what the alternative looked like</h3>
+      <p class="learning-body">On one team, the design lead ran contrast checks in Figma — using Stark — before any handoff. The brand colour palette was validated against WCAG 1.4.3 and 1.4.11 before a single component was built. Contrast issues were caught and corrected in hours at the design stage.</p>
+      <p class="learning-body">I understood the value of this only when I worked with a different team that did not do it. The website's brand theme (primary colours, typography, button states) had never been validated for contrast. By the time it reached QA, the contrast failures were not isolated to a component. They were baked into the design system itself.</p>
+      <p class="learning-body">Fixing a contrast failure in a component is straightforward. Fixing a contrast failure in a brand theme means revisiting colour tokens, updating the design system, regenerating components, retesting every screen. The rework is enormous, and it was all avoidable with a Figma plugin check during Phase 1.</p>
+      <div class="learning-lesson">
+        <span class="learning-lesson-label">The lesson</span>
+        Colour contrast is not a QA check. It is a design constraint. The brand theme must meet WCAG contrast requirements before any component is designed against it.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 4 -->
+  <h2 id="what-happens">
+    4. What Actually Happens at Each Phase
+  </h2>
+
+  <p>The multiplier isn't arbitrary. Each phase adds layers of work around the fix itself. Here's what the cost actually comprises at each stage:</p>
+
+  <div class="what-happens" role="list" aria-label="What fixing a defect involves at each phase">
+
+    <div class="wh-card" role="listitem">
+      <div class="wh-card-phase">Phase 0: Discovery</div>
+      <div class="wh-card-title">Change a spec or user story</div>
+      <div class="wh-card-detail">Update acceptance criteria. Add a WCAG reference. Takes minutes. No code touched.</div>
+      <div class="wh-card-cost" style="color:#4ade80">1×</div>
+    </div>
+
+    <div class="wh-card" role="listitem">
+      <div class="wh-card-phase">Phase 1: Design</div>
+      <div class="wh-card-title">Redesign a component or flow</div>
+      <div class="wh-card-detail">Update Figma file, re-run contrast check, re-annotate tab order, re-review with stakeholder. Handoff delayed.</div>
+      <div class="wh-card-cost" style="color:#a3e635">3–5×</div>
+    </div>
+
+    <div class="wh-card" role="listitem">
+      <div class="wh-card-phase">Phase 2: CMS</div>
+      <div class="wh-card-title">Restructure content model</div>
+      <div class="wh-card-detail">Add missing field (alt text, label), migrate existing content, re-validate all authored entries, re-train authors.</div>
+      <div class="wh-card-cost" style="color:#fbbf24">4–6×</div>
+    </div>
+
+    <div class="wh-card" role="listitem">
+      <div class="wh-card-phase">Phase 3: Development</div>
+      <div class="wh-card-title">Rework HTML, ARIA, CSS</div>
+      <div class="wh-card-detail">Refactor component, add ARIA, fix keyboard support, re-run linting, PR review, re-deploy to staging.</div>
+      <div class="wh-card-cost" style="color:#fb923c">10–15×</div>
+    </div>
+
+    <div class="wh-card" role="listitem">
+      <div class="wh-card-phase">Phase 4: QA</div>
+      <div class="wh-card-title">Code change, retest, redeploy</div>
+      <div class="wh-card-detail">Log defect, dev picks up, fixes, deploys to staging, QA retests, re-run screen reader, re-run axe, sign off again.</div>
+      <div class="wh-card-cost" style="color:#f87171">20–30×</div>
+    </div>
+
+    <div class="wh-card" role="listitem">
+      <div class="wh-card-phase">Phase 5: Production</div>
+      <div class="wh-card-title">Emergency patch + legal risk</div>
+      <div class="wh-card-detail">All of Phase 4 costs, plus user complaint, legal review, VPAT update, public audit, emergency sprint, and reputational exposure.</div>
+      <div class="wh-card-cost" style="color:#f43f5e">30–100×</div>
+    </div>
+
+  </div>
+
+  <!-- 4 -->
+  <h2 id="real-example">
+    5. A Real Defect Traced Through Every Phase
+  </h2>
+
+  <p>Take a missing alt text on an image that is a call-to-action button. Here is exactly what it costs at each phase:</p>
+
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">Cost of a missing alt text defect traced through every delivery phase</caption>
+      <thead>
+        <tr>
+          <th scope="col">Phase</th>
+          <th scope="col">How it's caught</th>
+          <th scope="col">What the fix requires</th>
+          <th scope="col">Cost</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Discovery</td>
+          <td>Acceptance criteria review</td>
+          <td>Add "All image CTAs must have descriptive alt text" to AC</td>
+          <td style="color:#4ade80">1×</td>
+        </tr>
+        <tr>
+          <td>Design</td>
+          <td>Figma annotation review</td>
+          <td>Add alt text annotation to component in Figma, re-handoff</td>
+          <td style="color:#a3e635">3–5×</td>
+        </tr>
+        <tr>
+          <td>CMS Modelling</td>
+          <td>Field audit</td>
+          <td>Add alt text field to image component, migrate existing entries</td>
+          <td style="color:#fbbf24">4–6×</td>
+        </tr>
+        <tr>
+          <td>Development</td>
+          <td>axe-core linting or PR review</td>
+          <td>Add alt attribute, fix aria-label, PR, re-deploy</td>
+          <td style="color:#fb923c">10–15×</td>
+        </tr>
+        <tr>
+          <td>QA</td>
+          <td>axe DevTools scan + NVDA test</td>
+          <td>Log defect, dev fix, retest, screen reader retest, sign off</td>
+          <td style="color:#f87171">20–30×</td>
+        </tr>
+        <tr>
+          <td>Production</td>
+          <td>User complaint / external audit</td>
+          <td>All of QA costs + legal review, emergency sprint, VPAT update</td>
+          <td style="color:#f43f5e">30–100×</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>The defect is identical at every phase. The work surrounding the fix is what multiplies. The fix itself (writing the alt text) takes 30 seconds. The process that wraps it at production can take days.</p>
+
+  <!-- 5 -->
+  <h2 id="hidden-costs">
+    6. The Hidden Costs Nobody Talks About
+  </h2>
+
+  <p>The multiplier table covers the direct cost of fixing a defect. It does not cover the indirect costs that accumulate when accessibility is treated as an afterthought:</p>
+
+  <ul>
+    <li><strong>Team velocity loss:</strong> emergency accessibility sprints kill planned feature work. Teams that fix accessibility late are always in catch-up mode.</li>
+    <li><strong>Regression risk:</strong> a fix applied under pressure in production often creates new issues. Rushed patches without regression testing introduce more defects.</li>
+    <li><strong>Legal exposure:</strong> in the US, EU, UK, and Australia, non-compliant digital products are legal liabilities. ADA lawsuits cost significantly more than any remediation sprint.</li>
+    <li><strong>Reputational damage:</strong> public accessibility failures are visible. A screen reader user sharing a broken experience on social media is a brand problem, not just a technical one.</li>
+    <li><strong>VPAT burden:</strong> if your product requires a Voluntary Product Accessibility Template (VPAT) for enterprise sales, a production accessibility failure blocks deals.</li>
+    <li><strong>Audit cost:</strong> a third-party accessibility audit commissioned after a complaint costs far more than the internal testing that would have caught the same issues.</li>
+  </ul>
+
+  <!-- 6 -->
+  <h2 id="argument">
+    7. How to Make the Case to Your Team
+  </h2>
+
+  <p>The cost multiplier is your most powerful tool for getting accessibility taken seriously upstream. Here's how to use it with different audiences:</p>
+
+  <div class="argument-cards" role="list" aria-label="How to make the case to different stakeholders">
+
+    <div class="arg-card" role="listitem">
+      <div class="arg-icon" style="background:var(--blue-bg)">PM</div>
+      <div>
+        <div class="arg-title">With a PM or product owner</div>
+        <div class="arg-detail">"Adding accessibility acceptance criteria to the user story takes 10 minutes. Finding the same issue in QA adds 2–3 days to the sprint. Which one do you want?"</div>
+      </div>
+    </div>
+
+    <div class="arg-card" role="listitem">
+      <div class="arg-icon" style="background:var(--purple-bg)">UX</div>
+      <div>
+        <div class="arg-title">With a designer</div>
+        <div class="arg-detail">"Running Stark or Zımmer on your Figma file takes 5 minutes. A contrast failure caught in QA means a design rework, a dev rework, and a retest cycle. The plugin is faster."</div>
+      </div>
+    </div>
+
+    <div class="arg-card" role="listitem">
+      <div class="arg-icon" style="background:var(--amber-bg)">Dev</div>
+      <div>
+        <div class="arg-title">With a developer</div>
+        <div class="arg-detail">"eslint-plugin-jsx-a11y flags missing alt text as you type. Catching it in QA means a code change, a PR, a redeploy, and a retest. The linter is faster and cheaper."</div>
+      </div>
+    </div>
+
+    <div class="arg-card" role="listitem">
+      <div class="arg-icon" style="background:var(--red-bg)">Exec</div>
+      <div>
+        <div class="arg-title">With a stakeholder or client</div>
+        <div class="arg-detail">"Accessibility built in from day zero costs approximately 10–20% of the effort of retrofitting it post-launch. And it avoids the legal risk entirely."</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 7 -->
+  <h2 id="prevention">
+    8. What Prevention Looks Like in Practice
+  </h2>
+
+  <p>Shift-left accessibility is not a single action. It is a set of gates (one per phase) that together make sure defects never compound:</p>
+
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">Shift-left prevention actions by phase</caption>
+      <thead>
+        <tr>
+          <th scope="col">Phase</th>
+          <th scope="col">Prevention action</th>
+          <th scope="col">Who</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Discovery</td>
+          <td>Add accessibility acceptance criteria to every user story. Define WCAG 2.1 AA as the conformance target.</td>
+          <td>PM / PO</td>
+        </tr>
+        <tr>
+          <td>Design</td>
+          <td>Run Stark or Zımmer on Figma files. Annotate tab order. Specify focus indicators. Write error copy at design stage.</td>
+          <td>UX / Designer</td>
+        </tr>
+        <tr>
+          <td>CMS Modelling</td>
+          <td>Add alt text fields. Restrict heading levels in rich text. Require captions on video. Make decorative image flag explicit.</td>
+          <td>CMS / Backend Lead</td>
+        </tr>
+        <tr>
+          <td>Development</td>
+          <td>Use semantic HTML. Run eslint-plugin-jsx-a11y. Add axe-core to CI/CD pipeline. Fail builds on Critical violations.</td>
+          <td>Developer</td>
+        </tr>
+        <tr>
+          <td>QA</td>
+          <td>Run keyboard testing, screen reader testing, axe DevTools, WAVE. Hold phase exit criteria. Log defects with WCAG reference.</td>
+          <td>QA</td>
+        </tr>
+        <tr>
+          <td>Production</td>
+          <td>Run Pa11y nightly. Monitor for regressions. Maintain VPAT if required. Act on user-reported issues within SLA.</td>
+          <td>DevOps / QA</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="takeaway" role="note">
+    <div class="label">The point</div>
+    <p>Each of these actions costs a fraction of finding the same issue one phase later. The sum of all prevention actions across all phases is still less than a single production remediation sprint. Shift-left accessibility is not idealism; it is basic cost management.</p>
+  </div>
+
+  <!-- SERIES NAV -->
+  <div class="series-nav">
+    <span class="label">Navigate the series</span>
+    <div class="nav-pair">
+      <a href="01-what-is-accessibility.html" class="nav-blog prev">
+        <span class="nav-blog-arrow" aria-hidden="true">←</span>
+        <div>
+          <div class="nav-blog-title">Blog 01: What Accessibility Means</div>
+          <div class="nav-blog-sub">The situational impairment model and shared responsibility</div>
+        </div>
+      </a>
+      <a href="03-wcag-qa-reference.html" class="nav-blog">
+        <div>
+          <div class="nav-blog-title">Blog 03: WCAG 2.1 AA Explained</div>
+          <div class="nav-blog-sub">What a QA engineer actually needs to know</div>
+        </div>
+        <span class="nav-blog-arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+
+  <aside class="references" aria-label="References">
+    <div class="ref-title">References</div>
+    <ul role="list">
+      <li><a href="https://www.w3.org/TR/WCAG21/" target="_blank" rel="noopener noreferrer">WCAG 2.1: Official W3C specification</a></li>
+      <li><a href="https://www.w3.org/WAI/business-case/" target="_blank" rel="noopener noreferrer">W3C: The Business Case for Digital Accessibility</a></li>
+      <li><a href="https://webaim.org/projects/million/" target="_blank" rel="noopener noreferrer">WebAIM Million: Annual accessibility analysis of the top 1M homepages</a></li>
+      <li><a href="https://inclusive.microsoft.design/" target="_blank" rel="noopener noreferrer">Microsoft Inclusive Design Framework</a></li>
+    </ul>
+  </aside>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; Built with intention. Tested with care. &nbsp;·&nbsp; © 2025
+  </p>
+</footer>
+
+</body>
+</html>
