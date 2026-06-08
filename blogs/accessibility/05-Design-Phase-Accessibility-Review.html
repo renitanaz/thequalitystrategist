@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>05 Accessibility at the Design Phase | The Quality Strategist</title>
+  <meta name="description" content="What to review in Figma before a line of code is written: contrast, tab order, focus states, heading hierarchy, error copy, touch targets, and the tools that catch issues at the cheapest possible moment." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+      --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+      --green:#4ade80; --green-bg:rgba(74,222,128,0.07);
+      --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07);
+      --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07);
+      --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.07);
+      --red:#f87171; --red-bg:rgba(248,113,113,0.07);
+    }
+    html { scroll-behavior: smooth; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
+    .skip-link:focus { top:0; }
+    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
+    .nav-logo:focus-visible { outline:2px solid var(--green); outline-offset:4px; border-radius:3px; }
+    .nav-links { display:flex; gap:2rem; list-style:none; }
+    .nav-links a { color:var(--text-3); text-decoration:none; font-size:0.85rem; transition:color 0.2s; }
+    .nav-links a:hover { color:var(--text); }
+    .nav-links a:focus-visible { outline:2px solid var(--green); outline-offset:4px; border-radius:3px; }
+    .blog-header { max-width:900px; margin:0 auto; padding:4rem 2rem 2.5rem; border-bottom:1px solid var(--border); }
+    .breadcrumb { font-size:0.78rem; color:var(--text-3); margin-bottom:1.5rem; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; }
+    .breadcrumb a { color:var(--text-3); text-decoration:none; transition:color 0.2s; }
+    .breadcrumb a:hover { color:var(--text-2); }
+    .breadcrumb a:focus-visible { outline:2px solid var(--green); outline-offset:2px; border-radius:2px; }
+    .blog-tags { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.25rem; }
+    .tag { font-size:0.7rem; padding:3px 10px; border-radius:99px; background:var(--bg3); color:var(--text-3); border:1px solid var(--border); letter-spacing:0.04em; text-transform:uppercase; font-weight:500; }
+    .tag.accent { background:var(--blue-bg); color:var(--blue); border-color:rgba(96,165,250,0.25); }
+    .blog-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.85rem,4vw,2.6rem); line-height:1.2; letter-spacing:-0.02em; color:var(--text); margin-bottom:0.75rem; }
+    .blog-header h1 em { font-style:italic; color:var(--blue); }
+    .blog-subtitle { font-family:'DM Serif Display',serif; font-size:1.1rem; font-style:italic; color:var(--text-3); margin-bottom:1.25rem; }
+    .blog-meta { display:flex; align-items:center; gap:1.25rem; font-size:0.82rem; color:var(--text-3); flex-wrap:wrap; }
+    .blog-meta .series { color:var(--text-2); font-weight:500; }
+    main.blog-body { display:block; max-width:900px; margin:0 auto; padding:3rem 2rem 5rem; }
+    .toc { display:block; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.5rem 1.75rem; margin:0 0 3rem 0; }
+    .toc-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.9rem; }
+    .toc ol { padding-left:1.25rem; }
+    .toc ol li { margin-bottom:0.45rem; }
+    .toc ol li a { font-size:0.88rem; color:var(--text-2); text-decoration:none; transition:color 0.2s; }
+    .toc ol li a:hover { color:var(--blue); }
+    .toc ol li a:focus-visible { outline:2px solid var(--green); outline-offset:2px; border-radius:2px; }
+    .blog-body h2 { font-family:'DM Serif Display',serif; font-size:1.5rem; letter-spacing:-0.01em; color:var(--text); margin:3.5rem 0 1.1rem; padding-top:1rem; border-top:1px solid var(--border); }
+    .blog-body h3 { font-size:1rem; font-weight:500; color:var(--text); margin:1.75rem 0 0.5rem; }
+    .blog-body p { color:var(--text-2); margin-bottom:1.25rem; font-weight:300; }
+    .blog-body p strong { color:var(--text); font-weight:500; }
+    .blog-body ul, .blog-body ol { padding-left:1.5rem; margin-bottom:1.25rem; color:var(--text-2); font-weight:300; }
+    .blog-body li { margin-bottom:0.45rem; }
+    .blog-body li strong { color:var(--text); font-weight:500; }
+    .callout { display:block; background:var(--blue-bg); border-left:3px solid var(--blue); border-radius:0 10px 10px 0; padding:1.25rem 1.5rem; margin:1.75rem 0; font-size:0.95rem; color:var(--text); font-style:italic; line-height:1.6; }
+    .callout.green { background:var(--green-bg); border-color:var(--green); }
+    .takeaway { display:block; background:var(--green-bg); border:1px solid rgba(74,222,128,0.2); border-radius:10px; padding:1.25rem 1.5rem; margin:1.75rem 0; }
+    .takeaway .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--green); font-weight:500; margin-bottom:0.5rem; display:block; }
+    .takeaway p { color:var(--text-2); font-size:0.93rem; margin:0; }
+
+    /* BLOG CROSS-REFERENCE */
+    .blog-ref { display:inline-flex; align-items:center; gap:6px; background:var(--bg2); border:1px solid var(--border); border-radius:6px; padding:3px 10px; font-size:0.78rem; color:var(--text-2); text-decoration:none; transition:border-color 0.2s, color 0.2s; white-space:nowrap; }
+    .blog-ref:hover { border-color:var(--blue); color:var(--blue); }
+    .blog-ref:focus-visible { outline:2px solid var(--green); outline-offset:2px; border-radius:6px; }
+    .blog-ref::before { content:'↗'; font-size:0.7rem; color:var(--text-3); }
+
+    /* CHECK ITEMS */
+    .check-grid { display:flex; flex-direction:column; gap:10px; margin:1.75rem 0; }
+    .check-item { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.1rem 1.4rem; display:grid; grid-template-columns:28px 1fr auto; gap:12px; align-items:start; }
+    .check-num { font-family:'DM Serif Display',serif; font-size:1.1rem; color:var(--text-3); line-height:1.2; }
+    .check-title { font-size:0.9rem; font-weight:500; color:var(--text); margin-bottom:4px; }
+    .check-detail { font-size:0.82rem; color:var(--text-2); line-height:1.55; }
+    .check-wcag { font-size:0.68rem; color:var(--text-3); background:var(--bg3); border:1px solid var(--border); padding:2px 8px; border-radius:99px; white-space:nowrap; align-self:flex-start; font-weight:500; }
+
+    /* CONTRAST VISUAL */
+    .contrast-pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:1.75rem 0; }
+    .contrast-card { border-radius:10px; padding:1.25rem; border:1px solid var(--border); }
+    .contrast-card.fail { background:var(--red-bg); border-color:rgba(248,113,113,0.2); }
+    .contrast-card.pass { background:var(--green-bg); border-color:rgba(74,222,128,0.2); }
+    .contrast-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.08em; font-weight:500; margin-bottom:10px; }
+    .contrast-card.fail .contrast-label { color:var(--red); }
+    .contrast-card.pass .contrast-label { color:var(--green); }
+    .contrast-swatch { height:48px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:0.88rem; font-weight:500; margin-bottom:8px; }
+    .contrast-ratio { font-size:0.82rem; color:var(--text-2); }
+    .contrast-ratio strong { color:var(--text); }
+
+    /* TOOL CARDS */
+    .tool-cards { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:1.75rem 0; }
+    .tool-card { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.1rem 1.25rem; }
+    .tool-name { font-size:0.92rem; font-weight:500; color:var(--text); margin-bottom:6px; }
+    .tool-catches { font-size:0.8rem; color:var(--text-2); line-height:1.6; }
+    .tool-catch-item { display:flex; align-items:flex-start; gap:6px; margin-bottom:4px; font-size:0.8rem; color:var(--text-2); }
+    .tool-catch-item::before { content:'•'; color:var(--text-3); flex-shrink:0; }
+
+    /* EXIT CRITERIA TABLE */
+    .table-wrap { display:block; overflow-x:auto; margin:1.75rem 0; border-radius:10px; border:1px solid var(--border); }
+    table { width:100%; border-collapse:collapse; font-size:0.875rem; }
+    thead th { background:var(--bg2); padding:10px 14px; text-align:left; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-3); font-weight:500; border-bottom:1px solid var(--border); white-space:nowrap; }
+    tbody td { padding:11px 14px; border-bottom:1px solid var(--border); color:var(--text-2); vertical-align:top; line-height:1.55; }
+    tbody tr:last-child td { border-bottom:none; }
+    tbody td:first-child { color:var(--text); font-weight:500; }
+    tbody tr:hover td { background:var(--bg2); }
+
+    /* ILLUSTRATION */
+    .blog-illustration { margin:1.75rem 0; border:none; padding:0; }
+
+    /* SERIES NAV */
+    .series-nav { display:block; margin-top:4rem; padding-top:2rem; border-top:1px solid var(--border); }
+    .series-nav .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.75rem; display:block; }
+    .nav-pair { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .nav-blog { display:flex; align-items:center; gap:1rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.1rem 1.25rem; text-decoration:none; transition:border-color 0.2s, background 0.2s; }
+    .nav-blog:hover { border-color:#444; background:var(--bg3); }
+    .nav-blog:focus-visible { outline:2px solid var(--green); outline-offset:3px; border-radius:10px; }
+    .nav-blog-arrow { color:var(--text-3); font-size:1rem; flex-shrink:0; }
+    .nav-blog-title { font-size:0.88rem; font-weight:500; color:var(--text); }
+    .nav-blog-sub { font-size:0.75rem; color:var(--text-3); margin-top:2px; }
+    .references { display:block; margin-top:2.5rem; padding:1.5rem 1.75rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; }
+    .ref-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:1rem; }
+    .references ul { list-style:none; padding:0; }
+    .references ul li { margin-bottom:0.5rem; }
+    .references ul li a { font-size:0.85rem; color:var(--text-2); text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; transition:color 0.2s; }
+    .references ul li a:hover { color:var(--green); }
+    .references ul li a:focus-visible { outline:2px solid var(--green); outline-offset:2px; border-radius:2px; }
+    .references ul li a::before { content:'↗'; font-size:0.75rem; color:var(--text-3); }
+    footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
+    footer a { color:var(--text-3); text-decoration:none; }
+    footer a:hover { color:var(--text-2); }
+    .visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    @media (max-width:620px) {
+      nav.site-nav { padding:0 1.25rem; }
+      .nav-links { display:none; }
+      .blog-header, main.blog-body { padding-left:1.25rem; padding-right:1.25rem; }
+      .blog-header { padding-top:2.5rem; }
+      .contrast-pair, .tool-cards, .nav-pair { grid-template-columns:1fr; }
+      .check-item { grid-template-columns:28px 1fr; }
+      .check-wcag { display:none; }
+    }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <ul class="nav-links" role="list">
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#playlist">Playlist</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#justlikereal">JustLikeReal</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#meetme">Meet Me</a></li>
+  </ul>
+</nav>
+
+<header class="blog-header">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a>
+    <span aria-hidden="true">›</span>
+    <span>Shift-Left Accessibility</span>
+    <span aria-hidden="true">›</span>
+    <span aria-current="page">05 of 36</span>
+  </nav>
+  <div class="blog-tags" aria-label="Blog categories">
+    <span class="tag accent">Design Phase</span>
+    <span class="tag">Shift-Left</span>
+    <span class="tag">Figma</span>
+    <span class="tag">Checklist</span>
+  </div>
+  <h1>05 Accessibility at the Design Phase: <em>What to Review Before a Line of Code Is Written</em></h1>
+  <p class="blog-subtitle">A practical review guide for designers, QA, and anyone who has ever watched a contrast failure survive three sprints because nobody caught it in Figma.</p>
+  <div class="blog-meta">
+    <span class="series">Series: Shift-Left Accessibility</span>
+    <span aria-hidden="true">·</span>
+    <span>Blog 05 of 36</span>
+    <span aria-hidden="true">·</span>
+    <span>9 min read</span>
+  </div>
+</header>
+
+
+<main class="blog-body" id="main-content">
+
+  <nav class="toc" aria-label="Table of contents">
+    <div class="toc-title" id="toc-heading">In this blog</div>
+    <ol aria-labelledby="toc-heading">
+      <li><a href="#why-design">Why the design phase is the cheapest place to fix anything</a></li>
+      <li><a href="#qa-at-design">What QA should be doing at the design stage</a></li>
+      <li><a href="#contrast">Colour contrast: validate the brand before the components</a></li>
+      <li><a href="#focus">Focus indicators: designed, not defaulted</a></li>
+      <li><a href="#tab-order">Tab order annotation: the handoff nobody does</a></li>
+      <li><a href="#headings">Heading hierarchy: defined in templates, not left to content</a></li>
+      <li><a href="#error-copy">Error message copy: written at design, not invented by devs</a></li>
+      <li><a href="#touch-targets">Touch targets: 24x24px minimum, designed in</a></li>
+      <li><a href="#figma-tools">Figma tools: Stark and Zimmer</a></li>
+      <li><a href="#exit-checklist">The Phase 1 exit checklist</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <h2 id="why-design">1. Why the Design Phase Is the Cheapest Place to Fix Anything</h2>
+
+  <p>A contrast failure caught in Figma costs a designer five minutes and a colour token update. The same failure caught in QA costs a design rework, a development update, a redeploy, and a retest. The same failure in production carries legal risk on top.</p>
+
+  <p>The cost multiplier is 3–5× at design stage vs 20–30× at QA. <a href="02-cost-of-shift-right.html" class="blog-ref">Blog 02 covers the full phase-by-phase multiplier table</a> if you need the numbers to make the case to your team.</p>
+
+  <p>The design phase is not just cheaper: it is the only phase where some issues can be fixed without touching code. Heading hierarchy defined in a Figma template costs nothing to change. The same hierarchy missing from a live page requires a content audit, a CMS update, and a retest across every page that inherited the wrong structure.</p>
+
+  <div class="callout" role="note">
+    The best accessibility defect is the one that never becomes a defect. Design is where that happens.
+  </div>
+
+  <!-- 2 -->
+  <h2 id="qa-at-design">2. What QA Should Be Doing at the Design Stage</h2>
+
+  <p>Most QA engineers wait for a build. That is understandable: it is how the role has traditionally been defined. It is also how accessibility debt accumulates silently through an entire design phase before anyone looks at it.</p>
+
+  <p>QA at the design stage does not mean running automated tools on Figma files. It means reviewing designs against accessibility requirements before handoff: and raising design defects the same way you raise code defects: with a WCAG reference, a severity, and a clear description of what needs to change.</p>
+
+  <p>Practically, this means:</p>
+
+  <ul>
+    <li>Joining the design review or sign-off before development begins</li>
+    <li>Checking that the items in this blog's checklist are present in the Figma file</li>
+    <li>Raising missing tab order annotations, unspecified focus states, or placeholder error copy as defects: because they are defects, just at Phase 1 instead of Phase 4</li>
+    <li>Confirming the Phase 1 exit criteria are met before the project moves to development</li>
+  </ul>
+
+  <p>This is QA thinking systemically, not just executing test cases. It is also the most direct way to reduce the volume of defects that reach testing later.</p>
+
+  <!-- 3 -->
+  <h2 id="contrast">3. Colour Contrast: Validate the Brand Before the Components</h2>
+
+  <p>Contrast is the most common accessibility failure in production. It is also one of the most preventable, because it is a design decision, not a development one.</p>
+
+  <p>The rules are precise:</p>
+  <ul>
+    <li><strong>4.5:1 minimum</strong> for normal body text (under 18pt regular or 14pt bold): WCAG 1.4.3</li>
+    <li><strong>3:1 minimum</strong> for large text (18pt+ regular or 14pt+ bold): WCAG 1.4.3</li>
+    <li><strong>3:1 minimum</strong> for UI component boundaries and focus indicators: WCAG 1.4.11</li>
+  </ul>
+
+  <p>The critical thing most teams miss: <strong>validate the colour palette before you build any components</strong>. Every button, card, label, and input inherits from the brand tokens. If the primary text colour on the primary background fails contrast, every component built on that palette fails too. One token update in Figma fixes everything. One token update after development fixes nothing without a full component rebuild.</p>
+
+  <div class="contrast-pair" role="list" aria-label="Contrast pass and fail examples">
+    <div class="contrast-card fail" role="listitem">
+      <div class="contrast-label">Fail: WCAG 1.4.3</div>
+      <div class="contrast-swatch" style="background:#3a7bd5;color:#7db8f7">Body text on brand blue</div>
+      <div class="contrast-ratio">Ratio: <strong style="color:var(--red)">2.4:1</strong>. Required 4.5:1. Looks fine. Fails hard.</div>
+    </div>
+    <div class="contrast-card pass" role="listitem">
+      <div class="contrast-label">Pass: WCAG 1.4.3</div>
+      <div class="contrast-swatch" style="background:#1a4a9a;color:#ffffff">Body text on dark blue</div>
+      <div class="contrast-ratio">Ratio: <strong style="color:var(--green)">7.1:1</strong>, passes AA and AAA. Same brand. Darker token.</div>
+    </div>
+  </div>
+
+
+  <figure class="blog-illustration" aria-label="Two paint swatches comparing brand approved invisible text against accessibility approved readable text">
+    <svg width="100%" viewBox="0 0 680 250" role="img" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#fafcf5;">
+      <title>Two paint swatches: brand approved with invisible text, accessibility approved with readable text</title>
+      <desc>Left swatch shows text so light it is invisible on white. Magnifying glass finds nothing. Right swatch shows same text in dark ink, clearly readable. Ratio badges show 1.2 to 1 fail versus 12.6 to 1 pass.</desc>
+      <rect width="680" height="250" fill="#fafcf5"/>
+      <rect x="60" y="36" width="240" height="166" rx="4" fill="#ffffff" stroke="#d0ccc0" stroke-width="1.5"/>
+      <rect x="110" y="22" width="140" height="20" rx="3" fill="#dde5c8"/>
+      <text x="180" y="36" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#4a5828" font-weight="600">Brand Approved</text>
+      <text x="180" y="88" text-anchor="middle" font-family="DM Serif Display,serif" font-size="17" fill="#f0eecc">Main heading</text>
+      <text x="180" y="108" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#f5f3d8">Body text here.</text>
+      <text x="180" y="124" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#f5f3d8">You cannot read this.</text>
+      <text x="180" y="140" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#f5f3d8">Very elegant though.</text>
+      <rect x="90" y="164" width="160" height="18" rx="3" fill="#fff0f0" stroke="#f87171" stroke-width="0.8"/>
+      <text x="170" y="176" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171">Ratio: 1.2:1 — Fail</text>
+      <text x="180" y="198" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c4b8" font-style="italic">text is there. promise.</text>
+      <circle cx="256" cy="104" r="22" fill="none" stroke="#3d4235" stroke-width="2.5"/>
+      <line x1="272" y1="120" x2="288" y2="136" stroke="#3d4235" stroke-width="3" stroke-linecap="round"/>
+      <text x="256" y="111" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="18" fill="#9a9e90">?</text>
+      <rect x="380" y="36" width="240" height="166" rx="4" fill="#ffffff" stroke="#d0ccc0" stroke-width="1.5"/>
+      <rect x="430" y="22" width="140" height="20" rx="3" fill="#d8f0e0"/>
+      <text x="500" y="36" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#1a7a3a" font-weight="600">Accessibility Approved</text>
+      <text x="500" y="88" text-anchor="middle" font-family="DM Serif Display,serif" font-size="17" fill="#1a1f14">Main heading</text>
+      <text x="500" y="108" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#3d4235">Body text here.</text>
+      <text x="500" y="124" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#3d4235">You can read this.</text>
+      <text x="500" y="140" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#3d4235">Elegant and visible.</text>
+      <rect x="410" y="164" width="180" height="18" rx="3" fill="#d8f0e0" stroke="#1a7a3a" stroke-width="0.8"/>
+      <text x="500" y="176" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#1a7a3a">Ratio: 12.6:1 — Pass</text>
+      <text x="500" y="198" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#6b7060" font-style="italic">same font. different token.</text>
+      <text x="340" y="232" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#9a9e90" font-style="italic">The brand team loved it. The contrast checker did not.</text>
+    </svg>
+  </figure>
+
+  <div class="callout" role="note">
+    The failing palette above looks more vibrant. Designers often prefer it. That is exactly why contrast needs to be checked with numbers, not eyes.
+  </div>
+
+  <!-- 4 -->
+  <h2 id="focus">4. Focus Indicators: Designed, Not Defaulted</h2>
+
+  <p>Browser default focus styles are inconsistent across browsers and often invisible against design backgrounds. They cannot be relied on. Every interactive component in the design must have an explicit focus state defined before handoff.</p>
+
+  <p>What the focus state must have:</p>
+  <ul>
+    <li><strong>Visible outline</strong> on every interactive element when focused: WCAG 2.4.7</li>
+    <li><strong>3:1 contrast minimum</strong> between the focus indicator and the adjacent background: WCAG 1.4.11</li>
+    <li><strong>Not obscured</strong> by sticky headers, overlapping components, or z-index stacking</li>
+    <li><strong>Enhanced indicator</strong> where possible: a 2px+ outline with offset is the standard good practice</li>
+  </ul>
+
+  <p>The most common design failure is not missing focus states. It is designs that specify <code style="background:var(--bg3);padding:1px 5px;border-radius:3px;font-size:0.85em;color:var(--text-2)">outline: none</code> in the design notes or CSS comments to "clean up" the default browser ring, with no replacement specified. What reaches the developer is a suppressed focus indicator and nothing to replace it with.</p>
+
+  <p>Specify the focus ring explicitly. Colour, width, offset. In Figma. Before handoff.</p>
+
+  <!-- 5 -->
+  <h2 id="tab-order">5. Tab Order Annotation: The Handoff Nobody Does</h2>
+
+  <p>Tab order is the sequence in which keyboard users move through a page. It should follow the visual reading order and must be logical and predictable.</p>
+
+  <p>The problem: tab order is invisible in Figma unless someone annotates it. Without annotation, developers implement whatever feels natural to them: which is usually the DOM order of elements as they were stacked in the design, which is often not the visual reading order, which is frequently wrong.</p>
+
+  <figure class="blog-illustration" aria-label="Figma frame comparison: without tab order numbers vs with numbered annotations">
+    <svg viewBox="0 0 680 200" width="100%" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#161616;">
+      <title>Tab order annotation comparison</title>
+      <desc>Left side shows a Figma frame with no tab order annotations and a developer with question marks. Right side shows the same frame with numbered yellow circles showing the correct tab sequence.</desc>
+      <!-- LEFT: no annotation -->
+      <text x="14" y="22" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" letter-spacing="1">WITHOUT ANNOTATION</text>
+      <rect x="14" y="30" width="296" height="130" rx="6" fill="#1a0808" stroke="#f87171" stroke-width="0.5" opacity="0.7"/>
+      <!-- form fields in wrong tab order -->
+      <rect x="26" y="44" width="120" height="20" rx="3" fill="#2a2a2a" stroke="#555" stroke-width="0.5"/>
+      <text x="86" y="58" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#888">First name</text>
+      <rect x="162" y="44" width="120" height="20" rx="3" fill="#2a2a2a" stroke="#555" stroke-width="0.5"/>
+      <text x="222" y="58" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#888">Last name</text>
+      <rect x="26" y="76" width="256" height="20" rx="3" fill="#2a2a2a" stroke="#555" stroke-width="0.5"/>
+      <text x="154" y="90" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#888">Email address</text>
+      <rect x="90" y="108" width="100" height="24" rx="4" fill="#4ade80"/>
+      <text x="140" y="124" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#000" font-weight="600">Submit</text>
+      <!-- dev with question marks -->
+      <circle cx="265" cy="152" r="10" fill="#f5e6d0" stroke="#3d4235" stroke-width="1"/>
+      <text x="253" y="168" font-family="DM Sans,sans-serif" font-size="8" fill="#888">Dev:</text>
+      <text x="276" y="148" font-family="DM Sans,sans-serif" font-size="10" fill="#f87171">?</text>
+      <text x="286" y="155" font-family="DM Sans,sans-serif" font-size="10" fill="#f87171">?</text>
+      <text x="270" y="160" font-family="DM Sans,sans-serif" font-size="10" fill="#f87171">?</text>
+
+      <!-- RIGHT: with annotation -->
+      <text x="356" y="22" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80" letter-spacing="1">WITH ANNOTATION</text>
+      <rect x="356" y="30" width="296" height="130" rx="6" fill="#0d1a0d" stroke="#4ade80" stroke-width="0.5" opacity="0.7"/>
+      <rect x="368" y="44" width="120" height="20" rx="3" fill="#2a2a2a" stroke="#555" stroke-width="0.5"/>
+      <text x="428" y="58" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#888">First name</text>
+      <circle cx="368" cy="44" r="8" fill="#fbbf24"/>
+      <text x="368" y="48" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#000" font-weight="700">1</text>
+      <rect x="504" y="44" width="120" height="20" rx="3" fill="#2a2a2a" stroke="#555" stroke-width="0.5"/>
+      <text x="564" y="58" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#888">Last name</text>
+      <circle cx="504" cy="44" r="8" fill="#fbbf24"/>
+      <text x="504" y="48" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#000" font-weight="700">2</text>
+      <rect x="368" y="76" width="256" height="20" rx="3" fill="#2a2a2a" stroke="#555" stroke-width="0.5"/>
+      <text x="496" y="90" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#888">Email address</text>
+      <circle cx="368" cy="76" r="8" fill="#fbbf24"/>
+      <text x="368" y="80" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#000" font-weight="700">3</text>
+      <rect x="432" y="108" width="100" height="24" rx="4" fill="#4ade80"/>
+      <text x="482" y="124" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#000" font-weight="600">Submit</text>
+      <circle cx="432" cy="108" r="8" fill="#fbbf24"/>
+      <text x="432" y="112" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#000" font-weight="700">4</text>
+      <!-- dev happy -->
+      <circle cx="608" cy="152" r="10" fill="#f5e6d0" stroke="#3d4235" stroke-width="1"/>
+      <path d="M603 156 Q608 161 613 156" fill="none" stroke="#3d4235" stroke-width="1.2"/>
+      <text x="596" y="168" font-family="DM Sans,sans-serif" font-size="8" fill="#4ade80">Dev: clear.</text>
+    </svg>
+  </figure>
+
+
+  <figure class="blog-illustration" aria-label="Treasure map showing chaotic unannotated tab order path ending at a keyboard trap">
+    <svg width="100%" viewBox="0 0 680 272" role="img" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#f5edd6;">
+      <title>Treasure map: unannotated tab order path winds backward and loops ending at a keyboard trap</title>
+      <desc>Parchment map with a winding dashed path through numbered stops going right, then randomly down, then backward, then diagonal, then looping, finally arriving at a Keyboard Trap box.</desc>
+      <rect width="680" height="272" fill="#f5edd6"/>
+      <line x1="0" y1="0" x2="680" y2="0" stroke="#e0ccaa" stroke-width="8"/>
+      <line x1="0" y1="272" x2="680" y2="272" stroke="#e0ccaa" stroke-width="8"/>
+      <text x="340" y="30" text-anchor="middle" font-family="DM Serif Display,serif" font-size="16" fill="#4a3818">Ye Olde Tab Order Map</text>
+      <text x="340" y="46" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#9a8060" font-style="italic">(no annotation was provided at design stage)</text>
+      <circle cx="60" cy="84" r="14" fill="#dde5c8" stroke="#4a5828" stroke-width="1.5"/>
+      <text x="60" y="88" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#4a5828" font-weight="700">START</text>
+      <path d="M74 84 L158 84" fill="none" stroke="#8a6e3a" stroke-width="2" stroke-dasharray="6,3"/>
+      <circle cx="168" cy="84" r="9" fill="#f5edd6" stroke="#8a6e3a" stroke-width="1.5"/>
+      <text x="168" y="88" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4a3818" font-weight="600">1</text>
+      <path d="M177 84 Q215 84 234 144" fill="none" stroke="#8a6e3a" stroke-width="2" stroke-dasharray="6,3"/>
+      <circle cx="238" cy="152" r="9" fill="#f5edd6" stroke="#8a6e3a" stroke-width="1.5"/>
+      <text x="238" y="156" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4a3818" font-weight="600">2</text>
+      <path d="M229 152 L116 152" fill="none" stroke="#8a6e3a" stroke-width="2" stroke-dasharray="6,3"/>
+      <circle cx="106" cy="152" r="9" fill="#f5edd6" stroke="#8a6e3a" stroke-width="1.5"/>
+      <text x="106" y="156" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4a3818" font-weight="600">3</text>
+      <text x="175" y="143" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171" font-style="italic">backward?</text>
+      <path d="M115 144 L314 92" fill="none" stroke="#8a6e3a" stroke-width="2" stroke-dasharray="6,3"/>
+      <circle cx="324" cy="88" r="9" fill="#f5edd6" stroke="#8a6e3a" stroke-width="1.5"/>
+      <text x="324" y="92" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4a3818" font-weight="600">4</text>
+      <path d="M333 88 Q415 62 452 120 Q470 156 394 176" fill="none" stroke="#8a6e3a" stroke-width="2" stroke-dasharray="6,3"/>
+      <circle cx="388" cy="184" r="9" fill="#f5edd6" stroke="#8a6e3a" stroke-width="1.5"/>
+      <text x="388" y="188" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4a3818" font-weight="600">5</text>
+      <text x="454" y="102" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171" font-style="italic">loop?</text>
+      <path d="M397 184 L534 198" fill="none" stroke="#f87171" stroke-width="2" stroke-dasharray="4,2"/>
+      <rect x="542" y="178" width="118" height="50" rx="6" fill="#fff0f0" stroke="#f87171" stroke-width="1.5"/>
+      <text x="601" y="196" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#9a2a4a" font-weight="600">Keyboard Trap</text>
+      <text x="601" y="210" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">Stuck here forever.</text>
+      <text x="601" y="226" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#f87171">* * *</text>
+      <circle cx="60" cy="228" r="18" fill="#f5edd6" stroke="#c8b48a" stroke-width="1"/>
+      <text x="60" y="224" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4a3818" font-weight="700">N</text>
+      <text x="60" y="244" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4a3818">S</text>
+      <text x="44" y="233" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4a3818">W</text>
+      <text x="76" y="233" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4a3818">E</text>
+      <line x1="60" y1="212" x2="60" y2="248" stroke="#c8b48a" stroke-width="0.8"/>
+      <line x1="44" y1="228" x2="76" y2="228" stroke="#c8b48a" stroke-width="0.8"/>
+      <text x="340" y="262" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#9a8060" font-style="italic">This is what happens when tab order is not annotated.</text>
+    </svg>
+  </figure>
+
+  <p>What to annotate:</p>
+  <ul>
+    <li>Every interactive element in reading order, numbered sequentially</li>
+    <li>Modal open and close flow: where focus goes on open, where it returns on close</li>
+    <li>Form submission: where focus moves after success or error</li>
+    <li>Dynamic content that appears after an action: where focus lands</li>
+  </ul>
+
+  <!-- 6 -->
+  <h2 id="headings">6. Heading Hierarchy: Defined in Templates, Not Left to Content</h2>
+
+  <p>Heading structure is how screen reader users navigate a page. Without a logical hierarchy, they are navigating blind: pressing H to jump between headings and landing on content out of order or out of context.</p>
+
+  <p>The rules are straightforward. One H1 per page, no skipped levels, heading levels reflecting content hierarchy. The problem is not that designers do not know the rules: it is that heading structure is frequently not defined in Figma at all. It appears as visual styling (big bold text) with no semantic annotation.</p>
+
+  <p>What must be in the design file before handoff:</p>
+  <ul>
+    <li>Heading level annotated on every heading element in page templates</li>
+    <li>H1 identified on each page or view type</li>
+    <li>Heading levels consistent across all instances of a component (a card title that is H2 on one page must be H2 everywhere)</li>
+  </ul>
+
+  <p>The consequences of skipping this are significant. <a href="04-Who-Owns-Accessibility.html" class="blog-ref">Blog 04 covers the CMS example in detail</a>: heading restrictions not set at modelling stage led to hundreds of pages requiring individual correction post-migration. The same applies to coded templates: a missing heading annotation means the developer picks a level, and it is rarely consistent.</p>
+
+  <!-- 7 -->
+  <h2 id="error-copy">7. Error Message Copy: Written at Design, Not Invented by Devs</h2>
+
+  <p>Error messages are an accessibility requirement, not a UX nicety. WCAG 3.3.1 requires that input errors are identified and described in text. WCAG 3.3.3 requires that suggestions for correction are provided where possible.</p>
+
+  <p>What this means in practice: every form field that can produce an error must have its error copy written at design stage. Not "error message here." Not "validation text TBD." The actual copy.</p>
+
+  <p>What good error copy looks like:</p>
+
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">Error copy comparison: vague vs descriptive</caption>
+      <thead>
+        <tr>
+          <th scope="col">Field</th>
+          <th scope="col">Bad error copy</th>
+          <th scope="col">Good error copy</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Email</td><td style="color:var(--red)">Invalid input</td><td style="color:var(--green)">Enter a valid email address, for example: you@domain.com</td></tr>
+        <tr><td>Password</td><td style="color:var(--red)">Password error</td><td style="color:var(--green)">Password must be at least 8 characters and include one number</td></tr>
+        <tr><td>Date of birth</td><td style="color:var(--red)">Invalid date</td><td style="color:var(--green)">Enter your date of birth in DD/MM/YYYY format, for example: 15/06/1990</td></tr>
+        <tr><td>Phone number</td><td style="color:var(--red)">Required field</td><td style="color:var(--green)">Enter a UK phone number, for example: 07700 900000</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>If error copy is not in the design file, developers will write it. Developers are not copywriters. The result is "Invalid input" on every field, which tells a screen reader user precisely nothing about what to fix.</p>
+
+  <!-- 8 -->
+  <h2 id="touch-targets">8. Touch Targets: 24x24px Minimum, Designed In</h2>
+
+  <p>WCAG 2.5.8 requires a minimum touch target size of 24x24 CSS pixels for all interactive elements. This applies to buttons, links, icons, close buttons, checkboxes, radio buttons, and anything else a user taps or clicks.</p>
+
+  <p>The most frequent failures are icon-only buttons: close icons, hamburger menus, social share buttons: designed at 16x16px or smaller because that is the icon size, not the target size. The target must be at least 24x24px even if the visible icon is smaller.</p>
+
+  <p>This must be specified in Figma. Post-development, adding padding to hit areas is straightforward, but only if the developer knows it is required. Without a design annotation specifying minimum target size, it will not happen.</p>
+
+  <!-- 9 -->
+  <h2 id="figma-tools">9. Figma Tools: Stark and Zimmer</h2>
+
+  <p>Two plugins. Both free at base level. Both should be run as soon as designs are ready, not just before handoff.</p>
+
+  <div class="tool-cards" role="list" aria-label="Figma accessibility plugins">
+    <div class="tool-card" role="listitem">
+      <div class="tool-name">Stark</div>
+      <div class="tool-catches">
+        <div class="tool-catch-item">Contrast checker across text and UI components</div>
+        <div class="tool-catch-item">Colour blindness simulator (8 types)</div>
+        <div class="tool-catch-item">Focus order visualiser</div>
+        <div class="tool-catch-item">Touch target size checker</div>
+        <div class="tool-catch-item">WCAG pass/fail annotations exportable as a report</div>
+      </div>
+    </div>
+    <div class="tool-card" role="listitem">
+      <div class="tool-name">Zimmer</div>
+      <div class="tool-catches">
+        <div class="tool-catch-item">Text contrast with WCAG ratio displayed inline</div>
+        <div class="tool-catch-item">Text size validation</div>
+        <div class="tool-catch-item">Spacing and touch target size</div>
+        <div class="tool-catch-item">Runs across the entire frame in one scan</div>
+        <div class="tool-catch-item">Lightweight and fast for quick pre-handoff checks</div>
+      </div>
+    </div>
+  </div>
+
+  <p>The workflow: run Zimmer for a fast full-frame scan as soon as a design is done. Fix what it flags. Run Stark before the formal handoff review for a more detailed check including colour blindness simulation and focus order. If Stark flags nothing, the design is ready for the Phase 1 exit criteria review.</p>
+
+  <div class="takeaway" role="note">
+    <div class="label">The rule</div>
+    <p>Running a Figma plugin takes five minutes. Discovering the same issue in QA takes a sprint. The plugin is always faster.</p>
+  </div>
+
+  <figure class="blog-illustration" aria-label="Annotated Figma canvas showing tab order numbers, contrast badge, heading levels and error copy labels on UI components">
+    <svg width="100%" viewBox="0 0 680 220" role="img" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#0d1117;">
+      <title>Annotated Figma canvas with accessibility annotations on components</title>
+      <desc>A Figma canvas showing a nav bar with tab order numbers in yellow circles, a form with an error copy annotation, a button with a contrast ratio badge, heading hierarchy with H1 H2 H3 labels, and a touch target measurement. Caption reads: Accessibility annotations belong in Figma, not in a QA defect.</desc>
+      <rect width="680" height="220" fill="#0d1117"/>
+      <g stroke="#161b22" stroke-width="1">
+        <line x1="0" y1="44" x2="680" y2="44"/>
+        <line x1="0" y1="88" x2="680" y2="88"/>
+        <line x1="0" y1="132" x2="680" y2="132"/>
+        <line x1="0" y1="176" x2="680" y2="176"/>
+        <line x1="136" y1="0" x2="136" y2="220"/>
+        <line x1="272" y1="0" x2="272" y2="220"/>
+        <line x1="408" y1="0" x2="408" y2="220"/>
+        <line x1="544" y1="0" x2="544" y2="220"/>
+      </g>
+      <!-- Nav bar component -->
+      <rect x="30" y="24" width="280" height="40" rx="4" fill="#161b22" stroke="#2e2e2e" stroke-width="0.5"/>
+      <text x="46" y="48" font-family="DM Sans,sans-serif" font-size="10" fill="#f0f0f0" font-weight="500">Logo</text>
+      <rect x="110" y="32" width="52" height="22" rx="3" fill="#1e2630" stroke="#60a5fa" stroke-width="1.5"/>
+      <text x="136" y="47" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#60a5fa">Home</text>
+      <text x="180" y="47" font-family="DM Sans,sans-serif" font-size="9" fill="#8a8a8a">About</text>
+      <text x="222" y="47" font-family="DM Sans,sans-serif" font-size="9" fill="#8a8a8a">Contact</text>
+      <!-- tab order numbers -->
+      <circle cx="110" cy="30" r="8" fill="#fbbf24"/>
+      <text x="110" y="34" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#000" font-weight="700">1</text>
+      <circle cx="172" cy="30" r="8" fill="#fbbf24" opacity="0.85"/>
+      <text x="172" y="34" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#000" font-weight="700">2</text>
+      <circle cx="214" cy="30" r="8" fill="#fbbf24" opacity="0.65"/>
+      <text x="214" y="34" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#000" font-weight="700">3</text>
+      <rect x="30" y="12" width="64" height="12" rx="3" fill="#fbbf24" opacity="0.15"/>
+      <text x="62" y="21" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#fbbf24">Tab order</text>
+      <!-- Form component -->
+      <rect x="330" y="20" width="220" height="108" rx="4" fill="#161b22" stroke="#2e2e2e" stroke-width="0.5"/>
+      <text x="346" y="40" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8" font-weight="500">Email address</text>
+      <rect x="346" y="46" width="188" height="26" rx="3" fill="#0d1117" stroke="#2e2e2e" stroke-width="1"/>
+      <text x="356" y="63" font-family="DM Sans,sans-serif" font-size="9" fill="#555">you@example.com</text>
+      <rect x="346" y="80" width="188" height="22" rx="3" fill="#1a0808" stroke="#f87171" stroke-width="1"/>
+      <text x="356" y="94" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">Enter a valid email address</text>
+      <rect x="330" y="10" width="116" height="12" rx="3" fill="#f87171" opacity="0.15"/>
+      <text x="388" y="19" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">Error copy defined</text>
+      <!-- Button with contrast badge -->
+      <rect x="560" y="56" width="100" height="34" rx="6" fill="#4ade80"/>
+      <text x="610" y="77" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#000" font-weight="600">Get started</text>
+      <rect x="558" y="42" width="104" height="14" rx="3" fill="#4ade80" opacity="0.15"/>
+      <text x="610" y="52" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4ade80">Contrast 8.2:1</text>
+      <!-- Heading hierarchy -->
+      <rect x="30" y="102" width="260" height="88" rx="4" fill="#161b22" stroke="#2e2e2e" stroke-width="0.5"/>
+      <rect x="30" y="110" width="22" height="11" rx="2" fill="#a78bfa" opacity="0.85"/>
+      <text x="41" y="119" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#fff" font-weight="700">H1</text>
+      <text x="58" y="120" font-family="DM Serif Display,serif" font-size="14" fill="#f0f0f0">Page title</text>
+      <rect x="30" y="126" width="22" height="11" rx="2" fill="#a78bfa" opacity="0.55"/>
+      <text x="41" y="135" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#fff" font-weight="700">H2</text>
+      <text x="58" y="136" font-family="DM Serif Display,serif" font-size="11" fill="#c8c8c8">Section title</text>
+      <rect x="30" y="142" width="22" height="11" rx="2" fill="#a78bfa" opacity="0.3"/>
+      <text x="41" y="151" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#fff" font-weight="700">H3</text>
+      <text x="58" y="152" font-family="DM Serif Display,serif" font-size="9" fill="#8a8a8a">Subsection</text>
+      <rect x="30" y="90" width="108" height="12" rx="3" fill="#a78bfa" opacity="0.15"/>
+      <text x="84" y="99" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#a78bfa">Heading hierarchy</text>
+      <!-- Touch target -->
+      <rect x="560" y="116" width="34" height="34" rx="4" fill="#161b22" stroke="#2e2e2e" stroke-width="0.5"/>
+      <text x="577" y="137" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="12" fill="#8a8a8a">x</text>
+      <rect x="556" y="112" width="42" height="42" rx="4" fill="none" stroke="#f87171" stroke-width="1" stroke-dasharray="3,2"/>
+      <text x="608" y="128" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">34x34px</text>
+      <text x="608" y="140" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">min 24x24</text>
+      <rect x="555" y="100" width="96" height="12" rx="3" fill="#f87171" opacity="0.1"/>
+      <text x="603" y="109" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">Touch target</text>
+      <!-- caption -->
+      <text x="340" y="205" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#3a3a3a">Accessibility annotations belong in Figma — not in a QA defect.</text>
+    </svg>
+  </figure>
+
+  <!-- 10 -->
+  <h2 id="exit-checklist">10. The Phase 1 Exit Checklist</h2>
+
+  <p>Nothing moves to development until every item below is confirmed. QA signs off on this checklist: not just development. This is what it means to hold the phase gate.</p>
+
+  <div class="check-grid" role="list" aria-label="Phase 1 exit criteria checklist">
+
+    <div class="check-item" role="listitem">
+      <div class="check-num">01</div>
+      <div>
+        <div class="check-title">Accessible personas and AT user journeys documented</div>
+        <div class="check-detail">Inclusive personas include screen reader users, keyboard-only users, and users with cognitive or motor impairments. AT user journeys mapped explicitly for key flows.</div>
+      </div>
+      <div class="check-wcag">1.3.1</div>
+    </div>
+
+    <div class="check-item" role="listitem">
+      <div class="check-num">02</div>
+      <div>
+        <div class="check-title">Colour contrast validated across all text and UI components</div>
+        <div class="check-detail">Brand palette validated before components are built. 4.5:1 for body text, 3:1 for large text and UI boundaries. Stark or Zimmer run and all failures resolved.</div>
+      </div>
+      <div class="check-wcag">1.4.3 · 1.4.11</div>
+    </div>
+
+    <div class="check-item" role="listitem">
+      <div class="check-num">03</div>
+      <div>
+        <div class="check-title">Keyboard navigation and tab order annotated on all interactive flows</div>
+        <div class="check-detail">Tab order numbered in Figma for every interactive flow including modals, forms, and dynamic content states. No hover-only interactions.</div>
+      </div>
+      <div class="check-wcag">2.1.1 · 2.4.3</div>
+    </div>
+
+    <div class="check-item" role="listitem">
+      <div class="check-num">04</div>
+      <div>
+        <div class="check-title">Focus indicators designed and specified for every interactive component</div>
+        <div class="check-detail">Explicit focus state defined for every interactive element. Not browser default. Minimum 3:1 contrast. Not obscured by overlapping elements.</div>
+      </div>
+      <div class="check-wcag">2.4.7 · 2.4.11</div>
+    </div>
+
+    <div class="check-item" role="listitem">
+      <div class="check-num">05</div>
+      <div>
+        <div class="check-title">Heading hierarchy defined in all page templates</div>
+        <div class="check-detail">H1 identified per view. Heading levels annotated on all heading elements. No skipped levels. Consistent across all instances of shared components.</div>
+      </div>
+      <div class="check-wcag">1.3.1 · 2.4.6</div>
+    </div>
+
+    <div class="check-item" role="listitem">
+      <div class="check-num">06</div>
+      <div>
+        <div class="check-title">Error message copy written for every form field error state</div>
+        <div class="check-detail">Descriptive, actionable error copy defined for every validation state. No placeholder text. Copy specifies what is wrong and how to fix it.</div>
+      </div>
+      <div class="check-wcag">3.3.1 · 3.3.3</div>
+    </div>
+
+    <div class="check-item" role="listitem">
+      <div class="check-num">07</div>
+      <div>
+        <div class="check-title">Touch and pointer targets sized at minimum 24x24 CSS px</div>
+        <div class="check-detail">All interactive elements including icon-only buttons annotated with minimum target size. Hit area specified separately from icon size where needed.</div>
+      </div>
+      <div class="check-wcag">2.5.8</div>
+    </div>
+
+    <div class="check-item" role="listitem">
+      <div class="check-num">08</div>
+      <div>
+        <div class="check-title">No colour-only communication in any component</div>
+        <div class="check-detail">Every use of colour to convey meaning (error states, status indicators, links) is paired with a text label, icon, or other visual cue. Colour blindness simulation passed.</div>
+      </div>
+      <div class="check-wcag">1.4.1</div>
+    </div>
+
+    <div class="check-item" role="listitem">
+      <div class="check-num">09</div>
+      <div>
+        <div class="check-title">Design accessibility approval signed off before development begins</div>
+        <div class="check-detail">QA and design lead have confirmed all checklist items. No Critical or Major accessibility gaps open. Development does not start until this gate is held.</div>
+      </div>
+      <div class="check-wcag">All</div>
+    </div>
+
+  </div>
+
+  <div class="takeaway" role="note">
+    <div class="label">The bottom line</div>
+    <p>Everything in this checklist is faster and cheaper to do in Figma than in a sprint. The question is not whether your team has time to do this. It is whether they have time not to. Blog 02 has the numbers if you need them.</p>
+  </div>
+
+  <!-- SERIES NAV -->
+  <div class="series-nav">
+    <span class="label">Navigate the series</span>
+    <div class="nav-pair">
+      <a href="04-Who-Owns-Accessibility.html" class="nav-blog">
+        <span class="nav-blog-arrow" aria-hidden="true">←</span>
+        <div>
+          <div class="nav-blog-title">Blog 04: Who Owns Accessibility</div>
+          <div class="nav-blog-sub">The responsibility matrix for every role</div>
+        </div>
+      </a>
+      <a href="06-Content-Authoring-Accessibility-Rules.html" class="nav-blog">
+        <div>
+          <div class="nav-blog-title">Blog 06: Content Authoring Rules</div>
+          <div class="nav-blog-sub">The authoring mistakes that become QA defects</div>
+        </div>
+        <span class="nav-blog-arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+
+  <aside class="references" aria-label="References">
+    <div class="ref-title">References</div>
+    <ul role="list">
+      <li><a href="https://www.w3.org/TR/WCAG21/" target="_blank" rel="noopener noreferrer">WCAG 2.1: Official W3C specification</a></li>
+      <li><a href="https://www.figma.com/community/plugin/732603254453395948/stark" target="_blank" rel="noopener noreferrer">Stark: Figma accessibility plugin</a></li>
+      <li><a href="https://www.figma.com/community/plugin/1255896448456049506" target="_blank" rel="noopener noreferrer">Zimmer: Figma accessibility plugin</a></li>
+      <li><a href="https://www.w3.org/WAI/WCAG21/Understanding/target-size-minimum.html" target="_blank" rel="noopener noreferrer">WCAG 2.5.8: Target size minimum: understanding document</a></li>
+    </ul>
+  </aside>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; Built with intention. Tested with care. &nbsp;·&nbsp; © 2025
+  </p>
+</footer>
+
+</body>
+</html>
