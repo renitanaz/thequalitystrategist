@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>07 Semantic HTML and ARIA | The Quality Strategist</title>
+  <meta name="description" content="What developers must get right before QA tests it. Semantic HTML, ARIA roles, states and properties, common misuse patterns, and what QA checks to verify correct implementation." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+      --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+      --green:#4ade80; --green-bg:rgba(74,222,128,0.07);
+      --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07);
+      --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07);
+      --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.07);
+      --red:#f87171; --red-bg:rgba(248,113,113,0.07);
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
+    .skip-link:focus { top:0; }
+    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
+    .nav-logo:focus-visible { outline:2px solid var(--green); outline-offset:4px; border-radius:3px; }
+    .nav-links { display:flex; gap:2rem; list-style:none; }
+    .nav-links a { color:var(--text-3); text-decoration:none; font-size:0.85rem; transition:color 0.2s; }
+    .nav-links a:hover { color:var(--text); }
+    .blog-header { max-width:900px; margin:0 auto; padding:4rem 2rem 2.5rem; border-bottom:1px solid var(--border); }
+    .breadcrumb { font-size:0.78rem; color:var(--text-3); margin-bottom:1.5rem; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; }
+    .breadcrumb a { color:var(--text-3); text-decoration:none; }
+    .breadcrumb a:hover { color:var(--text-2); }
+    .blog-tags { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.25rem; }
+    .tag { font-size:0.7rem; padding:3px 10px; border-radius:99px; background:var(--bg3); color:var(--text-3); border:1px solid var(--border); letter-spacing:0.04em; text-transform:uppercase; font-weight:500; }
+    .tag.accent { background:var(--purple-bg); color:var(--purple); border-color:rgba(167,139,250,0.25); }
+    .blog-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.85rem,4vw,2.6rem); line-height:1.2; letter-spacing:-0.02em; color:var(--text); margin-bottom:0.75rem; }
+    .blog-header h1 em { font-style:italic; color:var(--purple); }
+    .blog-subtitle { font-family:'DM Serif Display',serif; font-size:1.1rem; font-style:italic; color:var(--text-3); margin-bottom:1.25rem; }
+    .blog-meta { display:flex; align-items:center; gap:1.25rem; font-size:0.82rem; color:var(--text-3); flex-wrap:wrap; }
+    .blog-meta .series { color:var(--text-2); font-weight:500; }
+    main.blog-body { display:block; max-width:900px; margin:0 auto; padding:3rem 2rem 5rem; }
+    .toc { display:block; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.5rem 1.75rem; margin:0 0 3rem 0; }
+    .toc-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.9rem; }
+    .toc ol { padding-left:1.25rem; }
+    .toc ol li { margin-bottom:0.45rem; }
+    .toc ol li a { font-size:0.88rem; color:var(--text-2); text-decoration:none; transition:color 0.2s; }
+    .toc ol li a:hover { color:var(--purple); }
+    .blog-body h2 { font-family:'DM Serif Display',serif; font-size:1.5rem; letter-spacing:-0.01em; color:var(--text); margin:3.5rem 0 1.1rem; padding-top:1rem; border-top:1px solid var(--border); }
+    .blog-body h3 { font-size:1rem; font-weight:500; color:var(--text); margin:1.75rem 0 0.5rem; }
+    .blog-body p { color:var(--text-2); margin-bottom:1.25rem; font-weight:300; }
+    .blog-body p strong { color:var(--text); font-weight:500; }
+    .blog-body ul, .blog-body ol { padding-left:1.5rem; margin-bottom:1.25rem; color:var(--text-2); font-weight:300; }
+    .blog-body li { margin-bottom:0.45rem; }
+    .blog-body li strong { color:var(--text); font-weight:500; }
+    code { background:var(--bg3); padding:1px 6px; border-radius:3px; font-size:0.85em; color:var(--text-2); font-family:monospace; }
+    .callout { display:block; background:var(--purple-bg); border-left:3px solid var(--purple); border-radius:0 10px 10px 0; padding:1.25rem 1.5rem; margin:1.75rem 0; font-size:0.95rem; color:var(--text); font-style:italic; line-height:1.6; }
+    .takeaway { display:block; background:var(--green-bg); border:1px solid rgba(74,222,128,0.2); border-radius:10px; padding:1.25rem 1.5rem; margin:1.75rem 0; }
+    .takeaway .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--green); font-weight:500; margin-bottom:0.5rem; display:block; }
+    .takeaway p { color:var(--text-2); font-size:0.93rem; margin:0; }
+    .tool { display:inline; background:var(--purple-bg); color:var(--purple); border:1px solid rgba(167,139,250,0.2); border-radius:4px; padding:1px 7px; font-size:0.85em; font-weight:500; }
+    .blog-ref { display:inline-flex; align-items:center; gap:6px; background:var(--bg2); border:1px solid var(--border); border-radius:6px; padding:3px 10px; font-size:0.78rem; color:var(--text-2); text-decoration:none; transition:border-color 0.2s,color 0.2s; white-space:nowrap; }
+    .blog-ref:hover { border-color:var(--purple); color:var(--purple); }
+    .blog-ref::before { content:'↗'; font-size:0.7rem; color:var(--text-3); }
+
+    /* CODE COMPARE */
+    .code-pair { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:1.75rem 0; }
+    .code-box { border-radius:8px; padding:1rem 1.1rem; }
+    .code-fail { background:var(--red-bg); border:1px solid rgba(248,113,113,0.2); }
+    .code-pass { background:var(--green-bg); border:1px solid rgba(74,222,128,0.2); }
+    .code-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.07em; font-weight:500; margin-bottom:8px; }
+    .code-fail .code-label { color:var(--red); }
+    .code-pass .code-label { color:var(--green); }
+    .code-block { font-family:monospace; font-size:0.82rem; color:var(--text-2); line-height:1.6; white-space:pre; overflow-x:auto; }
+    .code-note { font-size:0.78rem; color:var(--text-3); margin-top:8px; font-style:italic; }
+
+    /* ARIA TABLE */
+    .table-wrap { display:block; overflow-x:auto; margin:1.75rem 0; border-radius:10px; border:1px solid var(--border); }
+    table { width:100%; border-collapse:collapse; font-size:0.875rem; }
+    thead th { background:var(--bg2); padding:10px 14px; text-align:left; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-3); font-weight:500; border-bottom:1px solid var(--border); white-space:nowrap; }
+    tbody td { padding:11px 14px; border-bottom:1px solid var(--border); color:var(--text-2); vertical-align:top; line-height:1.55; }
+    tbody tr:last-child td { border-bottom:none; }
+    tbody td:first-child { color:var(--text); font-weight:500; font-family:monospace; font-size:0.85rem; }
+    tbody tr:hover td { background:var(--bg2); }
+
+    /* QA CHECKS */
+    .qa-checks { display:flex; flex-direction:column; gap:8px; margin:1.75rem 0; }
+    .qa-check { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:0.9rem 1.1rem; display:flex; gap:12px; align-items:flex-start; }
+    .qa-check-num { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text-3); min-width:22px; line-height:1.4; }
+    .qa-check-text { font-size:0.88rem; color:var(--text-2); line-height:1.6; }
+    .qa-check-text strong { color:var(--text); font-weight:500; }
+
+    /* ILLUSTRATION */
+    .blog-illustration { margin:1.75rem 0; border:none; padding:0; }
+
+    /* SERIES NAV */
+    .series-nav { display:block; margin-top:4rem; padding-top:2rem; border-top:1px solid var(--border); }
+    .series-nav .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.75rem; display:block; }
+    .nav-pair { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .nav-blog { display:flex; align-items:center; gap:1rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.1rem 1.25rem; text-decoration:none; transition:border-color 0.2s,background 0.2s; }
+    .nav-blog:hover { border-color:#444; background:var(--bg3); }
+    .nav-blog:focus-visible { outline:2px solid var(--green); outline-offset:3px; border-radius:10px; }
+    .nav-blog-arrow { color:var(--text-3); font-size:1rem; flex-shrink:0; }
+    .nav-blog-title { font-size:0.88rem; font-weight:500; color:var(--text); }
+    .nav-blog-sub { font-size:0.75rem; color:var(--text-3); margin-top:2px; }
+    .references { display:block; margin-top:2.5rem; padding:1.5rem 1.75rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; }
+    .ref-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:1rem; }
+    .references ul { list-style:none; padding:0; }
+    .references ul li { margin-bottom:0.5rem; }
+    .references ul li a { font-size:0.85rem; color:var(--text-2); text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; transition:color 0.2s; }
+    .references ul li a:hover { color:var(--green); }
+    .references ul li a::before { content:'↗'; font-size:0.75rem; color:var(--text-3); }
+    footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
+    footer a { color:var(--text-3); text-decoration:none; }
+    footer a:hover { color:var(--text-2); }
+    .visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    @media (max-width:620px) {
+      nav.site-nav { padding:0 1.25rem; }
+      .nav-links { display:none; }
+      .blog-header, main.blog-body { padding-left:1.25rem; padding-right:1.25rem; }
+      .blog-header { padding-top:2.5rem; }
+      .code-pair, .nav-pair { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <ul class="nav-links" role="list">
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#playlist">Playlist</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#justlikereal">JustLikeReal</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#meetme">Meet Me</a></li>
+  </ul>
+</nav>
+
+<header class="blog-header">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a>
+    <span aria-hidden="true">›</span>
+    <span>Shift-Left Accessibility</span>
+    <span aria-hidden="true">›</span>
+    <span aria-current="page">07 of 38</span>
+  </nav>
+  <div class="blog-tags" aria-label="Blog categories">
+    <span class="tag accent">Development</span>
+    <span class="tag">HTML</span>
+    <span class="tag">ARIA</span>
+    <span class="tag">Shift-Left</span>
+  </div>
+  <h1>07 Semantic HTML and ARIA: <em>What Developers Must Get Right Before QA Tests It</em></h1>
+  <p class="blog-subtitle">The implementation layer that QA cannot fix: only verify.</p>
+  <div class="blog-meta">
+    <span class="series">Series: Shift-Left Accessibility</span>
+    <span aria-hidden="true">·</span>
+    <span>Blog 07 of 38</span>
+    <span aria-hidden="true">·</span>
+    <span>9 min read</span>
+  </div>
+</header>
+
+<main class="blog-body" id="main-content">
+
+  <nav class="toc" aria-label="Table of contents">
+    <div class="toc-title" id="toc-heading">In this blog</div>
+    <ol aria-labelledby="toc-heading">
+      <li><a href="#why-semantic">Why semantic HTML is the foundation</a></li>
+      <li><a href="#div-soup">The div soup problem</a></li>
+      <li><a href="#semantic-elements">The semantic elements to check</a></li>
+      <li><a href="#what-is-aria">What ARIA is and what it is not</a></li>
+      <li><a href="#aria-rules">The five ARIA rules that matter</a></li>
+      <li><a href="#common-aria">Common ARIA patterns and how to check them</a></li>
+      <li><a href="#aria-misuse">ARIA misuse patterns found across every phase</a></li>
+      <li><a href="#qa-checks">What QA checks in shift-left A11y</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <h2 id="why-semantic">1. Why Semantic HTML Is the Foundation</h2>
+
+  <p>Semantic HTML means using elements that carry meaning. <code>&lt;button&gt;</code> for buttons, <code>&lt;nav&gt;</code> for navigation, <code>&lt;main&gt;</code> for main content. The element tells the browser, the screen reader, and the accessibility tree what the thing is: not just what it looks like.</p>
+
+  <p>This matters because assistive technologies do not read the visual presentation of a page. They read the DOM. A <code>&lt;div&gt;</code> styled to look like a button is invisible to a screen reader as a button. It has no role, no keyboard support, no state. It is a box with text in it.</p>
+
+  <div class="callout" role="note">
+    ARIA can patch missing semantics. But the correct fix is always the right HTML element in the first place. No amount of ARIA makes a <code>&lt;div&gt;</code> as reliable as a <code>&lt;button&gt;</code>.
+  </div>
+
+  <p>QA cannot fix semantic HTML issues by writing a defect and moving on. This requires a code change, a redeploy, and a retest. This is Phase 3 work: and the earlier it is caught, the cheaper it is. <a href="02-cost-of-shift-right.html" class="blog-ref">Blog 02 has the cost multiplier</a>.</p>
+
+  <!-- 2 -->
+  <h2 id="div-soup">2. The Div Soup Problem</h2>
+
+  <p>"Div soup" is the nickname for codebases where almost every element is a <code>&lt;div&gt;</code> or <code>&lt;span&gt;</code> regardless of its semantic meaning. It is extremely common in React and Angular applications where component libraries are built with generic containers and visual styling rather than semantic elements.</p>
+
+  <figure class="blog-illustration" aria-label="Div soup vs semantic HTML comparison">
+    <svg viewBox="0 0 680 210" width="100%" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#161616;">
+      <title>Div soup vs semantic HTML: same visual result, completely different accessibility tree</title>
+      <desc>Left shows a navigation built entirely with div elements , but screen reader sees no landmarks or interactive elements. Right shows the same navigation built with nav, ul, li and a elements: screen reader sees navigation landmark, list of 3 items, links.</desc>
+      <text x="14" y="20" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" letter-spacing="1">DIV SOUP</text>
+      <rect x="14" y="28" width="300" height="166" rx="6" fill="#1a0808" stroke="#f87171" stroke-width="0.5" opacity="0.8"/>
+      <!-- code -->
+      <text x="26" y="50"  font-family="monospace" font-size="9" fill="#c8c8c8">&lt;<tspan fill="#f87171">div</tspan> class="nav"&gt;</text>
+      <text x="26" y="66"  font-family="monospace" font-size="9" fill="#c8c8c8">  &lt;<tspan fill="#f87171">div</tspan> class="nav-item"&gt;</text>
+      <text x="26" y="82"  font-family="monospace" font-size="9" fill="#8a8a8a">    &lt;<tspan fill="#f87171">div</tspan> onclick="..."&gt;Home&lt;/div&gt;</text>
+      <text x="26" y="98"  font-family="monospace" font-size="9" fill="#8a8a8a">    &lt;<tspan fill="#f87171">div</tspan> onclick="..."&gt;About&lt;/div&gt;</text>
+      <text x="26" y="114" font-family="monospace" font-size="9" fill="#8a8a8a">    &lt;<tspan fill="#f87171">div</tspan> onclick="..."&gt;Contact&lt;/div&gt;</text>
+      <text x="26" y="130" font-family="monospace" font-size="9" fill="#c8c8c8">  &lt;/div&gt;</text>
+      <text x="26" y="146" font-family="monospace" font-size="9" fill="#c8c8c8">&lt;/div&gt;</text>
+      <!-- SR output -->
+      <rect x="26" y="156" width="276" height="28" rx="4" fill="#2a1010"/>
+      <text x="34" y="168" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">Screen reader: nothing. No landmark.</text>
+      <text x="34" y="179" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">No links. Keyboard: cannot navigate.</text>
+
+      <!-- SEMANTIC -->
+      <text x="366" y="20" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80" letter-spacing="1">SEMANTIC HTML</text>
+      <rect x="366" y="28" width="300" height="166" rx="6" fill="#0d1a0d" stroke="#4ade80" stroke-width="0.5" opacity="0.8"/>
+      <text x="378" y="50"  font-family="monospace" font-size="9" fill="#c8c8c8">&lt;<tspan fill="#4ade80">nav</tspan> aria-label="Main"&gt;</text>
+      <text x="378" y="66"  font-family="monospace" font-size="9" fill="#c8c8c8">  &lt;<tspan fill="#4ade80">ul</tspan>&gt;</text>
+      <text x="378" y="82"  font-family="monospace" font-size="9" fill="#8a8a8a">    &lt;<tspan fill="#4ade80">li</tspan>&gt;&lt;<tspan fill="#60a5fa">a</tspan> href="/"&gt;Home&lt;/a&gt;&lt;/li&gt;</text>
+      <text x="378" y="98"  font-family="monospace" font-size="9" fill="#8a8a8a">    &lt;<tspan fill="#4ade80">li</tspan>&gt;&lt;<tspan fill="#60a5fa">a</tspan> href="/about"&gt;About&lt;/a&gt;&lt;/li&gt;</text>
+      <text x="378" y="114" font-family="monospace" font-size="9" fill="#8a8a8a">    &lt;<tspan fill="#4ade80">li</tspan>&gt;&lt;<tspan fill="#60a5fa">a</tspan> href="/contact"&gt;Contact&lt;/a&gt;&lt;/li&gt;</text>
+      <text x="378" y="130" font-family="monospace" font-size="9" fill="#c8c8c8">  &lt;/ul&gt;</text>
+      <text x="378" y="146" font-family="monospace" font-size="9" fill="#c8c8c8">&lt;/nav&gt;</text>
+      <!-- SR output -->
+      <rect x="378" y="156" width="276" height="28" rx="4" fill="#0d2a0d"/>
+      <text x="386" y="168" font-family="DM Sans,sans-serif" font-size="8" fill="#4ade80">SR: "Main navigation, list of 3 items."</text>
+      <text x="386" y="179" font-family="DM Sans,sans-serif" font-size="8" fill="#4ade80">Tab navigates each link. Enter activates.</text>
+    </svg>
+  </figure>
+
+
+  <figure class="blog-illustration" aria-label="Div soup kitchen: chef proudly labelling everything as div while screen reader user at the door holds a blank menu">
+    <svg width="100%" viewBox="0 0 680 290" role="img" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#fafcf5;">
+      <title>Div soup kitchen: everything is a div, screen reader user hears nothing</title>
+      <desc>A kitchen where every pot, pan, bowl and jar is labelled with a div tag. A chef stands proudly on the left with a speech bubble saying everything is a div, very flexible, very semantic. A screen reader user at the far right doorway holds a blank menu and says my menu is blank, I hear nothing.</desc>
+      <rect width="680" height="290" fill="#fafcf5"/>
+      <rect x="0" y="0" width="680" height="220" fill="#f0ede6"/>
+      <rect x="0" y="220" width="680" height="70" fill="#e0dbd0"/>
+      <line x1="0" y1="220" x2="680" y2="220" stroke="#c8c4b8" stroke-width="1.5"/>
+      <g stroke="#e8e4dc" stroke-width="0.5" opacity="0.5">
+        <line x1="0" y1="55" x2="680" y2="55"/><line x1="0" y1="110" x2="680" y2="110"/><line x1="0" y1="165" x2="680" y2="165"/>
+        <line x1="85" y1="0" x2="85" y2="220"/><line x1="170" y1="0" x2="170" y2="220"/>
+        <line x1="255" y1="0" x2="255" y2="220"/><line x1="340" y1="0" x2="340" y2="220"/>
+        <line x1="425" y1="0" x2="425" y2="220"/><line x1="510" y1="0" x2="510" y2="220"/>
+        <line x1="595" y1="0" x2="595" y2="220"/>
+      </g>
+      <rect x="22" y="14" width="120" height="90" rx="4" fill="#3d4235" stroke="#2e3a18" stroke-width="1.5"/>
+      <text x="82" y="30" text-anchor="middle" font-family="DM Serif Display,serif" font-size="10" fill="#fbbf24">THE MENU</text>
+      <line x1="32" y1="34" x2="132" y2="34" stroke="#fbbf24" stroke-width="0.5"/>
+      <text x="36" y="50" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">Starter: &lt;div&gt;</text>
+      <text x="36" y="64" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">Mains:  &lt;div&gt;</text>
+      <text x="36" y="78" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">Dessert: &lt;div&gt;</text>
+      <text x="36" y="92" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">Sides:  &lt;div&gt;</text>
+      <rect x="160" y="28" width="290" height="8" rx="2" fill="#c8b89a" stroke="#a89878" stroke-width="1"/>
+      <ellipse cx="202" cy="28" rx="22" ry="7" fill="#888" stroke="#666" stroke-width="1"/>
+      <rect x="180" y="28" width="44" height="34" rx="4" fill="#888" stroke="#666" stroke-width="1"/>
+      <text x="202" y="50" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#dde5c8" font-weight="600">&lt;div&gt;</text>
+      <ellipse cx="270" cy="28" rx="22" ry="7" fill="#9a6e3a" stroke="#7a4e1a" stroke-width="1"/>
+      <rect x="248" y="28" width="44" height="34" rx="4" fill="#9a6e3a" stroke="#7a4e1a" stroke-width="1"/>
+      <text x="270" y="50" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#f5edd6" font-weight="600">&lt;div&gt;</text>
+      <ellipse cx="338" cy="28" rx="22" ry="7" fill="#6b7c3a" stroke="#4a5828" stroke-width="1"/>
+      <rect x="316" y="28" width="44" height="34" rx="4" fill="#6b7c3a" stroke="#4a5828" stroke-width="1"/>
+      <text x="338" y="50" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#dde5c8" font-weight="600">&lt;div&gt;</text>
+      <circle cx="424" cy="60" r="20" fill="#555" stroke="#444" stroke-width="1.5"/>
+      <rect x="444" y="55" width="28" height="10" rx="5" fill="#555" stroke="#444" stroke-width="1"/>
+      <text x="424" y="64" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#c8c8c8" font-weight="600">&lt;div&gt;</text>
+      <rect x="120" y="172" width="380" height="24" rx="4" fill="#c8b89a" stroke="#a89878" stroke-width="1"/>
+      <rect x="120" y="190" width="380" height="30" fill="#b8a888"/>
+      <ellipse cx="192" cy="172" rx="26" ry="8" fill="#f5f7f0" stroke="#d0ccc0" stroke-width="1"/>
+      <rect x="166" y="150" width="52" height="22" rx="4" fill="#f5f7f0" stroke="#d0ccc0" stroke-width="1"/>
+      <text x="192" y="165" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#9a9e90">&lt;div&gt;</text>
+      <rect x="268" y="148" width="28" height="30" rx="4" fill="#dde8f5" stroke="#aac0d8" stroke-width="1"/>
+      <text x="282" y="167" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="6" fill="#2a5c9a">&lt;div&gt;</text>
+      <rect x="308" y="148" width="28" height="30" rx="4" fill="#f5edd6" stroke="#c8a878" stroke-width="1"/>
+      <text x="322" y="167" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="6" fill="#9a6e1a">&lt;div&gt;</text>
+      <rect x="348" y="148" width="28" height="30" rx="4" fill="#f5dde5" stroke="#d8a8b8" stroke-width="1"/>
+      <text x="362" y="167" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="6" fill="#9a2a4a">&lt;div&gt;</text>
+      <circle cx="200" cy="130" r="18" fill="#f5e6d0" stroke="#3d4235" stroke-width="1.5"/>
+      <path d="M192 136 Q200 142 208 136" fill="none" stroke="#3d4235" stroke-width="1.2"/>
+      <circle cx="196" cy="127" r="2" fill="#3d4235"/>
+      <circle cx="204" cy="127" r="2" fill="#3d4235"/>
+      <rect x="186" y="106" width="28" height="18" rx="2" fill="#fff" stroke="#d0ccc0" stroke-width="1"/>
+      <ellipse cx="200" cy="106" rx="18" ry="6" fill="#fff" stroke="#d0ccc0" stroke-width="1"/>
+      <ellipse cx="200" cy="114" rx="4" ry="6" fill="#fff"/>
+      <ellipse cx="200" cy="165" rx="18" ry="20" fill="#fff" stroke="#d0ccc0" stroke-width="1.5"/>
+      <rect x="190" y="149" width="20" height="24" rx="2" fill="#dde8f5" stroke="#aac0d8" stroke-width="0.5"/>
+      <line x1="200" y1="153" x2="172" y2="146" stroke="#3d4235" stroke-width="2"/>
+      <line x1="200" y1="153" x2="228" y2="146" stroke="#3d4235" stroke-width="2"/>
+      <line x1="193" y1="185" x2="186" y2="220" stroke="#3d4235" stroke-width="2"/>
+      <line x1="207" y1="185" x2="214" y2="220" stroke="#3d4235" stroke-width="2"/>
+      <rect x="228" y="98" width="168" height="38" rx="6" fill="#fff" stroke="#3d4235" stroke-width="1"/>
+      <path d="M232 136 L224 140 L232 143" fill="#fff" stroke="#3d4235" stroke-width="1"/>
+      <text x="312" y="115" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#3d4235" font-weight="500">Everything is a &lt;div&gt;.</text>
+      <text x="312" y="128" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#9a9e90">Very flexible. Very semantic.</text>
+      <rect x="596" y="90" width="84" height="130" rx="4" fill="#e8e4da" stroke="#c8c4b8" stroke-width="1"/>
+      <circle cx="630" cy="125" r="14" fill="#f5e6d0" stroke="#3d4235" stroke-width="1.5"/>
+      <circle cx="625" cy="122" r="2" fill="#3d4235"/>
+      <circle cx="635" cy="122" r="2" fill="#3d4235"/>
+      <path d="M626 130 Q630 127 634 130" fill="none" stroke="#3d4235" stroke-width="1.2"/>
+      <path d="M618 120 Q619 112 630 111 Q641 112 642 120" fill="none" stroke="#3d4235" stroke-width="2"/>
+      <circle cx="618" cy="121" r="4" fill="#3d4235"/>
+      <circle cx="642" cy="121" r="4" fill="#3d4235"/>
+      <line x1="630" y1="139" x2="630" y2="170" stroke="#3d4235" stroke-width="1.5"/>
+      <line x1="630" y1="148" x2="618" y2="156" stroke="#3d4235" stroke-width="1.5"/>
+      <line x1="630" y1="148" x2="642" y2="156" stroke="#3d4235" stroke-width="1.5"/>
+      <line x1="630" y1="170" x2="622" y2="190" stroke="#3d4235" stroke-width="1.5"/>
+      <line x1="630" y1="170" x2="638" y2="190" stroke="#3d4235" stroke-width="1.5"/>
+      <rect x="640" y="155" width="30" height="36" rx="3" fill="#fff" stroke="#d0ccc0" stroke-width="1"/>
+      <text x="655" y="172" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#d0ccc0">(blank)</text>
+      <rect x="556" y="60" width="148" height="38" rx="6" fill="#fff0f0" stroke="#f87171" stroke-width="1"/>
+      <path d="M630 98 L626 106 L634 98" fill="#fff0f0" stroke="#f87171" stroke-width="1"/>
+      <text x="630" y="78" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#9a2a4a" font-weight="500">My menu is blank.</text>
+      <text x="630" y="91" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">I hear nothing.</text>
+      <text x="340" y="272" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#9a9e90" font-style="italic">Div soup. Technically renders. Semantically empty.</text>
+    </svg>
+  </figure>
+
+  <p>Same visual result. Completely different accessibility tree. The screen reader output tells the whole story: one version announces a navigation landmark with three links. The other announces nothing.</p>
+
+  <!-- 3 -->
+  <h2 id="semantic-elements">3. The Semantic Elements to Check</h2>
+
+  <p>These are the elements most commonly replaced with generic divs. Catch them early — in code review or a dev build — not after they have shipped.</p>
+
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">Semantic HTML elements, their purpose, and the div replacement QA should look for</caption>
+      <thead>
+        <tr>
+          <th scope="col">Element</th>
+          <th scope="col">What it communicates</th>
+          <th scope="col">Common wrong replacement</th>
+          <th scope="col">WCAG</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>&lt;button&gt;</td><td>An interactive control that triggers an action</td><td><code>&lt;div onclick&gt;</code> or <code>&lt;span onclick&gt;</code></td><td>4.1.2</td></tr>
+        <tr><td>&lt;a href&gt;</td><td>A link that navigates to a destination</td><td><code>&lt;div onclick&gt;</code> styled as a link</td><td>4.1.2</td></tr>
+        <tr><td>&lt;nav&gt;</td><td>A navigation landmark region</td><td><code>&lt;div class="nav"&gt;</code></td><td>1.3.1</td></tr>
+        <tr><td>&lt;main&gt;</td><td>The primary content of the page (one only)</td><td><code>&lt;div id="main"&gt;</code></td><td>1.3.1</td></tr>
+        <tr><td>&lt;header&gt;</td><td>The page banner landmark</td><td><code>&lt;div class="header"&gt;</code></td><td>1.3.1</td></tr>
+        <tr><td>&lt;footer&gt;</td><td>The page footer landmark</td><td><code>&lt;div class="footer"&gt;</code></td><td>1.3.1</td></tr>
+        <tr><td>&lt;h1&gt;–&lt;h6&gt;</td><td>Heading levels for page structure</td><td>Bold or large text in a <code>&lt;div&gt;</code></td><td>1.3.1</td></tr>
+        <tr><td>&lt;ul&gt; / &lt;ol&gt;</td><td>An unordered or ordered list</td><td>Manual line breaks or divs per item</td><td>1.3.1</td></tr>
+        <tr><td>&lt;label&gt;</td><td>A visible, programmatic label for a form input</td><td>Placeholder text only</td><td>3.3.2</td></tr>
+        <tr><td>&lt;fieldset&gt; + &lt;legend&gt;</td><td>A group of related form controls with a shared label</td><td>Div wrapping radio buttons with no group label</td><td>1.3.1</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 4 -->
+  <h2 id="what-is-aria">4. What ARIA Is and What It Is Not</h2>
+
+  <p>ARIA: Accessible Rich Internet Applications: is a set of attributes that extend HTML to communicate role, state, and property information to assistive technologies. It fills gaps where native HTML does not have an equivalent semantic element.</p>
+
+  <p>The most important thing to know about ARIA:</p>
+
+  <div class="callout" role="note">
+    ARIA does not add functionality. It adds description. A button with <code>role="button"</code> on a <code>&lt;div&gt;</code> is announced as a button: but it still does not respond to keyboard events unless JavaScript adds that too. Native elements come with behaviour built in. ARIA-patched divs do not.
+  </div>
+
+
+  <figure class="blog-illustration" aria-label="ARIA as a plaster on a cracked wall versus a solid brick wall labelled button. Structural engineer points at the correct solution.">
+    <svg width="100%" viewBox="0 0 680 260" role="img" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#fafcf5;">
+      <title>ARIA as a plaster on a cracked wall versus a solid button wall</title>
+      <desc>Left wall is cracked and labelled div role button with a small plaster labelled ARIA over the crack and annotations showing no keyboard events, no focus style, no native behaviour. Right wall is solid brick labelled button with annotations showing keyboard Enter and Space, focus style built in, role button automatic. A structural engineer stands between them pointing at the right wall saying that plaster is not load-bearing.</desc>
+      <rect width="680" height="260" fill="#fafcf5"/>
+      <rect x="0" y="218" width="680" height="42" fill="#e8e4da"/>
+      <line x1="0" y1="218" x2="680" y2="218" stroke="#d0ccc0" stroke-width="1.5"/>
+      <rect x="30" y="40" width="240" height="180" rx="4" fill="#f0ede6" stroke="#c8c4b8" stroke-width="1.5"/>
+      <rect x="50" y="22" width="200" height="20" rx="3" fill="#f87171" opacity="0.9"/>
+      <text x="150" y="35" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#fff" font-weight="600">&lt;div role="button" onclick="..."&gt;</text>
+      <path d="M140 70 L155 110 L138 150 L160 190" fill="none" stroke="#9a7a6a" stroke-width="2" stroke-dasharray="3,2"/>
+      <path d="M155 110 L178 125" fill="none" stroke="#9a7a6a" stroke-width="1.5" stroke-dasharray="2,2"/>
+      <path d="M138 150 L115 162" fill="none" stroke="#9a7a6a" stroke-width="1.5" stroke-dasharray="2,2"/>
+      <rect x="40" y="82" width="100" height="14" rx="3" fill="#fff0f0" stroke="#f87171" stroke-width="0.5"/>
+      <text x="90" y="92" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#f87171">no keyboard events</text>
+      <rect x="40" y="120" width="88" height="14" rx="3" fill="#fff0f0" stroke="#f87171" stroke-width="0.5"/>
+      <text x="84" y="130" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#f87171">no focus style</text>
+      <rect x="40" y="158" width="96" height="14" rx="3" fill="#fff0f0" stroke="#f87171" stroke-width="0.5"/>
+      <text x="88" y="168" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#f87171">no native behaviour</text>
+      <rect x="126" y="95" width="52" height="26" rx="4" fill="#fbbf24" stroke="#e0a800" stroke-width="1"/>
+      <line x1="132" y1="100" x2="172" y2="100" stroke="#e0a800" stroke-width="0.5" opacity="0.5"/>
+      <line x1="132" y1="106" x2="172" y2="106" stroke="#e0a800" stroke-width="0.5" opacity="0.5"/>
+      <line x1="132" y1="112" x2="172" y2="112" stroke="#e0a800" stroke-width="0.5" opacity="0.5"/>
+      <text x="152" y="111" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#7a4a00" font-weight="700">ARIA</text>
+      <rect x="410" y="40" width="240" height="180" rx="4" fill="#1a1f14" stroke="#4a5828" stroke-width="1.5"/>
+      <rect x="430" y="22" width="200" height="20" rx="3" fill="#4ade80" opacity="0.9"/>
+      <text x="530" y="35" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#000" font-weight="600">&lt;button&gt;</text>
+      <g stroke="#2e3a18" stroke-width="0.8">
+        <line x1="410" y1="80" x2="650" y2="80"/><line x1="410" y1="110" x2="650" y2="110"/>
+        <line x1="410" y1="140" x2="650" y2="140"/><line x1="410" y1="170" x2="650" y2="170"/>
+        <line x1="410" y1="200" x2="650" y2="200"/>
+        <line x1="450" y1="40" x2="450" y2="80"/><line x1="490" y1="40" x2="490" y2="80"/>
+        <line x1="530" y1="40" x2="530" y2="80"/><line x1="570" y1="40" x2="570" y2="80"/>
+        <line x1="430" y1="80" x2="430" y2="110"/><line x1="470" y1="80" x2="470" y2="110"/>
+        <line x1="510" y1="80" x2="510" y2="110"/><line x1="550" y1="80" x2="550" y2="110"/>
+        <line x1="590" y1="80" x2="590" y2="110"/><line x1="630" y1="80" x2="630" y2="110"/>
+      </g>
+      <rect x="422" y="120" width="124" height="14" rx="3" fill="#0d1a0d" stroke="#4ade80" stroke-width="0.5"/>
+      <text x="484" y="130" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#4ade80">keyboard: Enter + Space</text>
+      <rect x="422" y="140" width="104" height="14" rx="3" fill="#0d1a0d" stroke="#4ade80" stroke-width="0.5"/>
+      <text x="474" y="150" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#4ade80">focus style: built in</text>
+      <rect x="422" y="160" width="124" height="14" rx="3" fill="#0d1a0d" stroke="#4ade80" stroke-width="0.5"/>
+      <text x="484" y="170" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#4ade80">role="button": automatic</text>
+      <circle cx="340" cy="140" r="18" fill="#f5e6d0" stroke="#3d4235" stroke-width="1.5"/>
+      <path d="M332 146 Q340 152 348 146" fill="none" stroke="#3d4235" stroke-width="1.2"/>
+      <circle cx="336" cy="137" r="2" fill="#3d4235"/>
+      <circle cx="344" cy="137" r="2" fill="#3d4235"/>
+      <path d="M333 132 Q337 129 341 132" fill="none" stroke="#3d4235" stroke-width="1"/>
+      <ellipse cx="340" cy="170" rx="16" ry="20" fill="#dde8f5" stroke="#2a5c9a" stroke-width="1.5"/>
+      <line x1="340" y1="162" x2="376" y2="150" stroke="#3d4235" stroke-width="2"/>
+      <line x1="340" y1="162" x2="304" y2="156" stroke="#3d4235" stroke-width="2"/>
+      <path d="M302 153 L300 160 L307 157" fill="none" stroke="#3d4235" stroke-width="1.2"/>
+      <line x1="332" y1="190" x2="326" y2="218" stroke="#3d4235" stroke-width="2"/>
+      <line x1="348" y1="190" x2="354" y2="218" stroke="#3d4235" stroke-width="2"/>
+      <rect x="268" y="82" width="144" height="36" rx="6" fill="#dde8f5" stroke="#2a5c9a" stroke-width="1"/>
+      <path d="M340 118 L336 126 L344 118" fill="#dde8f5" stroke="#2a5c9a" stroke-width="1"/>
+      <text x="340" y="99" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#1a3a6a" font-weight="500">That plaster is not</text>
+      <text x="340" y="112" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#1a3a6a">load-bearing.</text>
+      <text x="340" y="248" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#9a9e90" font-style="italic">ARIA patches the description. It does not fix the structure.</text>
+    </svg>
+  </figure>
+
+  <p>The W3C ARIA specification has one guiding principle that summarises the correct approach: <strong>No ARIA is better than bad ARIA.</strong> A missing ARIA attribute is a screen reader announcement gap. A wrong ARIA attribute actively misdirects screen reader users. Bad ARIA is worse than no ARIA.</p>
+
+  <!-- 5 -->
+  <h2 id="aria-rules">5. The Five ARIA Rules That Matter</h2>
+
+  <p>The W3C ARIA specification publishes five rules of ARIA use. These are the practical ones for a QA engineer to know: because violations of them are what you find in code review and testing.</p>
+
+  <div class="qa-checks" role="list" aria-label="Five rules of ARIA use">
+
+    <div class="qa-check" role="listitem">
+      <div class="qa-check-num">01</div>
+      <div class="qa-check-text"><strong>Use native HTML first.</strong> If a native HTML element or attribute already has the semantics you need, use it. Do not add <code>role="button"</code> to a <code>&lt;div&gt;</code> when <code>&lt;button&gt;</code> exists.</div>
+    </div>
+
+    <div class="qa-check" role="listitem">
+      <div class="qa-check-num">02</div>
+      <div class="qa-check-text"><strong>Do not change native semantics unless necessary.</strong> Do not add <code>role="presentation"</code> or <code>role="none"</code> to elements that have meaningful semantics unless there is a specific reason to remove them.</div>
+    </div>
+
+    <div class="qa-check" role="listitem">
+      <div class="qa-check-num">03</div>
+      <div class="qa-check-text"><strong>All interactive ARIA controls must be keyboard-operable.</strong> If you give a <code>&lt;div&gt;</code> <code>role="button"</code>, it must also respond to Enter and Space keypresses: exactly like a native button. ARIA announces the role. JavaScript must provide the behaviour.</div>
+    </div>
+
+    <div class="qa-check" role="listitem">
+      <div class="qa-check-num">04</div>
+      <div class="qa-check-text"><strong>Do not hide focusable elements.</strong> Do not use <code>aria-hidden="true"</code> on an element that can receive keyboard focus. This creates a keyboard trap: the element receives focus but the screen reader announces nothing.</div>
+    </div>
+
+    <div class="qa-check" role="listitem">
+      <div class="qa-check-num">05</div>
+      <div class="qa-check-text"><strong>All interactive elements must have an accessible name.</strong> Every button, link, input, and control must have a name that screen readers can announce. This comes from visible text content, <code>aria-label</code>, <code>aria-labelledby</code>, or a linked <code>&lt;label&gt;</code>.</div>
+    </div>
+
+  </div>
+
+  <!-- 6 -->
+  <h2 id="common-aria">6. Common ARIA Patterns and How to Check Them</h2>
+
+  <p>These are the ARIA patterns used most frequently in real applications, what correct implementation looks like, and how to verify them.</p>
+
+  <h3>aria-label and aria-labelledby</h3>
+  <p>Used to give an element an accessible name when visible text is insufficient or absent. <code>aria-label</code> provides the name directly. <code>aria-labelledby</code> points to the ID of an existing element whose text becomes the name.</p>
+
+  <div class="code-pair">
+    <div class="code-box code-fail">
+      <div class="code-label">Fail</div>
+      <div class="code-block">&lt;button&gt;
+  &lt;svg&gt;...&lt;/svg&gt;
+&lt;/button&gt;
+&lt;!-- SR: "button" - no name --&gt;</div>
+    </div>
+    <div class="code-box code-pass">
+      <div class="code-label">Pass</div>
+      <div class="code-block">&lt;button aria-label="Close modal"&gt;
+  &lt;svg aria-hidden="true"&gt;...&lt;/svg&gt;
+&lt;/button&gt;
+&lt;!-- SR: "Close modal, button" --&gt;</div>
+    </div>
+  </div>
+
+  <p><strong>How to check:</strong> Open <span class="tool">Chrome DevTools</span> Accessibility panel. Inspect the element. The "Computed Properties" section shows the accessible name. If it is empty on an interactive element, that is a defect.</p>
+
+  <h3>aria-expanded</h3>
+  <p>Used on a trigger element (button, link) to communicate whether the controlled content is expanded or collapsed. Common in accordions, dropdown menus, and disclosure widgets.</p>
+
+  <div class="code-pair">
+    <div class="code-box code-fail">
+      <div class="code-label">Fail</div>
+      <div class="code-block">&lt;button&gt;Show more&lt;/button&gt;
+&lt;div class="content hidden"&gt;
+  ...
+&lt;/div&gt;
+&lt;!-- No state communicated --&gt;</div>
+    </div>
+    <div class="code-box code-pass">
+      <div class="code-label">Pass</div>
+      <div class="code-block">&lt;button aria-expanded="false"
+        aria-controls="content-1"&gt;
+  Show more
+&lt;/button&gt;
+&lt;div id="content-1" hidden&gt;
+  ...
+&lt;/div&gt;</div>
+    </div>
+  </div>
+
+  <p><strong>How to check:</strong> Tab to the accordion or dropdown trigger. Open <span class="tool">NVDA</span> or <span class="tool">VoiceOver</span>. The announcement should include "collapsed" or "expanded." Activate the control. The announcement must update. If it does not, the state is not being toggled in the DOM.</p>
+
+  <h3>aria-live regions</h3>
+  <p>Used to announce dynamic content changes to screen readers without moving focus. <code>role="status"</code> (polite: waits for user to finish) and <code>role="alert"</code> (assertive: interrupts immediately) are the two most common patterns.</p>
+
+  <div class="code-pair">
+    <div class="code-box code-fail">
+      <div class="code-label">Fail</div>
+      <div class="code-block">&lt;div id="message"&gt;&lt;/div&gt;
+&lt;!-- JS injects text here --&gt;
+&lt;!-- SR: silent --&gt;</div>
+    </div>
+    <div class="code-box code-pass">
+      <div class="code-label">Pass</div>
+      <div class="code-block">&lt;div role="status"
+     aria-live="polite"
+     aria-atomic="true"&gt;
+&lt;/div&gt;
+&lt;!-- SR: announces injected text --&gt;</div>
+    </div>
+  </div>
+
+  <p><strong>How to check:</strong> With <span class="tool">NVDA</span> running, trigger the dynamic update (form submit, filter, search result). Listen for the announcement. If nothing is announced, the live region is missing or the container was not present in the DOM on page load.</p>
+
+  <h3>aria-describedby</h3>
+  <p>Links a form input to additional instructional text that supplements the label. Different from <code>aria-labelledby</code>: the label names the control, the description provides context.</p>
+
+  <div class="code-pair">
+    <div class="code-box code-fail">
+      <div class="code-label">Fail</div>
+      <div class="code-block">&lt;label for="pw"&gt;Password&lt;/label&gt;
+&lt;input id="pw" type="password"&gt;
+&lt;p&gt;Must be 8+ chars with a number&lt;/p&gt;
+&lt;!-- hint not linked to input --&gt;</div>
+    </div>
+    <div class="code-box code-pass">
+      <div class="code-label">Pass</div>
+      <div class="code-block">&lt;label for="pw"&gt;Password&lt;/label&gt;
+&lt;input id="pw" type="password"
+  aria-describedby="pw-hint"&gt;
+&lt;p id="pw-hint"&gt;
+  Must be 8+ chars with a number
+&lt;/p&gt;</div>
+    </div>
+  </div>
+
+  <!-- 7 -->
+  <h2 id="aria-misuse">7. ARIA Misuse Patterns Found Across Every Phase</h2>
+
+  <p>These patterns show up at every stage — in code review, in staging, and yes, sometimes in production when the earlier gates are missed. Each one is a real defect pattern. The earlier it is caught, the cheaper the fix.</p>
+
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">Common ARIA misuse patterns and their impact</caption>
+      <thead>
+        <tr>
+          <th scope="col">Pattern</th>
+          <th scope="col">What it looks like</th>
+          <th scope="col">Impact</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>aria-hidden on focusable element</td>
+          <td><code>&lt;button aria-hidden="true"&gt;</code></td>
+          <td>Button receives keyboard focus but screen reader announces nothing. Invisible keyboard trap.</td>
+        </tr>
+        <tr>
+          <td>role="button" without keyboard support</td>
+          <td><code>&lt;div role="button" onclick="..."&gt;</code></td>
+          <td>Screen reader announces "button" but Enter and Space do nothing. Mouse-only control with a button label.</td>
+        </tr>
+        <tr>
+          <td>aria-label overriding visible text</td>
+          <td><code>&lt;button aria-label="X"&gt;Close&lt;/button&gt;</code></td>
+          <td>Screen reader announces "X" not "Close." Sighted users see "Close." Screen reader users hear "X." Mismatch fails WCAG 2.5.3.</td>
+        </tr>
+        <tr>
+          <td>Missing aria-expanded toggle</td>
+          <td>Accordion trigger does not update <code>aria-expanded</code> on click</td>
+          <td>Screen reader cannot determine whether content is open or closed. State is invisible.</td>
+        </tr>
+        <tr>
+          <td>Duplicate landmark roles</td>
+          <td>Two <code>&lt;nav&gt;</code> elements with no <code>aria-label</code></td>
+          <td>Screen reader announces "navigation" twice with no distinction. Both are inaccessible as separate regions.</td>
+        </tr>
+        <tr>
+          <td>Empty aria-label</td>
+          <td><code>&lt;button aria-label=""&gt;</code></td>
+          <td>Element has no accessible name. Screen reader may announce nothing or the element type only.</td>
+        </tr>
+        <tr>
+          <td>role="presentation" on interactive element</td>
+          <td><code>&lt;table role="presentation"&gt;</code> containing links</td>
+          <td>Removes table semantics: acceptable for layout. But if the table contains interactive elements, their context is lost.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 8 -->
+  <h2 id="qa-checks">8. What QA Checks for in the Development Phase in Shift-Left A11y</h2>
+
+  <p>QA at Phase 3 is not waiting for the build to complete and then running a scan. It is reviewing code patterns, checking the accessibility tree, and verifying that what the developer implemented matches what the design annotated. Here is the checklist.</p>
+
+  <div class="qa-checks" role="list" aria-label="QA Phase 3 semantic HTML and ARIA checklist">
+
+    <div class="qa-check" role="listitem">
+      <div class="qa-check-num">01</div>
+      <div class="qa-check-text"><strong>All interactive elements use native HTML.</strong> Every button is a <code>&lt;button&gt;</code>. Every link is an <code>&lt;a href&gt;</code>. No <code>&lt;div onclick&gt;</code> or <code>&lt;span onclick&gt;</code> used as interactive controls.</div>
+    </div>
+
+    <div class="qa-check" role="listitem">
+      <div class="qa-check-num">02</div>
+      <div class="qa-check-text"><strong>Page landmark structure is present.</strong> <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;footer&gt;</code> all present. Exactly one <code>&lt;main&gt;</code>. Multiple navs have distinct <code>aria-label</code> values. Check with <span class="tool">WAVE</span> Structure tab.</div>
+    </div>
+
+    <div class="qa-check" role="listitem">
+      <div class="qa-check-num">03</div>
+      <div class="qa-check-text"><strong>All interactive elements have an accessible name.</strong> Inspect every button, link, input, and icon control in <span class="tool">Chrome DevTools</span> Accessibility panel. Computed name must not be empty.</div>
+    </div>
+
+    <div class="qa-check" role="listitem">
+      <div class="qa-check-num">04</div>
+      <div class="qa-check-text"><strong>Dynamic state is communicated.</strong> Accordions, dropdowns, and disclosure widgets update <code>aria-expanded</code> on toggle. Modal dialogs set <code>aria-modal="true"</code> and manage focus correctly. Live regions announce dynamic updates.</div>
+    </div>
+
+    <div class="qa-check" role="listitem">
+      <div class="qa-check-num">05</div>
+      <div class="qa-check-text"><strong>No focusable elements are hidden with aria-hidden.</strong> Search the codebase for <code>aria-hidden="true"</code> on any element that can receive focus: <code>&lt;a&gt;</code>, <code>&lt;button&gt;</code>, <code>&lt;input&gt;</code>, elements with <code>tabindex</code>.</div>
+    </div>
+
+    <div class="qa-check" role="listitem">
+      <div class="qa-check-num">06</div>
+      <div class="qa-check-text"><strong>Form inputs have programmatic labels.</strong> Every <code>&lt;input&gt;</code>, <code>&lt;textarea&gt;</code>, and <code>&lt;select&gt;</code> has a linked <code>&lt;label&gt;</code> or an <code>aria-label</code>. Placeholder text alone is not a label. Check with <span class="tool">axe DevTools</span>.</div>
+    </div>
+
+    <div class="qa-check" role="listitem">
+      <div class="qa-check-num">07</div>
+      <div class="qa-check-text"><strong>Run <span class="tool">axe DevTools</span> and <span class="tool">WAVE</span>.</strong> Resolve all Critical and Serious violations before moving to Phase 4. These tools catch structural and ARIA issues automatically. Manual testing covers what they miss.</div>
+    </div>
+
+  </div>
+
+  <div class="takeaway" role="note">
+    <div class="label">The bottom line</div>
+    <p>Semantic HTML and ARIA are Phase 3 responsibilities. QA verifies them: it does not implement them. The earlier a structural issue is caught, the simpler the fix. A missing landmark found in code review is a comment. The same landmark missing from a live page is a defect, a deploy, and a retest.</p>
+  </div>
+
+  <!-- SERIES NAV -->
+  <div class="series-nav">
+    <span class="label">Navigate the series</span>
+    <div class="nav-pair">
+      <a href="06-Content-Authoring-Accessibility-Rules.html" class="nav-blog">
+        <span class="nav-blog-arrow" aria-hidden="true">←</span>
+        <div>
+          <div class="nav-blog-title">Blog 06: Content Authoring Rules</div>
+          <div class="nav-blog-sub">The authoring mistakes that become QA defects</div>
+        </div>
+      </a>
+      <a href="08-ESLint-and-Axe-Core.html" class="nav-blog">
+        <div>
+          <div class="nav-blog-title">Blog 08: ESLint and Axe-Core</div>
+          <div class="nav-blog-sub">Catching accessibility issues at code time</div>
+        </div>
+        <span class="nav-blog-arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+
+  <aside class="references" aria-label="References">
+    <div class="ref-title">References</div>
+    <ul role="list">
+      <li><a href="https://www.w3.org/TR/wai-aria-1.2/" target="_blank" rel="noopener noreferrer">WAI-ARIA 1.2: W3C specification</a></li>
+      <li><a href="https://www.w3.org/TR/using-aria/" target="_blank" rel="noopener noreferrer">W3C: Using ARIA: the five rules</a></li>
+      <li><a href="https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA" target="_blank" rel="noopener noreferrer">MDN: ARIA reference</a></li>
+      <li><a href="https://www.w3.org/WAI/ARIA/apg/" target="_blank" rel="noopener noreferrer">ARIA Authoring Practices Guide: patterns and examples</a></li>
+    </ul>
+  </aside>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; Built with intention. Tested with care. &nbsp;·&nbsp; © 2025
+  </p>
+</footer>
+
+</body>
+</html>
