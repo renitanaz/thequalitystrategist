@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>08 ESLint and Axe-Core | The Quality Strategist</title>
+  <meta name="description" content="How to catch accessibility issues before they reach QA. eslint-plugin-jsx-a11y in the IDE, axe-core in unit tests and CI/CD pipelines, and what each layer catches that the other misses." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+      --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+      --green:#4ade80; --green-bg:rgba(74,222,128,0.07);
+      --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07);
+      --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07);
+      --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.07);
+      --red:#f87171; --red-bg:rgba(248,113,113,0.07);
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
+    .skip-link:focus { top:0; }
+    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
+    .nav-links { display:flex; gap:2rem; list-style:none; }
+    .nav-links a { color:var(--text-3); text-decoration:none; font-size:0.85rem; transition:color 0.2s; }
+    .nav-links a:hover { color:var(--text); }
+    .blog-header { max-width:900px; margin:0 auto; padding:4rem 2rem 2.5rem; border-bottom:1px solid var(--border); }
+    .breadcrumb { font-size:0.78rem; color:var(--text-3); margin-bottom:1.5rem; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; }
+    .breadcrumb a { color:var(--text-3); text-decoration:none; }
+    .breadcrumb a:hover { color:var(--text-2); }
+    .blog-tags { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.25rem; }
+    .tag { font-size:0.7rem; padding:3px 10px; border-radius:99px; background:var(--bg3); color:var(--text-3); border:1px solid var(--border); letter-spacing:0.04em; text-transform:uppercase; font-weight:500; }
+    .tag.accent { background:var(--green-bg); color:var(--green); border-color:rgba(74,222,128,0.25); }
+    .blog-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.85rem,4vw,2.6rem); line-height:1.2; letter-spacing:-0.02em; color:var(--text); margin-bottom:0.75rem; }
+    .blog-header h1 em { font-style:italic; color:var(--green); }
+    .blog-subtitle { font-family:'DM Serif Display',serif; font-size:1.1rem; font-style:italic; color:var(--text-3); margin-bottom:1.25rem; }
+    .blog-meta { display:flex; align-items:center; gap:1.25rem; font-size:0.82rem; color:var(--text-3); flex-wrap:wrap; }
+    .blog-meta .series { color:var(--text-2); font-weight:500; }
+    main.blog-body { display:block; max-width:900px; margin:0 auto; padding:3rem 2rem 5rem; }
+    .toc { display:block; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.5rem 1.75rem; margin:0 0 3rem 0; }
+    .toc-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.9rem; }
+    .toc ol { padding-left:1.25rem; }
+    .toc ol li { margin-bottom:0.45rem; }
+    .toc ol li a { font-size:0.88rem; color:var(--text-2); text-decoration:none; transition:color 0.2s; }
+    .toc ol li a:hover { color:var(--green); }
+    .blog-body h2 { font-family:'DM Serif Display',serif; font-size:1.5rem; letter-spacing:-0.01em; color:var(--text); margin:3.5rem 0 1.1rem; padding-top:1rem; border-top:1px solid var(--border); }
+    .blog-body h3 { font-size:1rem; font-weight:500; color:var(--text); margin:1.75rem 0 0.5rem; }
+    .blog-body p { color:var(--text-2); margin-bottom:1.25rem; font-weight:300; }
+    .blog-body p strong { color:var(--text); font-weight:500; }
+    .blog-body ul, .blog-body ol { padding-left:1.5rem; margin-bottom:1.25rem; color:var(--text-2); font-weight:300; }
+    .blog-body li { margin-bottom:0.45rem; }
+    .blog-body li strong { color:var(--text); font-weight:500; }
+    code { background:var(--bg3); padding:1px 6px; border-radius:3px; font-size:0.85em; color:var(--text-2); font-family:monospace; }
+    .callout { display:block; background:var(--green-bg); border-left:3px solid var(--green); border-radius:0 10px 10px 0; padding:1.25rem 1.5rem; margin:1.75rem 0; font-size:0.95rem; color:var(--text); font-style:italic; line-height:1.6; }
+    .takeaway { display:block; background:var(--amber-bg); border:1px solid rgba(251,191,36,0.2); border-radius:10px; padding:1.25rem 1.5rem; margin:1.75rem 0; }
+    .takeaway .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--amber); font-weight:500; margin-bottom:0.5rem; display:block; }
+    .takeaway p { color:var(--text-2); font-size:0.93rem; margin:0; }
+    .tool { display:inline; background:var(--purple-bg); color:var(--purple); border:1px solid rgba(167,139,250,0.2); border-radius:4px; padding:1px 7px; font-size:0.85em; font-weight:500; }
+    .blog-ref { display:inline-flex; align-items:center; gap:6px; background:var(--bg2); border:1px solid var(--border); border-radius:6px; padding:3px 10px; font-size:0.78rem; color:var(--text-2); text-decoration:none; transition:border-color 0.2s,color 0.2s; white-space:nowrap; }
+    .blog-ref:hover { border-color:var(--green); color:var(--green); }
+    .blog-ref::before { content:'↗'; font-size:0.7rem; color:var(--text-3); }
+
+    /* CODE BLOCKS */
+    .code-block-wrap { background:var(--bg2); border:1px solid var(--border); border-radius:10px; margin:1.75rem 0; overflow:hidden; }
+    .code-block-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-3); font-weight:500; padding:8px 14px; border-bottom:1px solid var(--border); background:var(--bg3); }
+    .code-block { font-family:monospace; font-size:0.85rem; color:var(--text-2); line-height:1.7; padding:1rem 1.25rem; overflow-x:auto; white-space:pre; }
+    .code-pair { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:1.75rem 0; }
+    .code-box { border-radius:8px; padding:1rem 1.1rem; }
+    .code-fail { background:var(--red-bg); border:1px solid rgba(248,113,113,0.2); }
+    .code-pass { background:var(--green-bg); border:1px solid rgba(74,222,128,0.2); }
+    .code-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.07em; font-weight:500; margin-bottom:8px; }
+    .code-fail .code-label { color:var(--red); }
+    .code-pass .code-label { color:var(--green); }
+    .c-block { font-family:monospace; font-size:0.82rem; color:var(--text-2); line-height:1.6; white-space:pre; overflow-x:auto; }
+
+    /* LAYER CARDS */
+    .layer-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:1.75rem 0; }
+    .layer-card { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.1rem 1.25rem; }
+    .layer-title { font-size:0.88rem; font-weight:500; color:var(--text); margin-bottom:6px; }
+    .layer-tool { font-size:0.72rem; color:var(--purple); background:var(--purple-bg); border:1px solid rgba(167,139,250,0.2); border-radius:99px; padding:2px 8px; display:inline-block; margin-bottom:8px; font-weight:500; }
+    .layer-desc { font-size:0.8rem; color:var(--text-2); line-height:1.55; }
+    .layer-catches { font-size:0.78rem; color:var(--text-3); margin-top:6px; font-style:italic; }
+
+    /* RULE TABLE */
+    .table-wrap { display:block; overflow-x:auto; margin:1.75rem 0; border-radius:10px; border:1px solid var(--border); }
+    table { width:100%; border-collapse:collapse; font-size:0.875rem; }
+    thead th { background:var(--bg2); padding:10px 14px; text-align:left; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-3); font-weight:500; border-bottom:1px solid var(--border); white-space:nowrap; }
+    tbody td { padding:11px 14px; border-bottom:1px solid var(--border); color:var(--text-2); vertical-align:top; line-height:1.55; }
+    tbody tr:last-child td { border-bottom:none; }
+    tbody td:first-child { color:var(--text); font-weight:500; font-family:monospace; font-size:0.85rem; }
+    tbody tr:hover td { background:var(--bg2); }
+
+    /* ILLUSTRATION */
+    .blog-illustration { margin:1.75rem 0; border:none; padding:0; }
+
+    /* SERIES NAV */
+    .series-nav { display:block; margin-top:4rem; padding-top:2rem; border-top:1px solid var(--border); }
+    .series-nav .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.75rem; display:block; }
+    .nav-pair { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .nav-blog { display:flex; align-items:center; gap:1rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.1rem 1.25rem; text-decoration:none; transition:border-color 0.2s,background 0.2s; }
+    .nav-blog:hover { border-color:#444; background:var(--bg3); }
+    .nav-blog-arrow { color:var(--text-3); font-size:1rem; flex-shrink:0; }
+    .nav-blog-title { font-size:0.88rem; font-weight:500; color:var(--text); }
+    .nav-blog-sub { font-size:0.75rem; color:var(--text-3); margin-top:2px; }
+    .references { display:block; margin-top:2.5rem; padding:1.5rem 1.75rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; }
+    .ref-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:1rem; }
+    .references ul { list-style:none; padding:0; }
+    .references ul li { margin-bottom:0.5rem; }
+    .references ul li a { font-size:0.85rem; color:var(--text-2); text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; transition:color 0.2s; }
+    .references ul li a:hover { color:var(--green); }
+    .references ul li a::before { content:'↗'; font-size:0.75rem; color:var(--text-3); }
+    footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
+    footer a { color:var(--text-3); text-decoration:none; }
+    footer a:hover { color:var(--text-2); }
+    .visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    @media (max-width:620px) {
+      nav.site-nav { padding:0 1.25rem; }
+      .nav-links { display:none; }
+      .blog-header, main.blog-body { padding-left:1.25rem; padding-right:1.25rem; }
+      .blog-header { padding-top:2.5rem; }
+      .layer-cards, .code-pair, .nav-pair { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <ul class="nav-links" role="list">
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#playlist">Playlist</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#justlikereal">JustLikeReal</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#meetme">Meet Me</a></li>
+  </ul>
+</nav>
+
+<header class="blog-header">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a>
+    <span aria-hidden="true">›</span>
+    <span>Shift-Left Accessibility</span>
+    <span aria-hidden="true">›</span>
+    <span aria-current="page">08 of 38</span>
+  </nav>
+  <div class="blog-tags" aria-label="Blog categories">
+    <span class="tag accent">Tooling</span>
+    <span class="tag">CI/CD</span>
+    <span class="tag">Shift-Left</span>
+    <span class="tag">Automation</span>
+  </div>
+  <h1>08 ESLint and Axe-Core: <em>Catching Accessibility Issues Before They Reach QA</em></h1>
+  <p class="blog-subtitle">The two tools that sit between a developer's keyboard and a QA defect.</p>
+  <div class="blog-meta">
+    <span class="series">Series: Shift-Left Accessibility</span>
+    <span aria-hidden="true">·</span>
+    <span>Blog 08 of 38</span>
+    <span aria-hidden="true">·</span>
+    <span>8 min read</span>
+  </div>
+</header>
+
+<main class="blog-body" id="main-content">
+
+  <nav class="toc" aria-label="Table of contents">
+    <div class="toc-title" id="toc-heading">In this blog</div>
+    <ol aria-labelledby="toc-heading">
+      <li><a href="#three-layers">The three automated layers</a></li>
+      <li><a href="#eslint">eslint-plugin-jsx-a11y: catching issues as you type</a></li>
+      <li><a href="#eslint-rules">What it catches: the key rules</a></li>
+      <li><a href="#axe-core">Axe-core: catching issues in tests and CI/CD</a></li>
+      <li><a href="#axe-cypress">Axe-core in Cypress and Playwright</a></li>
+      <li><a href="#ci-gate">Setting up a CI/CD accessibility gate</a></li>
+      <li><a href="#what-they-miss">What these tools miss</a></li>
+      <li><a href="#qa-angle">How QA uses this layer</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <h2 id="three-layers">1. The Three Automated Layers</h2>
+
+  <p>Automated accessibility checking happens at three points in the development workflow. Each catches different things. None replaces the others.</p>
+
+  <div class="layer-cards" role="list" aria-label="Three automated accessibility layers">
+    <div class="layer-card" role="listitem">
+      <div class="layer-title">IDE / Code time</div>
+      <div class="layer-tool">eslint-plugin-jsx-a11y</div>
+      <div class="layer-desc">Flags issues as the developer writes JSX. Instant feedback, zero delay. Catches structural issues before the code is even saved.</div>
+      <div class="layer-catches">Missing alt, invalid ARIA, non-interactive elements with event handlers.</div>
+    </div>
+    <div class="layer-card" role="listitem">
+      <div class="layer-title">Test suite</div>
+      <div class="layer-tool">axe-core (jest-axe, Cypress, Playwright)</div>
+      <div class="layer-desc">Runs accessibility checks against rendered components and full user journeys. Catches issues that only appear when the component is actually rendered in the DOM.</div>
+      <div class="layer-catches">Contrast failures, landmark issues, focus management, ARIA state problems.</div>
+    </div>
+    <div class="layer-card" role="listitem">
+      <div class="layer-title">CI/CD pipeline</div>
+      <div class="layer-tool">axe-core + Pa11y / Lighthouse</div>
+      <div class="layer-desc">Runs on every pull request or deployment. Fails the build on Critical or Serious violations. The last automated gate before QA.</div>
+      <div class="layer-catches">Any Critical or Serious violation that escaped the IDE and test suite.</div>
+    </div>
+  </div>
+
+  <div class="callout" role="note">
+    Together these three layers catch a significant proportion of structural and ARIA issues automatically. What they cannot catch: focus visibility, keyboard usability, screen reader context, cognitive load: is where manual testing begins. <a href="07-Semantic-HTML-and-ARIA.html" class="blog-ref">Blog 07 covers what developers must get right</a> before these tools even run.
+  </div>
+
+
+  <figure class="blog-illustration" aria-label="Factory conveyor belt with three automated accessibility checkpoints followed by a QA engineer station">
+    <svg width="100%" viewBox="0 0 680 260" role="img" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#fafcf5;">
+      <title>Factory conveyor belt: three automated layers then QA testing station</title>
+      <desc>A factory floor with a conveyor belt. Three inspector stations labelled eslint, axe-core, and CI/CD gate each catch a bug. At the end a QA engineer sits at a station with a sign reading 50% done, the rest needs you.</desc>
+      <rect width="680" height="260" fill="#fafcf5"/>
+      <rect x="0" y="0" width="680" height="50" fill="#f0ede6"/>
+      <line x1="0" y1="50" x2="680" y2="50" stroke="#c8c4b8" stroke-width="1"/>
+      <rect x="60" y="8" width="40" height="12" rx="3" fill="#f5edd6" stroke="#c8b48a" stroke-width="1"/>
+      <ellipse cx="80" cy="22" rx="16" ry="6" fill="#fbbf24" opacity="0.3"/>
+      <rect x="220" y="8" width="40" height="12" rx="3" fill="#f5edd6" stroke="#c8b48a" stroke-width="1"/>
+      <ellipse cx="240" cy="22" rx="16" ry="6" fill="#fbbf24" opacity="0.3"/>
+      <rect x="380" y="8" width="40" height="12" rx="3" fill="#f5edd6" stroke="#c8b48a" stroke-width="1"/>
+      <ellipse cx="400" cy="22" rx="16" ry="6" fill="#fbbf24" opacity="0.3"/>
+      <rect x="540" y="8" width="40" height="12" rx="3" fill="#f5edd6" stroke="#c8b48a" stroke-width="1"/>
+      <ellipse cx="560" cy="22" rx="16" ry="6" fill="#fbbf24" opacity="0.3"/>
+      <rect x="20" y="172" width="640" height="20" rx="4" fill="#c8b89a" stroke="#a89878" stroke-width="1.5"/>
+      <g stroke="#b8a888" stroke-width="1">
+        <line x1="60" y1="172" x2="60" y2="192"/><line x1="100" y1="172" x2="100" y2="192"/>
+        <line x1="140" y1="172" x2="140" y2="192"/><line x1="180" y1="172" x2="180" y2="192"/>
+        <line x1="220" y1="172" x2="220" y2="192"/><line x1="260" y1="172" x2="260" y2="192"/>
+        <line x1="300" y1="172" x2="300" y2="192"/><line x1="340" y1="172" x2="340" y2="192"/>
+        <line x1="380" y1="172" x2="380" y2="192"/><line x1="420" y1="172" x2="420" y2="192"/>
+        <line x1="460" y1="172" x2="460" y2="192"/><line x1="500" y1="172" x2="500" y2="192"/>
+        <line x1="540" y1="172" x2="540" y2="192"/><line x1="580" y1="172" x2="580" y2="192"/>
+        <line x1="620" y1="172" x2="620" y2="192"/>
+      </g>
+      <circle cx="20" cy="182" r="10" fill="#888" stroke="#666" stroke-width="1.5"/>
+      <circle cx="660" cy="182" r="10" fill="#888" stroke="#666" stroke-width="1.5"/>
+      <rect x="52" y="90" width="84" height="80" rx="4" fill="#dde8f5" stroke="#2a5c9a" stroke-width="1.5"/>
+      <rect x="52" y="90" width="84" height="20" rx="4" fill="#2a5c9a"/>
+      <text x="94" y="104" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#fff" font-weight="600">eslint</text>
+      <circle cx="94" cy="140" r="10" fill="#f87171" stroke="#9a2a4a" stroke-width="1"/>
+      <text x="94" y="143" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#fff" font-weight="600">bug</text>
+      <text x="94" y="158" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#2a5c9a">caught</text>
+      <line x1="94" y1="110" x2="94" y2="128" stroke="#2a5c9a" stroke-width="2"/>
+      <line x1="94" y1="120" x2="108" y2="130" stroke="#2a5c9a" stroke-width="2"/>
+      <rect x="212" y="90" width="84" height="80" rx="4" fill="#ede0f5" stroke="#7a4a9a" stroke-width="1.5"/>
+      <rect x="212" y="90" width="84" height="20" rx="4" fill="#7a4a9a"/>
+      <text x="254" y="104" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#fff" font-weight="600">axe-core</text>
+      <circle cx="254" cy="140" r="10" fill="#f87171" stroke="#9a2a4a" stroke-width="1"/>
+      <text x="254" y="143" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#fff" font-weight="600">bug</text>
+      <text x="254" y="158" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#7a4a9a">caught</text>
+      <line x1="254" y1="110" x2="254" y2="128" stroke="#7a4a9a" stroke-width="2"/>
+      <line x1="254" y1="120" x2="268" y2="130" stroke="#7a4a9a" stroke-width="2"/>
+      <rect x="372" y="90" width="84" height="80" rx="4" fill="#d8f0e0" stroke="#1a7a3a" stroke-width="1.5"/>
+      <rect x="372" y="90" width="84" height="20" rx="4" fill="#1a7a3a"/>
+      <text x="414" y="104" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#fff" font-weight="600">CI/CD gate</text>
+      <circle cx="414" cy="140" r="10" fill="#f87171" stroke="#9a2a4a" stroke-width="1"/>
+      <text x="414" y="143" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#fff" font-weight="600">bug</text>
+      <text x="414" y="158" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#1a7a3a">caught</text>
+      <line x1="414" y1="110" x2="414" y2="128" stroke="#1a7a3a" stroke-width="2"/>
+      <line x1="414" y1="120" x2="428" y2="130" stroke="#1a7a3a" stroke-width="2"/>
+      <text x="156" y="136" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="16" fill="#c8c4b8">→</text>
+      <text x="316" y="136" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="16" fill="#c8c4b8">→</text>
+      <text x="476" y="136" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="16" fill="#c8c4b8">→</text>
+      <rect x="532" y="78" width="120" height="92" rx="4" fill="#fff8e8" stroke="#9a6e1a" stroke-width="1.5"/>
+      <rect x="532" y="78" width="120" height="20" rx="4" fill="#9a6e1a"/>
+      <text x="592" y="92" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#fff" font-weight="600">QA Testing</text>
+      <rect x="544" y="102" width="96" height="34" rx="3" fill="#fbbf24" opacity="0.9"/>
+      <text x="592" y="116" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#7a4a00" font-weight="700">50% done.</text>
+      <text x="592" y="128" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#7a4a00" font-weight="700">The rest needs you.</text>
+      <circle cx="592" cy="155" r="10" fill="#f5e6d0" stroke="#3d4235" stroke-width="1.2"/>
+      <path d="M587 159 Q592 163 597 159" fill="none" stroke="#3d4235" stroke-width="1"/>
+      <circle cx="589" cy="153" r="1.5" fill="#3d4235"/>
+      <circle cx="595" cy="153" r="1.5" fill="#3d4235"/>
+      <text x="340" y="230" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#9a9e90" font-style="italic">The tools do their part. Then QA does theirs.</text>
+    </svg>
+  </figure>
+
+  <!-- 2 -->
+  <h2 id="eslint">2. eslint-plugin-jsx-a11y: Catching Issues as You Type</h2>
+
+  <p><span class="tool">eslint-plugin-jsx-a11y</span> is an ESLint plugin that adds accessibility rules to the standard JavaScript linting workflow. It analyses JSX statically: without rendering anything: and flags violations inline in the IDE as the developer writes code.</p>
+
+  <p>The practical effect: a missing <code>alt</code> attribute gets a red underline before the file is saved. A <code>&lt;div&gt;</code> with an <code>onClick</code> handler and no keyboard support gets flagged before it reaches a pull request. The defect is caught at the cheapest possible moment.</p>
+
+  <h3>Installation</h3>
+
+  <div class="code-block-wrap">
+    <div class="code-block-label">Terminal</div>
+    <div class="code-block">npm install --save-dev eslint-plugin-jsx-a11y</div>
+  </div>
+
+  <div class="code-block-wrap">
+    <div class="code-block-label">.eslintrc.js or eslint.config.js</div>
+    <div class="code-block">{
+  "plugins": ["jsx-a11y"],
+  "extends": ["plugin:jsx-a11y/recommended"]
+}</div>
+  </div>
+
+  <p>The <code>recommended</code> config enables all rules at warn or error level. Use <code>strict</code> for a higher bar. Most teams start with <code>recommended</code> and tighten rules over time.</p>
+
+  <!-- 3 -->
+  <h2 id="eslint-rules">3. What It Catches: The Key Rules</h2>
+
+  <p>These are the rules that fire most frequently on real codebases. Each maps directly to a WCAG failure.</p>
+
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">Key eslint-plugin-jsx-a11y rules and what they catch</caption>
+      <thead>
+        <tr>
+          <th scope="col">Rule</th>
+          <th scope="col">What it catches</th>
+          <th scope="col">WCAG</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>alt-text</td><td>Missing or empty alt on <code>&lt;img&gt;</code>, <code>&lt;area&gt;</code>, <code>&lt;input type="image"&gt;</code></td><td>1.1.1</td></tr>
+        <tr><td>interactive-supports-focus</td><td>Interactive elements (onClick) that are not keyboard-focusable</td><td>2.1.1</td></tr>
+        <tr><td>click-events-have-key-events</td><td>onClick handlers without onKeyDown/onKeyUp/onKeyPress equivalent</td><td>2.1.1</td></tr>
+        <tr><td>no-noninteractive-element-interactions</td><td>Event handlers on non-interactive elements like <code>&lt;div&gt;</code>, <code>&lt;span&gt;</code></td><td>4.1.2</td></tr>
+        <tr><td>label</td><td>Form inputs without an associated label</td><td>3.3.2</td></tr>
+        <tr><td>aria-props</td><td>Invalid ARIA attribute names (typos like aria-roledescription misspelled)</td><td>4.1.2</td></tr>
+        <tr><td>aria-proptypes</td><td>ARIA attributes with wrong value types (aria-expanded="yes" instead of "true")</td><td>4.1.2</td></tr>
+        <tr><td>aria-role</td><td>Invalid ARIA role values</td><td>4.1.2</td></tr>
+        <tr><td>heading-has-content</td><td>Empty heading elements</td><td>2.4.6</td></tr>
+        <tr><td>anchor-has-content</td><td>Empty anchor elements with no text or aria-label</td><td>2.4.4</td></tr>
+        <tr><td>anchor-is-valid</td><td>Anchor tags used as buttons (no href, or href="#")</td><td>4.1.2</td></tr>
+        <tr><td>tabindex-no-positive</td><td>Positive tabindex values that disrupt natural tab order</td><td>2.4.3</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>What a violation looks like in practice</h3>
+
+  <figure class="blog-illustration" aria-label="VS Code style editor showing eslint-plugin-jsx-a11y errors highlighted inline with red underlines and tooltip messages">
+    <svg viewBox="0 0 680 380" width="100%" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#1e1e1e;">
+      <title>VS Code editor showing eslint accessibility violations highlighted with red underlines and error tooltips</title>
+      <desc>A code editor interface showing JSX code. Three lines have red wavy underlines indicating eslint-plugin-jsx-a11y violations: an img tag missing alt, a div with onClick, and an input with no label. Each shows a tooltip with the rule name and description.</desc>
+
+      <!-- Editor chrome -->
+      <rect width="680" height="380" fill="#1e1e1e"/>
+      <!-- Title bar -->
+      <rect x="0" y="0" width="680" height="28" fill="#2d2d2d"/>
+      <circle cx="16" cy="14" r="5" fill="#ff5f56"/>
+      <circle cx="32" cy="14" r="5" fill="#ffbd2e"/>
+      <circle cx="48" cy="14" r="5" fill="#27c93f"/>
+      <text x="340" y="18" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#8a8a8a">Button.jsx — VS Code</text>
+
+      <!-- Tab bar -->
+      <rect x="0" y="28" width="680" height="24" fill="#252526"/>
+      <rect x="0" y="28" width="130" height="24" fill="#1e1e1e"/>
+      <text x="14" y="44" font-family="DM Sans,sans-serif" font-size="10" fill="#c8c8c8">Button.jsx</text>
+      <circle cx="118" cy="40" r="3" fill="#f87171" opacity="0.8"/>
+
+      <!-- Sidebar line numbers -->
+      <rect x="0" y="52" width="38" height="328" fill="#1e1e1e"/>
+
+      <!-- LINE 1: import (normal) -->
+      <text x="10" y="76" font-family="monospace" font-size="11" fill="#555" text-anchor="middle">1</text>
+      <text x="50" y="76" font-family="monospace" font-size="11" fill="#c586c0">import</text>
+      <text x="100" y="76" font-family="monospace" font-size="11" fill="#c8c8c8"> React </text>
+      <text x="136" y="76" font-family="monospace" font-size="11" fill="#c586c0">from</text>
+      <text x="166" y="76" font-family="monospace" font-size="11" fill="#ce9178"> 'react'</text>
+
+      <!-- LINE 2: blank -->
+      <text x="10" y="96" font-family="monospace" font-size="11" fill="#555" text-anchor="middle">2</text>
+
+      <!-- LINE 3: function (normal) -->
+      <text x="10" y="116" font-family="monospace" font-size="11" fill="#555" text-anchor="middle">3</text>
+      <text x="50" y="116" font-family="monospace" font-size="11" fill="#569cd6">export default function</text>
+      <text x="228" y="116" font-family="monospace" font-size="11" fill="#dcdcaa"> Form</text>
+      <text x="256" y="116" font-family="monospace" font-size="11" fill="#c8c8c8">() {'{}'}</text>
+
+      <!-- LINE 4: return ( -->
+      <text x="10" y="136" font-family="monospace" font-size="11" fill="#555" text-anchor="middle">4</text>
+      <text x="50" y="136" font-family="monospace" font-size="11" fill="#c586c0">  return</text>
+      <text x="100" y="136" font-family="monospace" font-size="11" fill="#c8c8c8"> (</text>
+
+      <!-- LINE 5: img VIOLATION -->
+      <rect x="38" y="143" width="642" height="18" fill="#f87171" opacity="0.06"/>
+      <text x="10" y="156" font-family="monospace" font-size="11" fill="#f87171" text-anchor="middle">5</text>
+      <text x="50" y="156" font-family="monospace" font-size="11" fill="#c8c8c8">    &lt;</text>
+      <text x="69" y="156" font-family="monospace" font-size="11" fill="#4ec9b0">img</text>
+      <text x="93" y="156" font-family="monospace" font-size="11" fill="#9cdcfe"> src</text>
+      <text x="117" y="156" font-family="monospace" font-size="11" fill="#c8c8c8">=</text>
+      <text x="124" y="156" font-family="monospace" font-size="11" fill="#ce9178">"banner.jpg"</text>
+      <text x="214" y="156" font-family="monospace" font-size="11" fill="#c8c8c8"> /&gt;</text>
+      <!-- red wavy underline under img tag -->
+      <path d="M69 159 Q73 162 77 159 Q81 156 85 159 Q89 162 93 159" fill="none" stroke="#f87171" stroke-width="1.5"/>
+      <!-- red squiggle under src= -->
+      <path d="M214 159 Q218 162 222 159 Q226 156 230 159 Q234 162 238 159" fill="none" stroke="#f87171" stroke-width="1.5"/>
+      <!-- error icon -->
+      <circle cx="622" cy="152" r="6" fill="#f87171" opacity="0.9"/>
+      <text x="622" y="156" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#fff" font-weight="700">!</text>
+
+      <!-- TOOLTIP for img error -->
+      <rect x="50" y="164" width="340" height="36" rx="4" fill="#252526" stroke="#f87171" stroke-width="0.5"/>
+      <circle cx="64" cy="176" r="5" fill="#f87171" opacity="0.8"/>
+      <text x="74" y="172" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" font-weight="600">jsx-a11y/alt-text</text>
+      <text x="74" y="184" font-family="DM Sans,sans-serif" font-size="8" fill="#8a8a8a">img elements must have an alt prop,</text>
+      <text x="74" y="194" font-family="DM Sans,sans-serif" font-size="8" fill="#8a8a8a">either with meaningful text or an empty string.</text>
+
+      <!-- LINE 6: blank -->
+      <text x="10" y="216" font-family="monospace" font-size="11" fill="#555" text-anchor="middle">6</text>
+
+      <!-- LINE 7: div onClick VIOLATION -->
+      <rect x="38" y="223" width="642" height="18" fill="#f87171" opacity="0.06"/>
+      <text x="10" y="236" font-family="monospace" font-size="11" fill="#f87171" text-anchor="middle">7</text>
+      <text x="50" y="236" font-family="monospace" font-size="11" fill="#c8c8c8">    &lt;</text>
+      <text x="69" y="236" font-family="monospace" font-size="11" fill="#4ec9b0">div</text>
+      <text x="93" y="236" font-family="monospace" font-size="11" fill="#9cdcfe"> onClick</text>
+      <text x="145" y="236" font-family="monospace" font-size="11" fill="#c8c8c8">={'{handleClick}'}&gt;Submit&lt;/</text>
+      <text x="302" y="236" font-family="monospace" font-size="11" fill="#4ec9b0">div</text>
+      <text x="326" y="236" font-family="monospace" font-size="11" fill="#c8c8c8">&gt;</text>
+      <!-- wavy underline under div -->
+      <path d="M69 239 Q73 242 77 239 Q81 236 85 239 Q89 242 93 239" fill="none" stroke="#f87171" stroke-width="1.5"/>
+      <circle cx="622" cy="232" r="6" fill="#f87171" opacity="0.9"/>
+      <text x="622" y="236" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#fff" font-weight="700">!</text>
+
+      <!-- TOOLTIP for div error -->
+      <rect x="50" y="244" width="380" height="36" rx="4" fill="#252526" stroke="#f87171" stroke-width="0.5"/>
+      <circle cx="64" cy="256" r="5" fill="#f87171" opacity="0.8"/>
+      <text x="74" y="252" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" font-weight="600">jsx-a11y/click-events-have-key-events</text>
+      <text x="74" y="264" font-family="DM Sans,sans-serif" font-size="8" fill="#8a8a8a">Visible, non-interactive elements with click handlers must</text>
+      <text x="74" y="274" font-family="DM Sans,sans-serif" font-size="8" fill="#8a8a8a">have at least one keyboard event handler.</text>
+
+      <!-- LINE 8: blank -->
+      <text x="10" y="296" font-family="monospace" font-size="11" fill="#555" text-anchor="middle">8</text>
+
+      <!-- LINE 9: input no label VIOLATION -->
+      <rect x="38" y="303" width="642" height="18" fill="#f87171" opacity="0.06"/>
+      <text x="10" y="316" font-family="monospace" font-size="11" fill="#f87171" text-anchor="middle">9</text>
+      <text x="50" y="316" font-family="monospace" font-size="11" fill="#c8c8c8">    &lt;</text>
+      <text x="69" y="316" font-family="monospace" font-size="11" fill="#4ec9b0">input</text>
+      <text x="100" y="316" font-family="monospace" font-size="11" fill="#9cdcfe"> type</text>
+      <text x="128" y="316" font-family="monospace" font-size="11" fill="#c8c8c8">=</text>
+      <text x="135" y="316" font-family="monospace" font-size="11" fill="#ce9178">"text"</text>
+      <text x="175" y="316" font-family="monospace" font-size="11" fill="#9cdcfe"> placeholder</text>
+      <text x="249" y="316" font-family="monospace" font-size="11" fill="#c8c8c8">=</text>
+      <text x="256" y="316" font-family="monospace" font-size="11" fill="#ce9178">"Enter name"</text>
+      <text x="340" y="316" font-family="monospace" font-size="11" fill="#c8c8c8"> /&gt;</text>
+      <!-- wavy underline under input -->
+      <path d="M69 319 Q73 322 77 319 Q81 316 85 319 Q89 322 93 319" fill="none" stroke="#f87171" stroke-width="1.5"/>
+      <circle cx="622" cy="312" r="6" fill="#f87171" opacity="0.9"/>
+      <text x="622" y="316" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#fff" font-weight="700">!</text>
+
+      <!-- STATUS BAR -->
+      <rect x="0" y="354" width="680" height="26" fill="#007acc"/>
+      <text x="14" y="370" font-family="DM Sans,sans-serif" font-size="10" fill="#fff">3 problems</text>
+      <circle cx="100" cy="367" r="5" fill="#f87171" opacity="0.9"/>
+      <text x="100" y="371" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#fff" font-weight="700">!</text>
+      <text x="112" y="371" font-family="DM Sans,sans-serif" font-size="10" fill="#fff">3 errors, 0 warnings</text>
+      <text x="560" y="371" font-family="DM Sans,sans-serif" font-size="10" fill="#fff">JSX · eslint-plugin-jsx-a11y</text>
+    </svg>
+  </figure>
+
+  <!-- 4 -->
+  <h2 id="axe-core">4. Axe-Core: Catching Issues in Tests and CI/CD</h2>
+
+  <p><span class="tool">axe-core</span> is the accessibility testing engine used by <span class="tool">axe DevTools</span>, <span class="tool">Accessibility Insights</span>, and many CI/CD integrations. It runs against a rendered DOM: not static code: which means it catches issues that only appear when the component is actually mounted: contrast failures, missing landmarks, focus management problems, and ARIA state issues.</p>
+
+  <p>Axe-core reports violations at four severity levels:</p>
+
+  <ul>
+    <li><strong>Critical:</strong> Blocks access entirely for some users. Must fix before release.</li>
+    <li><strong>Serious:</strong> Makes content very difficult to use. Should fix before release.</li>
+    <li><strong>Moderate:</strong> Creates friction but does not block access. Fix in next sprint.</li>
+    <li><strong>Minor:</strong> Best practice. Address when convenient.</li>
+  </ul>
+
+  <p>The CI/CD gate should fail on Critical and Serious. Moderate and Minor violations should be tracked and addressed but should not block a release without a deliberate team decision.</p>
+
+  <h3>Axe-core with jest-axe (component level)</h3>
+
+  <div class="code-block-wrap">
+    <div class="code-block-label">Install</div>
+    <div class="code-block">npm install --save-dev jest-axe</div>
+  </div>
+
+  <div class="code-block-wrap">
+    <div class="code-block-label">Button.test.jsx</div>
+    <div class="code-block">import { render } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
+import Button from './Button';
+
+expect.extend(toHaveNoViolations);
+
+test('Button has no accessibility violations', async () => {
+  const { container } = render(
+    &lt;Button onClick={() => {}}&gt;Submit&lt;/Button&gt;
+  );
+  const results = await axe(container);
+  expect(results).toHaveNoViolations();
+});</div>
+  </div>
+
+  <p>This test renders the component and runs the full axe-core ruleset against it. If the button has no accessible name, no keyboard support, or invalid ARIA, the test fails. The developer sees the failure before the PR is raised.</p>
+
+  <!-- 5 -->
+  <h2 id="axe-cypress">5. Axe-Core in Cypress and Playwright</h2>
+
+  <p>Component-level tests catch individual component issues. Integration tests with Cypress or Playwright test full user journeys: the login flow, the checkout process, the form submission: and can catch issues that only appear when components interact.</p>
+
+  <h3>Cypress with cypress-axe</h3>
+
+  <div class="code-block-wrap">
+    <div class="code-block-label">Install</div>
+    <div class="code-block">npm install --save-dev cypress-axe axe-core</div>
+  </div>
+
+  <div class="code-block-wrap">
+    <div class="code-block-label">cypress/support/e2e.js</div>
+    <div class="code-block">import 'cypress-axe';</div>
+  </div>
+
+  <div class="code-block-wrap">
+    <div class="code-block-label">login.cy.js</div>
+    <div class="code-block">describe('Login page accessibility', () => {
+  it('has no Critical or Serious violations', () => {
+    cy.visit('/login');
+    cy.injectAxe();
+    cy.checkA11y(null, {
+      includedImpacts: ['critical', 'serious']
+    });
+  });
+
+  it('form is accessible after error state', () => {
+    cy.visit('/login');
+    cy.injectAxe();
+    cy.get('[data-cy=submit]').click(); // trigger errors
+    cy.checkA11y();  // check error state too
+  });
+});</div>
+  </div>
+
+  <h3>Playwright with axe-playwright</h3>
+
+  <div class="code-block-wrap">
+    <div class="code-block-label">Install</div>
+    <div class="code-block">npm install --save-dev @axe-core/playwright</div>
+  </div>
+
+  <div class="code-block-wrap">
+    <div class="code-block-label">login.spec.ts</div>
+    <div class="code-block">import { test, expect } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
+
+test('login page has no Critical violations', async ({ page }) => {
+  await page.goto('/login');
+  const results = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa'])
+    .analyze();
+  expect(results.violations
+    .filter(v => v.impact === 'critical')).toHaveLength(0);
+});</div>
+  </div>
+
+  <div class="takeaway" role="note">
+    <div class="label">Test the error state too</div>
+    <p>Most accessibility tests check the happy path. The error state (form validation failures, API errors, empty states): is where accessibility issues hide. Always test the states that appear after user interaction, not just the initial page load.</p>
+  </div>
+
+  <!-- 6 -->
+  <h2 id="ci-gate">6. Setting Up a CI/CD Accessibility Gate</h2>
+
+  <p>The accessibility gate runs on every pull request and fails the build if Critical or Serious violations are present. Here is a minimal GitHub Actions setup using <span class="tool">Pa11y</span>:</p>
+
+  <div class="code-block-wrap">
+    <div class="code-block-label">.github/workflows/accessibility.yml</div>
+    <div class="code-block">name: Accessibility check
+
+on: [pull_request]
+
+jobs:
+  a11y:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: npm ci
+      - run: npm run build
+      - run: npx serve -s build &
+      - run: sleep 3
+      - run: |
+          npx pa11y-ci \
+            --standard WCAG2AA \
+            --reporter cli \
+            http://localhost:3000</div>
+  </div>
+
+  <p>For Cypress-based pipelines, the <code>cy.checkA11y()</code> call in the test suite is the gate. The Cypress run in CI fails if any violations above the threshold are found.</p>
+
+  <p>The key principle: <strong>Critical and Serious violations fail the build. They do not get merged.</strong> This is a team agreement, not a tool setting: the tool enforces what the team has agreed.</p>
+
+  <!-- 7 -->
+  <h2 id="what-they-miss">7. What These Tools Miss</h2>
+
+  <p>Automated tools: including <span class="tool">eslint-plugin-jsx-a11y</span>, <span class="tool">axe-core</span>, and <span class="tool">Pa11y</span> combined: catch approximately 30 to 50% of accessibility issues. The rest require manual testing.</p>
+
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">What automated tools miss and why manual testing is required</caption>
+      <thead>
+        <tr>
+          <th scope="col">Issue type</th>
+          <th scope="col">Why automation misses it</th>
+          <th scope="col">How to catch it</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Focus visibility</td><td>Tools check that a focus indicator exists in the stylesheet, not whether it is actually visible against the background in context</td><td>Manual keyboard testing</td></tr>
+        <tr><td>Keyboard usability</td><td>Tools check that elements are focusable, not whether the interaction flow makes sense</td><td>Manual keyboard testing</td></tr>
+        <tr><td>Screen reader context</td><td>Tools check that labels exist, not whether the announcement sequence makes sense to a screen reader user navigating the page</td><td>NVDA, VoiceOver, TalkBack</td></tr>
+        <tr><td>Meaningful alt text</td><td>Tools check that alt text is present and non-empty, not whether it is accurate or useful</td><td>Manual content review</td></tr>
+        <tr><td>Cognitive load</td><td>No tool measures whether content is clear, consistent, or easy to understand</td><td>Manual review + readability tools</td></tr>
+        <tr><td>Error announcement</td><td>Tools check that live regions exist, not whether the announcement fires at the right time with the right content</td><td>Screen reader testing</td></tr>
+        <tr><td>Mobile gesture support</td><td>Tools do not run on real devices or test touch interaction</td><td>VoiceOver on iOS, TalkBack on Android</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+
+  <figure class="blog-illustration" aria-label="Automated scanner prints a passed certificate while keyboard user is stuck in modal and screen reader user hears button button button">
+    <svg width="100%" viewBox="0 0 680 290" role="img" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#fafcf5;">
+      <title>Scanner prints Accessibility Passed while users struggle unnoticed behind it</title>
+      <desc>Left side: an automated scanner machine with a certificate printing from a slot at its base reading Accessibility Passed, 0 violations. Right side divided: keyboard user trapped in a modal with no escape, screen reader user hearing button button button from unlabelled icon buttons. Caption: 30 to 50% caught. The rest is a surprise.</desc>
+      <rect width="680" height="290" fill="#fafcf5"/>
+      <rect x="0" y="240" width="680" height="50" fill="#e8e4da"/>
+      <line x1="0" y1="240" x2="680" y2="240" stroke="#c8c4b8" stroke-width="1.5"/>
+      <rect x="40" y="40" width="180" height="150" rx="8" fill="#3d4235" stroke="#2e3a18" stroke-width="2"/>
+      <rect x="56" y="56" width="148" height="100" rx="4" fill="#1a1f14"/>
+      <rect x="64" y="64" width="132" height="84" rx="3" fill="#0d1a0d"/>
+      <text x="130" y="96" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80">Scanning...</text>
+      <text x="130" y="110" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4ade80">axe-core v4.8</text>
+      <rect x="74" y="120" width="112" height="8" rx="4" fill="#0d2a0d"/>
+      <rect x="74" y="120" width="112" height="8" rx="4" fill="#4ade80"/>
+      <text x="130" y="140" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80" font-weight="600">100% complete</text>
+      <circle cx="74" cy="162" r="6" fill="#4ade80"/>
+      <circle cx="94" cy="162" r="6" fill="#fbbf24"/>
+      <circle cx="114" cy="162" r="6" fill="#f87171"/>
+      <text x="130" y="176" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#8a8a8a">AUTOMATED SCANNER</text>
+      <rect x="90" y="186" width="80" height="6" rx="1" fill="#1a1f14"/>
+      <rect x="94" y="192" width="72" height="62" rx="3" fill="#fff" stroke="#4ade80" stroke-width="1.5"/>
+      <path d="M94 192 Q98 188 102 192 Q106 196 110 192 Q114 188 118 192 Q122 196 126 192 Q130 188 134 192 Q138 196 142 192 Q146 188 150 192 Q154 196 158 192 Q162 188 166 192" fill="#fff" stroke="#4ade80" stroke-width="0.8"/>
+      <text x="130" y="211" text-anchor="middle" font-family="DM Serif Display,serif" font-size="8" fill="#1a7a3a" font-weight="700">ACCESSIBILITY</text>
+      <text x="130" y="224" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#4ade80" font-weight="700">PASSED ✓</text>
+      <text x="130" y="236" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#9a9e90">0 violations found</text>
+      <text x="130" y="246" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#9a9e90">axe-core WCAG2AA</text>
+      <line x1="268" y1="40" x2="268" y2="240" stroke="#d0ccc0" stroke-width="1" stroke-dasharray="6,4"/>
+      <text x="268" y="30" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#c8c4b8">meanwhile...</text>
+      <rect x="288" y="50" width="160" height="100" rx="6" fill="#1a0808" stroke="#f87171" stroke-width="1.5"/>
+      <text x="368" y="72" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#f0f0f0" font-weight="500">Subscribe</text>
+      <rect x="306" y="80" width="124" height="20" rx="3" fill="#0d0d0d" stroke="#555" stroke-width="1"/>
+      <text x="368" y="94" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#555">email@...</text>
+      <rect x="336" y="108" width="64" height="20" rx="3" fill="#2a2a2a" stroke="#f87171" stroke-width="1.5"/>
+      <text x="368" y="121" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f0f0f0">Submit</text>
+      <text x="368" y="142" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171" font-style="italic">no close. no Escape.</text>
+      <circle cx="328" cy="178" r="12" fill="#f5e6d0" stroke="#3d4235" stroke-width="1.5"/>
+      <path d="M322 183 Q328 179 334 183" fill="none" stroke="#f87171" stroke-width="1.2"/>
+      <circle cx="324" cy="175" r="2" fill="#3d4235"/>
+      <circle cx="332" cy="175" r="2" fill="#3d4235"/>
+      <circle cx="340" cy="170" r="2.5" fill="#60a5fa" opacity="0.7"/>
+      <circle cx="344" cy="163" r="2" fill="#60a5fa" opacity="0.5"/>
+      <line x1="328" y1="190" x2="328" y2="218" stroke="#3d4235" stroke-width="1.5"/>
+      <line x1="328" y1="198" x2="316" y2="206" stroke="#3d4235" stroke-width="1.5"/>
+      <line x1="328" y1="198" x2="340" y2="206" stroke="#3d4235" stroke-width="1.5"/>
+      <line x1="328" y1="218" x2="320" y2="240" stroke="#3d4235" stroke-width="1.5"/>
+      <line x1="328" y1="218" x2="336" y2="240" stroke="#3d4235" stroke-width="1.5"/>
+      <text x="328" y="256" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">keyboard user: stuck</text>
+      <circle cx="558" cy="160" r="12" fill="#f5e6d0" stroke="#3d4235" stroke-width="1.5"/>
+      <path d="M548 156 Q549 148 558 147 Q567 148 568 156" fill="none" stroke="#3d4235" stroke-width="2"/>
+      <circle cx="548" cy="157" r="4" fill="#3d4235"/>
+      <circle cx="568" cy="157" r="4" fill="#3d4235"/>
+      <path d="M552 165 Q558 169 564 165" fill="none" stroke="#3d4235" stroke-width="1"/>
+      <circle cx="554" cy="158" r="1.2" fill="#fff"/>
+      <circle cx="562" cy="158" r="1.2" fill="#fff"/>
+      <line x1="558" y1="172" x2="558" y2="205" stroke="#3d4235" stroke-width="1.5"/>
+      <line x1="558" y1="182" x2="546" y2="192" stroke="#3d4235" stroke-width="1.5"/>
+      <line x1="558" y1="182" x2="570" y2="192" stroke="#3d4235" stroke-width="1.5"/>
+      <line x1="558" y1="205" x2="550" y2="240" stroke="#3d4235" stroke-width="1.5"/>
+      <line x1="558" y1="205" x2="566" y2="240" stroke="#3d4235" stroke-width="1.5"/>
+      <rect x="466" y="55" width="192" height="48" rx="6" fill="#fff0f0" stroke="#f87171" stroke-width="1"/>
+      <path d="M554 103 L550 110 L558 103" fill="#fff0f0" stroke="#f87171" stroke-width="1"/>
+      <text x="562" y="74" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#9a2a4a" font-weight="500">SR announces:</text>
+      <text x="562" y="87" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" font-weight="600">"button button button"</text>
+      <text x="562" y="99" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#9a2a4a">(icon buttons, no aria-label)</text>
+      <text x="558" y="256" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">screen reader user: confused</text>
+      <text x="340" y="278" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#9a9e90" font-style="italic">30 to 50% caught. The rest is a surprise.</text>
+    </svg>
+  </figure>
+
+  <!-- 8 -->
+  <h2 id="qa-angle">8. How QA Uses This Layer</h2>
+
+  <p>QA does not own the eslint or axe-core setup: that is a developer and DevOps responsibility. But QA has a direct interest in whether these tools are in place and working, for one reason: when they are not, the volume of structural and ARIA defects in QA testing increases significantly.</p>
+
+  <h3>What QA should verify at Phase 3 exit</h3>
+  <ul>
+    <li><span class="tool">eslint-plugin-jsx-a11y</span> is installed and configured in the project</li>
+    <li>No open Critical or Serious violations in the axe-core test suite</li>
+    <li>CI/CD pipeline fails on Critical accessibility violations</li>
+    <li>Axe-core tests cover key user journeys, not just component-level rendering</li>
+    <li>Error states and dynamic content states are covered by test cases</li>
+  </ul>
+
+  <h3>How to check the CI gate is working</h3>
+  <p>Ask the developer to intentionally introduce a Critical violation: remove an <code>alt</code> attribute, add a <code>div</code> with no keyboard support: and verify the build fails. If the build passes, the gate is not working. This is a 5-minute check that has caught misconfigured pipelines more than once.</p>
+
+  <div class="takeaway" role="note">
+    <div class="label">The bottom line</div>
+    <p>These two tools together are the cheapest accessibility investment a development team can make. <span class="tool">eslint-plugin-jsx-a11y</span> costs nothing to run and catches issues at the keyboard. <span class="tool">axe-core</span> in CI costs nothing to run and catches issues before merge. Both together still only cover half the problem. The other half is what the rest of this series covers.</p>
+  </div>
+
+  <!-- SERIES NAV -->
+  <div class="series-nav">
+    <span class="label">Navigate the series</span>
+    <div class="nav-pair">
+      <a href="07-Semantic-HTML-and-ARIA.html" class="nav-blog">
+        <span class="nav-blog-arrow" aria-hidden="true">←</span>
+        <div>
+          <div class="nav-blog-title">Blog 07: Semantic HTML and ARIA</div>
+          <div class="nav-blog-sub">What developers must get right before QA tests it</div>
+        </div>
+      </a>
+      <a href="09-Phase-Exit-Criteria.html" class="nav-blog">
+        <div>
+          <div class="nav-blog-title">Blog 09: Phase Exit Criteria</div>
+          <div class="nav-blog-sub">What must be true before each phase closes</div>
+        </div>
+        <span class="nav-blog-arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+
+  <aside class="references" aria-label="References">
+    <div class="ref-title">References</div>
+    <ul role="list">
+      <li><a href="https://github.com/jsx-eslint/eslint-plugin-jsx-a11y" target="_blank" rel="noopener noreferrer">eslint-plugin-jsx-a11y: GitHub repository and rule documentation</a></li>
+      <li><a href="https://github.com/dequelabs/axe-core" target="_blank" rel="noopener noreferrer">axe-core: GitHub repository</a></li>
+      <li><a href="https://github.com/nickcolley/jest-axe" target="_blank" rel="noopener noreferrer">jest-axe: axe-core integration for Jest</a></li>
+      <li><a href="https://github.com/component-driven/cypress-axe" target="_blank" rel="noopener noreferrer">cypress-axe: axe-core integration for Cypress</a></li>
+      <li><a href="https://playwright.dev/docs/accessibility-testing" target="_blank" rel="noopener noreferrer">Playwright: accessibility testing documentation</a></li>
+    </ul>
+  </aside>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; Built with intention. Tested with care. &nbsp;·&nbsp; © 2025
+  </p>
+</footer>
+
+</body>
+</html>
