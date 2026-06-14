@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>27 Axe DevTools | The Quality Strategist</title>
+  <meta name="description" content="How to use axe DevTools for accessibility testing. Rules, impact levels, what axe catches, what it misses, and how to use it in the browser and CI pipeline." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0d0d0d;--bg2:#161616;--bg3:#1e1e1e;--border:#2e2e2e;--text:#f0f0f0;--text-2:#c8c8c8;--text-3:#8a8a8a;--green:#4ade80;--green-bg:rgba(74,222,128,0.07);--blue:#60a5fa;--blue-bg:rgba(96,165,250,0.07);--amber:#fbbf24;--amber-bg:rgba(251,191,36,0.07);--purple:#a78bfa;--purple-bg:rgba(167,139,250,0.07);--red:#f87171;--red-bg:rgba(248,113,113,0.07);--teal:#2dd4bf;--teal-bg:rgba(45,212,191,0.07)}
+    html{scroll-behavior:smooth}body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;line-height:1.8;-webkit-font-smoothing:antialiased}
+    .skip-link{position:absolute;top:-100%;left:1rem;background:var(--green);color:#000;padding:0.5rem 1rem;border-radius:0 0 6px 6px;font-size:0.85rem;font-weight:500;text-decoration:none;z-index:999}.skip-link:focus{top:0}
+    nav.site-nav{position:sticky;top:0;z-index:100;background:rgba(13,13,13,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:56px}
+    .nav-logo{font-family:'DM Serif Display',serif;font-size:1rem;color:var(--text);text-decoration:none}
+    .nav-links{display:flex;gap:2rem;list-style:none}.nav-links a{color:var(--text-3);text-decoration:none;font-size:0.85rem}.nav-links a:hover{color:var(--text)}
+    .blog-header{max-width:900px;margin:0 auto;padding:4rem 2rem 2.5rem;border-bottom:1px solid var(--border)}
+    .breadcrumb{font-size:0.78rem;color:var(--text-3);margin-bottom:1.5rem;display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap}.breadcrumb a{color:var(--text-3);text-decoration:none}
+    .blog-tags{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.25rem}
+    .tag{font-size:0.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:0.04em;text-transform:uppercase;font-weight:500}
+    .tag.accent{background:var(--purple-bg);color:var(--purple);border-color:rgba(167,139,250,0.25)}
+    .blog-header h1{font-family:'DM Serif Display',serif;font-size:clamp(1.85rem,4vw,2.6rem);line-height:1.2;color:var(--text);margin-bottom:0.75rem}
+    .blog-header h1 em{font-style:italic;color:var(--purple)}
+    .blog-subtitle{font-family:'DM Serif Display',serif;font-size:1.1rem;font-style:italic;color:var(--text-3);margin-bottom:1.25rem}
+    .blog-meta{display:flex;align-items:center;gap:1.25rem;font-size:0.82rem;color:var(--text-3);flex-wrap:wrap}.blog-meta .series{color:var(--text-2);font-weight:500}
+    main.blog-body{display:block;max-width:900px;margin:0 auto;padding:3rem 2rem 5rem}
+    .toc{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.5rem 1.75rem;margin:0 0 3rem 0}
+    .toc-title{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--text-3);font-weight:500;margin-bottom:0.9rem}
+    .toc ol{padding-left:1.25rem}.toc ol li{margin-bottom:0.45rem}.toc ol li a{font-size:0.88rem;color:var(--text-2);text-decoration:none}.toc ol li a:hover{color:var(--purple)}
+    .blog-body h2{font-family:'DM Serif Display',serif;font-size:1.5rem;color:var(--text);margin:3.5rem 0 1.1rem;padding-top:1rem;border-top:1px solid var(--border)}
+    .blog-body h3{font-size:1rem;font-weight:500;color:var(--text);margin:1.75rem 0 0.5rem}
+    .blog-body p{color:var(--text-2);margin-bottom:1.25rem;font-weight:300}.blog-body p strong{color:var(--text);font-weight:500}
+    .blog-body ul,.blog-body ol{padding-left:1.5rem;margin-bottom:1.25rem;color:var(--text-2);font-weight:300}.blog-body li{margin-bottom:0.45rem}.blog-body li strong{color:var(--text);font-weight:500}
+    code{background:var(--bg3);padding:1px 6px;border-radius:3px;font-size:0.85em;color:var(--text-2);font-family:monospace}
+    .callout{display:block;background:var(--purple-bg);border-left:3px solid var(--purple);border-radius:0 10px 10px 0;padding:1.25rem 1.5rem;margin:1.75rem 0;font-size:0.95rem;color:var(--text);font-style:italic;line-height:1.6}
+    .callout.amber{background:var(--amber-bg);border-color:var(--amber)}.callout.green{background:var(--green-bg);border-color:var(--green)}.callout.blue{background:var(--blue-bg);border-color:var(--blue)}
+    .tool{display:inline;background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,0.2);border-radius:4px;padding:1px 7px;font-size:0.85em;font-weight:500}
+    .takeaway{background:var(--green-bg);border:1px solid rgba(74,222,128,0.2);border-radius:10px;padding:1.25rem 1.5rem;margin:1.75rem 0}
+    .takeaway .label{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--green);font-weight:500;margin-bottom:0.5rem;display:block}
+    .takeaway ul{padding-left:1.25rem;color:var(--text-2);font-size:0.93rem;display:flex;flex-direction:column;gap:0.5rem}
+    .impact-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:1.75rem 0}
+    .impact-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:0.9rem 1rem}
+    .impact-label{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;font-weight:600;margin-bottom:4px}
+    .impact-desc{font-size:0.78rem;color:var(--text-3);line-height:1.5}
+    .table-wrap{display:block;overflow-x:auto;margin:1.75rem 0;border-radius:10px;border:1px solid var(--border)}
+    table{width:100%;border-collapse:collapse;font-size:0.875rem}
+    thead th{background:var(--bg2);padding:10px 14px;text-align:left;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-3);font-weight:500;border-bottom:1px solid var(--border);white-space:nowrap}
+    tbody td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-2);vertical-align:top;line-height:1.55}tbody tr:last-child td{border-bottom:none}tbody td:first-child{color:var(--text);font-weight:500}tbody tr:hover td{background:var(--bg2)}
+    .series-nav{margin-top:4rem;padding-top:2rem;border-top:1px solid var(--border)}.series-nav .label{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--text-3);font-weight:500;margin-bottom:0.75rem;display:block}
+    .nav-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .nav-blog{display:flex;align-items:center;gap:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.25rem;text-decoration:none;transition:border-color 0.2s}.nav-blog:hover{border-color:#444;background:var(--bg3)}
+    .nav-blog-arrow{color:var(--text-3);font-size:1rem;flex-shrink:0}.nav-blog-title{font-size:0.88rem;font-weight:500;color:var(--text)}.nav-blog-sub{font-size:0.75rem;color:var(--text-3);margin-top:2px}
+    .references{margin-top:2.5rem;padding:1.5rem 1.75rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px}.ref-title{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--text-3);font-weight:500;margin-bottom:1rem}
+    .references ul{list-style:none;padding:0}.references ul li{margin-bottom:0.5rem}.references ul li a{font-size:0.85rem;color:var(--text-2);text-decoration:none;display:inline-flex;align-items:center;gap:0.4rem}.references ul li a:hover{color:var(--green)}.references ul li a::before{content:'↗';font-size:0.75rem;color:var(--text-3)}
+    footer{border-top:1px solid var(--border);padding:2rem;text-align:center;font-size:0.78rem;color:var(--text-3)}footer a{color:var(--text-3);text-decoration:none}
+    @media(max-width:620px){nav.site-nav{padding:0 1.25rem}.nav-links{display:none}.blog-header,main.blog-body{padding-left:1.25rem;padding-right:1.25rem}.impact-grid{grid-template-columns:1fr 1fr}.nav-pair{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <ul class="nav-links" role="list">
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#playlist">Playlist</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#justlikereal">JustLikeReal</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#meetme">Meet Me</a></li>
+  </ul>
+</nav>
+<header class="blog-header">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a>
+    <span aria-hidden="true">›</span><span>Shift-Left Accessibility</span>
+    <span aria-hidden="true">›</span><span aria-current="page">27 of 38</span>
+  </nav>
+  <div class="blog-tags">
+    <span class="tag accent">Tools</span><span class="tag">axe DevTools</span><span class="tag">Browser Extension</span><span class="tag">CI/CD</span>
+  </div>
+  <h1>27 Axe DevTools: <em>Rule-Based Accessibility Testing in the Browser and Pipeline</em></h1>
+  <p class="blog-subtitle">axe DevTools runs the same engine whether it is in your browser extension or your CI pipeline. That consistency is the point.</p>
+  <div class="blog-meta">
+    <span class="series">Series: Shift-Left Accessibility</span>
+    <span aria-hidden="true">·</span><span>Blog 27 of 38</span>
+    <span aria-hidden="true">·</span><span>8 min read</span>
+  </div>
+</header>
+<main class="blog-body" id="main-content">
+  <nav class="toc" aria-label="Table of contents">
+    <div class="toc-title">In this blog</div>
+    <ol>
+      <li><a href="#what-is-axe">What axe DevTools is</a></li>
+      <li><a href="#impact-levels">Impact levels: critical, serious, moderate, minor</a></li>
+      <li><a href="#how-to-use">How to use axe DevTools in the browser</a></li>
+      <li><a href="#what-catches">What axe DevTools catches</a></li>
+      <li><a href="#what-misses">What axe DevTools misses</a></li>
+      <li><a href="#axe-core">axe-core in the pipeline</a></li>
+      <li><a href="#wcag">WCAG 2.1 AA coverage</a></li>
+      <li><a href="#how-to-test">How to test: tiers, platforms and playground</a></li>
+    </ol>
+  </nav>
+
+  <h2 id="what-is-axe">1. What axe DevTools Is</h2>
+  <p>axe DevTools is a browser extension built on <span class="tool">axe-core</span>, the open-source accessibility rules engine maintained by Deque Systems. The same engine that runs in the extension runs in your CI pipeline via the axe-core npm package. This means a violation flagged in the browser during development is the same violation that fails a build in CI: no rule differences, no score drift between environments.</p>
+  <p>The free extension is available for Chrome and Firefox. It runs a rules-based scan on the current page state and returns structured violations with impact level, WCAG criterion, DOM element reference, and remediation guidance. The Pro version adds guided testing workflows and more rules, but the free version covers the majority of automated detectable violations.</p>
+
+  <div class="callout blue" role="note">
+    axe DevTools is a Tier 2 semi-automated tool. It scans the rendered DOM and returns structured violations. It does not replace keyboard testing, screen reader testing, or visual judgment: but it covers more WCAG criteria with more precision than any other browser-based tool.
+  </div>
+  <figure class="blog-illustration" aria-label="Developer runs an axe scan and violations light up across the page like a pinball machine">
+    <svg viewBox="0 0 680 260" width="100%" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#0d0d0d;">
+      <title>Developer runs axe DevTools scan and the page lights up with violation badges by impact level</title>
+      <desc>A developer at a laptop on the left clicks Analyse. The page on the right lights up with red Critical badges, amber Serious badges, and blue Moderate badges on various elements. The developer looks satisfied. Caption reads: axe does not miss quietly. It lights everything up.</desc>
+      <rect width="680" height="260" fill="#0d0d0d"/>
+      <!-- developer -->
+      <rect x="20" y="80" width="130" height="80" rx="5" fill="#161616" stroke="#2e2e2e" stroke-width="1"/>
+      <rect x="26" y="86" width="118" height="62" rx="3" fill="#0d0d0d"/>
+      <text x="45" y="108" font-family="monospace" font-size="8" fill="#a78bfa">axe.analyze()</text>
+      <rect x="38" y="116" width="90" height="16" rx="3" fill="#1a0d2a" stroke="#a78bfa" stroke-width="1"/>
+      <text x="83" y="127" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#a78bfa" font-weight="600">Analyse ▶</text>
+      <rect x="20" y="160" width="130" height="8" rx="2" fill="#1e1e1e" stroke="#2e2e2e" stroke-width="0.5"/>
+      <!-- developer figure -->
+      <circle cx="85" cy="52" r="18" fill="#f5d5a0" stroke="#3d4235" stroke-width="1.2"/>
+      <path d="M67 46 Q70 30 85 30 Q100 30 103 46" fill="#3d4235"/>
+      <circle cx="79" cy="50" r="2.5" fill="#3d4235"/><circle cx="91" cy="50" r="2.5" fill="#3d4235"/>
+      <path d="M80 60 Q85 64 90 60" fill="none" stroke="#3d4235" stroke-width="1.5" stroke-linecap="round"/>
+      <ellipse cx="85" cy="200" rx="20" ry="22" fill="#4a6fa5" stroke="#3d4235" stroke-width="1.2"/>
+      <line x1="75" y1="222" x2="70" y2="248" stroke="#3d4235" stroke-width="2"/><line x1="95" y1="222" x2="100" y2="248" stroke="#3d4235" stroke-width="2"/>
+      <!-- arrow: scan fires -->
+      <path d="M155 118 Q200 100 230 118" fill="none" stroke="#a78bfa" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#arr27)"/>
+      <defs><marker id="arr27" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#a78bfa" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+      <!-- page with violations lighting up -->
+      <rect x="230" y="40" width="420" height="200" rx="8" fill="#161616" stroke="#2e2e2e" stroke-width="1"/>
+      <!-- nav bar -->
+      <rect x="230" y="40" width="420" height="22" rx="8" fill="#1e1e1e"/>
+      <rect x="246" y="46" width="60" height="10" rx="2" fill="#2e2e2e"/>
+      <rect x="314" y="46" width="40" height="10" rx="2" fill="#2e2e2e"/>
+      <!-- heading area -->
+      <rect x="246" y="74" width="180" height="12" rx="2" fill="#2e2e2e"/>
+      <!-- form input: critical -->
+      <rect x="246" y="96" width="160" height="24" rx="4" fill="#1e1e1e" stroke="#f87171" stroke-width="1.5"/>
+      <text x="326" y="111" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#555">input field</text>
+      <rect x="246" y="92" width="60" height="16" rx="3" fill="#f87171"/>
+      <text x="276" y="103" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#fff" font-weight="700">Critical</text>
+      <!-- button: serious -->
+      <rect x="426" y="96" width="80" height="24" rx="4" fill="#1e1e1e" stroke="#fbbf24" stroke-width="1.5"/>
+      <text x="466" y="111" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#555">button</text>
+      <rect x="426" y="92" width="56" height="16" rx="3" fill="#fbbf24"/>
+      <text x="454" y="103" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#000" font-weight="700">Serious</text>
+      <!-- image: critical -->
+      <rect x="246" y="132" width="80" height="56" rx="4" fill="#1e1e1e" stroke="#f87171" stroke-width="1.5"/>
+      <text x="286" y="163" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#555">img</text>
+      <rect x="246" y="128" width="60" height="16" rx="3" fill="#f87171"/>
+      <text x="276" y="139" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#fff" font-weight="700">Critical</text>
+      <!-- text: moderate -->
+      <rect x="340" y="132" width="200" height="10" rx="2" fill="#2e2e2e"/>
+      <rect x="340" y="148" width="180" height="10" rx="2" fill="#2e2e2e"/>
+      <rect x="340" y="128" width="64" height="16" rx="3" fill="#60a5fa"/>
+      <text x="372" y="139" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#000" font-weight="700">Moderate</text>
+      <!-- link: serious -->
+      <text x="350" y="180" font-family="DM Sans,sans-serif" font-size="9" fill="#60a5fa" text-decoration="underline">click here</text>
+      <rect x="400" y="170" width="56" height="16" rx="3" fill="#fbbf24"/>
+      <text x="428" y="181" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#000" font-weight="700">Serious</text>
+      <!-- total badge -->
+      <rect x="490" y="170" width="144" height="58" rx="6" fill="#1a0d2a" stroke="#a78bfa" stroke-width="1"/>
+      <text x="562" y="186" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#a78bfa">axe found:</text>
+      <text x="510" y="204" text-anchor="middle" font-family="DM Serif Display,serif" font-size="16" fill="#f87171">2</text>
+      <text x="524" y="204" text-anchor="start" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171">critical</text>
+      <text x="510" y="220" text-anchor="middle" font-family="DM Serif Display,serif" font-size="16" fill="#fbbf24">2</text>
+      <text x="524" y="220" text-anchor="start" font-family="DM Sans,sans-serif" font-size="9" fill="#fbbf24">serious</text>
+      <text x="340" y="252" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#8a8a8a" font-style="italic">axe does not miss quietly. It lights everything up.</text>
+    </svg>
+    <figcaption style="text-align:center;font-size:.82rem;color:var(--text-3);font-style:italic;margin-top:.6rem;">Every violation surfaces with its WCAG criterion, impact level, and affected element.</figcaption>
+  </figure>
+
+  <h2 id="impact-levels">2. Impact Levels: Critical, Serious, Moderate, Minor</h2>
+  <p>axe DevTools categorises every violation by impact. Unlike WAVE which distinguishes errors from alerts, axe uses four levels that indicate the severity of the user experience barrier.</p>
+
+  <div class="impact-grid" role="list">
+    <div class="impact-card" role="listitem">
+      <div class="impact-label" style="color:var(--red);">Critical</div>
+      <div class="impact-desc">Blocks access entirely for users with disabilities. Fix before any release. Examples: missing form labels, empty buttons, keyboard traps.</div>
+    </div>
+    <div class="impact-card" role="listitem">
+      <div class="impact-label" style="color:var(--amber);">Serious</div>
+      <div class="impact-desc">Significant barrier, difficult to work around. Fix before release. Examples: colour contrast failures, missing landmark regions, invalid ARIA.</div>
+    </div>
+    <div class="impact-card" role="listitem">
+      <div class="impact-label" style="color:var(--blue);">Moderate</div>
+      <div class="impact-desc">Some users will find a workaround but the experience is degraded. Fix before release where possible. Examples: redundant alt text, missing table headers.</div>
+    </div>
+    <div class="impact-card" role="listitem">
+      <div class="impact-label" style="color:var(--text-3);">Minor</div>
+      <div class="impact-desc">Best practice violations with minimal user impact. Fix in the next available sprint. Examples: redundant title attributes, empty table summary.</div>
+    </div>
+  </div>
+
+  <div class="callout amber" role="note">
+    For WCAG 2.1 AA compliance, treat Critical and Serious violations as release blockers. Moderate violations should be fixed before the sprint closes. Minor violations go in the backlog with a defined resolution date.
+  </div>
+
+    <div style="background:var(--amber-bg);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:0 0 1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
+    <div style="font-size:1.1rem;line-height:1;padding-top:2px;" aria-hidden="true">&#127919;</div>
+    <div>
+      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--amber);font-weight:500;margin-bottom:4px;">Practice these yourself</div>
+      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">All scenarios are available as interactive demos in the <a href="A11y-Test-Playground/27 A11y Test Playground - Axe DevTools.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Playground</a>.</div>
+    </div>
+  </div>
+<h2 id="how-to-use">3. How to Use axe DevTools in the Browser</h2>
+  <ol>
+    <li><strong>Install:</strong> <a href="https://chromewebstore.google.com/detail/lhdoppojpmngadmnindnejefpokejbdd" target="_blank" rel="noopener noreferrer" style="color:var(--purple);">axe DevTools Chrome extension</a> or Firefox Add-on from Deque.</li>
+    <li><strong>Open DevTools:</strong> <span style="background:var(--bg3);padding:1px 6px;border-radius:3px;font-family:monospace;font-size:0.85em;">F12</span> then find the axe DevTools panel in the DevTools tabs.</li>
+    <li><strong>Run a scan:</strong> Click Analyse. axe scans the current DOM state and returns all violations, passes, and incomplete checks.</li>
+    <li><strong>Review violations:</strong> Each violation shows: rule ID, impact level, WCAG criterion, affected element (with highlight on page), and remediation guidance.</li>
+    <li><strong>Use the element highlight:</strong> Click any violation to highlight the affected element in the browser. This is the fastest way to locate the issue without reading DOM selectors.</li>
+    <li><strong>Check incomplete results:</strong> axe returns an "incomplete" category for rules it cannot automatically determine: these require manual verification. Never ignore the incomplete list.</li>
+    <li><strong>Trigger interactions then re-scan:</strong> Open a modal, submit a form, expand an accordion. Run axe again on the updated DOM. axe only scans the current DOM state.</li>
+  </ol>
+
+  <h3>The incomplete list matters</h3>
+  <p>axe returns three categories: violations (definite failures), passes (confirmed passing), and incomplete (needs manual check). The incomplete list includes colour contrast on images, ARIA labels that exist but may not be descriptive, and focus order. These are not false positives: they are genuine checks axe cannot resolve programmatically. Review every incomplete item.</p>
+
+  <h2 id="how-to-test">How to Test With axe DevTools</h2>
+
+  <h3>Tier 1: Pipeline automation</h3>
+  <p>Add <span class="tool">axe-core</span> to your <span class="tool">Playwright</span> or <span class="tool">Cypress</span> test suite. Run with <code>withTags(['wcag2a','wcag2aa'])</code> scoped to WCAG 2.1 AA. Fail builds on Critical and Serious violations only. Run axe after every significant interaction state: not just page load. See Blog 31 for full CI setup.</p>
+
+  <h3>Tier 2: Semi-automated: axe DevTools in the browser</h3>
+  <ul>
+    <li>Install the <a href="https://chromewebstore.google.com/detail/lhdoppojpmngadmnindnejefpokejbdd" target="_blank" rel="noopener noreferrer" style="color:var(--purple);">axe DevTools Chrome extension</a></li>
+    <li>Open DevTools, go to the axe DevTools panel, click Analyse</li>
+    <li>Work through violations by impact: Critical first, then Serious</li>
+    <li>Review the <strong>Incomplete</strong> list: every item needs manual verification</li>
+    <li>Trigger interactions (open modal, submit form, apply filter), then re-run axe on the updated DOM</li>
+    <li>Use the element highlight to locate each violation on the page without reading DOM selectors</li>
+  </ul>
+  <p><strong>Platforms:</strong> Chrome and Firefox on Windows and Mac. axe-core also runs headlessly in CI on any OS. Mobile browser support is limited: use native testing tools for iOS and Android.</p>
+
+  <h3>Tier 3: Manual: what axe cannot catch</h3>
+  <ul>
+    <li><strong>Keyboard navigation:</strong> Tab through every interactive element. axe cannot determine whether the focus order is logical.</li>
+    <li><strong>Screen reader announcements:</strong> NVDA + Firefox on Windows, VoiceOver + Safari on Mac. ARIA attributes present does not mean announcements are correct.</li>
+    <li><strong>Alt text quality:</strong> axe confirms alt exists: read every alt text manually to verify it is meaningful.</li>
+    <li><strong>iOS VoiceOver:</strong> Physical iPhone + Safari. axe does not run on iOS screen readers.</li>
+    <li><strong>Android TalkBack:</strong> Physical Android device + Chrome. Same limitation.</li>
+  </ul>
+
+  <div style="background:var(--amber-bg);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
+    <div style="font-size:1.1rem;line-height:1;padding-top:2px;" aria-hidden="true">&#127919;</div>
+    <div>
+      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--amber);font-weight:500;margin-bottom:4px;">Practice these yourself</div>
+      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">Eight scenarios: violations and correct implementations: in the <a href="A11y-Test-Playground/27 A11y Test Playground - Axe DevTools.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Axe DevTools Playground</a>.</div>
+    </div>
+  </div>
+
+  <h2 id="what-catches">4. What axe DevTools Catches</h2>
+  <div class="table-wrap">
+    <table>
+      <caption style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Issues axe DevTools detects</caption>
+      <thead><tr><th scope="col">Issue</th><th scope="col">Impact</th><th scope="col">WCAG</th></tr></thead>
+      <tbody>
+        <tr><td>Missing form label</td><td style="color:var(--red)">Critical</td><td>1.3.1 / 3.3.2</td></tr>
+        <tr><td>Empty button (no accessible name)</td><td style="color:var(--red)">Critical</td><td>4.1.2</td></tr>
+        <tr><td>Empty link</td><td style="color:var(--red)">Critical</td><td>2.4.4</td></tr>
+        <tr><td>Missing image alt text</td><td style="color:var(--red)">Critical</td><td>1.1.1</td></tr>
+        <tr><td>Keyboard trap</td><td style="color:var(--red)">Critical</td><td>2.1.2</td></tr>
+        <tr><td>Colour contrast failure</td><td style="color:var(--amber)">Serious</td><td>1.4.3</td></tr>
+        <tr><td>Invalid ARIA role or attribute</td><td style="color:var(--amber)">Serious</td><td>4.1.2</td></tr>
+        <tr><td>Missing landmark regions</td><td style="color:var(--amber)">Serious</td><td>1.3.6</td></tr>
+        <tr><td>Missing page language</td><td style="color:var(--amber)">Serious</td><td>3.1.1</td></tr>
+        <tr><td>Missing page title</td><td style="color:var(--amber)">Serious</td><td>2.4.2</td></tr>
+        <tr><td>Table missing headers</td><td style="color:var(--blue)">Moderate</td><td>1.3.1</td></tr>
+        <tr><td>aria-required-children violation</td><td style="color:var(--blue)">Moderate</td><td>1.3.1</td></tr>
+        <tr><td>Duplicate ID</td><td style="color:var(--blue)">Moderate</td><td>4.1.1</td></tr>
+        <tr><td>Scrollable region not keyboard accessible</td><td style="color:var(--amber)">Serious</td><td>2.1.1</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="what-misses">5. What axe DevTools Misses</h2>
+  <div class="table-wrap">
+    <table>
+      <caption style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Issues axe DevTools cannot detect</caption>
+      <thead><tr><th scope="col">Issue</th><th scope="col">Why it misses it</th><th scope="col">How to test instead</th></tr></thead>
+      <tbody>
+        <tr><td>Meaningful alt text quality</td><td>Confirms alt exists: not whether it describes the image accurately</td><td>Manual review of every alt text</td></tr>
+        <tr><td>Focus order and logic</td><td>Can detect missing focusable elements, not whether the order makes sense</td><td>Tab through the page manually</td></tr>
+        <tr><td>Screen reader announcements</td><td>No screen reader is running: ARIA presence confirmed, not behaviour</td><td>NVDA, VoiceOver, TalkBack</td></tr>
+        <tr><td>Cognitive accessibility</td><td>Plain language, consistent navigation, reading level: no automated check</td><td>Manual review</td></tr>
+        <tr><td>Zoom and reflow</td><td>Requires viewport testing</td><td>DevTools responsive mode at 320px</td></tr>
+        <tr><td>Dynamic content after interaction</td><td>Scans current DOM: post-interaction state requires manual re-scan</td><td>Trigger interaction, re-run axe</td></tr>
+        <tr><td>Custom component behaviour</td><td>Validates ARIA attributes, not whether the component behaves as its role implies</td><td>Screen reader testing</td></tr>
+        <tr><td>Contrast on gradients and images</td><td>Returns as incomplete: requires manual verification</td><td>Review incomplete results manually</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <figure class="blog-illustration" aria-label="The axe incomplete list shown as a detective case board with unsolved pins and question marks">
+    <svg viewBox="0 0 680 240" width="100%" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#0d0d0d;">
+      <title>The axe incomplete list shown as a detective pinboard with items marked needs manual check</title>
+      <desc>A pinboard on the left has cards pinned with red string connecting them, each labelled with an axe incomplete item: colour contrast on gradient, aria-label descriptive enough question mark, focus order logical question mark. A detective figure stands to the right looking at the board with a magnifying glass. Caption reads: Incomplete does not mean passing. It means axe needs your eyes.</desc>
+      <rect width="680" height="240" fill="#0d0d0d"/>
+      <!-- pinboard -->
+      <rect x="20" y="20" width="400" height="196" rx="8" fill="#1a1206" stroke="#fbbf24" stroke-width="1.5"/>
+      <text x="220" y="40" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#fbbf24" font-weight="600" letter-spacing="1">INCOMPLETE: NEEDS MANUAL CHECK</text>
+      <!-- card 1 -->
+      <rect x="36" y="52" width="160" height="44" rx="4" fill="#161616" stroke="#fbbf24" stroke-width="0.8"/>
+      <circle cx="116" cy="52" r="4" fill="#f87171"/><line x1="116" y1="56" x2="116" y2="58" stroke="#f87171" stroke-width="1"/>
+      <text x="116" y="68" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#c8c8c8">Colour contrast on</text>
+      <text x="116" y="80" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#c8c8c8">gradient background</text>
+      <text x="116" y="90" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#fbbf24">?</text>
+      <!-- card 2 -->
+      <rect x="216" y="52" width="180" height="44" rx="4" fill="#161616" stroke="#fbbf24" stroke-width="0.8"/>
+      <circle cx="306" cy="52" r="4" fill="#f87171"/><line x1="306" y1="56" x2="306" y2="58" stroke="#f87171" stroke-width="1"/>
+      <text x="306" y="68" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#c8c8c8">aria-label: is</text>
+      <text x="306" y="80" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#c8c8c8">"Submit" descriptive enough?</text>
+      <text x="306" y="90" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#fbbf24">?</text>
+      <!-- card 3 -->
+      <rect x="36" y="112" width="160" height="44" rx="4" fill="#161616" stroke="#fbbf24" stroke-width="0.8"/>
+      <circle cx="116" cy="112" r="4" fill="#f87171"/><line x1="116" y1="116" x2="116" y2="118" stroke="#f87171" stroke-width="1"/>
+      <text x="116" y="128" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#c8c8c8">Focus order:</text>
+      <text x="116" y="140" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#c8c8c8">logical for users?</text>
+      <text x="116" y="150" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#fbbf24">?</text>
+      <!-- card 4 -->
+      <rect x="216" y="112" width="180" height="44" rx="4" fill="#161616" stroke="#fbbf24" stroke-width="0.8"/>
+      <circle cx="306" cy="112" r="4" fill="#f87171"/><line x1="306" y1="116" x2="306" y2="118" stroke="#f87171" stroke-width="1"/>
+      <text x="306" y="128" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#c8c8c8">alt text: "chart.png"</text>
+      <text x="306" y="140" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#c8c8c8">meaningful?</text>
+      <text x="306" y="150" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#fbbf24">?</text>
+      <!-- red strings -->
+      <line x1="116" y1="96" x2="116" y2="112" stroke="#f87171" stroke-width="0.8" opacity="0.5"/>
+      <line x1="116" y1="96" x2="306" y2="112" stroke="#f87171" stroke-width="0.8" opacity="0.4"/>
+      <line x1="306" y1="96" x2="306" y2="112" stroke="#f87171" stroke-width="0.8" opacity="0.5"/>
+      <!-- total -->
+      <rect x="36" y="170" width="364" height="32" rx="5" fill="#1a1206" stroke="#fbbf24" stroke-width="0.8"/>
+      <text x="218" y="190" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#fbbf24">4 items require manual verification: axe cannot resolve them automatically</text>
+      <!-- detective -->
+      <circle cx="560" cy="90" r="26" fill="#f5d5a0" stroke="#3d4235" stroke-width="1.5"/>
+      <path d="M534 82 Q537 60 560 58 Q583 60 586 82" fill="#3d4235"/>
+      <circle cx="552" cy="88" r="3" fill="#3d4235"/><circle cx="568" cy="88" r="3" fill="#3d4235"/>
+      <path d="M553 102 Q560 106 567 102" fill="none" stroke="#3d4235" stroke-width="1.5" stroke-linecap="round"/>
+      <ellipse cx="560" cy="136" rx="24" ry="28" fill="#2a3a4a" stroke="#3d4235" stroke-width="1.2"/>
+      <line x1="548" y1="164" x2="542" y2="196" stroke="#3d4235" stroke-width="2"/><line x1="572" y1="164" x2="578" y2="196" stroke="#3d4235" stroke-width="2"/>
+      <!-- magnifying glass -->
+      <line x1="536" y1="118" x2="510" y2="140" stroke="#3d4235" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="504" cy="146" r="14" fill="none" stroke="#3d4235" stroke-width="2.5"/>
+      <circle cx="504" cy="146" r="10" fill="rgba(96,165,250,0.1)"/>
+      <!-- speech bubble -->
+      <rect x="590" y="50" width="80" height="42" rx="6" fill="#1e1e1e" stroke="#fbbf24" stroke-width="1"/>
+      <path d="M598 92 L594 102 L606 92" fill="#1e1e1e" stroke="#fbbf24" stroke-width="1"/>
+      <text x="630" y="67" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#fbbf24">These need</text>
+      <text x="630" y="79" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#fbbf24">human eyes.</text>
+      <text x="340" y="232" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#8a8a8a" font-style="italic">Incomplete does not mean passing. It means axe needs your eyes.</text>
+    </svg>
+    <figcaption style="text-align:center;font-size:.82rem;color:var(--text-3);font-style:italic;margin-top:.6rem;">Never ignore the incomplete list. Every item is a genuine check that automation cannot resolve.</figcaption>
+  </figure>
+
+  <h2 id="axe-core">6. axe-core in the Pipeline</h2>
+  <p>The <span class="tool">axe-core</span> npm package brings the same rules engine into automated test suites. Install it as a dependency and integrate with <span class="tool">Playwright</span>, <span class="tool">Cypress</span>, or <span class="tool">Jest</span> to run accessibility scans as part of every build.</p>
+
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;margin:1.25rem 0;">
+    <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.07em;color:var(--purple);font-weight:500;margin-bottom:8px;">Playwright + axe-core example</div>
+    <pre style="font-family:monospace;font-size:0.82rem;color:var(--text-2);line-height:1.7;overflow-x:auto;">import { checkA11y } from 'axe-playwright';
+
+test('homepage has no critical violations', async ({ page }) => {
+  await page.goto('/');
+  await checkA11y(page, null, {
+    runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa'] },
+    includedImpacts: ['critical', 'serious']
+  });
+});</pre>
+  </div>
+
+  <ul>
+    <li><strong>runOnly wcag2aa:</strong> Scope the scan to WCAG 2.1 AA rules only: avoids best-practice noise in CI</li>
+    <li><strong>includedImpacts critical/serious:</strong> Fail the build only on Critical and Serious: prevents minor issues from blocking deployments</li>
+    <li><strong>Scope to a component:</strong> Pass a CSS selector as the second argument to scan only a specific component rather than the full page</li>
+    <li><strong>Run after interactions:</strong> Call axe after opening modals, submitting forms, and expanding accordions: not just on page load</li>
+  </ul>
+
+  <div class="callout green" role="note">
+    The right workflow: axe-core in CI catches failures at build time before they reach testers. axe DevTools in the browser gives developers immediate feedback during development. Same engine, two touchpoints, consistent results.
+  </div>
+
+  <h2 id="wcag">7. WCAG 2.1 AA Coverage</h2>
+  <div class="table-wrap">
+    <table>
+      <caption style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">WCAG 2.1 AA coverage by axe DevTools</caption>
+      <thead><tr><th scope="col">WCAG principle</th><th scope="col">axe coverage</th><th scope="col">Gaps</th></tr></thead>
+      <tbody>
+        <tr><td style="white-space:nowrap">1. Perceivable</td><td>Strong: alt text, colour contrast, form labels, landmarks, captions check</td><td>Alt text quality, meaningful colour use, audio/video content</td></tr>
+        <tr><td style="white-space:nowrap">2. Operable</td><td>Good: keyboard traps, focus management, skip links, page title</td><td>Focus order logic, timing, motion, gesture alternatives</td></tr>
+        <tr><td style="white-space:nowrap">3. Understandable</td><td>Partial: page language, label associations, error identification</td><td>Error suggestion, consistent navigation</td></tr>
+        <tr><td style="white-space:nowrap">4. Robust</td><td>Strong: ARIA validity, duplicate IDs, role/name/value</td><td>Live region behaviour, custom widget runtime semantics</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="takeaway" role="note">
+    <div class="label">The axe workflow</div>
+    <ul>
+      <li>Run axe on page load. Fix all Critical and Serious violations before committing.</li>
+      <li>Trigger every interactive state: modals, accordions, form submissions, filters. Re-run axe on each.</li>
+      <li>Review the incomplete list. Every item in incomplete requires a manual check: it is not safe to ignore.</li>
+      <li>Add axe-core to CI with wcag2aa scope and critical/serious impact filter. Zero violations = green build.</li>
+    </ul>
+  </div>
+
+  <h2 id="mobile-testing">Mobile Testing: What These Tools Cannot Do</h2>
+  <p>Browser-based tools like <span class="tool">axe DevTools</span>, <span class="tool">WAVE</span>, and <span class="tool">Lighthouse</span> run on desktop browsers. They cannot test native mobile apps, and they cannot replicate the experience of a screen reader user on a phone. The issues these tools catch still need to be verified on mobile. Use these apps to test the same failure patterns in a native mobile context.</p>
+  <div class="table-wrap"><table>
+    <caption style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Native apps for mobile accessibility testing</caption>
+    <thead><tr><th scope="col">App</th><th scope="col">Platform</th><th scope="col">What to test</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://dequeuniversity.com/demo/mars/" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Deque University Mars Demo</a></td><td>iOS + Android (web)</td><td>Real accessibility failures across forms, images, headings and dynamic content: the same issues these tools flag on desktop</td></tr>
+      <tr><td><a href="https://apps.apple.com/us/app/appt-app-accessibility/id1527923025" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Appt App</a></td><td>iOS</td><td>Side-by-side correct and incorrect native implementations: verify that what the tool flags matches what VoiceOver hears</td></tr>
+      <tr><td><a href="https://play.google.com/store/apps/details?id=nl.appt" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Appt App</a></td><td>Android</td><td>Android version: verify TalkBack behaviour on the same failure patterns</td></tr>
+      <tr><td><a href="https://play.google.com/store/apps/details?id=com.google.android.apps.accessibility.auditor" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Accessibility Scanner</a></td><td>Android</td><td>Scan native Android screens for missing labels, contrast, and touch target failures: complements desktop tool findings</td></tr>
+      <tr><td><a href="https://apps.apple.com/us/app/accessibility-checker-ai-eaa/id1095478187" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Accessibility Checker: AI EAA</a></td><td>iOS</td><td>Scan iOS screens for missing accessibility labels on native UI elements</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="series-nav">
+    <span class="label">Navigate the series</span>
+    <div class="nav-pair">
+      <a href="26-WAVE.html" class="nav-blog"><span class="nav-blog-arrow" aria-hidden="true">←</span><div><div class="nav-blog-title">Blog 26: WAVE</div><div class="nav-blog-sub">Visual accessibility testing in the browser</div></div></a>
+      <a href="28-Accessibility-Insights.html" class="nav-blog"><div><div class="nav-blog-title">Blog 28: Accessibility Insights</div><div class="nav-blog-sub">Guided manual testing with FastPass and Assessment</div></div><span class="nav-blog-arrow" aria-hidden="true">→</span></a>
+    </div>
+  </div>
+
+  <aside class="references" aria-label="References">
+    <div class="ref-title">References</div>
+    <ul role="list">
+      <li><a href="https://chromewebstore.google.com/detail/lhdoppojpmngadmnindnejefpokejbdd" target="_blank" rel="noopener noreferrer">axe DevTools Chrome Extension: Deque</a></li>
+      <li><a href="https://github.com/dequelabs/axe-core" target="_blank" rel="noopener noreferrer">axe-core on GitHub: Deque Systems</a></li>
+      <li><a href="https://www.deque.com/axe/core-documentation/api-documentation/" target="_blank" rel="noopener noreferrer">axe-core API Documentation: Deque</a></li>
+      <li><a href="https://www.w3.org/TR/WCAG21/" target="_blank" rel="noopener noreferrer">WCAG 2.1: W3C</a></li>
+    </ul>
+  </aside>
+</main>
+<footer><p><a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a> &nbsp;·&nbsp; Built with intention. Tested with care. &nbsp;·&nbsp; © 2025</p></footer>
+</body>
+</html>

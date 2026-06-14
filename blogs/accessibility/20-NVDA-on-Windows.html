@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>20 NVDA on Windows | The Quality Strategist</title>
+  <meta name="description" content="In-depth guide to testing with NVDA on Windows. Installation, configuration, browse and forms mode, testing forms, images, tables, and live regions." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+      --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+      --green:#4ade80; --green-bg:rgba(74,222,128,0.07);
+      --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07);
+      --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07);
+      --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.07);
+      --red:#f87171; --red-bg:rgba(248,113,113,0.07);
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
+    .skip-link:focus { top:0; }
+    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
+    .nav-links { display:flex; gap:2rem; list-style:none; }
+    .nav-links a { color:var(--text-3); text-decoration:none; font-size:0.85rem; transition:color 0.2s; }
+    .nav-links a:hover { color:var(--text); }
+    .blog-header { max-width:900px; margin:0 auto; padding:4rem 2rem 2.5rem; border-bottom:1px solid var(--border); }
+    .breadcrumb { font-size:0.78rem; color:var(--text-3); margin-bottom:1.5rem; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; }
+    .breadcrumb a { color:var(--text-3); text-decoration:none; }
+    .blog-tags { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.25rem; }
+    .tag { font-size:0.7rem; padding:3px 10px; border-radius:99px; background:var(--bg3); color:var(--text-3); border:1px solid var(--border); letter-spacing:0.04em; text-transform:uppercase; font-weight:500; }
+    .tag.accent { background:var(--blue-bg); color:var(--blue); border-color:rgba(96,165,250,0.25); }
+    .blog-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.85rem,4vw,2.6rem); line-height:1.2; letter-spacing:-0.02em; color:var(--text); margin-bottom:0.75rem; }
+    .blog-header h1 em { font-style:italic; color:var(--blue); }
+    .blog-subtitle { font-family:'DM Serif Display',serif; font-size:1.1rem; font-style:italic; color:var(--text-3); margin-bottom:1.25rem; }
+    .blog-meta { display:flex; align-items:center; gap:1.25rem; font-size:0.82rem; color:var(--text-3); flex-wrap:wrap; }
+    .blog-meta .series { color:var(--text-2); font-weight:500; }
+    main.blog-body { display:block; max-width:900px; margin:0 auto; padding:3rem 2rem 5rem; }
+    .toc { display:block; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.5rem 1.75rem; margin:0 0 3rem 0; }
+    .toc-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.9rem; }
+    .toc ol { padding-left:1.25rem; }
+    .toc ol li { margin-bottom:0.45rem; }
+    .toc ol li a { font-size:0.88rem; color:var(--text-2); text-decoration:none; transition:color 0.2s; }
+    .toc ol li a:hover { color:var(--blue); }
+    .blog-body h2 { font-family:'DM Serif Display',serif; font-size:1.5rem; letter-spacing:-0.01em; color:var(--text); margin:3.5rem 0 1.1rem; padding-top:1rem; border-top:1px solid var(--border); }
+    .blog-body h3 { font-size:1rem; font-weight:500; color:var(--text); margin:1.75rem 0 0.5rem; }
+    .blog-body p { color:var(--text-2); margin-bottom:1.25rem; font-weight:300; }
+    .blog-body p strong { color:var(--text); font-weight:500; }
+    .blog-body ul, .blog-body ol { padding-left:1.5rem; margin-bottom:1.25rem; color:var(--text-2); font-weight:300; }
+    .blog-body li { margin-bottom:0.45rem; }
+    .blog-body li strong { color:var(--text); font-weight:500; }
+    code { background:var(--bg3); padding:1px 6px; border-radius:3px; font-size:0.85em; color:var(--text-2); font-family:monospace; }
+    .callout { display:block; background:var(--blue-bg); border-left:3px solid var(--blue); border-radius:0 10px 10px 0; padding:1.25rem 1.5rem; margin:1.75rem 0; font-size:0.95rem; color:var(--text); font-style:italic; line-height:1.6; }
+    .callout.amber { background:var(--amber-bg); border-color:var(--amber); }
+    .callout.green { background:var(--green-bg); border-color:var(--green); }
+    .takeaway { display:block; background:var(--green-bg); border:1px solid rgba(74,222,128,0.2); border-radius:10px; padding:1.25rem 1.5rem; margin:1.75rem 0; }
+    .takeaway .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--green); font-weight:500; margin-bottom:0.5rem; display:block; }
+    .takeaway ul { padding-left:1.25rem; color:var(--text-2); font-size:0.93rem; display:flex; flex-direction:column; gap:0.5rem; }
+    .key { display:inline-flex; align-items:center; justify-content:center; background:var(--bg3); border:1px solid #444; border-bottom:3px solid #444; border-radius:5px; padding:2px 8px; font-family:monospace; font-size:0.82em; color:var(--text); min-width:28px; white-space:nowrap; }
+    .tool { display:inline; background:var(--purple-bg); color:var(--purple); border:1px solid rgba(167,139,250,0.2); border-radius:4px; padding:1px 7px; font-size:0.85em; font-weight:500; }
+    .test-scenario { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.1rem 1.4rem; margin:1rem 0; }
+    .test-scenario-title { font-size:0.88rem; font-weight:500; color:var(--text); margin-bottom:6px; }
+    .test-scenario-steps { font-size:0.85rem; color:var(--text-2); padding-left:1.25rem; }
+    .test-scenario-steps li { margin-bottom:4px; }
+    .announced { background:var(--bg3); border-left:3px solid var(--amber); border-radius:0 6px 6px 0; padding:0.6rem 0.9rem; font-size:0.82rem; color:var(--text-2); margin-top:0.6rem; font-style:italic; }
+    .announced strong { color:var(--amber); font-style:normal; }
+    .table-wrap { display:block; overflow-x:auto; margin:1.75rem 0; border-radius:10px; border:1px solid var(--border); }
+    table { width:100%; border-collapse:collapse; font-size:0.875rem; }
+    thead th { background:var(--bg2); padding:10px 14px; text-align:left; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-3); font-weight:500; border-bottom:1px solid var(--border); white-space:nowrap; }
+    tbody td { padding:10px 14px; border-bottom:1px solid var(--border); color:var(--text-2); vertical-align:top; line-height:1.55; }
+    tbody tr:last-child td { border-bottom:none; }
+    tbody td:first-child { color:var(--text); font-weight:500; }
+    tbody tr:hover td { background:var(--bg2); }
+    .series-nav { display:block; margin-top:4rem; padding-top:2rem; border-top:1px solid var(--border); }
+    .series-nav .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.75rem; display:block; }
+    .nav-pair { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .nav-blog { display:flex; align-items:center; gap:1rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.1rem 1.25rem; text-decoration:none; transition:border-color 0.2s,background 0.2s; }
+    .nav-blog:hover { border-color:#444; background:var(--bg3); }
+    .nav-blog-arrow { color:var(--text-3); font-size:1rem; flex-shrink:0; }
+    .nav-blog-title { font-size:0.88rem; font-weight:500; color:var(--text); }
+    .nav-blog-sub { font-size:0.75rem; color:var(--text-3); margin-top:2px; }
+    .references { display:block; margin-top:2.5rem; padding:1.5rem 1.75rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; }
+    .ref-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:1rem; }
+    .references ul { list-style:none; padding:0; }
+    .references ul li { margin-bottom:0.5rem; }
+    .references ul li a { font-size:0.85rem; color:var(--text-2); text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; transition:color 0.2s; }
+    .references ul li a:hover { color:var(--green); }
+    .references ul li a::before { content:'↗'; font-size:0.75rem; color:var(--text-3); }
+    footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
+    footer a { color:var(--text-3); text-decoration:none; }
+    @media(max-width:620px) {
+      nav.site-nav { padding:0 1.25rem; }
+      .nav-links { display:none; }
+      .blog-header, main.blog-body { padding-left:1.25rem; padding-right:1.25rem; }
+      .blog-header { padding-top:2.5rem; }
+      .nav-pair { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <ul class="nav-links" role="list">
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#playlist">Playlist</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#justlikereal">JustLikeReal</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#meetme">Meet Me</a></li>
+  </ul>
+</nav>
+
+<header class="blog-header">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a>
+    <span aria-hidden="true">›</span>
+    <span>Shift-Left Accessibility</span>
+    <span aria-hidden="true">›</span>
+    <span aria-current="page">20 of 38</span>
+  </nav>
+  <div class="blog-tags" aria-label="Blog categories">
+    <span class="tag accent">Screen Readers</span>
+    <span class="tag">NVDA</span>
+    <span class="tag">Windows</span>
+  </div>
+  <h1>20 NVDA on Windows: <em>The QA Tester's In-Depth Guide</em></h1>
+  <p class="blog-subtitle">NVDA is free, widely used, and the closest representation of real user experience on Windows. This is how to use it systematically for testing.</p>
+  <div class="blog-meta">
+    <span class="series">Series: Shift-Left Accessibility</span>
+    <span aria-hidden="true">·</span>
+    <span>Blog 20 of 38</span>
+    <span aria-hidden="true">·</span>
+    <span>10 min read</span>
+  </div>
+</header>
+
+<main class="blog-body" id="main-content">
+
+  <nav class="toc" aria-label="Table of contents">
+    <div class="toc-title" id="toc-heading">In this blog</div>
+    <ol aria-labelledby="toc-heading">
+      <li><a href="#why-nvda">Why NVDA for QA testing</a></li>
+      <li><a href="#install">Installation and first launch</a></li>
+      <li><a href="#config">Recommended configuration for testing</a></li>
+      <li><a href="#navigation">Navigation methodology</a></li>
+      <li><a href="#what-to-test">What to test and what to listen for</a></li>
+      <li><a href="#defects">Logging NVDA defects</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <h2 id="why-nvda">1. Why NVDA for QA Testing</h2>
+
+  <p>NVDA (Non-Visual Desktop Access) is a free, open-source screen reader for Windows maintained by NV Access. It is the most widely used screen reader for web accessibility testing because it is free to install, works with Firefox and Chrome, and closely represents real-world usage patterns of Windows screen reader users.</p>
+
+  <p>JAWS (Job Access With Speech) is more common among enterprise users and has a higher market share in corporate environments.</p>
+  <p>For most accessibility testing programmes, NVDA + Firefox is the recommended starting configuration because the combination is free, accurate, and representative.</p>
+
+  <div class="callout" role="note">
+    The core testing principle: disconnect your mouse. Navigate using only the keyboard while NVDA is running. If you cannot complete a task by listening alone, it is an accessibility defect.
+  </div>
+
+  <!-- 2 -->
+  <h2 id="install">2. Installation and First Launch</h2>
+
+  <ul>
+    <li><strong>Download:</strong> <a href="https://www.nvaccess.org/download/" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">nvaccess.org/download</a>: free, no registration required</li>
+    <li><strong>Install:</strong> run the installer with default settings. NVDA can also run as a portable version from a USB drive without installation.</li>
+    <li><strong>Launch:</strong> <span class="key">Win</span>+<span class="key">Alt</span>+<span class="key">N</span> or Start menu. NVDA announces "NVDA has started."</li>
+    <li><strong>System tray icon:</strong> NVDA appears in the system tray. Right-click for options.</li>
+    <li><strong>Quit:</strong> <span class="key">Insert</span>+<span class="key">Q</span> then <span class="key">Enter</span></li>
+    <li><strong>Silence speech without quitting:</strong> <span class="key">Ctrl</span></li>
+  </ul>
+
+  <!-- 3 -->
+  <h2 id="config">3. Recommended Configuration for Testing</h2>
+
+  <h3>Speech rate</h3>
+  <p>Default NVDA speech rate is fast. For testing, slow it down to understand every announcement clearly. <span class="key">Insert</span>+<span class="key">Ctrl</span>+<span class="key">↓</span> to decrease speed. As you gain experience, increase the rate: experienced testers run NVDA faster to cover more ground.</p>
+
+  <h3>Verbosity settings</h3>
+  <p>NVDA Preferences, Speech, Symbol Level: set to "All" during initial testing to hear every punctuation and symbol. Reduce when it becomes noise. Preferences, Document Formatting: enable Headings, Lists, Links, and Tables to get structural announcements as you navigate.</p>
+
+  <h3>Speech synthesiser</h3>
+  <p>Default is eSpeak NG: acceptable for testing. Windows OneCore voices are clearer if you prefer. NVDA Preferences, Synthesiser: change if needed. Do not use a synthesiser that changes the content NVDA reads.</p>
+
+  <h3>Browse mode settings</h3>
+  <p>NVDA Preferences, Browse Mode: ensure "Use screen layout" is ON and "Automatic focus mode for focus changes" is ON. These match the default behaviour most users experience.</p>
+
+  <h3>Browser recommendation</h3>
+  <p>Firefox + NVDA is the standard combination. Chrome works but some ARIA announcements differ between the two. Test in both if you are investigating a specific ARIA pattern failure.</p>
+
+  <!-- 4 -->
+  <h2 id="navigation">4. Navigation Methodology</h2>
+
+  <p>A systematic NVDA test session follows this sequence for every page:</p>
+
+  <ol>
+    <li><strong>Page title check:</strong> Load the page. Listen to the page title announcement. Does it identify the page meaningfully?</li>
+    <li><strong>Landmark navigation:</strong> Press <span class="key">D</span> to cycle through landmarks. Are main, nav, search, aside, and footer present and labelled?</li>
+    <li><strong>Heading structure:</strong> Press <span class="key">H</span> to cycle through headings. Is the hierarchy logical? Are there any headings that skip levels (H1 to H4 with no H2, H3)?</li>
+    <li><strong>Interactive elements:</strong> Tab through all interactive elements. For each one: is the label announced? Is the role announced? Is the state announced (expanded, checked, invalid)?</li>
+    <li><strong>Forms:</strong> Tab to each field. Listen for label, type, constraints, and required state. Submit with empty fields: are errors announced?</li>
+    <li><strong>Images:</strong> Press <span class="key">G</span> to cycle through graphics. Is each alt text meaningful?</li>
+    <li><strong>Links:</strong> Press <span class="key">K</span> to cycle through links. Does each link describe its destination? Are there any "click here" or "read more" with no context?</li>
+    <li><strong>Elements list:</strong> <span class="key">Insert</span>+<span class="key">F7</span>: open the elements list. Filter by headings, links, form fields, buttons, and landmarks to get a structural overview of the page.</li>
+  </ol>
+
+  <!-- 5 -->
+  <h2 id="what-to-test">5. What to Test and What to Listen For</h2>
+
+  <h3>Testing headings</h3>
+  <div class="test-scenario">
+    <div class="test-scenario-title">How to test</div>
+    <ul class="test-scenario-steps">
+      <li>Press <span class="key">H</span> to move to each heading. Listen to the heading level and text.</li>
+      <li>Press <span class="key">1</span>–<span class="key">6</span> to jump to specific heading levels.</li>
+      <li>Use <span class="key">Insert</span>+<span class="key">F7</span>, select Headings to see the complete heading outline.</li>
+    </ul>
+    <div class="announced"><strong>Correct:</strong> "Heading level 2: Our services": level and text both announced</div>
+    <div class="announced"><strong>Failure:</strong> "Our services" with no level: element is not a semantic heading, just visually styled text</div>
+  </div>
+
+  <h3>Testing links</h3>
+  <div class="test-scenario">
+    <div class="test-scenario-title">How to test</div>
+    <ul class="test-scenario-steps">
+      <li>Press <span class="key">K</span> to move through links. Listen to the link text.</li>
+      <li>Press <span class="key">Insert</span>+<span class="key">K</span> to hear the link destination URL.</li>
+    </ul>
+    <div class="announced"><strong>Correct:</strong> "View our accessibility statement, link": destination clear from link text</div>
+    <div class="announced"><strong>Failure:</strong> "Read more, link": destination not clear. "Click here, link": describes action not destination</div>
+  </div>
+
+  <h3>Testing images</h3>
+  <div class="test-scenario">
+    <div class="test-scenario-title">How to test</div>
+    <ul class="test-scenario-steps">
+      <li>Press <span class="key">G</span> to move through graphics. Listen to the announcement.</li>
+      <li>Use <span class="key">Insert</span>+<span class="key">F7</span>, select Graphics to see all images and their alt text.</li>
+    </ul>
+    <div class="announced"><strong>Correct:</strong> "Bar chart: Q3 revenue grew from £0.8M to £2.4M, graphic": data conveyed</div>
+    <div class="announced"><strong>Failure:</strong> "IMG_20241103.jpg, graphic": filename announced, no alt text</div>
+    <div class="announced"><strong>Failure:</strong> "graphic" with nothing else: empty or missing alt on meaningful image</div>
+  </div>
+
+  <h3>Testing forms</h3>
+  <div class="test-scenario">
+    <div class="test-scenario-title">How to test</div>
+    <ul class="test-scenario-steps">
+      <li>Tab to each form field. Listen for the label, field type, and any constraints.</li>
+      <li>Submit the form empty. Listen for error announcements.</li>
+      <li>Tab back to each error field. Listen for the error description via aria-describedby.</li>
+    </ul>
+    <div class="announced"><strong>Correct on focus:</strong> "Email address, required, edit text"</div>
+    <div class="announced"><strong>Correct on error refocus:</strong> "invalid, Email address, required, Enter a valid email e.g. name@example.com, edit text"</div>
+    <div class="announced"><strong>Failure on focus:</strong> "edit text, blank": no label</div>
+    <div class="announced"><strong>Failure on error:</strong> "invalid, edit text": error state announced but no description</div>
+  </div>
+
+  <h3>Testing tables</h3>
+  <div class="test-scenario">
+    <div class="test-scenario-title">How to test</div>
+    <ul class="test-scenario-steps">
+      <li>Press <span class="key">T</span> to find a table. NVDA announces the number of rows and columns.</li>
+      <li>Use <span class="key">Ctrl</span>+<span class="key">Alt</span>+arrow keys to navigate cell by cell.</li>
+      <li>Listen for column and row header announcements on each cell.</li>
+    </ul>
+    <div class="announced"><strong>Correct:</strong> "Table with 5 rows and 4 columns. Column 1: Name. Row 2: Jane Smith. Jane Smith"</div>
+    <div class="announced"><strong>Failure:</strong> Cell data announced with no column header: table has no th elements or scope attributes</div>
+  </div>
+
+  <h3>Testing live regions</h3>
+  <div class="test-scenario">
+    <div class="test-scenario-title">How to test</div>
+    <ul class="test-scenario-steps">
+      <li>Place focus on a non-live-region element (heading or paragraph).</li>
+      <li>Trigger the dynamic content change (add to cart, filter, submit, toast).</li>
+      <li>Listen without moving focus. NVDA should announce the update.</li>
+    </ul>
+    <div class="announced"><strong>Correct (status):</strong> "Item added to cart": announced when NVDA is idle</div>
+    <div class="announced"><strong>Correct (alert):</strong> "Session expired. Please log in again.": announced immediately</div>
+    <div class="announced"><strong>Failure:</strong> silence: no live region on the container</div>
+  </div>
+
+  <!-- 6 -->
+  <h2 id="defects">6. Logging NVDA Defects</h2>
+
+  <p>Every NVDA defect log must include:</p>
+  <ul>
+    <li><strong>What NVDA announced:</strong> exact text, quoted. "NVDA announces: 'edit text, blank'"</li>
+    <li><strong>What NVDA should announce:</strong> "Should announce: 'Email address, required, edit text'"</li>
+    <li><strong>Element and location:</strong> "Email field in the contact form, /contact page"</li>
+    <li><strong>NVDA version and Firefox version:</strong> document your test environment</li>
+    <li><strong>WCAG criterion:</strong> 1.3.1, 3.3.1, 4.1.2 etc.</li>
+    <li><strong>Reproduction steps:</strong> numbered, starting from a fresh page load</li>
+  </ul>
+
+
+  <div class="takeaway" role="note">
+    <div class="label">The testing mindset</div>
+    <ul>
+      <li>Close your eyes after the first few minutes. If you cannot complete the task by listening alone, it is a defect.</li>
+      <li>NVDA is telling you what the code says. If the announcement is wrong, the code is wrong: not NVDA.</li>
+      <li>Use <span class="key">Insert</span>+<span class="key">F7</span> at the start of every page. The elements list gives you the structural overview in 30 seconds.</li>
+    </ul>
+  </div>
+
+  <div class="series-nav">
+    <span class="label">Navigate the series</span>
+    <div class="nav-pair">
+      <a href="19-Screen-Reader-Gestures-Cheat-Sheet.html" class="nav-blog">
+        <span class="nav-blog-arrow" aria-hidden="true">←</span>
+        <div>
+          <div class="nav-blog-title">Blog 19: Screen Reader Gestures Cheat Sheet</div>
+          <div class="nav-blog-sub">All shortcuts in one place</div>
+        </div>
+      </a>
+      <a href="21-JAWS-on-Windows.html" class="nav-blog">
+        <div>
+          <div class="nav-blog-title">Blog 21: JAWS on Windows</div>
+          <div class="nav-blog-sub">Enterprise screen reader testing</div>
+        </div>
+        <span class="nav-blog-arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+
+  <aside class="references" aria-label="References">
+    <div class="ref-title">References</div>
+    <ul role="list">
+      <li><a href="https://www.nvaccess.org/download/" target="_blank" rel="noopener noreferrer">NVDA download: NV Access</a></li>
+      <li><a href="https://www.nvaccess.org/files/nvda/documentation/userGuide.html" target="_blank" rel="noopener noreferrer">NVDA User Guide: NV Access</a></li>
+      <li><a href="https://webaim.org/articles/nvda/" target="_blank" rel="noopener noreferrer">Using NVDA to Evaluate Web Accessibility: WebAIM</a></li>
+      <li><a href="https://www.nvaccess.org/files/nvda/documentation/keyCommands.html" target="_blank" rel="noopener noreferrer">NVDA Key Commands Reference: NV Access</a></li>
+    </ul>
+  </aside>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; Built with intention. Tested with care. &nbsp;·&nbsp; © 2025
+  </p>
+</footer>
+
+</body>
+</html>

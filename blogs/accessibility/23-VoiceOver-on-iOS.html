@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>23-VoiceOver-on-iOS.html VoiceOver on iOS | The Quality Strategist</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0d0d0d;--bg2:#161616;--bg3:#1e1e1e;--border:#2e2e2e;--text:#f0f0f0;--text-2:#c8c8c8;--text-3:#8a8a8a;--green:#4ade80;--green-bg:rgba(74,222,128,0.07);--blue:#60a5fa;--blue-bg:rgba(96,165,250,0.07);--amber:#fbbf24;--amber-bg:rgba(251,191,36,0.07);--purple:#a78bfa;--purple-bg:rgba(167,139,250,0.07);--red:#f87171;--red-bg:rgba(248,113,113,0.07)}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;line-height:1.8;-webkit-font-smoothing:antialiased}
+    .skip-link{position:absolute;top:-100%;left:1rem;background:var(--green);color:#000;padding:0.5rem 1rem;border-radius:0 0 6px 6px;font-size:0.85rem;font-weight:500;text-decoration:none;z-index:999}.skip-link:focus{top:0}
+    nav.site-nav{position:sticky;top:0;z-index:100;background:rgba(13,13,13,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:56px}
+    .nav-logo{font-family:'DM Serif Display',serif;font-size:1rem;color:var(--text);text-decoration:none}
+    .nav-links{display:flex;gap:2rem;list-style:none}.nav-links a{color:var(--text-3);text-decoration:none;font-size:0.85rem}.nav-links a:hover{color:var(--text)}
+    .blog-header{max-width:900px;margin:0 auto;padding:4rem 2rem 2.5rem;border-bottom:1px solid var(--border)}
+    .breadcrumb{font-size:0.78rem;color:var(--text-3);margin-bottom:1.5rem;display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap}.breadcrumb a{color:var(--text-3);text-decoration:none}
+    .blog-tags{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.25rem}
+    .tag{font-size:0.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:0.04em;text-transform:uppercase;font-weight:500}
+    .tag.accent{background:var(--amber-bg);color:var(--amber);border-color:rgba(251,191,36,0.25)}
+    .blog-header h1{font-family:'DM Serif Display',serif;font-size:clamp(1.85rem,4vw,2.6rem);line-height:1.2;color:var(--text);margin-bottom:0.75rem}
+    .blog-header h1 em{font-style:italic;color:#4ade80}
+    .blog-subtitle{font-family:'DM Serif Display',serif;font-size:1.1rem;font-style:italic;color:var(--text-3);margin-bottom:1.25rem}
+    .blog-meta{display:flex;align-items:center;gap:1.25rem;font-size:0.82rem;color:var(--text-3);flex-wrap:wrap}.blog-meta .series{color:var(--text-2);font-weight:500}
+    main.blog-body{display:block;max-width:900px;margin:0 auto;padding:3rem 2rem 5rem}
+    .toc{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.5rem 1.75rem;margin:0 0 3rem 0}
+    .toc-title{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--text-3);font-weight:500;margin-bottom:0.9rem}
+    .toc ol{padding-left:1.25rem}.toc ol li{margin-bottom:0.45rem}.toc ol li a{font-size:0.88rem;color:var(--text-2);text-decoration:none}.toc ol li a:hover{color:#4ade80}
+    .blog-body h2{font-family:'DM Serif Display',serif;font-size:1.5rem;color:var(--text);margin:3.5rem 0 1.1rem;padding-top:1rem;border-top:1px solid var(--border)}
+    .blog-body h3{font-size:1rem;font-weight:500;color:var(--text);margin:1.75rem 0 0.5rem}
+    .blog-body p{color:var(--text-2);margin-bottom:1.25rem;font-weight:300}.blog-body p strong{color:var(--text);font-weight:500}
+    .blog-body ul,.blog-body ol{padding-left:1.5rem;margin-bottom:1.25rem;color:var(--text-2);font-weight:300}.blog-body li{margin-bottom:0.45rem}.blog-body li strong{color:var(--text);font-weight:500}
+    code{background:var(--bg3);padding:1px 6px;border-radius:3px;font-size:0.85em;color:var(--text-2);font-family:monospace}
+    .callout{display:block;background:var(--amber-bg);border-left:3px solid var(--amber);border-radius:0 10px 10px 0;padding:1.25rem 1.5rem;margin:1.75rem 0;font-size:0.95rem;color:var(--text);font-style:italic;line-height:1.6}
+    .callout.blue{background:var(--blue-bg);border-color:var(--blue)}.callout.green{background:var(--green-bg);border-color:var(--green)}
+    .key{display:inline-flex;align-items:center;justify-content:center;background:var(--bg3);border:1px solid #444;border-bottom:3px solid #444;border-radius:5px;padding:2px 8px;font-family:monospace;font-size:0.82em;color:var(--text);min-width:28px;white-space:nowrap}
+    .table-wrap{display:block;overflow-x:auto;margin:1.75rem 0;border-radius:10px;border:1px solid var(--border)}
+    table{width:100%;border-collapse:collapse;font-size:0.875rem}
+    thead th{background:var(--bg2);padding:10px 14px;text-align:left;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-3);font-weight:500;border-bottom:1px solid var(--border);white-space:nowrap}
+    tbody td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-2);vertical-align:top;line-height:1.55}tbody tr:last-child td{border-bottom:none}tbody td:first-child{color:var(--text);font-weight:500}tbody tr:hover td{background:var(--bg2)}
+    .takeaway{background:var(--green-bg);border:1px solid rgba(74,222,128,0.2);border-radius:10px;padding:1.25rem 1.5rem;margin:1.75rem 0}
+    .takeaway .label{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--green);font-weight:500;margin-bottom:0.5rem;display:block}
+    .takeaway ul{padding-left:1.25rem;color:var(--text-2);font-size:0.93rem;display:flex;flex-direction:column;gap:0.5rem}
+    .series-nav{margin-top:4rem;padding-top:2rem;border-top:1px solid var(--border)}.series-nav .label{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--text-3);font-weight:500;margin-bottom:0.75rem;display:block}
+    .nav-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .nav-blog{display:flex;align-items:center;gap:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.25rem;text-decoration:none;transition:border-color 0.2s}.nav-blog:hover{border-color:#444;background:var(--bg3)}
+    .nav-blog-arrow{color:var(--text-3);font-size:1rem;flex-shrink:0}.nav-blog-title{font-size:0.88rem;font-weight:500;color:var(--text)}.nav-blog-sub{font-size:0.75rem;color:var(--text-3);margin-top:2px}
+    .references{margin-top:2.5rem;padding:1.5rem 1.75rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px}.ref-title{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--text-3);font-weight:500;margin-bottom:1rem}
+    .references ul{list-style:none;padding:0}.references ul li{margin-bottom:0.5rem}.references ul li a{font-size:0.85rem;color:var(--text-2);text-decoration:none;display:inline-flex;align-items:center;gap:0.4rem}.references ul li a:hover{color:var(--green)}.references ul li a::before{content:'↗';font-size:0.75rem;color:var(--text-3)}
+    footer{border-top:1px solid var(--border);padding:2rem;text-align:center;font-size:0.78rem;color:var(--text-3)}footer a{color:var(--text-3);text-decoration:none}
+    @media(max-width:620px){nav.site-nav{padding:0 1.25rem}.nav-links{display:none}.blog-header,main.blog-body{padding-left:1.25rem;padding-right:1.25rem}.nav-pair{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <ul class="nav-links" role="list">
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#playlist">Playlist</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#justlikereal">JustLikeReal</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#meetme">Meet Me</a></li>
+  </ul>
+</nav>
+<header class="blog-header">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a>
+    <span aria-hidden="true">›</span><span>Shift-Left Accessibility</span>
+    <span aria-hidden="true">›</span><span aria-current="page">23-VoiceOver-on-iOS.html of 38</span>
+  </nav>
+  <div class="blog-tags"><span class="tag accent">Screen Readers</span><span class="tag">VoiceOver</span><span class="tag">iOS</span><span class="tag">iPhone</span></div>
+  <h1>23 VoiceOver on iOS: <em>Screen Reader Testing on iPhone and iPad</em></h1>
+  <p class="blog-subtitle">VoiceOver on iOS is used by millions. Testing on a physical device takes 20 minutes. Not testing it is not an option.</p>
+  <div class="blog-meta">
+    <span class="series">Series: Shift-Left Accessibility</span>
+    <span aria-hidden="true">·</span><span>Blog 23-VoiceOver-on-iOS.html of 38</span>
+    <span aria-hidden="true">·</span><span>9 min read</span>
+  </div>
+</header>
+<main class="blog-body" id="main-content">
+  <nav class="toc" aria-label="Table of contents">
+    <div class="toc-title">In this blog</div>
+    <ol>      <li><a href="#why-vo-ios">Why VoiceOver on iOS</a></li>
+      <li><a href="#enable">Enabling and configuring VoiceOver</a></li>
+      <li><a href="#gestures">Essential gestures for testing</a></li>
+      <li><a href="#rotor-ios">The rotor on iOS</a></li>
+      <li><a href="#what-to-test">What to test and what to listen for</a></li></ol>
+  </nav>
+
+  <h2 id="why-vo-ios">1. Why VoiceOver on iOS</h2>
+  <p>VoiceOver on iOS is Apple's built-in screen reader for iPhone and iPad. It is the primary assistive technology for iOS users and is used by a significant proportion of the screen reader user population on mobile. Testing must be done on a physical device: iOS Simulator does not replicate gesture behaviour, touch exploration, or focus management accurately.</p>
+
+  <div class="callout" role="note">
+    Always test on a physical iPhone or iPad. The iOS Simulator cannot replicate how VoiceOver handles gestures, touch exploration, or how apps announce dynamic content changes.
+  </div>
+
+  <h2 id="enable">2. Enabling and Configuring VoiceOver</h2>
+  <ul>
+    <li><strong>Enable:</strong> Settings, Accessibility, VoiceOver, Toggle ON</li>
+    <li><strong>Shortcut:</strong> Triple-click the side button (or Home button) if configured at Settings, Accessibility, Accessibility Shortcut, VoiceOver</li>
+    <li><strong>Speech rate:</strong> Settings, Accessibility, VoiceOver, Speaking Rate: drag slider. Start slow when learning gestures.</li>
+    <li><strong>Recommended browser:</strong> Safari on a physical device</li>
+    <li><strong>Tip:</strong> Connect a Bluetooth keyboard to use keyboard shortcuts alongside touch gestures: useful for desk-based testing sessions</li>
+  </ul>
+
+  <h2 id="gestures">3. Essential Gestures for Testing</h2>
+  <div class="table-wrap"><table>
+    <caption class="visually-hidden">VoiceOver iOS gestures for accessibility testing</caption>
+    <thead><tr><th scope="col">Action</th><th scope="col">Gesture</th></tr></thead>
+    <tbody>
+      <tr><td>Select/read element</td><td>Single-finger tap</td></tr>
+      <tr><td>Next element</td><td>Single-finger swipe right</td></tr>
+      <tr><td>Previous element</td><td>Single-finger swipe left</td></tr>
+      <tr><td>Activate element</td><td>Double-tap anywhere</td></tr>
+      <tr><td>Scroll</td><td>Three-finger swipe up/down</td></tr>
+      <tr><td>Pause/resume speech</td><td>Two-finger single tap</td></tr>
+      <tr><td>Read from top</td><td>Two-finger swipe up</td></tr>
+      <tr><td>Read from current</td><td>Two-finger swipe down</td></tr>
+      <tr><td>Open rotor</td><td>Two-finger rotate clockwise or anticlockwise</td></tr>
+      <tr><td>Navigate rotor items</td><td>Swipe up or down after setting rotor</td></tr>
+      <tr><td>Dismiss dialog / go back</td><td>Two-finger scrub (Z gesture)</td></tr>
+      <tr><td>Long press / activate custom action</td><td>Double-tap and hold</td></tr>
+      <tr><td>Adjust slider</td><td>Swipe up to increase, swipe down to decrease</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="rotor-ios">4. The Rotor on iOS</h2>
+  <p>The rotor is VoiceOver's navigation control. Rotate two fingers on the screen to open it. The rotor appears and announces a category. Continue rotating to cycle through: Headings, Links, Form Controls, Images, Landmarks, Characters, Words, Lines.</p>
+  <p>Once a rotor category is selected, swipe up or down to navigate between items of that type. This is the fastest way to navigate page structure on iOS:</p>
+  <ul>
+    <li><strong>Headings</strong>: navigate page structure. Listen for heading level.</li>
+    <li><strong>Links</strong>: test link text. Any "read more" is immediately findable.</li>
+    <li><strong>Form Controls</strong>: navigate form fields. Listen for label, type, required state.</li>
+    <li><strong>Images</strong>: test alt text. Listen for what VoiceOver announces.</li>
+  </ul>
+
+  <h2 id="what-to-test">5. What to Test and What to Listen For</h2>
+  <h3>Navigation and structure</h3>
+  <p>Set rotor to Headings. Swipe down through all headings. Is the hierarchy logical? Are there any missing heading levels? Do all headings announce a level?</p>
+
+  <h3>Forms on iOS</h3>
+  <p>Navigate to each form field using the Form Controls rotor category. When focus lands on a field, VoiceOver announces the label, field type, and required state. Double-tap to activate and enter text. After submitting with errors, <code>role="alert"</code> content is announced immediately. Navigate back to error fields: the error description should be re-announced.</p>
+  <p><strong>Correct:</strong> "Email address, required, text field" | <strong>Failure:</strong> "text field" with no label</p>
+
+  <h3>Custom components</h3>
+  <p>Double-tap to activate buttons and links. For toggles and checkboxes, double-tap toggles the state and VoiceOver announces the new state. For custom components using ARIA, the role and state must be explicitly set: VoiceOver does not infer state from visual styling.</p>
+
+  <h3>Live regions on iOS</h3>
+  <p>Navigate focus to a heading. Trigger a dynamic content change. VoiceOver should announce <code>role="status"</code> content when idle and <code>role="alert"</code> content immediately. If VoiceOver is silent after a dynamic update, the live region is missing or the container was created simultaneously with its content.</p>
+
+  <div class="takeaway" role="note">
+    <div class="label">The testing flow</div>
+    <ul>
+      <li>Rotor, Headings: swipe through the full heading structure</li>
+      <li>Rotor, Form Controls: verify every field announces a label</li>
+      <li>Rotor, Images: verify every meaningful image announces alt text</li>
+      <li>Rotor, Links: check for non-descriptive link text</li>
+      <li>Navigate away from live regions, trigger updates, listen</li>
+    </ul>
+  </div>
+
+  <div class="series-nav">
+    <span class="label">Navigate the series</span>
+    <div class="nav-pair">
+      <a href="22-VoiceOver-on-Mac.html" class="nav-blog"><span class="nav-blog-arrow" aria-hidden="true">←</span><div><div class="nav-blog-title">Blog 22: VoiceOver on Mac</div><div class="nav-blog-sub">In-depth testing with VoiceOver and Safari</div></div></a>
+      <a href="24-TalkBack-on-Android.html" class="nav-blog"><div><div class="nav-blog-title">Blog 24: TalkBack on Android</div><div class="nav-blog-sub">Screen reader testing on Android</div></div><span class="nav-blog-arrow" aria-hidden="true">→</span></a>
+    </div>
+  </div>
+  <aside class="references" aria-label="References">
+    <div class="ref-title">References</div>
+    <ul role="list">
+      <li><a href="https://support.apple.com/guide/iphone/turn-on-and-practice-voiceover-iph3e2e415f/ios" target="_blank" rel="noopener noreferrer">VoiceOver on iPhone — Apple</a></li>
+      <li><a href="https://webaim.org/articles/voiceover/ios/" target="_blank" rel="noopener noreferrer">Using VoiceOver on iOS — WebAIM</a></li>
+    </ul>
+  </aside>
+</main>
+<footer><p><a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a> &nbsp;·&nbsp; Built with intention. Tested with care. &nbsp;·&nbsp; © 2025</p></footer>
+</body></html>

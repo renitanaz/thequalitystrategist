@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>26 WAVE | The Quality Strategist</title>
+  <meta name="description" content="How to use WAVE for accessibility testing. What the icons mean, what WAVE catches, what it misses, and how to use it systematically in a testing session." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+      --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+      --green:#4ade80; --green-bg:rgba(74,222,128,0.07);
+      --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07);
+      --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07);
+      --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.07);
+      --red:#f87171; --red-bg:rgba(248,113,113,0.07);
+      --teal:#2dd4bf; --teal-bg:rgba(45,212,191,0.07);
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
+    .skip-link:focus { top:0; }
+    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
+    .nav-links { display:flex; gap:2rem; list-style:none; }
+    .nav-links a { color:var(--text-3); text-decoration:none; font-size:0.85rem; transition:color 0.2s; }
+    .nav-links a:hover { color:var(--text); }
+    .blog-header { max-width:900px; margin:0 auto; padding:4rem 2rem 2.5rem; border-bottom:1px solid var(--border); }
+    .breadcrumb { font-size:0.78rem; color:var(--text-3); margin-bottom:1.5rem; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; }
+    .breadcrumb a { color:var(--text-3); text-decoration:none; }
+    .blog-tags { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.25rem; }
+    .tag { font-size:0.7rem; padding:3px 10px; border-radius:99px; background:var(--bg3); color:var(--text-3); border:1px solid var(--border); letter-spacing:0.04em; text-transform:uppercase; font-weight:500; }
+    .tag.accent { background:var(--teal-bg); color:var(--teal); border-color:rgba(45,212,191,0.25); }
+    .blog-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.85rem,4vw,2.6rem); line-height:1.2; letter-spacing:-0.02em; color:var(--text); margin-bottom:0.75rem; }
+    .blog-header h1 em { font-style:italic; color:var(--teal); }
+    .blog-subtitle { font-family:'DM Serif Display',serif; font-size:1.1rem; font-style:italic; color:var(--text-3); margin-bottom:1.25rem; }
+    .blog-meta { display:flex; align-items:center; gap:1.25rem; font-size:0.82rem; color:var(--text-3); flex-wrap:wrap; }
+    .blog-meta .series { color:var(--text-2); font-weight:500; }
+    main.blog-body { display:block; max-width:900px; margin:0 auto; padding:3rem 2rem 5rem; }
+    .toc { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.5rem 1.75rem; margin:0 0 3rem 0; }
+    .toc-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.9rem; }
+    .toc ol { padding-left:1.25rem; }
+    .toc ol li { margin-bottom:0.45rem; }
+    .toc ol li a { font-size:0.88rem; color:var(--text-2); text-decoration:none; transition:color 0.2s; }
+    .toc ol li a:hover { color:var(--teal); }
+    .blog-body h2 { font-family:'DM Serif Display',serif; font-size:1.5rem; color:var(--text); margin:3.5rem 0 1.1rem; padding-top:1rem; border-top:1px solid var(--border); }
+    .blog-body h3 { font-size:1rem; font-weight:500; color:var(--text); margin:1.75rem 0 0.5rem; }
+    .blog-body p { color:var(--text-2); margin-bottom:1.25rem; font-weight:300; }
+    .blog-body p strong { color:var(--text); font-weight:500; }
+    .blog-body ul, .blog-body ol { padding-left:1.5rem; margin-bottom:1.25rem; color:var(--text-2); font-weight:300; }
+    .blog-body li { margin-bottom:0.45rem; }
+    .blog-body li strong { color:var(--text); font-weight:500; }
+    code { background:var(--bg3); padding:1px 6px; border-radius:3px; font-size:0.85em; color:var(--text-2); font-family:monospace; }
+    .callout { display:block; background:var(--teal-bg); border-left:3px solid var(--teal); border-radius:0 10px 10px 0; padding:1.25rem 1.5rem; margin:1.75rem 0; font-size:0.95rem; color:var(--text); font-style:italic; line-height:1.6; }
+    .callout.amber { background:var(--amber-bg); border-color:var(--amber); }
+    .callout.red { background:var(--red-bg); border-color:var(--red); }
+    .callout.green { background:var(--green-bg); border-color:var(--green); }
+    .takeaway { background:var(--green-bg); border:1px solid rgba(74,222,128,0.2); border-radius:10px; padding:1.25rem 1.5rem; margin:1.75rem 0; }
+    .takeaway .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--green); font-weight:500; margin-bottom:0.5rem; display:block; }
+    .takeaway ul { padding-left:1.25rem; color:var(--text-2); font-size:0.93rem; display:flex; flex-direction:column; gap:0.5rem; }
+    .tool { display:inline; background:var(--purple-bg); color:var(--purple); border:1px solid rgba(167,139,250,0.2); border-radius:4px; padding:1px 7px; font-size:0.85em; font-weight:500; }
+    .table-wrap { display:block; overflow-x:auto; margin:1.75rem 0; border-radius:10px; border:1px solid var(--border); }
+    table { width:100%; border-collapse:collapse; font-size:0.875rem; }
+    thead th { background:var(--bg2); padding:10px 14px; text-align:left; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-3); font-weight:500; border-bottom:1px solid var(--border); white-space:nowrap; }
+    tbody td { padding:10px 14px; border-bottom:1px solid var(--border); color:var(--text-2); vertical-align:top; line-height:1.55; }
+    tbody tr:last-child td { border-bottom:none; }
+    tbody td:first-child { color:var(--text); font-weight:500; }
+    tbody tr:hover td { background:var(--bg2); }
+    .icon-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:1.75rem 0; }
+    .icon-card { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1rem 1.1rem; display:flex; gap:12px; align-items:flex-start; }
+    .icon-dot { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:700; flex-shrink:0; margin-top:2px; }
+    .icon-label { font-size:0.82rem; font-weight:500; color:var(--text); margin-bottom:3px; }
+    .icon-desc { font-size:0.78rem; color:var(--text-3); line-height:1.5; }
+    .blog-illustration { margin:1.75rem 0; border:none; padding:0; }
+    .series-nav { margin-top:4rem; padding-top:2rem; border-top:1px solid var(--border); }
+    .series-nav .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.75rem; display:block; }
+    .nav-pair { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .nav-blog { display:flex; align-items:center; gap:1rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.1rem 1.25rem; text-decoration:none; transition:border-color 0.2s,background 0.2s; }
+    .nav-blog:hover { border-color:#444; background:var(--bg3); }
+    .nav-blog-arrow { color:var(--text-3); font-size:1rem; flex-shrink:0; }
+    .nav-blog-title { font-size:0.88rem; font-weight:500; color:var(--text); }
+    .nav-blog-sub { font-size:0.75rem; color:var(--text-3); margin-top:2px; }
+    .references { margin-top:2.5rem; padding:1.5rem 1.75rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; }
+    .ref-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:1rem; }
+    .references ul { list-style:none; padding:0; }
+    .references ul li { margin-bottom:0.5rem; }
+    .references ul li a { font-size:0.85rem; color:var(--text-2); text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; transition:color 0.2s; }
+    .references ul li a:hover { color:var(--green); }
+    .references ul li a::before { content:'↗'; font-size:0.75rem; color:var(--text-3); }
+    footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
+    footer a { color:var(--text-3); text-decoration:none; }
+    @media(max-width:620px) {
+      nav.site-nav { padding:0 1.25rem; }
+      .nav-links { display:none; }
+      .blog-header, main.blog-body { padding-left:1.25rem; padding-right:1.25rem; }
+      .blog-header { padding-top:2.5rem; }
+      .icon-grid { grid-template-columns:1fr; }
+      .nav-pair { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <ul class="nav-links" role="list">
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#playlist">Playlist</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#justlikereal">JustLikeReal</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#meetme">Meet Me</a></li>
+  </ul>
+</nav>
+
+<header class="blog-header">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a>
+    <span aria-hidden="true">›</span>
+    <span>Shift-Left Accessibility</span>
+    <span aria-hidden="true">›</span>
+    <span aria-current="page">26 of 38</span>
+  </nav>
+  <div class="blog-tags">
+    <span class="tag accent">Tools</span>
+    <span class="tag">WAVE</span>
+    <span class="tag">Browser Extension</span>
+    <span class="tag">Semi-Automated</span>
+  </div>
+  <h1>26 WAVE: <em>Visual Accessibility Testing in the Browser</em></h1>
+  <p class="blog-subtitle">WAVE overlays your page with icons that show exactly where accessibility issues are and what caused them. No report to parse. No line numbers to chase. The issue is right there on the element.</p>
+  <div class="blog-meta">
+    <span class="series">Series: Shift-Left Accessibility</span>
+    <span aria-hidden="true">·</span>
+    <span>Blog 26 of 38</span>
+    <span aria-hidden="true">·</span>
+    <span>8 min read</span>
+  </div>
+</header>
+
+<main class="blog-body" id="main-content">
+
+  <nav class="toc" aria-label="Table of contents">
+    <div class="toc-title">In this blog</div>
+    <ol>
+      <li><a href="#what-is-wave">What WAVE is and how it works</a></li>
+      <li><a href="#icons">The icon system: errors, alerts, features and structure</a></li>
+      <li><a href="#how-to-use">How to use WAVE systematically</a></li>
+      <li><a href="#what-wave-catches">What WAVE catches</a></li>
+      <li><a href="#what-wave-misses">What WAVE misses</a></li>
+      <li><a href="#wave-vs-axe">WAVE vs axe DevTools</a></li>
+      <li><a href="#wcag">WCAG 2.1 AA coverage</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <h2 id="what-is-wave">1. What WAVE Is and How It Works</h2>
+
+  <p>WAVE (Web Accessibility Evaluation Tool) is a free browser extension developed by WebAIM. It injects visual icons directly onto the page: on top of the elements they relate to: so you can see accessibility issues in context rather than reading a disconnected report.</p>
+
+  <p>Unlike automated CI tools that produce a list of violations with DOM selectors, WAVE shows you the issue visually in the rendered page. A missing form label appears as a red icon on the input field itself. An empty button appears as an error icon on that button. This makes WAVE significantly faster for triage and explanation than reading a JSON report.</p>
+
+  <div class="callout" role="note">
+    WAVE is a Tier 2 semi-automated tool. It runs in the browser on the rendered page, catching issues that require visual context and DOM inspection. It does not integrate into your CI/CD pipeline. Use it alongside <span class="tool">axe-core</span> in your pipeline: not instead of it.
+  </div>
+
+  <p>WAVE is available as a Chrome and Firefox extension, and as a web service at <a href="https://wave.webaim.org" target="_blank" rel="noopener noreferrer" style="color:var(--teal);">wave.webaim.org</a> for publicly accessible pages. The extension also works on pages behind authentication, which the web service cannot access.</p>
+
+  <!-- SVG illustration -->
+  <figure class="blog-illustration" aria-label="Browser page with WAVE icons overlaid on elements showing errors, alerts and structural features">
+    <svg viewBox="0 0 660 200" width="100%" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#0d0d0d;">
+      <title>WAVE overlay showing icons on a web page. Red error icons on a form input and image. Yellow alert on a link. Green feature icons on a heading and landmark.</title>
+      <desc>A browser window mockup with a web page. On the left is a sidebar panel showing WAVE summary counts: 2 errors, 1 alert, 4 features, 3 structural elements. On the page itself, a red E icon appears on an unlabelled input, a red E on an image, a yellow triangle on a link, and green icons on a heading and a nav landmark.</desc>
+      <rect width="660" height="220" fill="#0d0d0d"/>
+
+      <!-- browser chrome -->
+      <rect x="14" y="14" width="632" height="196" rx="8" fill="#161616" stroke="#2e2e2e" stroke-width="1"/>
+      <rect x="14" y="14" width="632" height="26" rx="8" fill="#1e1e1e"/>
+      <rect x="14" y="28" width="632" height="12" fill="#1e1e1e"/>
+      <circle cx="32" cy="27" r="4" fill="#2e2e2e"/>
+      <circle cx="46" cy="27" r="4" fill="#2e2e2e"/>
+      <circle cx="60" cy="27" r="4" fill="#2e2e2e"/>
+      <rect x="80" y="20" width="300" height="14" rx="3" fill="#0d0d0d" stroke="#2e2e2e" stroke-width="0.5"/>
+      <text x="230" y="30" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#555">example.com</text>
+
+      <!-- WAVE sidebar panel -->
+      <rect x="22" y="42" width="120" height="162" rx="5" fill="#0d0d0d" stroke="#2e2e2e" stroke-width="1"/>
+      <text x="82" y="58" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#c8c8c8" font-weight="500">WAVE Summary</text>
+      <!-- error count -->
+      <rect x="30" y="64" width="104" height="26" rx="4" fill="#1a0808" stroke="#f87171" stroke-width="0.8"/>
+      <text x="50" y="80" font-family="DM Sans,sans-serif" font-size="16" fill="#f87171" font-weight="700">2</text>
+      <text x="68" y="75" font-family="DM Sans,sans-serif" font-size="7.5" fill="#f87171">Errors</text>
+      <text x="68" y="86" font-family="DM Sans,sans-serif" font-size="6.5" fill="#555">missing label, empty alt</text>
+      <!-- alert count -->
+      <rect x="30" y="96" width="104" height="26" rx="4" fill="#1a1400" stroke="#fbbf24" stroke-width="0.8"/>
+      <text x="50" y="112" font-family="DM Sans,sans-serif" font-size="16" fill="#fbbf24" font-weight="700">1</text>
+      <text x="68" y="107" font-family="DM Sans,sans-serif" font-size="7.5" fill="#fbbf24">Alerts</text>
+      <text x="68" y="118" font-family="DM Sans,sans-serif" font-size="6.5" fill="#555">suspicious link text</text>
+      <!-- features count -->
+      <rect x="30" y="128" width="104" height="20" rx="4" fill="#0d1a0d" stroke="#4ade80" stroke-width="0.8"/>
+      <text x="50" y="141" font-family="DM Sans,sans-serif" font-size="14" fill="#4ade80" font-weight="700">4</text>
+      <text x="68" y="141" font-family="DM Sans,sans-serif" font-size="7.5" fill="#4ade80">Features</text>
+      <!-- structural count -->
+      <rect x="30" y="154" width="104" height="20" rx="4" fill="#0a0a1a" stroke="#60a5fa" stroke-width="0.8"/>
+      <text x="50" y="167" font-family="DM Sans,sans-serif" font-size="14" fill="#60a5fa" font-weight="700">3</text>
+      <text x="68" y="167" font-family="DM Sans,sans-serif" font-size="7.5" fill="#60a5fa">Structural</text>
+
+      <!-- page content area -->
+      <!-- nav landmark with green icon -->
+      <rect x="160" y="48" width="470" height="20" rx="3" fill="#1a1a1a"/>
+      <text x="175" y="61" font-family="DM Sans,sans-serif" font-size="8" fill="#c8c8c8">Home</text>
+      <text x="210" y="61" font-family="DM Sans,sans-serif" font-size="8" fill="#c8c8c8">About</text>
+      <text x="248" y="61" font-family="DM Sans,sans-serif" font-size="8" fill="#c8c8c8">Contact</text>
+      <!-- green landmark icon -->
+      <rect x="152" y="48" width="14" height="14" rx="2" fill="#4ade80"/>
+      <text x="159" y="58" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#000" font-weight="700">N</text>
+
+      <!-- heading with blue structural icon -->
+      <text x="175" y="88" font-family="DM Serif Display,serif" font-size="16" fill="#f0f0f0">Our services</text>
+      <rect x="152" y="76" width="16" height="14" rx="2" fill="#60a5fa"/>
+      <text x="160" y="86" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#000" font-weight="700">H2</text>
+
+      <!-- image with red error icon (no alt) -->
+      <rect x="175" y="98" width="80" height="52" rx="4" fill="#1e1e1e" stroke="#2e2e2e" stroke-width="0.5"/>
+      <text x="215" y="126" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#555">[ image ]</text>
+      <rect x="152" y="98" width="18" height="18" rx="3" fill="#f87171"/>
+      <text x="161" y="110" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#fff" font-weight="700">E</text>
+      <text x="172" y="164" font-family="DM Sans,sans-serif" font-size="7" fill="#f87171" font-style="italic">missing alt text</text>
+
+      <!-- body text -->
+      <rect x="280" y="100" width="200" height="7" rx="2" fill="#2e2e2e"/>
+      <rect x="280" y="112" width="180" height="7" rx="2" fill="#2e2e2e"/>
+      <rect x="280" y="124" width="160" height="7" rx="2" fill="#2e2e2e"/>
+
+      <!-- link with yellow alert (suspicious text) -->
+      <text x="280" y="148" font-family="DM Sans,sans-serif" font-size="9" fill="#60a5fa" text-decoration="underline">Read more</text>
+      <rect x="330" y="138" width="16" height="14" rx="2" fill="#fbbf24"/>
+      <text x="338" y="148" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#000" font-weight="700">!</text>
+      <text x="280" y="162" font-family="DM Sans,sans-serif" font-size="7" fill="#fbbf24" font-style="italic">suspicious link text</text>
+
+      <!-- input with red error icon (no label) -->
+      <rect x="420" y="100" width="180" height="28" rx="4" fill="#1e1e1e" stroke="#f87171" stroke-width="1"/>
+      <text x="510" y="117" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#555">Enter email...</text>
+      <rect x="400" y="100" width="18" height="18" rx="3" fill="#f87171"/>
+      <text x="409" y="112" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#fff" font-weight="700">E</text>
+      <text x="420" y="144" font-family="DM Sans,sans-serif" font-size="7" fill="#f87171" font-style="italic">missing form label</text>
+
+    </svg>
+    <figcaption style="text-align:center;font-size:0.82rem;color:var(--text-3);font-style:italic;margin-top:0.6rem;">WAVE overlays icons directly on the elements that have issues.</figcaption>
+  </figure>
+
+  <!-- 2 -->
+  <h2 id="icons">2. The Icon System: Errors, Alerts, Features and Structure</h2>
+
+  <p>WAVE uses a colour and letter-coded icon system. Understanding the icons is the foundation of using WAVE quickly.</p>
+
+  <div class="icon-grid" role="list" aria-label="WAVE icon types">
+    <div class="icon-card" role="listitem">
+      <div class="icon-dot" style="background:var(--red);color:#fff;">E</div>
+      <div>
+        <div class="icon-label">Errors (red)</div>
+        <div class="icon-desc">Definite WCAG failures. Missing alt text, empty buttons, missing form labels, empty links, missing document language. Act on every error.</div>
+      </div>
+    </div>
+    <div class="icon-card" role="listitem">
+      <div class="icon-dot" style="background:var(--amber);color:#000;">!</div>
+      <div>
+        <div class="icon-label">Alerts (yellow)</div>
+        <div class="icon-desc">Possible issues requiring human judgement. Suspicious link text ("read more"), missing fieldset legend, redundant title attribute, very small text. Investigate each one.</div>
+      </div>
+    </div>
+    <div class="icon-card" role="listitem">
+      <div class="icon-dot" style="background:var(--green);color:#000;">✓</div>
+      <div>
+        <div class="icon-label">Features (green)</div>
+        <div class="icon-desc">Accessibility features present and detected. Alt text, form labels, ARIA landmarks, skip links. Confirm they are correct: presence does not guarantee quality.</div>
+      </div>
+    </div>
+    <div class="icon-card" role="listitem">
+      <div class="icon-dot" style="background:var(--blue);color:#fff;">S</div>
+      <div>
+        <div class="icon-label">Structural (blue)</div>
+        <div class="icon-desc">Semantic HTML elements: headings (H1–H6), lists, tables, regions. Used to audit heading hierarchy and page structure visually.</div>
+      </div>
+    </div>
+    <div class="icon-card" role="listitem">
+      <div class="icon-dot" style="background:var(--purple);color:#fff;">C</div>
+      <div>
+        <div class="icon-label">Contrast (purple)</div>
+        <div class="icon-desc">Colour contrast failures. WAVE flags elements where foreground and background colour combination fails WCAG 1.4.3 (minimum 4.5:1 for normal text).</div>
+      </div>
+    </div>
+    <div class="icon-card" role="listitem">
+      <div class="icon-dot" style="background:var(--text-3);color:#fff;">A</div>
+      <div>
+        <div class="icon-label">ARIA (grey)</div>
+        <div class="icon-desc">ARIA roles and attributes detected. Confirms ARIA is present but does not validate correct usage. Cross-reference with axe DevTools for ARIA validation.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3 -->
+  <h2 id="how-to-use">3. How to Use WAVE Systematically</h2>
+
+  <p>A systematic WAVE session follows this sequence on every page:</p>
+
+  <ol>
+    <li><strong>Install the extension:</strong> <a href="https://chromewebstore.google.com/detail/jbbplnpkjmmeebjpijfedlgcdilocofh" target="_blank" rel="noopener noreferrer" style="color:var(--teal);">WAVE Chrome extension</a> or Firefox Add-on from WebAIM.</li>
+    <li><strong>Activate WAVE:</strong> Click the WAVE icon in the browser toolbar. The sidebar opens and icons appear on the page.</li>
+    <li><strong>Check the summary first:</strong> The sidebar shows counts for Errors, Alerts, Features, Structural elements, Contrast errors, and ARIA. Zero errors is the minimum target.</li>
+    <li><strong>Work through errors first:</strong> Click each red E icon. The sidebar shows the specific failure, which WCAG criterion it relates to, and a code snippet. Fix errors before investigating alerts.</li>
+    <li><strong>Review alerts:</strong> Each yellow alert requires human judgement. "Suspicious link text" is not automatically a failure: "Read more" on a standalone card where the heading provides context may be acceptable. "Read more" in a links list is a failure.</li>
+    <li><strong>Audit structural elements:</strong> Click the Structure tab in the sidebar. WAVE shows the heading hierarchy, list structure, and landmarks. Verify the heading levels are logical.</li>
+    <li><strong>Check features for quality:</strong> Green icons confirm accessibility features exist but not that they are correct. Click each green icon to see the alt text, label text, or landmark label and verify it is meaningful.</li>
+    <li><strong>Review contrast:</strong> Purple icons flag contrast failures. Click to see the exact ratio and the WCAG threshold it fails.</li>
+  </ol>
+
+  <div class="callout amber" role="note">
+    WAVE modifies the page in order to show icons. Some dynamic features may break during a WAVE session: modals may not open, JavaScript interactions may stop working. Toggle WAVE off (click the icon again) to restore normal page behaviour for testing dynamic content.
+  </div>
+
+  <!-- 4 -->
+  <h2 id="what-wave-catches">4. What WAVE Catches</h2>
+
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">Accessibility issues WAVE detects with WCAG reference</caption>
+      <thead>
+        <tr>
+          <th scope="col">Issue</th>
+          <th scope="col">WAVE icon</th>
+          <th scope="col">WCAG</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Missing image alt text</td><td style="color:var(--red)">Error (red)</td><td>1.1.1</td></tr>
+        <tr><td>Empty alt text on meaningful image</td><td style="color:var(--red)">Error (red)</td><td>1.1.1</td></tr>
+        <tr><td>Missing form label</td><td style="color:var(--red)">Error (red)</td><td>1.3.1 / 3.3.2</td></tr>
+        <tr><td>Empty link (no text or alt)</td><td style="color:var(--red)">Error (red)</td><td>2.4.4</td></tr>
+        <tr><td>Empty button</td><td style="color:var(--red)">Error (red)</td><td>4.1.2</td></tr>
+        <tr><td>Missing document language</td><td style="color:var(--red)">Error (red)</td><td>3.1.1</td></tr>
+        <tr><td>Missing page title</td><td style="color:var(--red)">Error (red)</td><td>2.4.2</td></tr>
+        <tr><td>Colour contrast failure</td><td style="color:var(--purple)">Contrast (purple)</td><td>1.4.3</td></tr>
+        <tr><td>Suspicious link text (read more, click here)</td><td style="color:var(--amber)">Alert (yellow)</td><td>2.4.4</td></tr>
+        <tr><td>Missing fieldset / legend for radio group</td><td style="color:var(--amber)">Alert (yellow)</td><td>1.3.1</td></tr>
+        <tr><td>Skipped heading level</td><td style="color:var(--amber)">Alert (yellow)</td><td>1.3.1</td></tr>
+        <tr><td>Very small text</td><td style="color:var(--amber)">Alert (yellow)</td><td>1.4.4</td></tr>
+        <tr><td>Heading structure and hierarchy</td><td style="color:var(--blue)">Structural (blue)</td><td>1.3.1</td></tr>
+        <tr><td>Landmark regions present</td><td style="color:var(--green)">Feature (green)</td><td>1.3.6</td></tr>
+        <tr><td>Skip link present</td><td style="color:var(--green)">Feature (green)</td><td>2.4.1</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 5 -->
+  <h2 id="what-wave-misses">5. What WAVE Misses</h2>
+
+  <p>WAVE catches structural and attribute-level failures well. It cannot catch issues that require runtime behaviour, human judgement about context, or dynamic content testing.</p>
+
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">Issues WAVE cannot detect and why</caption>
+      <thead>
+        <tr>
+          <th scope="col">Issue</th>
+          <th scope="col">Why WAVE misses it</th>
+          <th scope="col">How to test instead</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Keyboard traps</td><td>Requires keyboard navigation: no static analysis can replicate it</td><td>Manual keyboard testing</td></tr>
+        <tr><td>Focus order problems</td><td>Requires Tab navigation to observe</td><td>Manual keyboard testing</td></tr>
+        <tr><td>ARIA live region announcements</td><td>Requires a screen reader running at the same time</td><td>NVDA or VoiceOver testing</td></tr>
+        <tr><td>Dynamic content after interaction</td><td>WAVE scans the DOM at load: post-interaction state is not scanned</td><td>Trigger interactions, then re-run WAVE or use axe DevTools</td></tr>
+        <tr><td>Meaningful alt text quality</td><td>WAVE confirms alt text exists, not whether it is descriptive</td><td>Read every alt text manually</td></tr>
+        <tr><td>Correct ARIA usage</td><td>WAVE flags ARIA presence, not validity of role/state/property combinations</td><td>axe DevTools for ARIA validation</td></tr>
+        <tr><td>Zoom and reflow failures</td><td>Requires viewport resize or browser zoom</td><td>DevTools responsive mode at 320px</td></tr>
+        <tr><td>Custom component semantics</td><td>Cannot evaluate whether a custom widget behaves as its role implies</td><td>Screen reader testing</td></tr>
+        <tr><td>Cognitive accessibility</td><td>Reading level, plain language, consistent navigation: no automated check exists</td><td>Manual review</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <figure class="blog-illustration" aria-label="WAVE marks a filename as valid alt text while a developer is horrified">
+    <svg width="100%" viewBox="0 0 680 280" role="img" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#0d0d0d;">
+      <title>WAVE marks a filename as valid alt text while a developer is horrified</title>
+      <desc>Three panels side by side with clear separation. Left panel shows an image with alt text reading image001.jpg. Middle panel shows the WAVE logo looking smug with a speech bubble above it saying alt text detected, my job here is done. Right panel shows a horrified developer with a speech bubble above saying that tells me nothing. Caption: WAVE confirms alt text exists. It cannot confirm it is good.</desc>
+      <rect width="680" height="280" fill="#0d0d0d"/>
+      <rect x="30" y="30" width="160" height="160" rx="8" fill="#161616" stroke="#2e2e2e" stroke-width="1"/>
+      <text x="110" y="54" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#555" letter-spacing="0.5">IMAGE ELEMENT</text>
+      <rect x="52" y="120" width="14" height="40" rx="2" fill="#4ade80" opacity="0.4"/>
+      <rect x="72" y="100" width="14" height="60" rx="2" fill="#4ade80" opacity="0.6"/>
+      <rect x="92" y="80" width="14" height="80" rx="2" fill="#4ade80" opacity="0.8"/>
+      <rect x="112" y="65" width="14" height="95" rx="2" fill="#4ade80"/>
+      <rect x="132" y="75" width="14" height="85" rx="2" fill="#4ade80" opacity="0.9"/>
+      <line x1="48" y1="160" x2="158" y2="160" stroke="#2e2e2e" stroke-width="1"/>
+      <rect x="38" y="168" width="144" height="16" rx="3" fill="#1e1e1e" stroke="#2e2e2e" stroke-width="0.5"/>
+      <text x="110" y="179" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#8a8a8a">alt="image001.jpg"</text>
+      <rect x="30" y="188" width="160" height="28" rx="5" fill="#0d2a0d" stroke="#4ade80" stroke-width="1.2"/>
+      <text x="66" y="206" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="16" fill="#4ade80">✓</text>
+      <text x="140" y="200" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#4ade80" font-weight="600">FEATURE DETECTED</text>
+      <text x="140" y="212" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#4ade80">alt text present</text>
+      <circle cx="340" cy="148" r="34" fill="#0d2a0d" stroke="#4ade80" stroke-width="2"/>
+      <text x="340" y="157" text-anchor="middle" font-family="DM Serif Display,serif" font-size="24" fill="#4ade80" font-weight="700">W</text>
+      <path d="M326 134 Q332 130 338 133" fill="none" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M342 133 Q348 130 354 134" fill="none" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M328 164 Q340 172 352 164" fill="none" stroke="#4ade80" stroke-width="1.8" stroke-linecap="round"/>
+      <path d="M306 175 Q322 183 340 180 Q358 183 374 175" fill="none" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round"/>
+      <rect x="258" y="28" width="164" height="48" rx="7" fill="#0d2a0d" stroke="#4ade80" stroke-width="1"/>
+      <path d="M330 76 L326 90 L338 76" fill="#0d2a0d" stroke="#4ade80" stroke-width="1"/>
+      <text x="340" y="46" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8.5" fill="#4ade80">Alt text detected.</text>
+      <text x="340" y="59" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8.5" fill="#4ade80">My job here is done.</text>
+      <text x="340" y="70" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#4ade80" font-style="italic">&#128077; excellent.</text>
+      <circle cx="560" cy="100" r="28" fill="#f5d5a0" stroke="#3d4235" stroke-width="1.5"/>
+      <path d="M532 92 Q535 70 560 68 Q585 70 588 92" fill="#3d4235"/>
+      <circle cx="551" cy="96" r="5" fill="white"/>
+      <circle cx="553" cy="96" r="3" fill="#3d4235"/>
+      <circle cx="569" cy="96" r="5" fill="white"/>
+      <circle cx="571" cy="96" r="3" fill="#3d4235"/>
+      <ellipse cx="560" cy="116" rx="8" ry="7" fill="#3d4235"/>
+      <ellipse cx="560" cy="113" rx="7" ry="4" fill="#f5d5a0"/>
+      <ellipse cx="560" cy="172" rx="28" ry="32" fill="#4a6fa5" stroke="#3d4235" stroke-width="1.2"/>
+      <rect x="448" y="28" width="164" height="48" rx="7" fill="#1a0808" stroke="#f87171" stroke-width="1"/>
+      <path d="M550 76 L546 90 L558 76" fill="#1a0808" stroke="#f87171" stroke-width="1"/>
+      <text x="530" y="46" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8.5" fill="#f87171">"image001.jpg" ??</text>
+      <text x="530" y="59" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8.5" fill="#f87171">That tells me nothing</text>
+      <text x="530" y="70" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#f87171" font-style="italic">about the chart!</text>
+      <text x="340" y="260" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10.5" fill="#8a8a8a" font-style="italic">WAVE confirms alt text exists. It cannot confirm it is good.</text>
+    </svg>
+  </figure>
+
+
+  <!-- 6 -->
+  <h2 id="wave-vs-axe">6. WAVE vs axe DevTools</h2>
+
+  <p>Both tools serve different purposes and are best used together rather than choosing one over the other.</p>
+
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">WAVE vs axe DevTools comparison</caption>
+      <thead>
+        <tr>
+          <th scope="col">Aspect</th>
+          <th scope="col">WAVE</th>
+          <th scope="col">axe DevTools</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Primary use</td><td>Visual in-page overlay, fast triage</td><td>Detailed violation reporting, CI/CD integration</td></tr>
+        <tr><td>Output format</td><td>Icons on the page</td><td>Structured report with DOM references</td></tr>
+        <tr><td>Best for</td><td>Showing issues in context, communicating to developers</td><td>Precise rule-based detection, automated pipeline checks</td></tr>
+        <tr><td>Alerts vs errors</td><td>Distinguishes errors (definite) from alerts (possible)</td><td>Categorises by impact (critical, serious, moderate, minor)</td></tr>
+        <tr><td>Contrast checking</td><td>Built in, visual on page</td><td>Built in, reported with exact ratios</td></tr>
+        <tr><td>Dynamic content</td><td>Scans initial DOM only</td><td>Can be triggered post-interaction via API</td></tr>
+        <tr><td>ARIA validation</td><td>Flags ARIA presence, not correctness</td><td>Validates ARIA role, state, and property combinations</td></tr>
+        <tr><td>CI/CD pipeline</td><td>Not possible</td><td>Core use case via axe-core npm package</td></tr>
+        <tr><td>Cost</td><td>Free</td><td>Free (Pro version available)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <figure class="blog-illustration" aria-label="WAVE and axe DevTools as teammates in separate lanes covering browser and pipeline testing">
+    <svg width="100%" viewBox="0 0 680 300" role="img" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#0d0d0d;">
+      <title>WAVE and axe DevTools as teammates with different responsibilities</title>
+      <desc>Two characters in separate lanes divided by a dotted line. Left lane labelled browser shows the WAVE logo with icons on a page mockup. Right lane labelled pipeline shows axe with a hard hat next to a CI pipeline diagram. A shared speech bubble at the top reads we are not rivals, we are a stack. Caption: Use both. They cover different ground.</desc>
+      <defs><marker id="arr26" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+      <rect width="680" height="300" fill="#0d0d0d"/>
+      <rect x="220" y="18" width="240" height="50" rx="8" fill="#161616" stroke="#2e2e2e" stroke-width="1"/>
+      <path d="M310 68 L304 82 L320 68" fill="#161616" stroke="#2e2e2e" stroke-width="1"/>
+      <path d="M370 68 L376 82 L360 68" fill="#161616" stroke="#2e2e2e" stroke-width="1"/>
+      <text x="340" y="38" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9.5" fill="#c8c8c8">We are not rivals.</text>
+      <text x="340" y="52" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9.5" fill="#c8c8c8">We are a testing stack.</text>
+      <text x="340" y="63" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#555">use both of us</text>
+      <line x1="340" y1="90" x2="340" y2="268" stroke="#2e2e2e" stroke-width="1" stroke-dasharray="5,4"/>
+      <text x="170" y="104" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4ade80" letter-spacing="1" font-weight="500">BROWSER</text>
+      <circle cx="120" cy="160" r="36" fill="#0d2a0d" stroke="#4ade80" stroke-width="2"/>
+      <text x="120" y="169" text-anchor="middle" font-family="DM Serif Display,serif" font-size="24" fill="#4ade80" font-weight="700">W</text>
+      <path d="M108 178 Q120 186 132 178" fill="none" stroke="#4ade80" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="156" y1="155" x2="194" y2="148" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round"/>
+      <rect x="196" y="120" width="110" height="90" rx="5" fill="#161616" stroke="#2e2e2e" stroke-width="1"/>
+      <rect x="196" y="120" width="110" height="16" rx="5" fill="#1e1e1e"/>
+      <text x="251" y="131" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#555">page.html</text>
+      <rect x="208" y="144" width="28" height="24" rx="3" fill="#1e1e1e" stroke="#2e2e2e" stroke-width="0.5"/>
+      <rect x="204" y="140" width="14" height="14" rx="2" fill="#f87171"/>
+      <text x="211" y="150" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#fff" font-weight="700">E</text>
+      <text x="252" y="156" font-family="DM Sans,sans-serif" font-size="8" fill="#60a5fa" text-decoration="underline">Read more</text>
+      <rect x="295" y="148" width="12" height="12" rx="2" fill="#fbbf24"/>
+      <text x="301" y="157" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#000" font-weight="700">!</text>
+      <text x="215" y="182" font-family="DM Sans,sans-serif" font-size="8.5" fill="#f0f0f0" font-weight="500">Our services</text>
+      <rect x="204" y="174" width="12" height="12" rx="2" fill="#4ade80"/>
+      <text x="210" y="183" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#000" font-weight="700">H</text>
+      <text x="170" y="248" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9.5" fill="#4ade80" font-weight="500">WAVE</text>
+      <text x="170" y="262" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#555">visual overlay, fast triage</text>
+      <text x="510" y="104" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#a78bfa" letter-spacing="1" font-weight="500">CI/CD PIPELINE</text>
+      <circle cx="580" cy="160" r="36" fill="#1a0d2a" stroke="#a78bfa" stroke-width="2"/>
+      <text x="580" y="169" text-anchor="middle" font-family="DM Serif Display,serif" font-size="22" fill="#a78bfa" font-weight="700">axe</text>
+      <ellipse cx="580" cy="126" rx="30" ry="9" fill="#a78bfa" opacity="0.85"/>
+      <rect x="550" y="126" width="60" height="10" fill="#a78bfa" opacity="0.55"/>
+      <line x1="544" y1="155" x2="486" y2="148" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round"/>
+      <rect x="366" y="128" width="118" height="76" rx="5" fill="#161616" stroke="#2e2e2e" stroke-width="1"/>
+      <rect x="376" y="140" width="36" height="18" rx="3" fill="#1a0d2a" stroke="#a78bfa" stroke-width="0.8"/>
+      <text x="394" y="152" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#a78bfa">build</text>
+      <line x1="412" y1="149" x2="420" y2="149" stroke="#a78bfa" stroke-width="1.2" marker-end="url(#arr26)"/>
+      <rect x="420" y="140" width="36" height="18" rx="3" fill="#1a0d2a" stroke="#a78bfa" stroke-width="0.8"/>
+      <text x="438" y="152" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#a78bfa">test</text>
+      <rect x="376" y="170" width="98" height="22" rx="3" fill="#0d1f0a" stroke="#4ade80" stroke-width="0.8"/>
+      <text x="425" y="179" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#4ade80">axe-core</text>
+      <text x="425" y="188" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="6.5" fill="#4ade80">0 violations ✓ build passes</text>
+      <text x="510" y="248" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9.5" fill="#a78bfa" font-weight="500">axe DevTools</text>
+      <text x="510" y="262" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#555">pipeline rules, precise violations</text>
+      <text x="340" y="288" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10.5" fill="#8a8a8a" font-style="italic">Use both. They cover different ground.</text>
+    </svg>
+  </figure>
+
+
+  <div class="callout green" role="note">
+    The right workflow: run <span class="tool">axe-core</span> in the pipeline to catch failures at build time, and use <span class="tool">WAVE</span> in the browser for visual triage and communicating issues to developers and designers who are not reading axe JSON output.
+  </div>
+
+  <!-- 7 -->
+  <h2 id="wcag">7. WCAG 2.1 AA Coverage</h2>
+
+  <p>WAVE is strongest on Perceivable and Robust criteria: image alt text, form labels, colour contrast, semantic structure, and document properties. It has weaker coverage of Operable criteria (keyboard, focus) and Understandable criteria (error identification, labels and instructions) because those require runtime interaction.</p>
+
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">WCAG 2.1 AA criteria and WAVE coverage</caption>
+      <thead>
+        <tr>
+          <th scope="col">WCAG principle</th>
+          <th scope="col">WAVE coverage</th>
+          <th scope="col">Gaps requiring manual testing</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>1. Perceivable</td><td>Strong: alt text, colour contrast, headings, labels</td><td>Alt text quality, audio/video captions, reflow</td></tr>
+        <tr><td>2. Operable</td><td>Partial: skip links, page titles, link purpose (text only)</td><td>Keyboard access, focus order, focus visibility, timing</td></tr>
+        <tr><td>3. Understandable</td><td>Partial: document language, form labels</td><td>Error identification, error suggestion, consistent navigation</td></tr>
+        <tr><td>4. Robust</td><td>Partial: parsing, ARIA presence</td><td>ARIA correctness, live region behaviour, status messages</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout" role="note">
+    WAVE alone is not sufficient for a WCAG 2.1 AA audit. Treat it as one layer in a testing stack: <span class="tool">axe-core</span> in CI for automated coverage, <span class="tool">WAVE</span> in the browser for visual triage, manual keyboard testing, and screen reader testing for the remainder.
+  </div>
+
+  <div class="takeaway" role="note">
+    <div class="label">The fast WAVE workflow</div>
+    <ul>
+      <li>Activate WAVE on the page. Check the sidebar summary: zero errors is the floor.</li>
+      <li>Click every red E icon. Read the description. Log each one as a defect with the WCAG criterion.</li>
+      <li>Review yellow alerts. Decide per alert: is this a genuine failure in context? Log the ones that are.</li>
+      <li>Click the Structure tab. Verify heading hierarchy is logical and no levels are skipped.</li>
+      <li>Click green feature icons for alt text and labels. Read them. Meaningful? If not, log as a defect even though WAVE marked it green.</li>
+    </ul>
+  </div>
+
+  <div class="series-nav">
+    <span class="label">Navigate the series</span>
+    <div class="nav-pair">
+      <a href="25-What-to-Check-With-a-Screen-Reader.html" class="nav-blog">
+        <span class="nav-blog-arrow" aria-hidden="true">←</span>
+        <div>
+          <div class="nav-blog-title">Blog 25: What to Check With a Screen Reader</div>
+          <div class="nav-blog-sub">The operational checklist for every session</div>
+        </div>
+      </a>
+      <a href="27-Axe-DevTools.html" class="nav-blog">
+        <div>
+          <div class="nav-blog-title">Blog 27: Axe DevTools</div>
+          <div class="nav-blog-sub">Rule-based accessibility testing in the browser</div>
+        </div>
+        <span class="nav-blog-arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+
+  <aside class="references" aria-label="References">
+    <div class="ref-title">References</div>
+    <ul role="list">
+      <li><a href="https://wave.webaim.org" target="_blank" rel="noopener noreferrer">WAVE Web Accessibility Evaluation Tool: WebAIM</a></li>
+      <li><a href="https://chromewebstore.google.com/detail/jbbplnpkjmmeebjpijfedlgcdilocofh" target="_blank" rel="noopener noreferrer">WAVE Chrome Extension</a></li>
+      <li><a href="https://webaim.org/resources/contrastchecker/" target="_blank" rel="noopener noreferrer">WebAIM Contrast Checker</a></li>
+      <li><a href="https://www.w3.org/TR/WCAG21/" target="_blank" rel="noopener noreferrer">WCAG 2.1: W3C</a></li>
+    </ul>
+  </aside>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; Built with intention. Tested with care. &nbsp;·&nbsp; © 2025
+  </p>
+</footer>
+
+</body>
+</html>

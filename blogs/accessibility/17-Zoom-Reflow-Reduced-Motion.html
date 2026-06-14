@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>17 Zoom, Reflow and Reduced Motion | The Quality Strategist</title>
+  <meta name="description" content="How to test zoom, reflow and reduced motion. What breaks at 200% and 400%, how to test reflow at 320px, and how to test prefers-reduced-motion across platforms." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+      --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+      --green:#4ade80; --green-bg:rgba(74,222,128,0.07);
+      --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07);
+      --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07);
+      --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.07);
+      --red:#f87171; --red-bg:rgba(248,113,113,0.07);
+      --teal:#2dd4bf; --teal-bg:rgba(45,212,191,0.07);
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
+    .skip-link:focus { top:0; }
+    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
+    .nav-links { display:flex; gap:2rem; list-style:none; }
+    .nav-links a { color:var(--text-3); text-decoration:none; font-size:0.85rem; transition:color 0.2s; }
+    .nav-links a:hover { color:var(--text); }
+    .blog-header { max-width:900px; margin:0 auto; padding:4rem 2rem 2.5rem; border-bottom:1px solid var(--border); }
+    .breadcrumb { font-size:0.78rem; color:var(--text-3); margin-bottom:1.5rem; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; }
+    .breadcrumb a { color:var(--text-3); text-decoration:none; }
+    .breadcrumb a:hover { color:var(--text-2); }
+    .blog-tags { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.25rem; }
+    .tag { font-size:0.7rem; padding:3px 10px; border-radius:99px; background:var(--bg3); color:var(--text-3); border:1px solid var(--border); letter-spacing:0.04em; text-transform:uppercase; font-weight:500; }
+    .tag.accent { background:var(--blue-bg); color:var(--blue); border-color:rgba(96,165,250,0.25); }
+    .blog-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.85rem,4vw,2.6rem); line-height:1.2; letter-spacing:-0.02em; color:var(--text); margin-bottom:0.75rem; }
+    .blog-header h1 em { font-style:italic; color:var(--blue); }
+    .blog-subtitle { font-family:'DM Serif Display',serif; font-size:1.1rem; font-style:italic; color:var(--text-3); margin-bottom:1.25rem; }
+    .blog-meta { display:flex; align-items:center; gap:1.25rem; font-size:0.82rem; color:var(--text-3); flex-wrap:wrap; }
+    .blog-meta .series { color:var(--text-2); font-weight:500; }
+    main.blog-body { display:block; max-width:900px; margin:0 auto; padding:3rem 2rem 5rem; }
+    .toc { display:block; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.5rem 1.75rem; margin:0 0 3rem 0; }
+    .toc-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.9rem; }
+    .toc ol { padding-left:1.25rem; }
+    .toc ol li { margin-bottom:0.45rem; }
+    .toc ol li a { font-size:0.88rem; color:var(--text-2); text-decoration:none; transition:color 0.2s; }
+    .toc ol li a:hover { color:var(--blue); }
+    .blog-body h2 { font-family:'DM Serif Display',serif; font-size:1.5rem; letter-spacing:-0.01em; color:var(--text); margin:3.5rem 0 1.1rem; padding-top:1rem; border-top:1px solid var(--border); }
+    .blog-body h3 { font-size:1rem; font-weight:500; color:var(--text); margin:1.75rem 0 0.5rem; }
+    .blog-body p { color:var(--text-2); margin-bottom:1.25rem; font-weight:300; }
+    .blog-body p strong { color:var(--text); font-weight:500; }
+    .blog-body ul, .blog-body ol { padding-left:1.5rem; margin-bottom:1.25rem; color:var(--text-2); font-weight:300; }
+    .blog-body li { margin-bottom:0.45rem; }
+    .blog-body li strong { color:var(--text); font-weight:500; }
+    code { background:var(--bg3); padding:1px 6px; border-radius:3px; font-size:0.85em; color:var(--text-2); font-family:monospace; }
+    .callout { display:block; background:var(--blue-bg); border-left:3px solid var(--blue); border-radius:0 10px 10px 0; padding:1.25rem 1.5rem; margin:1.75rem 0; font-size:0.95rem; color:var(--text); font-style:italic; line-height:1.6; }
+    .callout.amber { background:var(--amber-bg); border-color:var(--amber); }
+    .callout.green { background:var(--green-bg); border-color:var(--green); }
+    .callout.red { background:var(--red-bg); border-color:var(--red); }
+    .takeaway { display:block; background:var(--green-bg); border:1px solid rgba(74,222,128,0.2); border-radius:10px; padding:1.25rem 1.5rem; margin:1.75rem 0; }
+    .takeaway .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--green); font-weight:500; margin-bottom:0.5rem; display:block; }
+    .takeaway ul { padding-left:1.25rem; color:var(--text-2); font-size:0.93rem; display:flex; flex-direction:column; gap:0.5rem; }
+    .tool { display:inline; background:var(--purple-bg); color:var(--purple); border:1px solid rgba(167,139,250,0.2); border-radius:4px; padding:1px 7px; font-size:0.85em; font-weight:500; }
+    .key { display:inline-flex; align-items:center; justify-content:center; background:var(--bg3); border:1px solid #444; border-bottom:3px solid #444; border-radius:5px; padding:2px 8px; font-family:monospace; font-size:0.82em; color:var(--text); min-width:28px; white-space:nowrap; }
+    .table-wrap { display:block; overflow-x:auto; margin:1.75rem 0; border-radius:10px; border:1px solid var(--border); }
+    table { width:100%; border-collapse:collapse; font-size:0.875rem; }
+    thead th { background:var(--bg2); padding:10px 14px; text-align:left; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-3); font-weight:500; border-bottom:1px solid var(--border); white-space:nowrap; }
+    tbody td { padding:10px 14px; border-bottom:1px solid var(--border); color:var(--text-2); vertical-align:top; line-height:1.55; }
+    tbody tr:last-child td { border-bottom:none; }
+    tbody td:first-child { color:var(--text); font-weight:500; }
+    tbody tr:hover td { background:var(--bg2); }
+    .blog-illustration { margin:1.75rem 0; border:none; padding:0; }
+    .zoom-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:1.75rem 0; }
+    .zoom-card { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.1rem 1.25rem; }
+    .zoom-value { font-family:'DM Serif Display',serif; font-size:1.8rem; color:var(--text); line-height:1; margin-bottom:4px; }
+    .zoom-label { font-size:0.82rem; color:var(--text-2); line-height:1.5; }
+    .zoom-wcag { font-size:0.7rem; color:var(--text-3); margin-top:6px; }
+    .series-nav { display:block; margin-top:4rem; padding-top:2rem; border-top:1px solid var(--border); }
+    .series-nav .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.75rem; display:block; }
+    .nav-pair { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .nav-blog { display:flex; align-items:center; gap:1rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.1rem 1.25rem; text-decoration:none; transition:border-color 0.2s,background 0.2s; }
+    .nav-blog:hover { border-color:#444; background:var(--bg3); }
+    .nav-blog-arrow { color:var(--text-3); font-size:1rem; flex-shrink:0; }
+    .nav-blog-title { font-size:0.88rem; font-weight:500; color:var(--text); }
+    .nav-blog-sub { font-size:0.75rem; color:var(--text-3); margin-top:2px; }
+    .references { display:block; margin-top:2.5rem; padding:1.5rem 1.75rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; }
+    .ref-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:1rem; }
+    .references ul { list-style:none; padding:0; }
+    .references ul li { margin-bottom:0.5rem; }
+    .references ul li a { font-size:0.85rem; color:var(--text-2); text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; transition:color 0.2s; }
+    .references ul li a:hover { color:var(--green); }
+    .references ul li a::before { content:'↗'; font-size:0.75rem; color:var(--text-3); }
+    footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
+    footer a { color:var(--text-3); text-decoration:none; }
+    .visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    @media(max-width:620px) {
+      nav.site-nav { padding:0 1.25rem; }
+      .nav-links { display:none; }
+      .blog-header, main.blog-body { padding-left:1.25rem; padding-right:1.25rem; }
+      .blog-header { padding-top:2.5rem; }
+      .zoom-cards, .nav-pair { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <ul class="nav-links" role="list">
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#playlist">Playlist</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#justlikereal">JustLikeReal</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#meetme">Meet Me</a></li>
+  </ul>
+</nav>
+
+<header class="blog-header">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a>
+    <span aria-hidden="true">›</span>
+    <span>Shift-Left Accessibility</span>
+    <span aria-hidden="true">›</span>
+    <span aria-current="page">17 of 38</span>
+  </nav>
+  <div class="blog-tags" aria-label="Blog categories">
+    <span class="tag accent">Manual Testing</span>
+    <span class="tag">Zoom</span>
+    <span class="tag">Reflow</span>
+    <span class="tag">Motion</span>
+  </div>
+  <h1>17 Zoom, Reflow and Reduced Motion: <em>Testing What Breaks When You Scale</em></h1>
+  <p class="blog-subtitle">Users zoom because they need to. When content breaks at 200%, overlaps at 400%, or triggers a vestibular response with animation: those are defects, not design decisions.</p>
+  <div class="blog-meta">
+    <span class="series">Series: Shift-Left Accessibility</span>
+    <span aria-hidden="true">·</span>
+    <span>Blog 17 of 38</span>
+    <span aria-hidden="true">·</span>
+    <span>9 min read</span>
+  </div>
+</header>
+
+<main class="blog-body" id="main-content">
+
+  <nav class="toc" aria-label="Table of contents">
+    <div class="toc-title" id="toc-heading">In this blog</div>
+    <ol aria-labelledby="toc-heading">
+      <li><a href="#zoom">Zoom: 200% and 400%</a></li>
+      <li><a href="#reflow">Reflow: 320px and no horizontal scroll</a></li>
+      <li><a href="#reduced-motion">Reduced motion: prefers-reduced-motion</a></li>
+      <li><a href="#how-to-test">How to test: automation, tools, and platform coverage</a></li>
+      <li><a href="#failure-patterns">Failure patterns and what to look for</a></li>
+      <li><a href="#wcag">WCAG requirements</a></li>
+      <li><a href="#defects">Writing defects</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <h2 id="zoom">1. Zoom: 200% and 400%</h2>
+
+  <p>Approximately 2.2 billion people globally have some form of vision impairment. Many use browser zoom as their primary assistive technology: not a screen reader, not a specialised app, just the zoom function built into every browser. When content breaks at zoom, it breaks for a large population who never appear in your analytics.</p>
+
+  <div class="zoom-cards" role="list" aria-label="Zoom level requirements">
+    <div class="zoom-card" role="listitem">
+      <div class="zoom-value">200%</div>
+      <div class="zoom-label">Text must resize without loss of content or functionality. No overlapping, no truncation, no disappearing nav items.</div>
+      <div class="zoom-wcag">WCAG 1.4.4: Level AA</div>
+    </div>
+    <div class="zoom-card" role="listitem">
+      <div class="zoom-value">400%</div>
+      <div class="zoom-label">Content must reflow to a single column. No horizontal scrolling required to read content at a viewport width of 320px.</div>
+      <div class="zoom-wcag">WCAG 1.4.10: Level AA</div>
+    </div>
+    <div class="zoom-card" role="listitem">
+      <div class="zoom-value">320px</div>
+      <div class="zoom-label">The equivalent viewport width at 400% zoom on a 1280px screen. This is the reflow test target: simulate it in Chrome DevTools.</div>
+      <div class="zoom-wcag">WCAG 1.4.10 reference width</div>
+    </div>
+  </div>
+
+  <p>The distinction between 1.4.4 and 1.4.10 matters. <strong>1.4.4 (Resize Text)</strong> is about text scaling without breaking: content stays readable and functional. <strong>1.4.10 (Reflow)</strong> is about layout adapting: at 400% zoom the page should behave like a mobile view, stacking vertically with no horizontal scroll.</p>
+
+  <div class="callout" role="note">
+    Exceptions to 1.4.10: maps, data tables, diagrams, and video players are exempt from the no-horizontal-scroll requirement because they require two-dimensional scrolling by nature. Everything else: navigation, body content, forms, cards: must reflow.
+  </div>
+
+  <h3>What breaks at zoom</h3>
+  <ul>
+    <li><strong>Navigation items disappear</strong>: desktop nav not designed to wrap or collapse at zoom hides items off-screen with no mobile menu fallback</li>
+    <li><strong>Text overlaps</strong>: fixed-height containers clip or overlap text as font size increases</li>
+    <li><strong>Buttons lose their labels</strong>: fixed-width buttons truncate label text without ellipsis or wrapping</li>
+    <li><strong>Modals break</strong>: fixed-position modals anchored to viewport coordinates become unreachable</li>
+    <li><strong>Forms overflow</strong>: inline form layouts break side-by-side into overlapping columns</li>
+    <li><strong>Images cover text</strong>: absolute-positioned decorative images overlap reflowed text</li>
+  </ul>
+
+  <!-- ILLUSTRATION -->
+  <figure class="blog-illustration" aria-label="Two browser mockups stacked vertically. Top shows the page at 100% zoom looking correct. Bottom shows the same page at 400% zoom with failures highlighted.">
+    <svg viewBox="0 0 660 420" width="100%" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#0d0d0d;">
+      <title>Page at 100% zoom versus 400% zoom showing reflow failures</title>
+      <desc>Top half: browser at 100% zoom with full nav, clean heading, body text and image all fitting neatly. Labelled with a green pass badge. Bottom half: same browser at 400% zoom showing only two nav items before they cut off, oversized heading, body text hidden behind an overlapping image. Labelled with a red fail badge. Caption reads: It looks fine at 100%. Test at 400%.</desc>
+      <rect width="660" height="420" fill="#0d0d0d"/>
+
+      <!-- ── TOP: 100% PASS ── -->
+      <rect x="30" y="16" width="600" height="168" rx="8" fill="#161616" stroke="#4ade80" stroke-width="1.5"/>
+      <!-- browser chrome -->
+      <rect x="30" y="16" width="600" height="26" rx="8" fill="#1e1e1e"/>
+      <rect x="30" y="30" width="600" height="12" fill="#1e1e1e"/>
+      <circle cx="52" cy="29" r="4" fill="#f87171" opacity="0.6"/>
+      <circle cx="66" cy="29" r="4" fill="#fbbf24" opacity="0.6"/>
+      <circle cx="80" cy="29" r="4" fill="#4ade80" opacity="0.6"/>
+      <rect x="110" y="22" width="340" height="14" rx="3" fill="#0d0d0d" stroke="#2e2e2e" stroke-width="0.5"/>
+      <text x="280" y="32" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#8a8a8a">example.com</text>
+      <rect x="570" y="22" width="44" height="14" rx="3" fill="#1a2a1a"/>
+      <text x="592" y="32" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#4ade80" font-weight="600">100%</text>
+      <!-- nav: all items fit -->
+      <rect x="30" y="42" width="600" height="22" fill="#1a1a1a"/>
+      <text x="52" y="56" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">Home</text>
+      <text x="100" y="56" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">Products</text>
+      <text x="166" y="56" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">About</text>
+      <text x="214" y="56" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">Contact</text>
+      <text x="270" y="56" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">Blog</text>
+      <text x="308" y="56" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">Resources</text>
+      <text x="376" y="56" font-family="DM Sans,sans-serif" font-size="9" fill="#60a5fa" font-weight="500">Sign in</text>
+      <!-- heading -->
+      <text x="52" y="86" font-family="DM Serif Display,serif" font-size="16" fill="#f0f0f0">Page heading fits cleanly</text>
+      <!-- body text: left column -->
+      <rect x="52" y="96" width="340" height="7" rx="2" fill="#2e2e2e"/>
+      <rect x="52" y="109" width="310" height="7" rx="2" fill="#2e2e2e"/>
+      <rect x="52" y="122" width="280" height="7" rx="2" fill="#2e2e2e"/>
+      <rect x="52" y="135" width="320" height="7" rx="2" fill="#2e2e2e"/>
+      <!-- image: right column, no overlap -->
+      <rect x="416" y="90" width="180" height="80" rx="5" fill="#1e1e1e" stroke="#2e2e2e" stroke-width="1"/>
+      <text x="506" y="128" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8.5" fill="#555">[ image ]</text>
+      <!-- pass badge -->
+      <rect x="52" y="153" width="120" height="20" rx="4" fill="#0d2a0d" stroke="#4ade80" stroke-width="1"/>
+      <text x="112" y="166" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8.5" fill="#4ade80" font-weight="500">✓ Passes at 100%</text>
+
+      <!-- divider label -->
+      <line x1="30" y1="202" x2="630" y2="202" stroke="#2e2e2e" stroke-width="1" stroke-dasharray="4,4"/>
+      <text x="330" y="198" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#555" letter-spacing="1">vs</text>
+
+      <!-- ── BOTTOM: 400% FAIL ── -->
+      <rect x="30" y="208" width="600" height="190" rx="8" fill="#161616" stroke="#f87171" stroke-width="1.5"/>
+      <clipPath id="clip400">
+        <rect x="31" y="209" width="598" height="188" rx="7"/>
+      </clipPath>
+      <g clip-path="url(#clip400)">
+        <!-- browser chrome -->
+        <rect x="30" y="208" width="600" height="26" rx="8" fill="#1e1e1e"/>
+        <rect x="30" y="222" width="600" height="12" fill="#1e1e1e"/>
+        <circle cx="52" cy="221" r="4" fill="#f87171" opacity="0.6"/>
+        <circle cx="66" cy="221" r="4" fill="#f87171" opacity="0.3"/>
+        <circle cx="80" cy="221" r="4" fill="#f87171" opacity="0.3"/>
+        <rect x="110" y="214" width="340" height="14" rx="3" fill="#0d0d0d" stroke="#2e2e2e" stroke-width="0.5"/>
+        <text x="280" y="224" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#8a8a8a">example.com</text>
+        <rect x="570" y="214" width="44" height="14" rx="3" fill="#2a0808"/>
+        <text x="592" y="224" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#f87171" font-weight="600">400%</text>
+        <!-- nav: only 2 items fit, rest cut off by clip -->
+        <rect x="30" y="234" width="600" height="24" fill="#1a1a1a"/>
+        <text x="52" y="250" font-family="DM Sans,sans-serif" font-size="18" fill="#c8c8c8">Home</text>
+        <text x="148" y="250" font-family="DM Sans,sans-serif" font-size="18" fill="#c8c8c8">Products</text>
+        <!-- annotation: items cut off -->
+        <rect x="390" y="237" width="180" height="18" rx="3" fill="#1a0808" stroke="#f87171" stroke-width="0.8"/>
+        <text x="480" y="249" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">↗ remaining items cut off</text>
+        <!-- oversized heading -->
+        <text x="52" y="294" font-family="DM Serif Display,serif" font-size="30" fill="#f0f0f0">Page heading</text>
+        <!-- body text: mostly hidden behind image -->
+        <rect x="52" y="302" width="200" height="7" rx="2" fill="#2e2e2e"/>
+        <rect x="52" y="315" width="160" height="7" rx="2" fill="#2e2e2e"/>
+        <!-- overlapping image with dashed border -->
+        <rect x="240" y="292" width="260" height="90" rx="5" fill="#1e0d0d" stroke="#f87171" stroke-width="1.2" stroke-dasharray="5,3"/>
+        <text x="370" y="330" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9.5" fill="#f87171" font-weight="500">image overlaps body text</text>
+        <!-- overflow annotation -->
+        <rect x="390" y="265" width="150" height="18" rx="3" fill="#1a0808" stroke="#f87171" stroke-width="0.8"/>
+        <text x="465" y="277" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">heading overflows right edge</text>
+        <!-- fail badge -->
+        <rect x="52" y="368" width="130" height="20" rx="4" fill="#1a0808" stroke="#f87171" stroke-width="1"/>
+        <text x="117" y="381" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8.5" fill="#f87171" font-weight="500">✕ Fails at 400% zoom</text>
+      </g>
+
+      <!-- caption -->
+      <text x="330" y="412" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10.5" fill="#8a8a8a" font-style="italic">It looks fine at 100%. Test at 400%.</text>
+    </svg>
+  </figure>
+
+  <!-- 2 -->
+  <h2 id="reflow">2. Reflow: 320px and No Horizontal Scroll</h2>
+
+  <p>Reflow is the layout requirement inside 1.4.10. At 400% zoom on a 1280px-wide screen, the effective viewport becomes 320px wide. At that width, all content must be reachable by vertical scrolling only. No horizontal scroll bar should be required to read any content.</p>
+
+  <p>The fastest way to test reflow without actually zooming to 400% is Chrome DevTools responsive mode set to 320px width. This is equivalent and much faster to work with during a testing session.</p>
+
+  <h3>How to test reflow in Chrome DevTools</h3>
+  <ul>
+    <li>Open <span class="tool">Chrome DevTools</span> (<span class="key">F12</span>)</li>
+    <li>Click the device toolbar icon or press <span class="key">Ctrl</span>+<span class="key">Shift</span>+<span class="key">M</span></li>
+    <li>Set the viewport width to <strong>320px</strong></li>
+    <li>Scroll through every page and check: no horizontal scrollbar, no content cut off, no overlapping elements, all navigation accessible</li>
+    <li>Test all interactive components: open dropdowns, expand accordions, trigger modals, submit forms</li>
+  </ul>
+
+  <div class="callout amber" role="note">
+    320px is a deliberately narrow target. Most modern phones display at 375px or wider. The 320px requirement is not about phone compatibility: it is about zoom equivalence. A site that works at 375px may still fail at 320px.
+  </div>
+
+  <h3>What to check at 320px</h3>
+  <ul>
+    <li><strong>Navigation</strong>: desktop nav must collapse to a hamburger or equivalent. All nav items must be reachable.</li>
+    <li><strong>Tables</strong>: data tables must scroll horizontally within a scrollable container, not force horizontal page scroll</li>
+    <li><strong>Forms</strong>: side-by-side form layouts must stack vertically</li>
+    <li><strong>Cards and grids</strong>: multi-column layouts must collapse to single column</li>
+    <li><strong>Images</strong>: must not extend beyond the viewport width</li>
+    <li><strong>Fixed-width elements</strong>: anything with a hardcoded pixel width wider than 320px will overflow</li>
+    <li><strong>Sticky headers</strong>: must not consume more than 30% of the viewport height at narrow widths</li>
+  </ul>
+
+  <!-- 3 -->
+  <h2 id="reduced-motion">3. Reduced Motion: prefers-reduced-motion</h2>
+
+  <p>Users with vestibular disorders, epilepsy, migraine, or attention-related conditions can experience nausea, disorientation, or seizures from animation and motion on screen. The <code>prefers-reduced-motion</code> CSS media query lets users signal that they need reduced animation. WCAG 2.3.3 (Animation from Interactions) at Level AAA requires that motion triggered by interaction can be disabled. At Level AA, WCAG 2.3.1 (Three Flashes or Below Threshold) prohibits content that flashes more than three times per second.</p>
+
+  <h3>What prefers-reduced-motion affects</h3>
+  <ul>
+    <li><strong>Page transitions</strong>: slide-in and fade animations between routes in SPAs</li>
+    <li><strong>Scroll animations</strong>: parallax effects, elements animating in on scroll</li>
+    <li><strong>Loading animations</strong>: spinning loaders, skeleton shimmer effects</li>
+    <li><strong>Hover effects</strong>: scale, translate, and rotation transforms on hover</li>
+    <li><strong>Carousels</strong>: auto-playing carousels must pause or reduce motion</li>
+    <li><strong>Toasts and notifications</strong>: slide-in animations on appearing content</li>
+  </ul>
+
+  <h3>What correct implementation looks like</h3>
+  <p>The media query is applied in CSS to override or remove motion:</p>
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;margin:1.25rem 0;">
+    <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.07em;color:var(--green);font-weight:500;margin-bottom:8px;">Correct implementation</div>
+    <pre style="font-family:monospace;font-size:0.82rem;color:var(--text-2);line-height:1.7;overflow-x:auto;">.card {
+  transition: transform 0.3s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+  .carousel {
+    animation: none;
+  }
+  .spinner {
+    animation-duration: 0.01ms;
+  }
+}</pre>
+  </div>
+
+  <div class="callout red" role="note">
+    Removing all motion is not always the right approach. For a loading spinner, removing the animation leaves a static image with no indication that something is loading. A better approach is to reduce the motion: slow it significantly or replace with a static indicator: rather than removing it entirely.
+  </div>
+
+  <!-- 4 -->
+  <h2 id="how-to-test">4. How to Test: Automation, Tools, and Platform Coverage</h2>
+
+  <div style="background:var(--amber-bg);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:0 0 1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
+    <div style="font-size:1.1rem;line-height:1;padding-top:2px;" aria-hidden="true">&#127919;</div>
+    <div>
+      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--amber);font-weight:500;margin-bottom:4px;">Practice these yourself</div>
+      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">Interactive scenarios in the <a href="A11y-Test-Playground/17 A11y Test Playground - Zoom Reflow.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Zoom and Reflow Playground</a>. Mobile testing steps in the <a href="17 A11y Zoom Reflow Mobile Testing Guide.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Mobile Testing Guide</a>.</div>
+    </div>
+  </div>
+
+  <h3>Tier 1: Pipeline automation</h3>
+  <p><span class="tool">axe-core</span> in <span class="tool">Playwright</span> or <span class="tool">Cypress</span> can be configured to run at a 320px viewport and flag:</p>
+  <ul>
+    <li>Elements with <code>overflow: hidden</code> on the body that would clip content</li>
+    <li>Fixed-width elements wider than the viewport</li>
+    <li>Missing <code>meta viewport</code> tag that would prevent zoom on mobile</li>
+  </ul>
+  <p><span class="tool">Pa11y</span> run at 320px viewport width catches overflow failures detectable via DOM inspection. Neither tool can detect visual overlaps or reflow layout failures: those require viewport rendering.</p>
+
+  <h3>Tier 2: Semi-automated tools</h3>
+  <ul>
+    <li><strong><span class="tool">Chrome DevTools</span> responsive mode</strong>: set to 320px, scroll through entire page. Fastest reflow test method. Also check at 400% zoom via browser zoom controls.</li>
+    <li><strong><span class="tool">Chrome DevTools</span> rendering panel</strong>: Emulate CSS media feature <code>prefers-reduced-motion: reduce</code>. All animations governed by this media query will disable or reduce without changing system settings.</li>
+    <li><strong><span class="tool">axe DevTools</span></strong>: run at 320px viewport: flags zoom and reflow related violations. Does not detect visual layout failures.</li>
+    <li><strong><span class="tool">WAVE</span></strong>: run at 320px viewport: flags structural issues that affect reflow.</li>
+  </ul>
+
+  <h3>Tier 3: Manual checks only</h3>
+  <ul>
+    <li><strong>Visual overlap detection</strong>: no tool detects text overlapping images or elements colliding at zoom. Walk through every component at 400% zoom visually.</li>
+    <li><strong>Navigation completeness at zoom</strong>: confirm all nav items are reachable at 200% and 400%. Automation cannot verify that a collapsed hamburger menu opens and contains all the expected items.</li>
+    <li><strong>Motion perception check</strong>: enable <code>prefers-reduced-motion</code> via system settings and navigate the site. Check every page transition, every hover effect, every loading state. No tool validates whether the resulting reduced-motion experience is actually perceptible or meaningful.</li>
+    <li><strong>Sticky header height at 320px</strong>: check that sticky headers do not consume excessive viewport real estate at narrow widths.</li>
+    <li><strong>Pinch-to-zoom on mobile</strong>: must not be disabled. Inspect <code>meta viewport</code>: <code>user-scalable=no</code> or <code>maximum-scale=1</code> on the viewport meta tag fails WCAG 1.4.4.</li>
+  </ul>
+
+  <h3>Windows: testing zoom</h3>
+  <p>In Chrome or Firefox, use <span class="key">Ctrl</span>+<span class="key">+</span> to increase zoom. Test at 200% and 400%. Alternatively set exact zoom via <span class="key">Ctrl</span>+<span class="key">0</span> to reset then navigate to View, Zoom, Custom. For reduced motion: Settings, Ease of Access, Display, Show animations in Windows: toggle OFF.</p>
+
+  <h3>Mac: testing zoom</h3>
+  <p>Browser zoom: <span class="key">Cmd</span>+<span class="key">+</span>. For system-level zoom: System Settings, Accessibility, Zoom. For reduced motion: System Settings, Accessibility, Display, Reduce Motion: toggle ON. Then test the site with <span class="tool">Chrome DevTools</span> rendering panel to confirm <code>prefers-reduced-motion</code> is being respected.</p>
+
+  <h3>iOS: testing zoom and reduced motion</h3>
+  <p>Pinch-to-zoom must work. Verify by opening the site in Safari and pinching: if pinch-to-zoom is blocked, the viewport meta tag has <code>user-scalable=no</code>. For reduced motion: Settings, Accessibility, Motion, Reduce Motion: toggle ON. Navigate the site in Safari and check that animations are reduced or removed.</p>
+
+  <h3>Android: testing zoom and reduced motion</h3>
+  <p>Pinch-to-zoom must work in Chrome. For text size: Settings, Accessibility, Font Size: increase to largest setting and check the site reflowsin Chrome. For reduced motion: Settings, Accessibility, Remove Animations: toggle ON. Navigate in Chrome and verify motion is reduced.</p>
+
+  <!-- 5 -->
+  <h2 id="failure-patterns">5. Failure Patterns and What to Look For</h2>
+
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">Zoom, reflow and reduced motion failure patterns</caption>
+      <thead>
+        <tr>
+          <th scope="col">Failure</th>
+          <th scope="col">Where to find it</th>
+          <th scope="col">WCAG</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Nav items hidden at 400% zoom with no hamburger fallback</td><td>Zoom to 400%, check navigation</td><td>1.4.10</td></tr>
+        <tr><td>Horizontal scrollbar appears at 320px viewport</td><td>DevTools responsive, 320px width</td><td>1.4.10</td></tr>
+        <tr><td>Text overlaps other content at 200% zoom</td><td>Zoom to 200%, visually scan all containers</td><td>1.4.4</td></tr>
+        <tr><td>Fixed-width container clips text at zoom</td><td>Zoom to 400%, check all fixed-height/width containers</td><td>1.4.4</td></tr>
+        <tr><td>Modal unreachable at zoom</td><td>Open modal, zoom to 400%, attempt to interact and close</td><td>1.4.10</td></tr>
+        <tr><td>pinch-to-zoom disabled on mobile</td><td>Inspect viewport meta tag: user-scalable=no or maximum-scale=1</td><td>1.4.4</td></tr>
+        <tr><td>Animation not reduced with prefers-reduced-motion</td><td>Enable Reduce Motion in OS, navigate site</td><td>2.3.3</td></tr>
+        <tr><td>Carousel auto-plays with no pause control</td><td>Load page, observe carousel, check for pause button</td><td>2.2.2</td></tr>
+        <tr><td>Content flashes more than 3 times per second</td><td>Visually observe: or use Photosensitive Epilepsy Analysis Tool (PEAT)</td><td>2.3.1</td></tr>
+        <tr><td>Skeleton loader shimmer not reduced under prefers-reduced-motion</td><td>Enable Reduce Motion, trigger loading state</td><td>2.3.3</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 6 -->
+  <h2 id="wcag">6. WCAG Requirements</h2>
+
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">WCAG success criteria for zoom, reflow and reduced motion</caption>
+      <thead>
+        <tr>
+          <th scope="col">Criterion</th>
+          <th scope="col">Level</th>
+          <th scope="col">Requirement</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>1.4.4 Resize Text</td><td>AA</td><td>Text can be resized up to 200% without loss of content or functionality. Does not apply to captions and images of text.</td></tr>
+        <tr><td>1.4.10 Reflow</td><td>AA</td><td>Content can be presented without horizontal scroll at 320px width (equivalent to 400% zoom on a 1280px viewport). Exceptions: maps, data tables, video players, interfaces requiring 2D scrolling.</td></tr>
+        <tr><td>2.2.2 Pause, Stop, Hide</td><td>A</td><td>Moving or auto-updating content can be paused, stopped, or hidden. Applies to carousels, tickers, and auto-playing animations.</td></tr>
+        <tr><td>2.3.1 Three Flashes or Below Threshold</td><td>A</td><td>No content flashes more than three times per second, or the flash is below the general and red flash thresholds.</td></tr>
+        <tr><td>2.3.3 Animation from Interactions</td><td>AAA</td><td>Motion animation triggered by interaction can be disabled. Use prefers-reduced-motion. AAA: not required for basic AA compliance.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout green" role="note">
+    For WCAG 2.1 AA compliance, you need to pass 1.4.4, 1.4.10, 2.2.2 and 2.3.1. That covers resize text, reflow, pause/stop/hide for moving content, and the three flashes rule. WCAG 2.3.3 (Animation from Interactions) is Level AAA: it is best practice and strongly recommended, but not required for AA conformance. Implementing prefers-reduced-motion is the right thing to do regardless.
+  </div>
+
+  <!-- 7 -->
+  <h2 id="defects">7. Writing Defects</h2>
+
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">Zoom reflow and motion defects with WCAG reference and reproduction steps</caption>
+      <thead>
+        <tr>
+          <th scope="col">Defect</th>
+          <th scope="col">WCAG</th>
+          <th scope="col">Severity</th>
+          <th scope="col">Reproduction</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Horizontal scroll at 320px</td><td>1.4.10</td><td style="color:var(--red)">Critical</td><td>Open DevTools, set viewport to 320px. Horizontal scrollbar visible on [page]. Content extends beyond viewport.</td></tr>
+        <tr><td>Nav items inaccessible at 400% zoom</td><td>1.4.10</td><td style="color:var(--red)">Critical</td><td>Zoom browser to 400% on [page]. Desktop nav items [Products, About, Contact] not visible and no alternative nav provided.</td></tr>
+        <tr><td>Text overlaps at 200% zoom</td><td>1.4.4</td><td style="color:var(--red)">Major</td><td>Zoom to 200%. [Hero section]: heading overlaps the subheading paragraph. Content unreadable.</td></tr>
+        <tr><td>pinch-to-zoom disabled</td><td>1.4.4</td><td style="color:var(--red)">Major</td><td>Inspect meta viewport tag: <code>user-scalable=no</code> present. Pinch-to-zoom on iOS and Android Safari is blocked.</td></tr>
+        <tr><td>Animation not reduced under prefers-reduced-motion</td><td>2.3.3</td><td style="color:var(--amber)">Moderate</td><td>Enable Reduce Motion in OS settings. Load [page]. Page transition animation still plays at full speed. No prefers-reduced-motion media query in stylesheet.</td></tr>
+        <tr><td>Carousel auto-plays with no pause control</td><td>2.2.2</td><td style="color:var(--amber)">Moderate</td><td>[Homepage carousel] auto-advances every 3 seconds. No pause button visible. No keyboard mechanism to stop auto-play.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="takeaway" role="note">
+    <div class="label">The three fast checks</div>
+    <ul>
+      <li>Open DevTools, set viewport to 320px, scroll every page. Any horizontal scrollbar is a 1.4.10 failure.</li>
+      <li>Zoom to 400% in the browser. Walk through all navigation, modals, and forms. Any broken layout, missing nav item, or unreachable control is a failure.</li>
+      <li>Enable Reduce Motion in OS settings (or emulate via DevTools Rendering panel). Load the site and navigate. Any animation that still plays at full intensity is a candidate for a 2.3.3 failure.</li>
+    </ul>
+  </div>
+
+  <div class="series-nav">
+    <span class="label">Navigate the series</span>
+    <div class="nav-pair">
+      <a href="16-Dynamic-Content-ARIA-Live-Regions.html" class="nav-blog">
+        <span class="nav-blog-arrow" aria-hidden="true">←</span>
+        <div>
+          <div class="nav-blog-title">Blog 16: Dynamic Content and ARIA Live Regions</div>
+          <div class="nav-blog-sub">Testing announcements without a page reload</div>
+        </div>
+      </a>
+      <a href="18-Enable-Accessibility-Features.html" class="nav-blog">
+        <div>
+          <div class="nav-blog-title">Blog 18: Enable Accessibility Features</div>
+          <div class="nav-blog-sub">Windows, Mac, iOS and Android device settings</div>
+        </div>
+        <span class="nav-blog-arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+
+  <aside class="references" aria-label="References">
+    <div class="ref-title">References</div>
+    <ul role="list">
+      <li><a href="https://www.w3.org/TR/WCAG21/#resize-text" target="_blank" rel="noopener noreferrer">WCAG 1.4.4: Resize Text</a></li>
+      <li><a href="https://www.w3.org/TR/WCAG21/#reflow" target="_blank" rel="noopener noreferrer">WCAG 1.4.10: Reflow</a></li>
+      <li><a href="https://www.w3.org/TR/WCAG21/#animation-from-interactions" target="_blank" rel="noopener noreferrer">WCAG 2.3.3: Animation from Interactions</a></li>
+      <li><a href="https://www.w3.org/WAI/WCAG21/Understanding/reflow.html" target="_blank" rel="noopener noreferrer">Understanding Reflow: W3C WAI</a></li>
+      <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion" target="_blank" rel="noopener noreferrer">MDN: prefers-reduced-motion</a></li>
+      <li><a href="https://trace.umd.edu/peat/" target="_blank" rel="noopener noreferrer">PEAT: Photosensitive Epilepsy Analysis Tool</a></li>
+    </ul>
+  </aside>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; Built with intention. Tested with care. &nbsp;·&nbsp; © 2025
+  </p>
+</footer>
+
+</body>
+</html>

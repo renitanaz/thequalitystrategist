@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>21 JAWS on Windows | The Quality Strategist</title>
+  <meta name="description" content="Testing with JAWS on Windows. JAWS commands, virtual cursor, forms mode, and how JAWS differs from NVDA for accessibility testing." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root { --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e; --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a; --green:#4ade80; --green-bg:rgba(74,222,128,0.07); --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07); --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07); --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.07); --red:#f87171; --red-bg:rgba(248,113,113,0.07); }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
+    .skip-link:focus { top:0; }
+    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
+    .nav-links { display:flex; gap:2rem; list-style:none; }
+    .nav-links a { color:var(--text-3); text-decoration:none; font-size:0.85rem; }
+    .nav-links a:hover { color:var(--text); }
+    .blog-header { max-width:900px; margin:0 auto; padding:4rem 2rem 2.5rem; border-bottom:1px solid var(--border); }
+    .breadcrumb { font-size:0.78rem; color:var(--text-3); margin-bottom:1.5rem; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; }
+    .breadcrumb a { color:var(--text-3); text-decoration:none; }
+    .blog-tags { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.25rem; }
+    .tag { font-size:0.7rem; padding:3px 10px; border-radius:99px; background:var(--bg3); color:var(--text-3); border:1px solid var(--border); letter-spacing:0.04em; text-transform:uppercase; font-weight:500; }
+    .tag.accent { background:var(--blue-bg); color:var(--blue); border-color:rgba(96,165,250,0.25); }
+    .blog-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.85rem,4vw,2.6rem); line-height:1.2; color:var(--text); margin-bottom:0.75rem; }
+    .blog-header h1 em { font-style:italic; color:var(--blue); }
+    .blog-subtitle { font-family:'DM Serif Display',serif; font-size:1.1rem; font-style:italic; color:var(--text-3); margin-bottom:1.25rem; }
+    .blog-meta { display:flex; align-items:center; gap:1.25rem; font-size:0.82rem; color:var(--text-3); flex-wrap:wrap; }
+    .blog-meta .series { color:var(--text-2); font-weight:500; }
+    main.blog-body { display:block; max-width:900px; margin:0 auto; padding:3rem 2rem 5rem; }
+    .toc { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.5rem 1.75rem; margin:0 0 3rem 0; }
+    .toc-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.9rem; }
+    .toc ol { padding-left:1.25rem; }
+    .toc ol li { margin-bottom:0.45rem; }
+    .toc ol li a { font-size:0.88rem; color:var(--text-2); text-decoration:none; }
+    .toc ol li a:hover { color:var(--blue); }
+    .blog-body h2 { font-family:'DM Serif Display',serif; font-size:1.5rem; color:var(--text); margin:3.5rem 0 1.1rem; padding-top:1rem; border-top:1px solid var(--border); }
+    .blog-body h3 { font-size:1rem; font-weight:500; color:var(--text); margin:1.75rem 0 0.5rem; }
+    .blog-body p { color:var(--text-2); margin-bottom:1.25rem; font-weight:300; }
+    .blog-body p strong { color:var(--text); font-weight:500; }
+    .blog-body ul, .blog-body ol { padding-left:1.5rem; margin-bottom:1.25rem; color:var(--text-2); font-weight:300; }
+    .blog-body li { margin-bottom:0.45rem; }
+    .blog-body li strong { color:var(--text); font-weight:500; }
+    code { background:var(--bg3); padding:1px 6px; border-radius:3px; font-size:0.85em; color:var(--text-2); font-family:monospace; }
+    .callout { display:block; background:var(--amber-bg); border-left:3px solid var(--amber); border-radius:0 10px 10px 0; padding:1.25rem 1.5rem; margin:1.75rem 0; font-size:0.95rem; color:var(--text); font-style:italic; line-height:1.6; }
+    .callout.blue { background:var(--blue-bg); border-color:var(--blue); }
+    .callout.green { background:var(--green-bg); border-color:var(--green); }
+    .key { display:inline-flex; align-items:center; justify-content:center; background:var(--bg3); border:1px solid #444; border-bottom:3px solid #444; border-radius:5px; padding:2px 8px; font-family:monospace; font-size:0.82em; color:var(--text); min-width:28px; white-space:nowrap; }
+    .table-wrap { display:block; overflow-x:auto; margin:1.75rem 0; border-radius:10px; border:1px solid var(--border); }
+    table { width:100%; border-collapse:collapse; font-size:0.875rem; }
+    thead th { background:var(--bg2); padding:10px 14px; text-align:left; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-3); font-weight:500; border-bottom:1px solid var(--border); white-space:nowrap; }
+    tbody td { padding:10px 14px; border-bottom:1px solid var(--border); color:var(--text-2); vertical-align:top; line-height:1.55; }
+    tbody tr:last-child td { border-bottom:none; }
+    tbody td:first-child { color:var(--text); font-weight:500; white-space:nowrap; }
+    tbody tr:hover td { background:var(--bg2); }
+    .takeaway { background:var(--green-bg); border:1px solid rgba(74,222,128,0.2); border-radius:10px; padding:1.25rem 1.5rem; margin:1.75rem 0; }
+    .takeaway .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--green); font-weight:500; margin-bottom:0.5rem; display:block; }
+    .takeaway ul { padding-left:1.25rem; color:var(--text-2); font-size:0.93rem; display:flex; flex-direction:column; gap:0.5rem; }
+    .series-nav { margin-top:4rem; padding-top:2rem; border-top:1px solid var(--border); }
+    .series-nav .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.75rem; display:block; }
+    .nav-pair { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .nav-blog { display:flex; align-items:center; gap:1rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.1rem 1.25rem; text-decoration:none; transition:border-color 0.2s; }
+    .nav-blog:hover { border-color:#444; background:var(--bg3); }
+    .nav-blog-arrow { color:var(--text-3); font-size:1rem; flex-shrink:0; }
+    .nav-blog-title { font-size:0.88rem; font-weight:500; color:var(--text); }
+    .nav-blog-sub { font-size:0.75rem; color:var(--text-3); margin-top:2px; }
+    .references { margin-top:2.5rem; padding:1.5rem 1.75rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; }
+    .ref-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:1rem; }
+    .references ul { list-style:none; padding:0; }
+    .references ul li { margin-bottom:0.5rem; }
+    .references ul li a { font-size:0.85rem; color:var(--text-2); text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; }
+    .references ul li a:hover { color:var(--green); }
+    .references ul li a::before { content:'↗'; font-size:0.75rem; color:var(--text-3); }
+    footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
+    footer a { color:var(--text-3); text-decoration:none; }
+    @media(max-width:620px) { nav.site-nav { padding:0 1.25rem; } .nav-links { display:none; } .blog-header, main.blog-body { padding-left:1.25rem; padding-right:1.25rem; } .nav-pair { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <ul class="nav-links" role="list">
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#playlist">Playlist</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#justlikereal">JustLikeReal</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#meetme">Meet Me</a></li>
+  </ul>
+</nav>
+<header class="blog-header">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a>
+    <span aria-hidden="true">›</span><span>Shift-Left Accessibility</span>
+    <span aria-hidden="true">›</span><span aria-current="page">21 of 38</span>
+  </nav>
+  <div class="blog-tags">
+    <span class="tag accent">Screen Readers</span><span class="tag">JAWS</span><span class="tag">Windows</span><span class="tag">Enterprise</span>
+  </div>
+  <h1>21 JAWS on Windows: <em>Enterprise Screen Reader Testing</em></h1>
+  <p class="blog-subtitle">JAWS is the most widely used screen reader in enterprise environments. If your product ships to corporate clients, JAWS testing is not optional.</p>
+  <div class="blog-meta">
+    <span class="series">Series: Shift-Left Accessibility</span>
+    <span aria-hidden="true">·</span><span>Blog 21 of 38</span>
+    <span aria-hidden="true">·</span><span>9 min read</span>
+  </div>
+</header>
+<main class="blog-body" id="main-content">
+  <nav class="toc" aria-label="Table of contents">
+    <div class="toc-title">In this blog</div>
+    <ol>
+      <li><a href="#jaws-vs-nvda">JAWS vs NVDA: when to use which</a></li>
+      <li><a href="#setup">Setup and licensing</a></li>
+      <li><a href="#commands">Key JAWS commands for testing</a></li>
+      <li><a href="#virtual-cursor">Virtual cursor and forms mode</a></li>
+      <li><a href="#what-to-test">What to test and what to listen for</a></li>
+      <li><a href="#jaws-nvda-diffs">JAWS and NVDA differences that affect testing</a></li>
+    </ol>
+  </nav>
+
+  <h2 id="jaws-vs-nvda">1. JAWS vs NVDA: When to Use Which</h2>
+  <p>NVDA is free and representative of a large proportion of screen reader users, making it the default for most accessibility testing. JAWS is the correct choice when your product targets enterprise users, government agencies, corporate employees, or regulated industries where JAWS is the deployed standard.</p>
+  <p>WebAIM's Screen Reader User Survey consistently places JAWS as the most used screen reader globally by a significant margin among professional users. NVDA is more common among home users and in accessibility testing programmes due to its zero cost.</p>
+  <div class="callout blue" role="note">
+    Test with NVDA first to catch the majority of issues. Add JAWS testing when the product targets enterprise environments, when a JAWS-specific defect has been reported, or when the testing programme requires validated compatibility with both screen readers.
+  </div>
+
+  <h2 id="setup">2. Setup and Licensing</h2>
+  <ul>
+    <li><strong>Licence:</strong> JAWS is paid software by Freedom Scientific. Annual licence approximately $95/year for home use, higher for professional licences. Enterprise licences are site-based.</li>
+    <li><strong>Download:</strong> <a href="https://support.freedomscientific.com/Downloads/JAWS" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">support.freedomscientific.com/Downloads/JAWS</a></li>
+    <li><strong>40-minute mode:</strong> JAWS can be run without a licence for 40 minutes per session before requiring restart. Sufficient for focused testing sessions.</li>
+    <li><strong>JAWS key:</strong> Insert (same as NVDA by default). Can be reconfigured to Caps Lock.</li>
+    <li><strong>Recommended browser:</strong> Chrome for modern web apps. JAWS also has strong IE/Edge support for legacy enterprise applications.</li>
+    <li><strong>Launch:</strong> From the Start menu or desktop shortcut. JAWS announces "JAWS for Windows" on start.</li>
+    <li><strong>Quit:</strong> <span class="key">Insert</span>+<span class="key">F4</span></li>
+    <li><strong>Silence speech:</strong> <span class="key">Ctrl</span></li>
+  </ul>
+
+  <h2 id="commands">3. Key JAWS Commands for Testing</h2>
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">JAWS keyboard shortcuts for accessibility testing</caption>
+      <thead><tr><th scope="col">Action</th><th scope="col">Shortcut</th></tr></thead>
+      <tbody>
+        <tr><td>Read from here</td><td><span class="key">Insert</span>+<span class="key">↓</span></td></tr>
+        <tr><td>Read current line</td><td><span class="key">Insert</span>+<span class="key">L</span></td></tr>
+        <tr><td>Next heading</td><td><span class="key">H</span></td></tr>
+        <tr><td>Next heading level 1-6</td><td><span class="key">1</span>–<span class="key">6</span></td></tr>
+        <tr><td>Next link</td><td><span class="key">U</span> (unvisited) / <span class="key">V</span> (visited)</td></tr>
+        <tr><td>Next button</td><td><span class="key">B</span></td></tr>
+        <tr><td>Next form field</td><td><span class="key">F</span></td></tr>
+        <tr><td>Next landmark</td><td><span class="key">R</span></td></tr>
+        <tr><td>Next table</td><td><span class="key">T</span></td></tr>
+        <tr><td>Next graphic</td><td><span class="key">G</span></td></tr>
+        <tr><td>Next list</td><td><span class="key">L</span></td></tr>
+        <tr><td>JAWS list of links</td><td><span class="key">Insert</span>+<span class="key">F7</span></td></tr>
+        <tr><td>JAWS list of headings</td><td><span class="key">Insert</span>+<span class="key">F6</span></td></tr>
+        <tr><td>JAWS list of form fields</td><td><span class="key">Insert</span>+<span class="key">F5</span></td></tr>
+        <tr><td>Toggle virtual/forms mode</td><td><span class="key">Insert</span>+<span class="key">Z</span></td></tr>
+        <tr><td>Navigate table cell</td><td><span class="key">Ctrl</span>+<span class="key">Alt</span>+arrow keys</td></tr>
+        <tr><td>Previous of any type</td><td>Add <span class="key">Shift</span> to navigation key</td></tr>
+        <tr><td>JAWS help</td><td><span class="key">Insert</span>+<span class="key">F1</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout" role="note">
+    Note the key difference: JAWS uses <span class="key">U</span> for unvisited links (where NVDA uses <span class="key">K</span>), and <span class="key">R</span> for landmarks (where NVDA uses <span class="key">D</span>). Check the cheat sheet in Blog 19 when switching between screen readers.
+  </div>
+
+  <h2 id="virtual-cursor">4. Virtual Cursor and Forms Mode</h2>
+  <p>JAWS uses a virtual cursor (equivalent to NVDA's browse mode) and forms mode. The behaviour is nearly identical to NVDA:</p>
+  <ul>
+    <li><strong>Virtual cursor:</strong> default mode for web pages. Arrow keys navigate content. Single letter shortcuts (H, U, B, F) work.</li>
+    <li><strong>Forms mode:</strong> activates when focus enters a form field or interactive widget. Single letter shortcuts stop working. Arrow keys operate the component.</li>
+    <li><strong>Toggle:</strong> <span class="key">Insert</span>+<span class="key">Z</span>: JAWS announces "Virtual PC Cursor off" (forms mode) or "Virtual PC Cursor on" (reading mode).</li>
+    <li><strong>Auto-switching:</strong> JAWS switches modes automatically on Tab to a form field. If it does not, a widget is failing to set the correct ARIA role or application mode.</li>
+  </ul>
+
+  <h2 id="what-to-test">5. What to Test and What to Listen For</h2>
+  <h3>Page structure</h3>
+  <p>Use <span class="key">Insert</span>+<span class="key">F6</span> for the headings list: shows the complete heading outline. Use <span class="key">Insert</span>+<span class="key">F7</span> for the links list: any "click here" or "read more" entries are immediately visible as failures.</p>
+
+  <h3>Forms</h3>
+  <p>Tab to each field. JAWS announces label, type, and required state. For radio groups: the group legend must be announced before the first option. For custom dropdowns: JAWS must announce the role (combobox or listbox), the selected value, and the expanded/collapsed state.</p>
+  <div class="announced"><strong>Correct field announcement:</strong> "Email address, required, edit text"</div>
+  <div class="announced"><strong>Correct custom dropdown:</strong> "Country, collapsed, combobox"</div>
+  <div class="announced"><strong>Failure:</strong> "edit text" with nothing else: label missing</div>
+
+  <h3>Dynamic content</h3>
+  <p>JAWS handles <code>role="alert"</code> and <code>aria-live</code> regions. Trigger dynamic updates while focus is elsewhere. JAWS must announce updates from <code>role="status"</code> politely and <code>role="alert"</code> immediately.</p>
+
+  <h3>PDF and Office documents</h3>
+  <p>JAWS has strong support for accessible PDFs and Microsoft Office documents: areas where NVDA is weaker. If the product includes document export or PDF viewing, JAWS testing is particularly important for those flows.</p>
+
+  <h2 id="jaws-nvda-diffs">6. JAWS and NVDA Differences That Affect Testing</h2>
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">Key differences between JAWS and NVDA behaviour</caption>
+      <thead><tr><th scope="col">Behaviour</th><th scope="col">NVDA</th><th scope="col">JAWS</th></tr></thead>
+      <tbody>
+        <tr><td>Navigate links</td><td><span class="key">K</span></td><td><span class="key">U</span> (unvisited) / <span class="key">V</span> (visited)</td></tr>
+        <tr><td>Navigate landmarks</td><td><span class="key">D</span></td><td><span class="key">R</span></td></tr>
+        <tr><td>Virtual/browse mode toggle</td><td>Insert+Space</td><td>Insert+Z</td></tr>
+        <tr><td>Heading list</td><td>Insert+F7 (elements list)</td><td>Insert+F6</td></tr>
+        <tr><td>Link list</td><td>Insert+F7 (elements list)</td><td>Insert+F7</td></tr>
+        <tr><td>ARIA live region support</td><td>Good</td><td>Good (slightly different timing)</td></tr>
+        <tr><td>Custom widget ARIA support</td><td>Good</td><td>Generally more robust, especially for complex widgets</td></tr>
+        <tr><td>PDF accessibility</td><td>Basic</td><td>Excellent: strong PDF UA support</td></tr>
+        <tr><td>Virtual mode announcement</td><td>"Forms mode" / no announcement</td><td>"Virtual PC Cursor off/on"</td></tr>
+        <tr><td>Cost</td><td>Free</td><td>Paid (~$95/yr home)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="takeaway" role="note">
+    <div class="label">When to prioritise JAWS testing</div>
+    <ul>
+      <li>Product ships to enterprise, government, or regulated industry clients</li>
+      <li>A defect has been reported specifically on JAWS that does not reproduce on NVDA</li>
+      <li>Testing complex ARIA widgets (data grids, tree views, tabs) where JAWS behaviour may differ</li>
+      <li>Testing PDF or Office document accessibility</li>
+    </ul>
+  </div>
+
+  <div class="series-nav">
+    <span class="label">Navigate the series</span>
+    <div class="nav-pair">
+      <a href="20-NVDA-on-Windows.html" class="nav-blog">
+        <span class="nav-blog-arrow" aria-hidden="true">←</span>
+        <div><div class="nav-blog-title">Blog 20: NVDA on Windows</div><div class="nav-blog-sub">The QA tester's in-depth guide</div></div>
+      </a>
+      <a href="22-VoiceOver-on-Mac.html" class="nav-blog">
+        <div><div class="nav-blog-title">Blog 22: VoiceOver on Mac</div><div class="nav-blog-sub">In-depth testing with VoiceOver and Safari</div></div>
+        <span class="nav-blog-arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+
+  <aside class="references" aria-label="References">
+    <div class="ref-title">References</div>
+    <ul role="list">
+      <li><a href="https://support.freedomscientific.com/Downloads/JAWS" target="_blank" rel="noopener noreferrer">JAWS download: Freedom Scientific</a></li>
+      <li><a href="https://webaim.org/resources/shortcuts/jaws" target="_blank" rel="noopener noreferrer">JAWS keyboard shortcuts: WebAIM</a></li>
+      <li><a href="https://webaim.org/projects/screenreadersurvey10/" target="_blank" rel="noopener noreferrer">WebAIM Screen Reader User Survey</a></li>
+    </ul>
+  </aside>
+</main>
+<footer><p><a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a> &nbsp;·&nbsp; Built with intention. Tested with care. &nbsp;·&nbsp; © 2025</p></footer>
+</body>
+</html>

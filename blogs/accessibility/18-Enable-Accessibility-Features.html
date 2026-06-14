@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>18 Enable Accessibility Features | The Quality Strategist</title>
+  <meta name="description" content="Step-by-step guide to enabling accessibility features on Windows, Mac, iOS and Android before testing. Screen readers, display settings, and keyboard access." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+      --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+      --green:#4ade80; --green-bg:rgba(74,222,128,0.07);
+      --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07);
+      --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07);
+      --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.07);
+      --red:#f87171; --red-bg:rgba(248,113,113,0.07);
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
+    .skip-link:focus { top:0; }
+    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
+    .nav-links { display:flex; gap:2rem; list-style:none; }
+    .nav-links a { color:var(--text-3); text-decoration:none; font-size:0.85rem; transition:color 0.2s; }
+    .nav-links a:hover { color:var(--text); }
+    .blog-header { max-width:900px; margin:0 auto; padding:4rem 2rem 2.5rem; border-bottom:1px solid var(--border); }
+    .breadcrumb { font-size:0.78rem; color:var(--text-3); margin-bottom:1.5rem; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; }
+    .breadcrumb a { color:var(--text-3); text-decoration:none; }
+    .blog-tags { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.25rem; }
+    .tag { font-size:0.7rem; padding:3px 10px; border-radius:99px; background:var(--bg3); color:var(--text-3); border:1px solid var(--border); letter-spacing:0.04em; text-transform:uppercase; font-weight:500; }
+    .tag.accent { background:var(--green-bg); color:var(--green); border-color:rgba(74,222,128,0.25); }
+    .blog-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.85rem,4vw,2.6rem); line-height:1.2; letter-spacing:-0.02em; color:var(--text); margin-bottom:0.75rem; }
+    .blog-header h1 em { font-style:italic; color:var(--green); }
+    .blog-subtitle { font-family:'DM Serif Display',serif; font-size:1.1rem; font-style:italic; color:var(--text-3); margin-bottom:1.25rem; }
+    .blog-meta { display:flex; align-items:center; gap:1.25rem; font-size:0.82rem; color:var(--text-3); flex-wrap:wrap; }
+    .blog-meta .series { color:var(--text-2); font-weight:500; }
+    main.blog-body { display:block; max-width:900px; margin:0 auto; padding:3rem 2rem 5rem; }
+    .toc { display:block; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.5rem 1.75rem; margin:0 0 3rem 0; }
+    .toc-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.9rem; }
+    .toc ol { padding-left:1.25rem; }
+    .toc ol li { margin-bottom:0.45rem; }
+    .toc ol li a { font-size:0.88rem; color:var(--text-2); text-decoration:none; transition:color 0.2s; }
+    .toc ol li a:hover { color:var(--green); }
+    .blog-body h2 { font-family:'DM Serif Display',serif; font-size:1.5rem; letter-spacing:-0.01em; color:var(--text); margin:3.5rem 0 1.1rem; padding-top:1rem; border-top:1px solid var(--border); }
+    .blog-body h3 { font-size:1rem; font-weight:500; color:var(--text); margin:1.75rem 0 0.5rem; }
+    .blog-body p { color:var(--text-2); margin-bottom:1.25rem; font-weight:300; }
+    .blog-body p strong { color:var(--text); font-weight:500; }
+    .blog-body ul, .blog-body ol { padding-left:1.5rem; margin-bottom:1.25rem; color:var(--text-2); font-weight:300; }
+    .blog-body li { margin-bottom:0.45rem; }
+    .blog-body li strong { color:var(--text); font-weight:500; }
+    code { background:var(--bg3); padding:1px 6px; border-radius:3px; font-size:0.85em; color:var(--text-2); font-family:monospace; }
+    .callout { display:block; background:var(--green-bg); border-left:3px solid var(--green); border-radius:0 10px 10px 0; padding:1.25rem 1.5rem; margin:1.75rem 0; font-size:0.95rem; color:var(--text); font-style:italic; line-height:1.6; }
+    .callout.amber { background:var(--amber-bg); border-color:var(--amber); }
+    .callout.blue { background:var(--blue-bg); border-color:var(--blue); }
+    .key { display:inline-flex; align-items:center; justify-content:center; background:var(--bg3); border:1px solid #444; border-bottom:3px solid #444; border-radius:5px; padding:2px 8px; font-family:monospace; font-size:0.82em; color:var(--text); min-width:28px; white-space:nowrap; }
+    .tool { display:inline; background:var(--purple-bg); color:var(--purple); border:1px solid rgba(167,139,250,0.2); border-radius:4px; padding:1px 7px; font-size:0.85em; font-weight:500; }
+    .platform-block { background:var(--bg2); border:1px solid var(--border); border-radius:10px; overflow:hidden; margin:1.75rem 0; }
+    .platform-block-header { padding:0.85rem 1.25rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+    .platform-pill { font-size:0.75rem; padding:3px 12px; border-radius:99px; font-weight:600; }
+    .pill-win { background:rgba(96,165,250,0.15); color:#60a5fa; border:1px solid rgba(96,165,250,0.3); }
+    .pill-mac { background:rgba(167,139,250,0.15); color:#a78bfa; border:1px solid rgba(167,139,250,0.3); }
+    .pill-ios { background:rgba(74,222,128,0.1); color:#4ade80; border:1px solid rgba(74,222,128,0.25); }
+    .pill-android { background:rgba(61,220,132,0.1); color:#3ddc84; border:1px solid rgba(61,220,132,0.25); }
+    .platform-block-body { padding:1.25rem 1.5rem; }
+    .step-list { display:flex; flex-direction:column; gap:10px; }
+    .step-item { display:flex; gap:12px; align-items:flex-start; }
+    .step-num { width:24px; height:24px; border-radius:6px; background:var(--bg3); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:600; color:var(--text-3); flex-shrink:0; margin-top:2px; }
+    .step-content { font-size:0.88rem; color:var(--text-2); line-height:1.6; }
+    .step-content strong { color:var(--text); }
+    .table-wrap { display:block; overflow-x:auto; margin:1.75rem 0; border-radius:10px; border:1px solid var(--border); }
+    table { width:100%; border-collapse:collapse; font-size:0.875rem; }
+    thead th { background:var(--bg2); padding:10px 14px; text-align:left; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-3); font-weight:500; border-bottom:1px solid var(--border); white-space:nowrap; }
+    tbody td { padding:10px 14px; border-bottom:1px solid var(--border); color:var(--text-2); vertical-align:top; line-height:1.55; }
+    tbody tr:last-child td { border-bottom:none; }
+    tbody td:first-child { color:var(--text); font-weight:500; }
+    tbody tr:hover td { background:var(--bg2); }
+    .blog-illustration { margin:1.75rem 0; border:none; padding:0; }
+    .series-nav { display:block; margin-top:4rem; padding-top:2rem; border-top:1px solid var(--border); }
+    .series-nav .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.75rem; display:block; }
+    .nav-pair { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .nav-blog { display:flex; align-items:center; gap:1rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.1rem 1.25rem; text-decoration:none; transition:border-color 0.2s,background 0.2s; }
+    .nav-blog:hover { border-color:#444; background:var(--bg3); }
+    .nav-blog-arrow { color:var(--text-3); font-size:1rem; flex-shrink:0; }
+    .nav-blog-title { font-size:0.88rem; font-weight:500; color:var(--text); }
+    .nav-blog-sub { font-size:0.75rem; color:var(--text-3); margin-top:2px; }
+    .references { display:block; margin-top:2.5rem; padding:1.5rem 1.75rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; }
+    .ref-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:1rem; }
+    .references ul { list-style:none; padding:0; }
+    .references ul li { margin-bottom:0.5rem; }
+    .references ul li a { font-size:0.85rem; color:var(--text-2); text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; transition:color 0.2s; }
+    .references ul li a:hover { color:var(--green); }
+    .references ul li a::before { content:'↗'; font-size:0.75rem; color:var(--text-3); }
+    footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
+    footer a { color:var(--text-3); text-decoration:none; }
+    .visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    @media(max-width:620px) {
+      nav.site-nav { padding:0 1.25rem; }
+      .nav-links { display:none; }
+      .blog-header, main.blog-body { padding-left:1.25rem; padding-right:1.25rem; }
+      .blog-header { padding-top:2.5rem; }
+      .nav-pair { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <ul class="nav-links" role="list">
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#playlist">Playlist</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#justlikereal">JustLikeReal</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#meetme">Meet Me</a></li>
+  </ul>
+</nav>
+
+<header class="blog-header">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a>
+    <span aria-hidden="true">›</span>
+    <span>Shift-Left Accessibility</span>
+    <span aria-hidden="true">›</span>
+    <span aria-current="page">18 of 38</span>
+  </nav>
+  <div class="blog-tags" aria-label="Blog categories">
+    <span class="tag accent">Screen Readers</span>
+    <span class="tag">Setup</span>
+    <span class="tag">Windows</span>
+    <span class="tag">Mac</span>
+    <span class="tag">iOS</span>
+    <span class="tag">Android</span>
+  </div>
+  <h1>18 Enable Accessibility Features: <em>Windows, Mac, iOS and Android</em></h1>
+  <p class="blog-subtitle">Before you test, you need to know where the switches are. This is the setup guide for every platform.</p>
+  <div class="blog-meta">
+    <span class="series">Series: Shift-Left Accessibility</span>
+    <span aria-hidden="true">·</span>
+    <span>Blog 18 of 38</span>
+    <span aria-hidden="true">·</span>
+    <span>8 min read</span>
+  </div>
+</header>
+
+<main class="blog-body" id="main-content">
+
+  <nav class="toc" aria-label="Table of contents">
+    <div class="toc-title" id="toc-heading">In this blog</div>
+    <ol aria-labelledby="toc-heading">
+      <li><a href="#why-setup">Why setup matters</a></li>
+      <li><a href="#windows">Windows</a></li>
+      <li><a href="#mac">Mac</a></li>
+      <li><a href="#ios">iOS</a></li>
+      <li><a href="#android">Android</a></li>
+      <li><a href="#quick-reference">Quick reference table</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <h2 id="why-setup">1. Why Setup Matters</h2>
+
+  <p>Every QA tester who works on accessibility needs to know how to enable the key accessibility features on all four platforms before they start testing. Getting the settings wrong wastes time. Forgetting to turn a feature off between tests contaminates results. Knowing the fastest path to each setting is a professional skill.</p>
+
+  <p>This blog covers the essential settings for each platform: screen readers, display accommodations, font scaling, colour filters, keyboard access, and reduced motion. Each has a separate blog going deeper: this is the map.</p>
+
+  <div class="callout blue" role="note">
+    Always test on a physical device. iOS Simulator and Android Emulator do not replicate screen reader behaviour, font scaling, or system-level accessibility settings accurately.
+  </div>
+
+  <!-- 2 -->
+  <h2 id="windows">2. Windows</h2>
+
+  <div class="platform-block">
+    <div class="platform-block-header">
+      <span class="platform-pill pill-win">Windows 10 / 11</span>
+      <span style="font-size:0.9rem;font-weight:500;color:var(--text);">Narrator (built-in screen reader)</span>
+    </div>
+    <div class="platform-block-body">
+      <div class="step-list">
+        <div class="step-item"><div class="step-num">1</div><div class="step-content"><strong>Enable:</strong> <span class="key">Win</span>+<span class="key">Ctrl</span>+<span class="key">Enter</span>: toggles Narrator on and off instantly</div></div>
+        <div class="step-item"><div class="step-num">2</div><div class="step-content"><strong>Alternative path:</strong> Settings, Ease of Access (Win 10) or Accessibility (Win 11), Narrator, toggle ON</div></div>
+        <div class="step-item"><div class="step-num">3</div><div class="step-content"><strong>Note:</strong> Narrator is less comprehensive than NVDA for web testing. Use NVDA + Firefox for accurate results.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="platform-block">
+    <div class="platform-block-header">
+      <span class="platform-pill pill-win">Windows</span>
+      <span style="font-size:0.9rem;font-weight:500;color:var(--text);">NVDA (recommended for web testing)</span>
+    </div>
+    <div class="platform-block-body">
+      <div class="step-list">
+        <div class="step-item"><div class="step-num">1</div><div class="step-content"><strong>Download:</strong> <a href="https://www.nvaccess.org/download/" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">nvaccess.org/download</a>: free, open source</div></div>
+        <div class="step-item"><div class="step-num">2</div><div class="step-content"><strong>Launch:</strong> <span class="key">Win</span>+<span class="key">Alt</span>+<span class="key">N</span> or from the Start menu. NVDA announces "NVDA has started."</div></div>
+        <div class="step-item"><div class="step-num">3</div><div class="step-content"><strong>Stop:</strong> <span class="key">Insert</span>+<span class="key">Q</span> then Enter to confirm</div></div>
+        <div class="step-item"><div class="step-num">4</div><div class="step-content"><strong>Silence speech:</strong> <span class="key">Ctrl</span>: stops current speech without closing NVDA</div></div>
+        <div class="step-item"><div class="step-num">5</div><div class="step-content"><strong>Recommended browser:</strong> Firefox for most accurate results. Chrome also supported.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="platform-block">
+    <div class="platform-block-header">
+      <span class="platform-pill pill-win">Windows</span>
+      <span style="font-size:0.9rem;font-weight:500;color:var(--text);">Display and colour settings</span>
+    </div>
+    <div class="platform-block-body">
+      <div class="step-list">
+        <div class="step-item"><div class="step-num">1</div><div class="step-content"><strong>High Contrast:</strong> <span class="key">Alt</span>+<span class="key">Shift</span>+<span class="key">Print Screen</span>: toggles High Contrast mode</div></div>
+        <div class="step-item"><div class="step-num">2</div><div class="step-content"><strong>Colour filters:</strong> Settings, Accessibility, Colour Filters. Options include Greyscale, Deuteranopia, Protanopia, Tritanopia</div></div>
+        <div class="step-item"><div class="step-num">3</div><div class="step-content"><strong>Text size:</strong> Settings, Accessibility, Text Size: drag slider to increase system text size</div></div>
+        <div class="step-item"><div class="step-num">4</div><div class="step-content"><strong>Reduce animations:</strong> Settings, Accessibility, Visual Effects, Animation Effects: toggle OFF</div></div>
+        <div class="step-item"><div class="step-num">5</div><div class="step-content"><strong>Keyboard access:</strong> Settings, Accessibility, Keyboard: Sticky Keys, Filter Keys, Toggle Keys all configurable here</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3 -->
+  <h2 id="mac">3. Mac</h2>
+
+  <div class="platform-block">
+    <div class="platform-block-header">
+      <span class="platform-pill pill-mac">macOS</span>
+      <span style="font-size:0.9rem;font-weight:500;color:var(--text);">VoiceOver (built-in screen reader)</span>
+    </div>
+    <div class="platform-block-body">
+      <div class="step-list">
+        <div class="step-item"><div class="step-num">1</div><div class="step-content"><strong>Enable/disable:</strong> <span class="key">Cmd</span>+<span class="key">F5</span>: toggles VoiceOver on and off</div></div>
+        <div class="step-item"><div class="step-num">2</div><div class="step-content"><strong>Alternative path:</strong> System Settings, Accessibility, VoiceOver, toggle ON</div></div>
+        <div class="step-item"><div class="step-num">3</div><div class="step-content"><strong>VO key:</strong> VoiceOver uses <span class="key">Ctrl</span>+<span class="key">Option</span> (referred to as VO throughout the series)</div></div>
+        <div class="step-item"><div class="step-num">4</div><div class="step-content"><strong>Silence speech:</strong> <span class="key">Ctrl</span>: stops current announcement</div></div>
+        <div class="step-item"><div class="step-num">5</div><div class="step-content"><strong>Recommended browser:</strong> Safari. VoiceOver and Safari are tightly integrated on macOS.</div></div>
+        <div class="step-item"><div class="step-num">6</div><div class="step-content"><strong>VoiceOver Utility:</strong> <span class="key">VO</span>+<span class="key">F8</span>: opens preferences for verbosity, voice, and navigation settings</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="platform-block">
+    <div class="platform-block-header">
+      <span class="platform-pill pill-mac">macOS</span>
+      <span style="font-size:0.9rem;font-weight:500;color:var(--text);">Display and accessibility settings</span>
+    </div>
+    <div class="platform-block-body">
+      <div class="step-list">
+        <div class="step-item"><div class="step-num">1</div><div class="step-content"><strong>Increase Contrast:</strong> System Settings, Accessibility, Display, Increase Contrast: toggle ON</div></div>
+        <div class="step-item"><div class="step-num">2</div><div class="step-content"><strong>Reduce Transparency:</strong> System Settings, Accessibility, Display, Reduce Transparency: toggle ON</div></div>
+        <div class="step-item"><div class="step-num">3</div><div class="step-content"><strong>Reduce Motion:</strong> System Settings, Accessibility, Display, Reduce Motion: toggle ON</div></div>
+        <div class="step-item"><div class="step-num">4</div><div class="step-content"><strong>Colour filters:</strong> System Settings, Accessibility, Display, Colour Filters. Greyscale, Protanopia, Deuteranopia, Tritanopia options available</div></div>
+        <div class="step-item"><div class="step-num">5</div><div class="step-content"><strong>Zoom:</strong> System Settings, Accessibility, Zoom: Use keyboard shortcuts to zoom or use scroll gesture with modifier key</div></div>
+        <div class="step-item"><div class="step-num">6</div><div class="step-content"><strong>Full Keyboard Access:</strong> System Settings, Accessibility, Keyboard, Full Keyboard Access: toggle ON to navigate all UI elements with Tab</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4 -->
+  <h2 id="ios">4. iOS</h2>
+
+  <div class="platform-block">
+    <div class="platform-block-header">
+      <span class="platform-pill pill-ios">iOS · iPadOS</span>
+      <span style="font-size:0.9rem;font-weight:500;color:var(--text);">VoiceOver (built-in screen reader)</span>
+    </div>
+    <div class="platform-block-body">
+      <div class="step-list">
+        <div class="step-item"><div class="step-num">1</div><div class="step-content"><strong>Enable:</strong> Settings, Accessibility, VoiceOver, toggle ON</div></div>
+        <div class="step-item"><div class="step-num">2</div><div class="step-content"><strong>Shortcut:</strong> Triple-click the side button (or Home button on older devices): if configured at Settings, Accessibility, Accessibility Shortcut, VoiceOver</div></div>
+        <div class="step-item"><div class="step-num">3</div><div class="step-content"><strong>Speech rate:</strong> Settings, Accessibility, VoiceOver, Speaking Rate: drag slider. Faster for experienced testers, slower when learning.</div></div>
+        <div class="step-item"><div class="step-num">4</div><div class="step-content"><strong>Recommended browser:</strong> Safari on a physical iPhone or iPad. Simulator does not replicate gesture behaviour.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="platform-block">
+    <div class="platform-block-header">
+      <span class="platform-pill pill-ios">iOS · iPadOS</span>
+      <span style="font-size:0.9rem;font-weight:500;color:var(--text);">Display and accessibility settings</span>
+    </div>
+    <div class="platform-block-body">
+      <div class="step-list">
+        <div class="step-item"><div class="step-num">1</div><div class="step-content"><strong>Larger Text:</strong> Settings, Accessibility, Display and Text Size, Larger Text: drag slider</div></div>
+        <div class="step-item"><div class="step-num">2</div><div class="step-content"><strong>Bold Text:</strong> Settings, Accessibility, Display and Text Size, Bold Text: toggle ON</div></div>
+        <div class="step-item"><div class="step-num">3</div><div class="step-content"><strong>Increase Contrast:</strong> Settings, Accessibility, Display and Text Size, Increase Contrast: toggle ON</div></div>
+        <div class="step-item"><div class="step-num">4</div><div class="step-content"><strong>Reduce Transparency:</strong> Settings, Accessibility, Display and Text Size, Reduce Transparency: toggle ON</div></div>
+        <div class="step-item"><div class="step-num">5</div><div class="step-content"><strong>Differentiate Without Colour:</strong> Settings, Accessibility, Display and Text Size, Differentiate Without Colour: toggle ON</div></div>
+        <div class="step-item"><div class="step-num">6</div><div class="step-content"><strong>Colour Filters:</strong> Settings, Accessibility, Display and Text Size, Colour Filters: toggle ON, then select Greyscale, Protanopia, Deuteranopia, or Tritanopia</div></div>
+        <div class="step-item"><div class="step-num">7</div><div class="step-content"><strong>Reduce Motion:</strong> Settings, Accessibility, Motion, Reduce Motion: toggle ON</div></div>
+        <div class="step-item"><div class="step-num">8</div><div class="step-content"><strong>Switch Control:</strong> Settings, Accessibility, Switch Control: for switch access testing</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5 -->
+  <h2 id="android">5. Android</h2>
+
+  <div class="platform-block">
+    <div class="platform-block-header">
+      <span class="platform-pill pill-android">Android</span>
+      <span style="font-size:0.9rem;font-weight:500;color:var(--text);">TalkBack (built-in screen reader)</span>
+    </div>
+    <div class="platform-block-body">
+      <div class="step-list">
+        <div class="step-item"><div class="step-num">1</div><div class="step-content"><strong>Enable:</strong> Settings, Accessibility, TalkBack, toggle ON. Confirm the dialog.</div></div>
+        <div class="step-item"><div class="step-num">2</div><div class="step-content"><strong>Shortcut:</strong> Hold both volume buttons simultaneously for 3 seconds: if enabled at Settings, Accessibility, TalkBack, TalkBack shortcut</div></div>
+        <div class="step-item"><div class="step-num">3</div><div class="step-content"><strong>Speech rate:</strong> Settings, Accessibility, TalkBack, Settings, Text to Speech: adjust rate</div></div>
+        <div class="step-item"><div class="step-num">4</div><div class="step-content"><strong>Recommended browser:</strong> Chrome on a physical Android device.</div></div>
+        <div class="step-item"><div class="step-num">5</div><div class="step-content"><strong>Note on Android versions:</strong> Settings paths vary by manufacturer. Samsung devices use Settings, Accessibility, Visibility Enhancements and TalkBack under Installed Services on some versions.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="platform-block">
+    <div class="platform-block-header">
+      <span class="platform-pill pill-android">Android</span>
+      <span style="font-size:0.9rem;font-weight:500;color:var(--text);">Display and accessibility settings</span>
+    </div>
+    <div class="platform-block-body">
+      <div class="step-list">
+        <div class="step-item"><div class="step-num">1</div><div class="step-content"><strong>Font Size:</strong> Settings, Accessibility, Font Size: drag slider to largest</div></div>
+        <div class="step-item"><div class="step-num">2</div><div class="step-content"><strong>Display Size:</strong> Settings, Accessibility, Display Size: increase for larger UI elements</div></div>
+        <div class="step-item"><div class="step-num">3</div><div class="step-content"><strong>High Contrast Text:</strong> Settings, Accessibility, Display, High Contrast Text: toggle ON</div></div>
+        <div class="step-item"><div class="step-num">4</div><div class="step-content"><strong>Colour Correction:</strong> Settings, Accessibility, Colour and Motion, Colour Correction: toggle ON, select Deuteranomaly, Protanomaly, or Tritanomaly</div></div>
+        <div class="step-item"><div class="step-num">5</div><div class="step-content"><strong>Colour Inversion:</strong> Settings, Accessibility, Colour and Motion, Colour Inversion: toggle ON</div></div>
+        <div class="step-item"><div class="step-num">6</div><div class="step-content"><strong>Remove Animations:</strong> Settings, Accessibility, Remove Animations: toggle ON</div></div>
+        <div class="step-item"><div class="step-num">7</div><div class="step-content"><strong>Switch Access:</strong> Settings, Accessibility, Switch Access: for switch device testing</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6 -->
+  <h2 id="quick-reference">6. Quick Reference Table</h2>
+
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">Quick reference for enabling accessibility features across platforms</caption>
+      <thead>
+        <tr>
+          <th scope="col">Feature</th>
+          <th scope="col">Windows</th>
+          <th scope="col">Mac</th>
+          <th scope="col">iOS</th>
+          <th scope="col">Android</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Screen reader on/off</td>
+          <td>Win+Ctrl+Enter (Narrator) or install NVDA</td>
+          <td>Cmd+F5</td>
+          <td>Settings, Accessibility, VoiceOver</td>
+          <td>Settings, Accessibility, TalkBack</td>
+        </tr>
+        <tr>
+          <td>Recommended SR + browser</td>
+          <td>NVDA + Firefox</td>
+          <td>VoiceOver + Safari</td>
+          <td>VoiceOver + Safari</td>
+          <td>TalkBack + Chrome</td>
+        </tr>
+        <tr>
+          <td>Colour filters</td>
+          <td>Settings, Accessibility, Colour Filters</td>
+          <td>System Settings, Accessibility, Display, Colour Filters</td>
+          <td>Settings, Accessibility, Display, Colour Filters</td>
+          <td>Settings, Accessibility, Colour and Motion, Colour Correction</td>
+        </tr>
+        <tr>
+          <td>Reduce motion</td>
+          <td>Settings, Accessibility, Visual Effects, Animation Effects OFF</td>
+          <td>System Settings, Accessibility, Display, Reduce Motion</td>
+          <td>Settings, Accessibility, Motion, Reduce Motion</td>
+          <td>Settings, Accessibility, Remove Animations</td>
+        </tr>
+        <tr>
+          <td>Increase contrast</td>
+          <td>Settings, Accessibility, Colour Filters, Contrast</td>
+          <td>System Settings, Accessibility, Display, Increase Contrast</td>
+          <td>Settings, Accessibility, Display and Text Size, Increase Contrast</td>
+          <td>Settings, Accessibility, Display, High Contrast Text</td>
+        </tr>
+        <tr>
+          <td>Large text</td>
+          <td>Settings, Accessibility, Text Size</td>
+          <td>System Settings, Accessibility, Display, Large Text</td>
+          <td>Settings, Accessibility, Display and Text Size, Larger Text</td>
+          <td>Settings, Accessibility, Font Size</td>
+        </tr>
+        <tr>
+          <td>Zoom</td>
+          <td>Settings, Accessibility, Magnifier</td>
+          <td>System Settings, Accessibility, Zoom</td>
+          <td>Settings, Accessibility, Zoom</td>
+          <td>Settings, Accessibility, Magnification</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout amber" role="note">
+    Settings paths change between OS versions. If a path above does not match what you see, search "accessibility" in the system Settings search bar: it will surface the correct location on any version.
+  </div>
+
+  <div class="series-nav">
+    <span class="label">Navigate the series</span>
+    <div class="nav-pair">
+      <a href="17-Zoom-Reflow-Reduced-Motion.html" class="nav-blog">
+        <span class="nav-blog-arrow" aria-hidden="true">←</span>
+        <div>
+          <div class="nav-blog-title">Blog 17: Zoom, Reflow and Reduced Motion</div>
+          <div class="nav-blog-sub">Testing what breaks when you scale</div>
+        </div>
+      </a>
+      <a href="19-Screen-Reader-Gestures-Cheat-Sheet.html" class="nav-blog">
+        <div>
+          <div class="nav-blog-title">Blog 19: Screen Reader Gestures Cheat Sheet</div>
+          <div class="nav-blog-sub">VoiceOver, TalkBack and NVDA shortcuts in one place</div>
+        </div>
+        <span class="nav-blog-arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+
+  <aside class="references" aria-label="References">
+    <div class="ref-title">References</div>
+    <ul role="list">
+      <li><a href="https://www.nvaccess.org/download/" target="_blank" rel="noopener noreferrer">NVDA download: NV Access</a></li>
+      <li><a href="https://support.apple.com/guide/voiceover/welcome/mac" target="_blank" rel="noopener noreferrer">VoiceOver User Guide for Mac: Apple</a></li>
+      <li><a href="https://support.apple.com/guide/iphone/turn-on-and-practice-voiceover-iph3e2e415f/ios" target="_blank" rel="noopener noreferrer">Turn on VoiceOver on iPhone: Apple</a></li>
+      <li><a href="https://support.google.com/accessibility/android/answer/6283677" target="_blank" rel="noopener noreferrer">TalkBack gestures: Google Android Accessibility</a></li>
+      <li><a href="https://support.microsoft.com/en-us/windows/accessibility-overview-of-accessibility-features" target="_blank" rel="noopener noreferrer">Windows Accessibility Features overview: Microsoft</a></li>
+    </ul>
+  </aside>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; Built with intention. Tested with care. &nbsp;·&nbsp; © 2025
+  </p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>17 A11y Zoom Reflow Mobile Testing Guide | The Quality Strategist</title>
+  <meta name="description" content="How to test zoom, reflow and reduced motion on iOS and Android. Pinch-to-zoom, text size, font scaling, Reduce Motion setting." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+      --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+      --green:#4ade80; --green-bg:rgba(74,222,128,0.07);
+      --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07);
+      --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07);
+      --red:#f87171; --red-bg:rgba(248,113,113,0.07);
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
+    .skip-link:focus { top:0; }
+    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
+    .nav-back { font-size:0.82rem; color:var(--text-3); text-decoration:none; }
+    .nav-back:hover { color:var(--text-2); }
+    .page-header { max-width:860px; margin:0 auto; padding:3.5rem 2rem 2rem; border-bottom:1px solid var(--border); }
+    .pg-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--blue); font-weight:500; margin-bottom:0.75rem; }
+    .page-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.6rem,3.5vw,2.2rem); color:var(--text); margin-bottom:0.75rem; }
+    .page-header p { color:var(--text-2); font-weight:300; max-width:640px; }
+    .notice { display:flex; align-items:flex-start; gap:10px; background:var(--amber-bg); border:1px solid rgba(251,191,36,0.2); border-radius:8px; padding:0.85rem 1.1rem; margin-top:1.25rem; font-size:0.85rem; color:var(--amber); }
+    main { max-width:860px; margin:0 auto; padding:2.5rem 2rem 5rem; }
+    .platform-section { margin-bottom:3.5rem; }
+    .platform-header { display:flex; align-items:center; gap:12px; margin-bottom:1.75rem; padding-bottom:1rem; border-bottom:1px solid var(--border); }
+    .platform-badge { padding:4px 14px; border-radius:99px; font-size:0.8rem; font-weight:600; }
+    .badge-ios { background:rgba(96,165,250,0.15); color:#60a5fa; border:1px solid rgba(96,165,250,0.3); }
+    .badge-android { background:rgba(61,220,132,0.1); color:#3ddc84; border:1px solid rgba(61,220,132,0.25); }
+    .platform-title { font-family:'DM Serif Display',serif; font-size:1.3rem; color:var(--text); }
+    .prereq { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:1rem 1.25rem; margin-bottom:1.75rem; font-size:0.85rem; color:var(--text-2); }
+    .prereq strong { color:var(--text); }
+    .prereq ul { padding-left:1.25rem; margin-top:0.5rem; }
+    .prereq li { margin-bottom:0.3rem; }
+    .test-card { background:var(--bg2); border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:12px; }
+    .test-card-header { padding:0.85rem 1.1rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .test-num { width:26px; height:26px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:0.78rem; font-weight:700; flex-shrink:0; }
+    .num-fail { background:var(--red-bg); color:var(--red); }
+    .num-pass { background:var(--green-bg); color:var(--green); }
+    .test-title { font-size:0.9rem; font-weight:500; color:var(--text); }
+    .test-body { padding:1rem 1.1rem; }
+    .steps { display:flex; flex-direction:column; gap:6px; }
+    .step-row { display:flex; gap:10px; align-items:flex-start; }
+    .step-n { width:22px; height:22px; border-radius:5px; background:var(--bg3); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:0.72rem; font-weight:600; color:var(--text-3); flex-shrink:0; margin-top:1px; }
+    .step-text { font-size:0.85rem; color:var(--text-2); line-height:1.55; }
+    .step-text strong { color:var(--text); }
+    .expected { margin-top:0.75rem; padding:0.7rem 0.9rem; background:var(--bg3); border-radius:6px; font-size:0.82rem; color:var(--text-2); border-left:3px solid; }
+    .expected-fail { border-color:var(--red); }
+    .expected-pass { border-color:var(--green); }
+    .expected strong { color:var(--text); }
+    hr.divider { border:none; border-top:1px solid var(--border); margin:2.5rem 0; }
+    .app-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:1.25rem 0; }
+    .app-card { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1rem 1.1rem; text-decoration:none; display:block; transition:border-color 0.2s; }
+    .app-card:hover { border-color:#444; }
+    .app-platform { display:flex; gap:6px; margin-bottom:8px; flex-wrap:wrap; }
+    .pill { font-size:0.68rem; padding:2px 8px; border-radius:99px; font-weight:500; }
+    .pill-ios { background:rgba(96,165,250,0.15); color:#60a5fa; border:1px solid rgba(96,165,250,0.3); }
+    .pill-android { background:rgba(61,220,132,0.1); color:#3ddc84; border:1px solid rgba(61,220,132,0.25); }
+    .app-name { font-size:0.92rem; font-weight:500; color:var(--text); margin-bottom:4px; }
+    .app-desc { font-size:0.8rem; color:var(--text-3); line-height:1.5; }
+    .app-what { font-size:0.78rem; color:var(--text-2); margin-top:6px; }
+    .app-what strong { color:var(--amber); }
+    footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
+    footer a { color:var(--text-3); text-decoration:none; }
+    @media(max-width:620px) { nav.site-nav, main, .page-header { padding-left:1.25rem; padding-right:1.25rem; } .app-grid { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <a href="../17-Zoom-Reflow-Reduced-Motion.html" class="nav-back">← Back to Blog 17</a>
+</nav>
+<header class="page-header">
+  <div class="pg-label">A11y Mobile Testing Guide</div>
+  <h1>17 A11y Zoom Reflow Mobile Testing Guide</h1>
+  <p>How to test zoom, reflow and reduced motion on iOS and Android. Covers pinch-to-zoom, text size scaling, font size settings, and the Reduce Motion system preference.</p>
+  <div class="notice" role="note">
+    <span aria-hidden="true">&#9888;&#65039;</span>
+    <span>Physical device required. Mobile emulation in DevTools does not replicate pinch-to-zoom behaviour or OS-level reduced motion settings accurately.</span>
+  </div>
+</header>
+
+<main id="main-content">
+
+  <!-- iOS -->
+  <div class="platform-section">
+    <div class="platform-header">
+      <span class="platform-badge badge-ios">iOS · Safari</span>
+      <h2 class="platform-title">Testing on iPhone and iPad</h2>
+    </div>
+    <div class="prereq">
+      <strong>Settings to configure before testing:</strong>
+      <ul>
+        <li>Reduce Motion: Settings, Accessibility, Motion, Reduce Motion, Toggle ON</li>
+        <li>Larger Text: Settings, Accessibility, Display and Text Size, Larger Text, drag slider to largest</li>
+        <li>Zoom: Settings, Accessibility, Zoom, Toggle ON (enables full-screen or window zoom)</li>
+      </ul>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num num-fail">1</div>
+        <div class="test-title">Pinch-to-zoom disabled</div>
+      </div>
+      <div class="test-body">
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Open the site in Safari. Attempt to pinch-to-zoom the page.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">If nothing happens, inspect the page source for <code>user-scalable=no</code> or <code>maximum-scale=1</code> in the viewport meta tag.</div></div>
+        </div>
+        <div class="expected expected-fail"><strong>Failure:</strong> Pinch-to-zoom does not work. Viewport meta tag contains <code>user-scalable=no</code> or <code>maximum-scale=1</code>. WCAG 1.4.4 failure.</div>
+        <div class="expected expected-pass" style="margin-top:8px;"><strong>Pass:</strong> Page zooms freely on pinch. Content reflows and remains readable. No content is lost.</div>
+      </div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num num-fail">2</div>
+        <div class="test-title">Content breaks at large text size</div>
+      </div>
+      <div class="test-body">
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Settings, Accessibility, Display and Text Size, Larger Text. Drag slider to the largest position.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Open the site in Safari. Navigate through each key page and interactive component.</div></div>
+          <div class="step-row"><div class="step-n">3</div><div class="step-text">Check: does text overflow containers, overlap other elements, or disappear?</div></div>
+        </div>
+        <div class="expected expected-fail"><strong>Failure:</strong> Button labels truncate. Card text overflows its container. Nav items disappear. Fixed-height containers clip text.</div>
+        <div class="expected expected-pass" style="margin-top:8px;"><strong>Pass:</strong> All text remains readable and all interactive elements usable at the largest text size.</div>
+      </div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num num-fail">3</div>
+        <div class="test-title">Animations not reduced under Reduce Motion</div>
+      </div>
+      <div class="test-body">
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Settings, Accessibility, Motion, Reduce Motion, Toggle ON.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Open the site in Safari. Navigate between pages. Observe transitions, hover effects, loading spinners, and carousels.</div></div>
+          <div class="step-row"><div class="step-n">3</div><div class="step-text">Note any animation that still plays at full intensity.</div></div>
+        </div>
+        <div class="expected expected-fail"><strong>Failure:</strong> Page transitions still slide or fade. Carousels still auto-advance with smooth animation. Skeleton loaders still shimmer. The site is not respecting <code>prefers-reduced-motion: reduce</code>.</div>
+        <div class="expected expected-pass" style="margin-top:8px;"><strong>Pass:</strong> Transitions become instant or fade only. Spinners slow significantly. All content still accessible and functional.</div>
+      </div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num num-pass">4</div>
+        <div class="test-title">Reflow check at native iOS viewport</div>
+      </div>
+      <div class="test-body">
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Open the site in Safari on iPhone (portrait mode).</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Scroll through each key page without zooming. Check for horizontal scroll at default zoom.</div></div>
+          <div class="step-row"><div class="step-n">3</div><div class="step-text">Then pinch-to-zoom to approximately 200%. Scroll through again. Check that all content remains reachable vertically.</div></div>
+        </div>
+        <div class="expected expected-pass"><strong>Pass:</strong> No horizontal scroll at default zoom. At 200% zoom, all content reachable by vertical scroll. Navigation accessible.</div>
+        <div class="expected expected-fail" style="margin-top:8px;"><strong>Failure:</strong> Horizontal scroll bar appears at default or zoomed view. Nav items disappear at zoom. Modal unreachable.</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- Android -->
+  <div class="platform-section">
+    <div class="platform-header">
+      <span class="platform-badge badge-android">Android · Chrome</span>
+      <h2 class="platform-title">Testing on Android</h2>
+    </div>
+    <div class="prereq">
+      <strong>Settings to configure before testing:</strong>
+      <ul>
+        <li>Remove Animations: Settings, Accessibility, Remove Animations, Toggle ON</li>
+        <li>Font Size: Settings, Accessibility, Font Size, drag to largest setting</li>
+        <li>Display Size: Settings, Accessibility, Display Size, increase to largest</li>
+      </ul>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num num-fail">1</div>
+        <div class="test-title">Pinch-to-zoom disabled in Chrome</div>
+      </div>
+      <div class="test-body">
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Open the site in Chrome. Attempt to pinch-to-zoom.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">If zoom does not activate, the viewport meta tag has <code>user-scalable=no</code> or <code>maximum-scale=1</code>.</div></div>
+        </div>
+        <div class="expected expected-fail"><strong>Failure:</strong> Pinch-to-zoom blocked. Content cannot be enlarged. WCAG 1.4.4 failure.</div>
+        <div class="expected expected-pass" style="margin-top:8px;"><strong>Pass:</strong> Page zooms freely. Content reflows at zoom.</div>
+      </div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num num-fail">2</div>
+        <div class="test-title">Content breaks at largest font size</div>
+      </div>
+      <div class="test-body">
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Settings, Accessibility, Font Size. Drag to the largest setting.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Open the site in Chrome. Navigate each key page and interactive component.</div></div>
+          <div class="step-row"><div class="step-n">3</div><div class="step-text">Check for text overflow, truncation, overlapping, or disappearing elements.</div></div>
+        </div>
+        <div class="expected expected-fail"><strong>Failure:</strong> Text extends beyond container boundaries. Buttons clip labels. Fixed-height containers crop content. Nav items overflow.</div>
+        <div class="expected expected-pass" style="margin-top:8px;"><strong>Pass:</strong> All text readable and all interactive elements accessible at the largest font size.</div>
+      </div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num num-fail">3</div>
+        <div class="test-title">Animations not removed under Remove Animations</div>
+      </div>
+      <div class="test-body">
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Settings, Accessibility, Remove Animations, Toggle ON.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Open the site in Chrome. Navigate between pages and trigger interactive components.</div></div>
+          <div class="step-row"><div class="step-n">3</div><div class="step-text">Note any animation still playing at full intensity.</div></div>
+        </div>
+        <div class="expected expected-fail"><strong>Failure:</strong> Page transitions still animate. Carousels auto-advance with motion. Spinners still spin at speed. The site is not respecting <code>prefers-reduced-motion: reduce</code>.</div>
+        <div class="expected expected-pass" style="margin-top:8px;"><strong>Pass:</strong> Animations significantly reduced or removed. All content remains functional.</div>
+      </div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num num-pass">4</div>
+        <div class="test-title">Reflow and zoom check</div>
+      </div>
+      <div class="test-body">
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Open the site in Chrome on Android (portrait). Scroll through all key pages at default zoom.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Pinch-to-zoom to approximately 200%. Scroll through all pages vertically.</div></div>
+          <div class="step-row"><div class="step-n">3</div><div class="step-text">Check all navigation, forms, modals, and tables remain accessible and usable.</div></div>
+        </div>
+        <div class="expected expected-pass"><strong>Pass:</strong> No horizontal scroll required. All nav items accessible. Modals openable and closable. Forms completable.</div>
+        <div class="expected expected-fail" style="margin-top:8px;"><strong>Failure:</strong> Horizontal scroll at any zoom level. Items cut off. Interactive components unreachable.</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- Native apps -->
+  <div class="platform-section">
+    <div class="platform-header">
+      <h2 class="platform-title">Test on Real Native Apps</h2>
+    </div>
+    <p style="font-size:0.88rem;color:var(--text-2);font-weight:300;margin-bottom:1.25rem;">These apps let you observe zoom, font scaling, and reduced motion behaviour in a native context where CSS media queries do not apply.</p>
+    <div class="app-grid">
+      <a href="https://apps.apple.com/us/app/appt-app-accessibility/id1527923025" target="_blank" rel="noopener noreferrer" class="app-card">
+        <div class="app-platform"><span class="pill pill-ios">iOS</span></div>
+        <div class="app-name">Appt App</div>
+        <div class="app-desc">Shows correct and incorrect implementations of font scaling and motion handling in native iOS.</div>
+        <div class="app-what"><strong>Zoom tests:</strong> observe Dynamic Type support vs fixed-size text. Check Reduce Motion behaviour on transitions.</div>
+      </a>
+      <a href="https://play.google.com/store/apps/details?id=nl.appt" target="_blank" rel="noopener noreferrer" class="app-card">
+        <div class="app-platform"><span class="pill pill-android">Android</span></div>
+        <div class="app-name">Appt App</div>
+        <div class="app-desc">Android version with font scale and animation examples.</div>
+        <div class="app-what"><strong>Zoom tests:</strong> observe sp vs dp text sizing. Check Remove Animations system setting.</div>
+      </a>
+      <a href="https://dequeuniversity.com/demo/mars/" target="_blank" rel="noopener noreferrer" class="app-card">
+        <div class="app-platform"><span class="pill pill-ios">iOS</span><span class="pill pill-android">Android</span></div>
+        <div class="app-name">Deque University Mars Demo</div>
+        <div class="app-desc">Web-based demo with real reflow and zoom failures. Open in mobile Safari or Chrome.</div>
+        <div class="app-what"><strong>Zoom tests:</strong> pinch-to-zoom, horizontal overflow, nav items at zoom, modal behaviour at large text</div>
+      </a>
+      <a href="https://apps.apple.com/us/app/accessibility-techniques/id6474141089" target="_blank" rel="noopener noreferrer" class="app-card">
+        <div class="app-platform"><span class="pill pill-ios">iOS</span></div>
+        <div class="app-name">Accessibility Techniques</div>
+        <div class="app-desc">By Paul J. Adam. SwiftUI examples comparing correct Dynamic Type support vs fixed text sizing.</div>
+        <div class="app-what"><strong>Zoom tests:</strong> compare Dynamic Type-compliant vs non-compliant text at largest font setting</div>
+      </a>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; <a href="../17-Zoom-Reflow-Reduced-Motion.html">Back to Blog 17</a>
+    &nbsp;·&nbsp; <a href="A11y-Test-Playground/17 A11y Test Playground - Zoom Reflow.html">← Desktop Playground</a>
+  </p>
+</footer>
+</body>
+</html>
