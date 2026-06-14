@@ -3,109 +3,327 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>12 Headings, Landmarks and Skip Links | The Quality Strategist</title>
-  <meta name="description" content="How to validate page structure for accessibility. Heading hierarchy, landmark regions, skip links: what to check, how to check it, and the tools that make it fast." />
+  <title>04 Who Owns Accessibility? | The Quality Strategist</title>
+  <meta name="description" content="Accessibility fails when everyone assumes someone else owns it. Here is the responsibility matrix: role by role, phase by phase: with real examples of what happens when each lane is dropped." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root {
-      --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
-      --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
-      --green:#4ade80; --green-bg:rgba(74,222,128,0.07);
-      --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07);
-      --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07);
-      --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.07);
-      --red:#f87171; --red-bg:rgba(248,113,113,0.07);
+      --bg:        #0d0d0d;
+      --bg2:       #161616;
+      --bg3:       #1e1e1e;
+      --border:    #2e2e2e;
+      --text:      #f0f0f0;
+      --text-2:    #c8c8c8;
+      --text-3:    #8a8a8a;
+      --green:     #4ade80;
+      --green-bg:  rgba(74,222,128,0.07);
+      --blue:      #60a5fa;
+      --blue-bg:   rgba(96,165,250,0.07);
+      --amber:     #fbbf24;
+      --amber-bg:  rgba(251,191,36,0.07);
+      --purple:    #a78bfa;
+      --purple-bg: rgba(167,139,250,0.07);
+      --red:       #f87171;
+      --red-bg:    rgba(248,113,113,0.07);
+      --teal:      #2dd4bf;
+      --teal-bg:   rgba(45,212,191,0.07);
     }
-    html { scroll-behavior:smooth; }
-    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
-    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
-    .skip-link:focus { top:0; }
-    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
-    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
-    .nav-links { display:flex; gap:2rem; list-style:none; }
-    .nav-links a { color:var(--text-3); text-decoration:none; font-size:0.85rem; transition:color 0.2s; }
-    .nav-links a:hover { color:var(--text); }
-    .blog-header { max-width:900px; margin:0 auto; padding:4rem 2rem 2.5rem; border-bottom:1px solid var(--border); }
-    .breadcrumb { font-size:0.78rem; color:var(--text-3); margin-bottom:1.5rem; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; }
-    .breadcrumb a { color:var(--text-3); text-decoration:none; }
-    .breadcrumb a:hover { color:var(--text-2); }
-    .blog-tags { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.25rem; }
-    .tag { font-size:0.7rem; padding:3px 10px; border-radius:99px; background:var(--bg3); color:var(--text-3); border:1px solid var(--border); letter-spacing:0.04em; text-transform:uppercase; font-weight:500; }
-    .tag.accent { background:var(--purple-bg); color:var(--purple); border-color:rgba(167,139,250,0.25); }
-    .blog-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.85rem,4vw,2.6rem); line-height:1.2; letter-spacing:-0.02em; color:var(--text); margin-bottom:0.75rem; }
-    .blog-header h1 em { font-style:italic; color:var(--purple); }
-    .blog-subtitle { font-family:'DM Serif Display',serif; font-size:1.1rem; font-style:italic; color:var(--text-3); margin-bottom:1.25rem; }
-    .blog-meta { display:flex; align-items:center; gap:1.25rem; font-size:0.82rem; color:var(--text-3); flex-wrap:wrap; }
-    .blog-meta .series { color:var(--text-2); font-weight:500; }
-    main.blog-body { display:block; max-width:900px; margin:0 auto; padding:3rem 2rem 5rem; }
-    .toc { display:block; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.5rem 1.75rem; margin:0 0 3rem 0; }
-    .toc-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.9rem; }
-    .toc ol { padding-left:1.25rem; }
-    .toc ol li { margin-bottom:0.45rem; }
-    .toc ol li a { font-size:0.88rem; color:var(--text-2); text-decoration:none; transition:color 0.2s; }
-    .toc ol li a:hover { color:var(--purple); }
-    .blog-body h2 { font-family:'DM Serif Display',serif; font-size:1.5rem; letter-spacing:-0.01em; color:var(--text); margin:3.5rem 0 1.1rem; padding-top:1rem; border-top:1px solid var(--border); }
-    .blog-body h3 { font-size:1rem; font-weight:500; color:var(--text); margin:1.75rem 0 0.5rem; }
-    .blog-body p { color:var(--text-2); margin-bottom:1.25rem; font-weight:300; }
-    .blog-body p strong { color:var(--text); font-weight:500; }
-    .blog-body ul, .blog-body ol { padding-left:1.5rem; margin-bottom:1.25rem; color:var(--text-2); font-weight:300; }
-    .blog-body li { margin-bottom:0.45rem; }
-    .blog-body li strong { color:var(--text); font-weight:500; }
-    code { background:var(--bg3); padding:1px 6px; border-radius:3px; font-size:0.85em; color:var(--text-2); font-family:monospace; }
-    .callout { display:block; background:var(--purple-bg); border-left:3px solid var(--purple); border-radius:0 10px 10px 0; padding:1.25rem 1.5rem; margin:1.75rem 0; font-size:0.95rem; color:var(--text); font-style:italic; line-height:1.6; }
-    .callout.green { background:var(--green-bg); border-color:var(--green); }
-    .callout.amber { background:var(--amber-bg); border-color:var(--amber); }
-    .takeaway { display:block; background:var(--green-bg); border:1px solid rgba(74,222,128,0.2); border-radius:10px; padding:1.25rem 1.5rem; margin:1.75rem 0; }
-    .takeaway .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--green); font-weight:500; margin-bottom:0.5rem; display:block; }
-    .takeaway p { color:var(--text-2); font-size:0.93rem; margin:0; }
-    .tool { display:inline; background:var(--purple-bg); color:var(--purple); border:1px solid rgba(167,139,250,0.2); border-radius:4px; padding:1px 7px; font-size:0.85em; font-weight:500; }
-    .blog-ref { display:inline-flex; align-items:center; gap:6px; background:var(--bg2); border:1px solid var(--border); border-radius:6px; padding:3px 10px; font-size:0.78rem; color:var(--text-2); text-decoration:none; transition:border-color 0.2s,color 0.2s; white-space:nowrap; }
-    .blog-ref:hover { border-color:var(--purple); color:var(--purple); }
-    .blog-ref::before { content:'↗'; font-size:0.7rem; color:var(--text-3); }
-    .key { display:inline-flex; align-items:center; justify-content:center; background:var(--bg3); border:1px solid #444; border-bottom:3px solid #444; border-radius:5px; padding:2px 8px; font-family:monospace; font-size:0.82em; color:var(--text); min-width:28px; white-space:nowrap; }
-    .code-pair { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:1.75rem 0; }
-    .code-box { border-radius:8px; padding:1rem 1.1rem; }
-    .code-fail { background:var(--red-bg); border:1px solid rgba(248,113,113,0.2); }
-    .code-pass { background:var(--green-bg); border:1px solid rgba(74,222,128,0.2); }
-    .code-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.07em; font-weight:500; margin-bottom:8px; }
-    .code-fail .code-label { color:var(--red); }
-    .code-pass .code-label { color:var(--green); }
-    .c-block { font-family:monospace; font-size:0.82rem; color:var(--text-2); line-height:1.7; white-space:pre; overflow-x:auto; }
-    .table-wrap { display:block; overflow-x:auto; margin:1.75rem 0; border-radius:10px; border:1px solid var(--border); }
-    table { width:100%; border-collapse:collapse; font-size:0.875rem; }
-    thead th { background:var(--bg2); padding:10px 14px; text-align:left; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-3); font-weight:500; border-bottom:1px solid var(--border); white-space:nowrap; }
-    tbody td { padding:10px 14px; border-bottom:1px solid var(--border); color:var(--text-2); vertical-align:top; line-height:1.55; }
-    tbody tr:last-child td { border-bottom:none; }
-    tbody td:first-child { color:var(--text); font-weight:500; font-family:monospace; font-size:0.85rem; }
-    tbody tr:hover td { background:var(--bg2); }
-    .blog-illustration { margin:1.75rem 0; border:none; padding:0; }
-    .series-nav { display:block; margin-top:4rem; padding-top:2rem; border-top:1px solid var(--border); }
-    .series-nav .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.75rem; display:block; }
-    .nav-pair { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    .nav-blog { display:flex; align-items:center; gap:1rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.1rem 1.25rem; text-decoration:none; transition:border-color 0.2s,background 0.2s; }
-    .nav-blog:hover { border-color:#444; background:var(--bg3); }
-    .nav-blog-arrow { color:var(--text-3); font-size:1rem; flex-shrink:0; }
-    .nav-blog-title { font-size:0.88rem; font-weight:500; color:var(--text); }
-    .nav-blog-sub { font-size:0.75rem; color:var(--text-3); margin-top:2px; }
-    .references { display:block; margin-top:2.5rem; padding:1.5rem 1.75rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; }
-    .ref-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:1rem; }
-    .references ul { list-style:none; padding:0; }
-    .references ul li { margin-bottom:0.5rem; }
-    .references ul li a { font-size:0.85rem; color:var(--text-2); text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; transition:color 0.2s; }
-    .references ul li a:hover { color:var(--green); }
-    .references ul li a::before { content:'↗'; font-size:0.75rem; color:var(--text-3); }
-    footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
-    footer a { color:var(--text-3); text-decoration:none; }
-    .visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
-    @media (max-width:620px) {
-      nav.site-nav { padding:0 1.25rem; }
-      .nav-links { display:none; }
-      .blog-header, main.blog-body { padding-left:1.25rem; padding-right:1.25rem; }
-      .blog-header { padding-top:2.5rem; }
-      .code-pair, .nav-pair { grid-template-columns:1fr; }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      line-height: 1.8;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .skip-link {
+      position: absolute; top: -100%; left: 1rem;
+      background: var(--green); color: #000;
+      padding: 0.5rem 1rem; border-radius: 0 0 6px 6px;
+      font-size: 0.85rem; font-weight: 500;
+      text-decoration: none; z-index: 999;
+    }
+    .skip-link:focus { top: 0; }
+
+    nav.site-nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(13,13,13,0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 56px;
+    }
+    .nav-logo { font-family: 'DM Serif Display', serif; font-size: 1rem; color: var(--text); text-decoration: none; }
+    .nav-logo:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; border-radius: 3px; }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { color: var(--text-3); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; border-radius: 3px; }
+
+    .blog-header {
+      max-width: 900px; margin: 0 auto;
+      padding: 4rem 2rem 2.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .breadcrumb {
+      font-size: 0.78rem; color: var(--text-3);
+      margin-bottom: 1.5rem;
+      display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+    }
+    .breadcrumb a { color: var(--text-3); text-decoration: none; transition: color 0.2s; }
+    .breadcrumb a:hover { color: var(--text-2); }
+    .breadcrumb a:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; border-radius: 2px; }
+
+    .blog-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.25rem; }
+    .tag {
+      font-size: 0.7rem; padding: 3px 10px; border-radius: 99px;
+      background: var(--bg3); color: var(--text-3);
+      border: 1px solid var(--border);
+      letter-spacing: 0.04em; text-transform: uppercase; font-weight: 500;
+    }
+    .tag.accent { background: var(--green-bg); color: var(--green); border-color: rgba(74,222,128,0.25); }
+
+    .blog-header h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(1.85rem, 4vw, 2.6rem);
+      line-height: 1.2; letter-spacing: -0.02em;
+      color: var(--text); margin-bottom: 0.75rem;
+    }
+    .blog-subtitle {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.1rem; font-style: italic;
+      color: var(--text-3); margin-bottom: 1.25rem;
+    }
+    .blog-meta {
+      display: flex; align-items: center; gap: 1.25rem;
+      font-size: 0.82rem; color: var(--text-3); flex-wrap: wrap;
+    }
+    .blog-meta .series { color: var(--text-2); font-weight: 500; }
+
+    .hero-visual { max-width: 900px; margin: 0 auto; padding: 2.5rem 2rem 0; }
+    .hero-svg-wrap {
+      width: 100%; border-radius: 12px; overflow: hidden;
+      border: 1px solid var(--border); background: var(--bg2);
+    }
+
+    main.blog-body {
+      display: block; max-width: 900px;
+      margin: 0 auto; padding: 3rem 2rem 5rem;
+    }
+
+    .toc {
+      display: block; background: var(--bg2);
+      border: 1px solid var(--border); border-radius: 10px;
+      padding: 1.5rem 1.75rem; margin: 0 0 3rem 0;
+    }
+    .toc-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.09em; color: var(--text-3); font-weight: 500; margin-bottom: 0.9rem; }
+    .toc ol { padding-left: 1.25rem; }
+    .toc ol li { margin-bottom: 0.45rem; }
+    .toc ol li a { font-size: 0.88rem; color: var(--text-2); text-decoration: none; transition: color 0.2s; }
+    .toc ol li a:hover { color: var(--green); }
+    .toc ol li a:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; border-radius: 2px; }
+
+    .blog-body h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.5rem; letter-spacing: -0.01em;
+      color: var(--text); margin: 3.5rem 0 1.1rem;
+      padding-top: 1rem; border-top: 1px solid var(--border);
+    }
+    .blog-body h3 { font-size: 1rem; font-weight: 500; color: var(--text); margin: 1.75rem 0 0.5rem; }
+    .blog-body p { color: var(--text-2); margin-bottom: 1.25rem; font-weight: 300; }
+    .blog-body p strong { color: var(--text); font-weight: 500; }
+    .blog-body ul, .blog-body ol { padding-left: 1.5rem; margin-bottom: 1.25rem; color: var(--text-2); font-weight: 300; }
+    .blog-body li { margin-bottom: 0.45rem; }
+    .blog-body li strong { color: var(--text); font-weight: 500; }
+
+    .callout {
+      display: block; background: var(--green-bg);
+      border-left: 3px solid var(--green);
+      border-radius: 0 10px 10px 0;
+      padding: 1.25rem 1.5rem; margin: 1.75rem 0;
+      font-size: 0.95rem; color: var(--text);
+      font-style: italic; line-height: 1.6;
+    }
+
+    .takeaway {
+      display: block; background: var(--amber-bg);
+      border: 1px solid rgba(251,191,36,0.2);
+      border-radius: 10px; padding: 1.25rem 1.5rem; margin: 1.75rem 0;
+    }
+    .takeaway .label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.09em; color: var(--amber); font-weight: 500; margin-bottom: 0.5rem; display: block; }
+    .takeaway p { color: var(--text-2); font-size: 0.93rem; margin: 0; }
+
+    /* ROLE CARDS */
+
+    .blog-illustration {
+      margin: 1.75rem 0;
+      border: none;
+      padding: 0;
+    }
+
+    .role-cards { display: flex; flex-direction: column; gap: 14px; margin: 1.75rem 0; }
+
+    .role-card {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden;
+    }
+    .role-header {
+      display: flex; align-items: center; gap: 14px;
+      padding: 1rem 1.4rem; border-bottom: 1px solid var(--border);
+    }
+    .role-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 600;
+      letter-spacing: 0.04em; flex-shrink: 0;
+      text-transform: uppercase;
+    }
+    .role-name { font-size: 0.95rem; font-weight: 500; color: var(--text); }
+    .role-phase {
+      font-size: 0.68rem; text-transform: uppercase;
+      letter-spacing: 0.07em; color: var(--text-3);
+      margin-top: 2px;
+    }
+    .role-body { padding: 1rem 1.4rem; }
+    .role-owns { font-size: 0.82rem; color: var(--text-2); line-height: 1.6; margin-bottom: 0.85rem; }
+    .role-owns strong { color: var(--text); font-weight: 500; }
+
+    .role-example {
+      background: var(--bg3); border-radius: 8px;
+      padding: 0.85rem 1rem; margin-bottom: 0.85rem;
+    }
+    .role-example-label {
+      font-size: 0.68rem; text-transform: uppercase;
+      letter-spacing: 0.07em; font-weight: 500; margin-bottom: 4px;
+    }
+    .role-example-text { font-size: 0.82rem; color: var(--text-2); line-height: 1.55; }
+
+    .role-drop {
+      border-radius: 8px; padding: 0.85rem 1rem;
+    }
+    .role-drop-label {
+      font-size: 0.68rem; text-transform: uppercase;
+      letter-spacing: 0.07em; font-weight: 500; margin-bottom: 4px;
+      color: var(--red);
+    }
+    .role-drop-text { font-size: 0.82rem; color: var(--text-2); line-height: 1.55; }
+
+    /* WHAT BREAKS TABLE */
+    .table-wrap {
+      display: block; overflow-x: auto;
+      margin: 1.75rem 0; border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    thead th {
+      background: var(--bg2); padding: 10px 14px;
+      text-align: left; font-size: 0.68rem;
+      text-transform: uppercase; letter-spacing: 0.07em;
+      color: var(--text-3); font-weight: 500;
+      border-bottom: 1px solid var(--border); white-space: nowrap;
+    }
+    tbody td {
+      padding: 11px 14px; border-bottom: 1px solid var(--border);
+      color: var(--text-2); vertical-align: top; line-height: 1.55;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody td:first-child { color: var(--text); font-weight: 500; }
+    tbody tr:hover td { background: var(--bg2); }
+
+    /* MYTH CARDS */
+    .myth-cards { display: flex; flex-direction: column; gap: 10px; margin: 1.75rem 0; }
+    .myth-card {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1.1rem 1.25rem;
+    }
+    .myth-q {
+      font-size: 0.92rem; font-weight: 500;
+      color: var(--red); margin-bottom: 0.5rem;
+      display: flex; align-items: flex-start; gap: 0.5rem;
+    }
+    .myth-q::before { content: '✗'; font-size: 0.85rem; margin-top: 1px; flex-shrink: 0; }
+    .myth-a { font-size: 0.88rem; color: var(--text-2); line-height: 1.6; padding-left: 1.2rem; }
+    .myth-a strong { color: var(--text); }
+
+    /* PHASE FLOW */
+    .phase-flow {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px; margin: 1.75rem 0;
+    }
+    .phase-box {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1rem 1.1rem;
+    }
+    .phase-num {
+      font-size: 0.68rem; text-transform: uppercase;
+      letter-spacing: 0.07em; color: var(--text-3);
+      font-weight: 500; margin-bottom: 4px;
+    }
+    .phase-role { font-size: 0.82rem; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+    .phase-action { font-size: 0.78rem; color: var(--text-2); line-height: 1.5; }
+
+    /* SERIES NAV */
+    .series-nav { display: block; margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+    .series-nav .label {
+      font-size: 0.7rem; text-transform: uppercase;
+      letter-spacing: 0.09em; color: var(--text-3);
+      font-weight: 500; margin-bottom: 0.75rem; display: block;
+    }
+    .nav-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .nav-blog {
+      display: flex; align-items: center; gap: 1rem;
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1.1rem 1.25rem;
+      text-decoration: none; transition: border-color 0.2s, background 0.2s;
+    }
+    .nav-blog:hover { border-color: #444; background: var(--bg3); }
+    .nav-blog:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; border-radius: 10px; }
+    .nav-blog-arrow { color: var(--text-3); font-size: 1rem; flex-shrink: 0; }
+    .nav-blog-title { font-size: 0.88rem; font-weight: 500; color: var(--text); }
+    .nav-blog-sub { font-size: 0.75rem; color: var(--text-3); margin-top: 2px; }
+
+    .references {
+      display: block; margin-top: 2.5rem;
+      padding: 1.5rem 1.75rem; background: var(--bg2);
+      border: 1px solid var(--border); border-radius: 10px;
+    }
+    .ref-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.09em; color: var(--text-3); font-weight: 500; margin-bottom: 1rem; }
+    .references ul { list-style: none; padding: 0; }
+    .references ul li { margin-bottom: 0.5rem; }
+    .references ul li a { font-size: 0.85rem; color: var(--text-2); text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem; transition: color 0.2s; }
+    .references ul li a:hover { color: var(--green); }
+    .references ul li a:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; border-radius: 2px; }
+    .references ul li a::before { content: '↗'; font-size: 0.75rem; color: var(--text-3); }
+
+    footer {
+      border-top: 1px solid var(--border); padding: 2rem;
+      text-align: center; font-size: 0.78rem; color: var(--text-3);
+    }
+    footer a { color: var(--text-3); text-decoration: none; }
+    footer a:hover { color: var(--text-2); }
+
+    .visually-hidden {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+    }
+
+    @media (max-width: 620px) {
+      nav.site-nav { padding: 0 1.25rem; }
+      .nav-links { display: none; }
+      .blog-header, .hero-visual, main.blog-body { padding-left: 1.25rem; padding-right: 1.25rem; }
+      .blog-header { padding-top: 2.5rem; }
+      .phase-flow { grid-template-columns: 1fr; }
+      .nav-pair { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -129,436 +347,655 @@
     <span aria-hidden="true">›</span>
     <span>Shift-Left Accessibility</span>
     <span aria-hidden="true">›</span>
-    <span aria-current="page">12 of 38</span>
+    <span aria-current="page">04 of 36</span>
   </nav>
   <div class="blog-tags" aria-label="Blog categories">
-    <span class="tag accent">Manual Testing</span>
-    <span class="tag">Structure</span>
-    <span class="tag">NVDA</span>
-    <span class="tag">WAVE</span>
+    <span class="tag accent">Shift-Left</span>
+    <span class="tag">Ownership</span>
+    <span class="tag">Teams</span>
+    <span class="tag">Strategy</span>
   </div>
-  <h1>12 Headings, Landmarks and Skip Links: <em>How to Validate Page Structure</em></h1>
-  <p class="blog-subtitle">The invisible architecture of a page. Screen reader users navigate by it. Most pages break it.</p>
+  <h1>04 Who Owns Accessibility?</h1>
+  <p class="blog-subtitle">A responsibility matrix for every role, and what breaks when each lane is dropped.</p>
   <div class="blog-meta">
     <span class="series">Series: Shift-Left Accessibility</span>
     <span aria-hidden="true">·</span>
-    <span>Blog 12 of 38</span>
+    <span>Blog 04 of 36</span>
     <span aria-hidden="true">·</span>
     <span>8 min read</span>
   </div>
 </header>
+
+<!-- HERO SVG -->
+<div class="hero-visual" aria-hidden="true">
+  <div class="hero-svg-wrap">
+    <svg viewBox="0 0 740 200" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;height:auto;">
+      <rect width="740" height="200" fill="#0d0f0d"/>
+      <g stroke="#1a1e1a" stroke-width="1">
+        <line x1="0" y1="66" x2="740" y2="66"/>
+        <line x1="0" y1="133" x2="740" y2="133"/>
+        <line x1="148" y1="0" x2="148" y2="200"/>
+        <line x1="296" y1="0" x2="296" y2="200"/>
+        <line x1="444" y1="0" x2="444" y2="200"/>
+        <line x1="592" y1="0" x2="592" y2="200"/>
+      </g>
+      <!-- role blocks -->
+      <rect x="14"  y="30" width="120" height="50" rx="6" fill="#0d1a0d" stroke="#4ade80" stroke-width="0.5" opacity="0.8"/>
+      <text x="74"  y="52" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80" font-weight="500">PM / PO</text>
+      <text x="74"  y="67" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#8a8a8a">Phase 0</text>
+
+      <rect x="162" y="30" width="120" height="50" rx="6" fill="#0d0d1a" stroke="#60a5fa" stroke-width="0.5" opacity="0.8"/>
+      <text x="222" y="52" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#60a5fa" font-weight="500">UX / Designer</text>
+      <text x="222" y="67" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#8a8a8a">Phase 1</text>
+
+      <rect x="310" y="30" width="120" height="50" rx="6" fill="#1a150d" stroke="#fbbf24" stroke-width="0.5" opacity="0.8"/>
+      <text x="370" y="52" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#fbbf24" font-weight="500">Content Layer</text>
+      <text x="370" y="67" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#8a8a8a">Phase 2/3</text>
+
+      <rect x="458" y="30" width="120" height="50" rx="6" fill="#1a0d1a" stroke="#a78bfa" stroke-width="0.5" opacity="0.8"/>
+      <text x="518" y="52" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#a78bfa" font-weight="500">Developer</text>
+      <text x="518" y="67" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#8a8a8a">Phase 3</text>
+
+      <rect x="606" y="30" width="120" height="50" rx="6" fill="#1a0d0d" stroke="#f87171" stroke-width="0.5" opacity="0.8"/>
+      <text x="666" y="52" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" font-weight="500">QA</text>
+      <text x="666" y="67" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#8a8a8a">Phase 4</text>
+
+      <!-- arrows connecting phases -->
+      <line x1="134" y1="55" x2="162" y2="55" stroke="#2e2e2e" stroke-width="1"/>
+      <polygon points="160,52 166,55 160,58" fill="#2e2e2e"/>
+      <line x1="282" y1="55" x2="310" y2="55" stroke="#2e2e2e" stroke-width="1"/>
+      <polygon points="308,52 314,55 308,58" fill="#2e2e2e"/>
+      <line x1="430" y1="55" x2="458" y2="55" stroke="#2e2e2e" stroke-width="1"/>
+      <polygon points="456,52 462,55 456,58" fill="#2e2e2e"/>
+      <line x1="578" y1="55" x2="606" y2="55" stroke="#2e2e2e" stroke-width="1"/>
+      <polygon points="604,52 610,55 604,58" fill="#2e2e2e"/>
+
+      <!-- bottom labels -->
+      <text x="74"  y="100" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4ade80" opacity="0.6">Requirements</text>
+      <text x="222" y="100" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#60a5fa" opacity="0.6">Contrast · Focus · Tab order</text>
+      <text x="370" y="100" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#fbbf24" opacity="0.6">Alt text · Headings · Links · Copy</text>
+      <text x="518" y="100" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#a78bfa" opacity="0.6">Semantic HTML · ARIA</text>
+      <text x="666" y="100" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171" opacity="0.6">Test · Log · Sign off</text>
+
+      <!-- "nobody owns it" warning -->
+      <rect x="200" y="130" width="340" height="40" rx="8" fill="#1a0808" stroke="#f87171" stroke-width="0.5" opacity="0.7"/>
+      <text x="370" y="148" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#f87171">"Accessibility is everyone's responsibility."</text>
+      <text x="370" y="162" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#8a8a8a">Translation: nobody has a named lane. Watch what happens next.</text>
+    </svg>
+  </div>
+</div>
 
 <main class="blog-body" id="main-content">
 
   <nav class="toc" aria-label="Table of contents">
     <div class="toc-title" id="toc-heading">In this blog</div>
     <ol aria-labelledby="toc-heading">
-      <li><a href="#why-structure">Why page structure matters</a></li>
-      <li><a href="#headings">Heading hierarchy: the rules and common failures</a></li>
-      <li><a href="#landmarks">Landmark regions: what they are and what to check</a></li>
-      <li><a href="#skip-links">Skip links: the first Tab stop rule</a></li>
-      <li><a href="#platform-testing">Testing headings and landmarks by platform</a></li>
-      <li><a href="#how-to-test">How to test: tools and manual checks</a></li>
-      <li><a href="#defects">Common defects and how to write them</a></li>
+      <li><a href="#the-problem">The problem with shared ownership</a></li>
+      <li><a href="#matrix">The responsibility matrix: role by role</a></li>
+      <li><a href="#what-breaks">What breaks when each lane is dropped</a></li>
+      <li><a href="#myths">Myths about accessibility ownership</a></li>
+      <li><a href="#named-owner">The one thing most teams get wrong</a></li>
+      <li><a href="#how-to-test">How to test: tiers, platforms and practice</a></li>
+      <li><a href="#mobile-testing">Mobile testing</a></li>
     </ol>
   </nav>
 
   <!-- 1 -->
-  <h2 id="why-structure">1. Why Page Structure Matters</h2>
+  <h2 id="how-to-test">Testing Ownership in Practice</h2>
+  <h3>Tier 1: Pipeline automation</h3>
+  <p>Ownership is visible in the pipeline: who configured the axe-core gate? Who reviews violations? Who can block a release on a Critical violation? If the answer is always "QA," the distributed ownership model in this blog has not been implemented. The pipeline gate should be a delivery team responsibility.</p>
+  <h3>Tier 2: Semi-automated tools</h3>
+  <p>At each phase gate, a semi-automated scan should be run by whoever owns that phase. Designers run <span class="tool">axe DevTools</span> or Stark on prototypes. Developers run it on components. QA runs it on integrated features. The tool is the same: the owner changes per phase.</p>
+  <h3>Tier 3: Manual</h3>
+  <p>Manual testing requires trained testers. Assign ownership explicitly: NVDA + Firefox on Windows, VoiceOver + Safari on Mac, VoiceOver on iOS (physical device), TalkBack on Android (physical device). Accessibility is not adequately tested by someone who has never used a screen reader on a physical device.</p>
 
-  <p>Sighted users scan a page visually: they see headings, sections, sidebars, and navigation areas at a glance. Screen reader users do the same thing: but using structure instead of visual layout. They press <span class="key">H</span> to jump between headings, <span class="key">R</span> to jump between landmark regions, and they expect a skip link at the top of every page to jump over repeated navigation.</p>
+  <h2 id="the-problem">1. The Problem With Shared Ownership</h2>
 
-  <p>When that structure is missing, broken, or inconsistent, navigating a page by screen reader is like reading a document where someone removed all the paragraph breaks and section titles. The content is there. Finding anything is exhausting.</p>
+  <p>Every team I have seen struggle with accessibility has said some version of the same thing at some point: <strong>"Accessibility is everyone's responsibility."</strong></p>
 
   <div class="callout" role="note">
-    Heading structure, landmark regions, and skip links are not primarily a visual concern. They are navigation infrastructure for non-visual users. They cannot be seen in a browser. They can only be tested with the right tools.
+    Shared responsibility with no named lanes is just a polite way of saying no one is accountable.
   </div>
 
-  <!-- 2 -->
-  <h2 id="headings">2. Heading Hierarchy: The Rules and Common Failures</h2>
 
-  <p>The rules are covered in <a href="06-Content-Authoring-Accessibility-Rules.html" class="blog-ref">Blog 06</a>. This section focuses on how to detect violations in a built page.</p>
-
-  <p>What a correct heading structure looks like on a typical page:</p>
-
-  <div class="code-pair">
-    <div class="code-box code-fail">
-      <div class="code-label">Broken: what QA typically finds</div>
-      <div class="c-block">&lt;h1&gt;Homepage&lt;/h1&gt;
-&lt;h3&gt;Latest news&lt;/h3&gt;  &lt;!-- H2 skipped --&gt;
-&lt;h1&gt;About us&lt;/h1&gt;    &lt;!-- second H1 --&gt;
-&lt;div class="title"&gt;  &lt;!-- heading styled
-  Our story          with CSS, not markup --&gt;
-&lt;/div&gt;
-&lt;h4&gt;Founded 2010&lt;/h4&gt; &lt;!-- H2, H3 skipped --&gt;</div>
-    </div>
-    <div class="code-box code-pass">
-      <div class="code-label">Correct structure</div>
-      <div class="c-block">&lt;h1&gt;Homepage&lt;/h1&gt;
-&lt;h2&gt;Latest news&lt;/h2&gt;
-  &lt;h3&gt;Article title&lt;/h3&gt;
-  &lt;h3&gt;Article title&lt;/h3&gt;
-&lt;h2&gt;About us&lt;/h2&gt;
-  &lt;h3&gt;Our story&lt;/h3&gt;
-    &lt;h4&gt;Founded 2010&lt;/h4&gt;</div>
-    </div>
-  </div>
-
-  <h3>Common failures</h3>
-  <ul>
-    <li><strong>Multiple H1s</strong>: one per page only. SPAs often add a second H1 when a route changes without updating the original.</li>
-    <li><strong>Skipped levels</strong>: H1 to H3, or H2 to H4. Often happens when developers choose heading levels for visual size, not structure.</li>
-    <li><strong>Missing headings entirely</strong>: large page sections with no heading. Screen reader users cannot jump to them.</li>
-    <li><strong>Visual headings not marked up</strong>: text styled to look like a heading with CSS but using a <code>&lt;div&gt;</code> or <code>&lt;p&gt;</code>. Invisible to screen readers.</li>
-    <li><strong>Heading levels that change across pages</strong>: a component that is H2 on one page and H3 on another. Common in reusable components without context-aware heading levels.</li>
-  </ul>
-
-  <!-- ILLUSTRATION: screen reader navigating headings -->
-  <figure class="blog-illustration" aria-label="Screen reader user navigating headings with H key versus sighted user scanning visually">
-    <svg viewBox="0 0 680 200" width="100%" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#161616;">
-      <title>Screen reader heading navigation vs visual scanning</title>
-      <desc>Left: sighted user sees visual layout of a page with sections. Right: screen reader user presses H key and gets a flat list of headings: broken structure revealed immediately.</desc>
-      <rect width="680" height="200" fill="#161616"/>
-      <!-- LEFT: visual page -->
-      <text x="14" y="20" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80" letter-spacing="1">SIGHTED USER SEES</text>
-      <rect x="14" y="28" width="296" height="158" rx="6" fill="#0d1a0d" stroke="#4ade80" stroke-width="0.5"/>
-      <!-- page mock -->
-      <rect x="26" y="40" width="272" height="14" rx="2" fill="#2e3a18"/>
-      <text x="162" y="51" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4ade80">Navigation bar</text>
-      <text x="162" y="72" text-anchor="middle" font-family="DM Serif Display,serif" font-size="14" fill="#f0f0f0">Homepage</text>
-      <rect x="26" y="80" width="272" height="2" fill="#2e2e2e"/>
-      <text x="162" y="96" text-anchor="middle" font-family="DM Serif Display,serif" font-size="11" fill="#c8c8c8">Latest news</text>
-      <text x="162" y="112" text-anchor="middle" font-family="DM Serif Display,serif" font-size="9" fill="#8a8a8a">Article one</text>
-      <text x="162" y="126" text-anchor="middle" font-family="DM Serif Display,serif" font-size="9" fill="#8a8a8a">Article two</text>
-      <rect x="26" y="132" width="272" height="2" fill="#2e2e2e"/>
-      <text x="162" y="148" text-anchor="middle" font-family="DM Serif Display,serif" font-size="11" fill="#c8c8c8">About us</text>
-      <text x="162" y="170" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#555">Visual layout looks fine.</text>
-      <text x="162" y="182" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#555">Structure may be broken underneath.</text>
-
-      <!-- RIGHT: SR heading list -->
-      <text x="370" y="20" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" letter-spacing="1">SCREEN READER HEADING LIST (H KEY)</text>
-      <rect x="370" y="28" width="296" height="158" rx="6" fill="#1a0808" stroke="#f87171" stroke-width="0.5"/>
-      <text x="382" y="46" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">Press H — screen reader announces:</text>
-      <!-- heading list with problems marked -->
-      <rect x="382" y="52" width="22" height="11" rx="2" fill="#f87171"/>
-      <text x="393" y="61" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#fff" font-weight="700">H1</text>
-      <text x="410" y="61" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">Homepage</text>
-
-      <rect x="382" y="68" width="22" height="11" rx="2" fill="#f87171" opacity="0.7"/>
-      <text x="393" y="77" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#fff" font-weight="700">H3</text>
-      <text x="410" y="77" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">Latest news</text>
-      <text x="588" y="77" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">H2 missing</text>
-
-      <rect x="382" y="84" width="22" height="11" rx="2" fill="#f87171"/>
-      <text x="393" y="93" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#fff" font-weight="700">H1</text>
-      <text x="410" y="93" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">About us</text>
-      <text x="570" y="93" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">2nd H1</text>
-
-      <rect x="382" y="100" width="22" height="11" rx="2" fill="#f87171" opacity="0.5"/>
-      <text x="393" y="109" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#fff" font-weight="700">H4</text>
-      <text x="410" y="109" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">Our story</text>
-      <text x="556" y="109" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">H2, H3 missing</text>
-
-      <text x="382" y="132" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171" font-style="italic">3 structure violations visible</text>
-      <text x="382" y="145" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171" font-style="italic">instantly from the heading list.</text>
-      <text x="382" y="162" font-family="DM Sans,sans-serif" font-size="8" fill="#8a8a8a">The page looked fine visually.</text>
-      <text x="382" y="175" font-family="DM Sans,sans-serif" font-size="8" fill="#8a8a8a">It was not.</text>
+  <figure class="blog-illustration" aria-label="Relay race illustration showing four team members pointing at each other while the accessibility baton lies on the ground">
+    <svg width="100%" viewBox="0 0 680 260" role="img" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#fafcf5;">
+      <title>Relay race: four runners all pointing at each other, accessibility baton abandoned on the ground</title>
+      <desc>PM, UX, Dev and QA each point at someone else. The baton labelled Accessibility lies on the track. Nobody is running.</desc>
+      <rect width="680" height="260" fill="#fafcf5"/>
+      <rect x="0" y="185" width="680" height="75" fill="#e8e4da"/>
+      <line x1="0" y1="183" x2="680" y2="183" stroke="#d0ccc0" stroke-width="1"/>
+      <line x1="0" y1="218" x2="680" y2="218" stroke="#c8c4b8" stroke-width="1" stroke-dasharray="18,10"/>
+      <!-- BATON centre -->
+      <rect x="298" y="194" width="84" height="16" rx="8" fill="#f87171" stroke="#e55555" stroke-width="1"/>
+      <text x="340" y="206" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#fff" font-weight="700">ACCESSIBILITY</text>
+      <!-- RUNNER 1 PM left -->
+      <circle cx="76" cy="115" r="15" fill="#f5e6d0" stroke="#3d4235" stroke-width="1.5"/>
+      <path d="M69 120 Q76 126 83 120" fill="none" stroke="#3d4235" stroke-width="1.2"/>
+      <circle cx="72" cy="111" r="1.8" fill="#3d4235"/>
+      <circle cx="80" cy="111" r="1.8" fill="#3d4235"/>
+      <ellipse cx="76" cy="140" rx="15" ry="20" fill="#dde5c8" stroke="#4a5828" stroke-width="1.5"/>
+      <rect x="65" y="130" width="22" height="14" rx="2" fill="#fff" stroke="#4a5828" stroke-width="0.5"/>
+      <text x="76" y="141" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4a5828" font-weight="600">PM</text>
+      <line x1="90" y1="136" x2="128" y2="148" stroke="#3d4235" stroke-width="2"/>
+      <line x1="68" y1="160" x2="58" y2="183" stroke="#3d4235" stroke-width="2"/>
+      <line x1="84" y1="160" x2="92" y2="183" stroke="#3d4235" stroke-width="2"/>
+      <!-- RUNNER 2 UX -->
+      <circle cx="214" cy="115" r="15" fill="#f5e6d0" stroke="#3d4235" stroke-width="1.5"/>
+      <path d="M207 120 Q214 126 221 120" fill="none" stroke="#3d4235" stroke-width="1.2"/>
+      <circle cx="210" cy="111" r="1.8" fill="#3d4235"/>
+      <circle cx="218" cy="111" r="1.8" fill="#3d4235"/>
+      <ellipse cx="214" cy="140" rx="15" ry="20" fill="#dde8f5" stroke="#2a5c9a" stroke-width="1.5"/>
+      <rect x="203" y="130" width="22" height="14" rx="2" fill="#fff" stroke="#2a5c9a" stroke-width="0.5"/>
+      <text x="214" y="141" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#2a5c9a" font-weight="600">UX</text>
+      <line x1="228" y1="136" x2="266" y2="148" stroke="#3d4235" stroke-width="2"/>
+      <line x1="206" y1="160" x2="196" y2="183" stroke="#3d4235" stroke-width="2"/>
+      <line x1="222" y1="160" x2="230" y2="183" stroke="#3d4235" stroke-width="2"/>
+      <!-- RUNNER 3 Dev -->
+      <circle cx="466" cy="115" r="15" fill="#f5e6d0" stroke="#3d4235" stroke-width="1.5"/>
+      <path d="M459 120 Q466 126 473 120" fill="none" stroke="#3d4235" stroke-width="1.2"/>
+      <circle cx="462" cy="111" r="1.8" fill="#3d4235"/>
+      <circle cx="470" cy="111" r="1.8" fill="#3d4235"/>
+      <ellipse cx="466" cy="140" rx="15" ry="20" fill="#ede0f5" stroke="#7a4a9a" stroke-width="1.5"/>
+      <rect x="455" y="130" width="22" height="14" rx="2" fill="#fff" stroke="#7a4a9a" stroke-width="0.5"/>
+      <text x="466" y="141" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#7a4a9a" font-weight="600">Dev</text>
+      <line x1="452" y1="136" x2="414" y2="148" stroke="#3d4235" stroke-width="2"/>
+      <line x1="458" y1="160" x2="448" y2="183" stroke="#3d4235" stroke-width="2"/>
+      <line x1="474" y1="160" x2="482" y2="183" stroke="#3d4235" stroke-width="2"/>
+      <!-- RUNNER 4 QA -->
+      <circle cx="604" cy="115" r="15" fill="#f5e6d0" stroke="#3d4235" stroke-width="1.5"/>
+      <path d="M597 120 Q604 126 611 120" fill="none" stroke="#3d4235" stroke-width="1.2"/>
+      <circle cx="600" cy="111" r="1.8" fill="#3d4235"/>
+      <circle cx="608" cy="111" r="1.8" fill="#3d4235"/>
+      <ellipse cx="604" cy="140" rx="15" ry="20" fill="#f5dde5" stroke="#9a2a4a" stroke-width="1.5"/>
+      <rect x="593" y="130" width="22" height="14" rx="2" fill="#fff" stroke="#9a2a4a" stroke-width="0.5"/>
+      <text x="604" y="141" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#9a2a4a" font-weight="600">QA</text>
+      <line x1="590" y1="136" x2="552" y2="148" stroke="#3d4235" stroke-width="2"/>
+      <line x1="596" y1="160" x2="586" y2="183" stroke="#3d4235" stroke-width="2"/>
+      <line x1="612" y1="160" x2="620" y2="183" stroke="#3d4235" stroke-width="2"/>
+      <!-- caption inside SVG -->
+      <rect x="80" y="236" width="520" height="18" rx="4" fill="none"/>
+      <text x="340" y="249" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#9a9e90" font-style="italic">To win the relay, everyone must hold and hand over the right way.</text>
     </svg>
   </figure>
 
-  <!-- 3 -->
-  <h2 id="landmarks">3. Landmark Regions: What They Are and What to Check</h2>
+  <p>The fix is simple. A matrix that names who owns what, before work starts. Not paperwork: a practical agreement that stops the most expensive rework: the kind that happens after launch.</p>
 
-  <p>Landmark regions are HTML sectioning elements that define the major areas of a page. Screen reader users press <span class="key">R</span> (in NVDA) or use the rotor to jump between them directly, the same way sighted users scan the visual layout.</p>
+  <p>This blog gives you that matrix: each role, what they own, and what goes wrong when they drop it.</p>
+
+  <!-- 2 -->
+  <h2 id="matrix">2. The Responsibility Matrix: Role by Role</h2>
+
+  <p>Six roles. Six phases. Each has a clear lane: and a clear cost when it is dropped.</p>
+
+  <div class="role-cards" role="list" aria-label="Accessibility responsibility by role">
+
+    <!-- PM -->
+    <div class="role-card" role="listitem">
+      <div class="role-header">
+        <div class="role-icon" style="background:var(--green-bg);color:var(--green)">PM</div>
+        <div>
+          <div class="role-name">Product Owner / PM</div>
+          <div class="role-phase">Phase 0: Discovery and strategy</div>
+        </div>
+      </div>
+      <div class="role-body">
+        <div class="role-owns">
+          <strong>Owns:</strong> Identifying legal and regulatory obligations. Defining the WCAG conformance target (minimum WCAG 2.1 AA). Writing accessibility into acceptance criteria before design begins. Assigning a named accessibility owner, not a team: a person. Documenting the sign-off model across all phases.
+        </div>
+        <div class="role-example">
+          <div class="role-example-label" style="color:var(--green)">What good looks like</div>
+          <div class="role-example-text">The user story reads: "All interactive elements must be keyboard-operable and pass WCAG 2.1 AA 2.1.1." The PM has named an accessibility lead. The sign-off criteria for each phase are documented in Confluence before sprint 1.</div>
+        </div>
+        <div class="role-drop" style="background:var(--red-bg)">
+          <div class="role-drop-label">What breaks when this lane is dropped</div>
+          <div class="role-drop-text">No target is defined. Developers guess what accessible means. QA has nothing to test against. The product ships with no audit trail and finds out about its legal exposure from a user complaint.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- UX -->
+    <div class="role-card" role="listitem">
+      <div class="role-header">
+        <div class="role-icon" style="background:var(--blue-bg);color:var(--blue)">UX</div>
+        <div>
+          <div class="role-name">UX / Designer</div>
+          <div class="role-phase">Phase 1: UX research and design</div>
+        </div>
+      </div>
+      <div class="role-body">
+        <div class="role-owns">
+          <strong>Owns:</strong> Validating colour contrast across all text and UI components before handoff (4.5:1 for body text, 3:1 for large text and UI components). Specifying focus indicators. Annotating tab order in Figma. Defining heading hierarchy in page templates. Writing error message copy at design stage: not leaving it to developers to invent. Running Stark or Zımmer in Figma before any handoff.
+        </div>
+        <div class="role-example">
+          <div class="role-example-label" style="color:var(--blue)">What good looks like</div>
+          <div class="role-example-text">Every Figma component has contrast ratio noted. Tab order is annotated with numbered arrows on interactive flows. The error state for every form field has copy written: not a placeholder saying "error message here." Stark has been run and all failures resolved before the design review.</div>
+        </div>
+        <div class="role-drop" style="background:var(--red-bg)">
+          <div class="role-drop-label">What breaks when this lane is dropped</div>
+          <div class="role-drop-text">The brand colour palette ships with a 2.8:1 contrast ratio on body text, failing WCAG 1.4.3. Fixing it post-development means updating the design system, regenerating components, and retesting every screen. I have seen this turn a one-hour Figma fix into a three-sprint remediation.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENT AUTHOR -->
+    <div class="role-card" role="listitem">
+      <div class="role-header">
+        <div class="role-icon" style="background:var(--amber-bg);color:var(--amber)">CA</div>
+        <div>
+          <div class="role-name">Content Author / Developer (Phase 2)</div>
+          <div class="role-phase">Phase 2 (CMS) or Phase 3 (non-CMS): Content layer ownership</div>
+        </div>
+      </div>
+      <div class="role-body">
+        <div class="role-owns">
+          <strong>Owns:</strong> The content layer: but who holds it depends on the project type. This lane exists in every project. The owner changes.
+        </div>
+
+        <div class="role-drop" style="background:var(--blue-bg);margin-bottom:0.85rem;">
+          <div class="role-drop-label" style="color:var(--blue)">CMS projects (Contentful, WordPress, Sanity)</div>
+          <div class="role-drop-text">Content Author / Strategist owns this lane. Write meaningful alt text in the correct field (not the description field). Use heading levels correctly: no skipping. Write descriptive link text, not "click here." Provide captions and transcripts for video. Flag decorative images so screen readers skip them.</div>
+        </div>
+
+        <div class="role-drop" style="background:var(--purple-bg);margin-bottom:0.85rem;">
+          <div class="role-drop-label" style="color:var(--purple)">Non-CMS projects (React, Angular, static, component-based)</div>
+          <div class="role-drop-text">This lane moves to the Developer in Phase 3. Alt text must be enforced as required component props. Heading structure is defined in templates. Link text is authored in code or JSON. UX owns the copy and alt text definitions at design stage: the developer implements them. If neither defines it, nobody does.</div>
+        </div>
+
+        <div class="role-drop" style="background:var(--teal-bg);margin-bottom:0.85rem;">
+          <div class="role-drop-label" style="color:var(--teal)">Headless and API-driven projects</div>
+          <div class="role-drop-text">The backend developer must enforce accessible data models: a separate alt text field, required labels, heading hierarchy in schema. Content arriving via API with no alt text field cannot be made accessible at the frontend layer alone. The data model is the content model.</div>
+        </div>
+
+        <div class="role-example">
+          <div class="role-example-label" style="color:var(--amber)">What good looks like (CMS)</div>
+          <div class="role-example-text">The image field requires alt text. The rich text editor restricts heading levels: no H1 in body content. "Click here" is blocked by CMS validation. Every video entry has a captions field and transcript URL that must be populated before publishing.</div>
+        </div>
+        <div class="role-example" style="margin-top:8px">
+          <div class="role-example-label" style="color:var(--purple)">What good looks like (non-CMS)</div>
+          <div class="role-example-text">The React image component has a required alt prop: the build fails if it is missing. UX has defined alt text for every image in Figma annotations before handoff. The data model has a separate altText field. Heading structure is enforced through component hierarchy, not guessed at runtime.</div>
+        </div>
+
+        <div class="role-drop" style="background:var(--red-bg)">
+          <div class="role-drop-label">What breaks when this lane is dropped</div>
+          <div class="role-drop-text">CMS: alt text in the wrong field, H1 on every paragraph, "click here" across hundreds of pages: all requiring individual correction after migration. Non-CMS: no alt prop enforcement means images ship without alt text silently. No UX annotation means developers guess or skip. Both scenarios end up in QA as the same defect. The cause is different. The cost is identical.</div>
+        </div>
+      </div>
+
+  <figure class="blog-illustration" aria-label="Content author happily using H1 for every row in CMS while QA engineer watches in horror">
+    <svg width="100%" viewBox="0 0 680 310" role="img" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#fafcf5;">
+      <title>CMS chaos: content author applies H1 to everything, QA watches in horror</title>
+      <desc>Content author seated at a desk, gleefully tagging every CMS row as H1 with alt text reading image and links reading click here. QA engineer stands in doorway with horrified expression.</desc>
+      <rect width="680" height="310" fill="#fafcf5"/>
+      <!-- room walls -->
+      <rect x="20" y="20" width="500" height="270" rx="6" fill="#f5f7f0" stroke="#d0ccc0" stroke-width="1"/>
+      <!-- window top right of room -->
+      <rect x="420" y="45" width="70" height="60" rx="2" fill="#dde8f5" stroke="#3d4235" stroke-width="1"/>
+      <line x1="455" y1="45" x2="455" y2="105" stroke="#3d4235" stroke-width="0.8"/>
+      <line x1="420" y1="75" x2="490" y2="75" stroke="#3d4235" stroke-width="0.8"/>
+      <!-- desk -->
+      <rect x="80" y="224" width="300" height="12" rx="2" fill="#c8b89a" stroke="#3d4235" stroke-width="1"/>
+      <rect x="96" y="236" width="10" height="36" rx="2" fill="#c8b89a"/>
+      <rect x="358" y="236" width="10" height="36" rx="2" fill="#c8b89a"/>
+      <!-- monitor frame -->
+      <rect x="148" y="116" width="200" height="136" rx="4" fill="#1a1f14" stroke="#3d4235" stroke-width="1.5"/>
+      <rect x="232" y="252" width="32" height="8" rx="1" fill="#3d4235"/>
+      <rect x="216" y="260" width="64" height="4" rx="2" fill="#3d4235"/>
+      <!-- screen area — white background -->
+      <rect x="156" y="124" width="184" height="120" rx="2" fill="#fafcf5"/>
+      <!-- CMS rows — each 18px tall, 6px gap -->
+      <!-- Row 1 y=130: H1 badge + content bar -->
+      <rect x="161" y="130" width="26" height="14" rx="2" fill="#f87171"/>
+      <text x="174" y="141" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#fff" font-weight="700">H1</text>
+      <rect x="192" y="133" width="140" height="8" rx="1" fill="#3d4235" opacity="0.2"/>
+      <!-- Row 2 y=150 -->
+      <rect x="161" y="150" width="26" height="14" rx="2" fill="#f87171"/>
+      <text x="174" y="161" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#fff" font-weight="700">H1</text>
+      <rect x="192" y="153" width="124" height="8" rx="1" fill="#3d4235" opacity="0.2"/>
+      <!-- Row 3 y=170: alt text -->
+      <rect x="161" y="170" width="42" height="14" rx="2" fill="#fbbf24"/>
+      <text x="182" y="181" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#7a4a00" font-weight="600">alt text</text>
+      <rect x="207" y="170" width="68" height="14" rx="2" fill="#fafcf5" stroke="#f87171" stroke-width="0.8"/>
+      <text x="241" y="181" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">"image"</text>
+      <!-- Row 4 y=190: link -->
+      <rect x="161" y="190" width="32" height="14" rx="2" fill="#fbbf24"/>
+      <text x="177" y="201" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#7a4a00" font-weight="600">link</text>
+      <rect x="197" y="190" width="90" height="14" rx="2" fill="#fafcf5" stroke="#f87171" stroke-width="0.8"/>
+      <text x="242" y="201" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">"click here"</text>
+      <!-- Row 5 y=210 -->
+      <rect x="161" y="210" width="26" height="14" rx="2" fill="#f87171"/>
+      <text x="174" y="221" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#fff" font-weight="700">H1</text>
+      <rect x="192" y="213" width="132" height="8" rx="1" fill="#3d4235" opacity="0.2"/>
+      <!-- Row 6 y=230 -->
+      <rect x="161" y="230" width="26" height="14" rx="2" fill="#f87171"/>
+      <text x="174" y="241" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#fff" font-weight="700">H1</text>
+      <rect x="192" y="233" width="116" height="8" rx="1" fill="#3d4235" opacity="0.2"/>
+      <!-- AUTHOR figure — seated left of monitor -->
+      <circle cx="94" cy="160" r="17" fill="#f5e6d0" stroke="#3d4235" stroke-width="1.5"/>
+      <path d="M86 165 Q94 172 102 165" fill="none" stroke="#3d4235" stroke-width="1.2"/>
+      <circle cx="89" cy="156" r="1.8" fill="#3d4235"/>
+      <circle cx="99" cy="156" r="1.8" fill="#3d4235"/>
+      <ellipse cx="94" cy="186" rx="15" ry="19" fill="#dde5c8" stroke="#4a5828" stroke-width="1.5"/>
+      <line x1="94" y1="177" x2="136" y2="188" stroke="#3d4235" stroke-width="1.5"/>
+      <line x1="94" y1="177" x2="60" y2="184" stroke="#3d4235" stroke-width="1.5"/>
+      <line x1="94" y1="205" x2="82" y2="224" stroke="#3d4235" stroke-width="2"/>
+      <line x1="94" y1="205" x2="106" y2="224" stroke="#3d4235" stroke-width="2"/>
+      <!-- author speech bubble — above head, clear of everything -->
+      <rect x="34" y="94" width="144" height="36" rx="6" fill="#fff" stroke="#3d4235" stroke-width="1"/>
+      <path d="M88 130 L84 140 L96 130" fill="#fff" stroke="#3d4235" stroke-width="1"/>
+      <text x="106" y="109" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#3d4235" font-weight="500">H1 for everything.</text>
+      <text x="106" y="122" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#9a9e90">So. Consistent.</text>
+      <!-- trophy on desk right -->
+      <ellipse cx="376" cy="206" rx="12" ry="7" fill="#fbbf24" stroke="#9a6e1a" stroke-width="1"/>
+      <rect x="363" y="206" width="26" height="18" rx="2" fill="#f5edd6" stroke="#9a6e1a" stroke-width="1"/>
+      <text x="376" y="217" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="6" fill="#7a4a00" font-weight="700">BEST</text>
+      <text x="376" y="226" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="6" fill="#7a4a00">AUTHOR</text>
+      <rect x="370" y="224" width="12" height="4" rx="1" fill="#9a6e1a"/>
+      <!-- QA in doorway right side — outside room -->
+      <rect x="530" y="120" width="60" height="170" rx="4" fill="#e8e4da" stroke="#3d4235" stroke-width="1"/>
+      <circle cx="560" cy="158" r="15" fill="#f5e6d0" stroke="#3d4235" stroke-width="1.5"/>
+      <circle cx="554" cy="154" r="3" fill="#3d4235"/>
+      <circle cx="566" cy="154" r="3" fill="#3d4235"/>
+      <circle cx="554" cy="154" r="1.2" fill="#fff"/>
+      <circle cx="566" cy="154" r="1.2" fill="#fff"/>
+      <ellipse cx="560" cy="162" rx="3.5" ry="2.5" fill="#3d4235"/>
+      <line x1="560" y1="173" x2="560" y2="205" stroke="#3d4235" stroke-width="1.5"/>
+      <line x1="560" y1="181" x2="544" y2="189" stroke="#3d4235" stroke-width="1.5"/>
+      <line x1="560" y1="181" x2="576" y2="189" stroke="#3d4235" stroke-width="1.5"/>
+      <line x1="560" y1="205" x2="550" y2="226" stroke="#3d4235" stroke-width="1.5"/>
+      <line x1="560" y1="205" x2="570" y2="226" stroke="#3d4235" stroke-width="1.5"/>
+      <!-- sweat drops -->
+      <circle cx="578" cy="148" r="2.5" fill="#60a5fa" opacity="0.7"/>
+      <circle cx="582" cy="140" r="2" fill="#60a5fa" opacity="0.5"/>
+      <!-- QA speech bubble — positioned clearly above QA -->
+      <rect x="528" y="72" width="142" height="44" rx="6" fill="#fff0f0" stroke="#f87171" stroke-width="1"/>
+      <path d="M570 116 L566 124 L578 116" fill="#fff0f0" stroke="#f87171" stroke-width="1"/>
+      <text x="599" y="90" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#7f1d1d" font-weight="500">That is H1 on</text>
+      <text x="599" y="104" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#7f1d1d">every single row.</text>
+      <text x="599" y="114" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">847 pages.</text>
+      <!-- caption -->
+      <text x="340" y="298" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#9a9e90" font-style="italic">"Nobody told them H1 was for page titles only." — QA, week 8.</text>
+    </svg>
+  </figure>
+
+    </div>
+
+    <!-- DEVELOPER -->
+    <div class="role-card" role="listitem">
+      <div class="role-header">
+        <div class="role-icon" style="background:var(--purple-bg);color:var(--purple)">Dev</div>
+        <div>
+          <div class="role-name">Developer</div>
+          <div class="role-phase">Phase 3: Development</div>
+        </div>
+      </div>
+      <div class="role-body">
+        <div class="role-owns">
+          <strong>Owns:</strong> Using semantic HTML: &lt;button&gt; not &lt;div onclick&gt;, &lt;nav&gt; not &lt;div class="nav"&gt;. Applying ARIA only when native HTML is insufficient. Making sure every interactive element works with a keyboard. Running eslint-plugin-jsx-a11y in the IDE. Adding axe-core to CI/CD and failing builds on Critical violations. Managing focus on modals, SPAs, and dynamic content.
+        </div>
+        <div class="role-example">
+          <div class="role-example-label" style="color:var(--purple)">What good looks like</div>
+          <div class="role-example-text">The modal uses a native &lt;dialog&gt; element. Focus moves into it on open, cycles within it while open, and returns to the trigger on close. The ESLint plugin flags a missing alt attribute before the PR is even raised. The CI pipeline fails when axe-core detects a Critical violation: so it never reaches QA.</div>
+        </div>
+        <div class="role-drop" style="background:var(--red-bg)">
+          <div class="role-drop-label">What breaks when this lane is dropped</div>
+          <div class="role-drop-text">The dropdown menu is built with &lt;div&gt; and JavaScript click handlers. It works perfectly with a mouse. Keyboard users cannot open it. Screen reader users get no announcement of state. The component is used in 14 places across the product. QA finds it in week 8 of testing. All 14 need rework.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QA -->
+    <div class="role-card" role="listitem">
+      <div class="role-header">
+        <div class="role-icon" style="background:var(--red-bg);color:var(--red)">QA</div>
+        <div>
+          <div class="role-name">QA / Accessibility Lead</div>
+          <div class="role-phase">Phase 4: Testing and validation</div>
+        </div>
+      </div>
+      <div class="role-body">
+        <div class="role-owns">
+          <strong>Owns:</strong> Running manual keyboard testing across all user journeys. Running screen reader testing (NVDA on Windows, VoiceOver on Mac, VoiceOver on iOS, TalkBack on Android). Running axe DevTools, WAVE, and Accessibility Insights scans. Validating phase exit criteria before sign-off. Logging defects with the WCAG criterion, severity, and steps to reproduce. Pushing upstream issues back to the right owner: with evidence.
+        </div>
+        <div class="role-example">
+          <div class="role-example-label" style="color:var(--red)">What good looks like</div>
+          <div class="role-example-text">The defect reads: "Contrast ratio on body text is 2.8:1, failing WCAG 1.4.3 (minimum 4.5:1). Affects all body copy across all pages. Severity: Major. Root cause: design phase: colour palette not validated before handoff." The defect is assigned to design, not development. Phase exit criteria are not signed off until it is resolved.</div>
+        </div>
+        <div class="role-drop" style="background:var(--red-bg)">
+          <div class="role-drop-label">What breaks when this lane is dropped</div>
+          <div class="role-drop-text">Without QA holding the exit gate, upstream failures compound. A design that was never contrast-checked, content that was never heading-validated, and code that was never keyboard-tested all ship together. The first accessibility audit: often commissioned after a complaint: finds everything at once. That audit costs more than all the upstream work that was skipped.</div>
+        </div>
+      </div>
+
+  <figure class="blog-illustration" aria-label="QA celebrating catching big bugs while small ones sneak under the gate unnoticed">
+    <svg width="100%" viewBox="0 0 680 280" role="img" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#fafcf5;">
+      <title>QA catches obvious bugs but subtle ones sneak through the gate</title>
+      <desc>QA engineer holds a trophy celebrating catching a large bug labelled missing alt text. Behind them three small bugs labelled focus order, colour alone and reflow tiptoe through a gap in the gate unnoticed.</desc>
+      <rect width="680" height="280" fill="#fafcf5"/>
+      <!-- ground -->
+      <rect x="0" y="218" width="680" height="62" fill="#e8e4da"/>
+      <line x1="0" y1="218" x2="680" y2="218" stroke="#d0ccc0" stroke-width="1"/>
+      <!-- GATE left post -->
+      <rect x="280" y="72" width="14" height="150" rx="4" fill="#4a5828" stroke="#2e3a18" stroke-width="1"/>
+      <!-- GATE right post -->
+      <rect x="370" y="72" width="14" height="150" rx="4" fill="#4a5828" stroke="#2e3a18" stroke-width="1"/>
+      <!-- top bar -->
+      <rect x="276" y="68" width="112" height="12" rx="4" fill="#4a5828"/>
+      <!-- sign on top bar -->
+      <rect x="290" y="48" width="96" height="22" rx="4" fill="#fff" stroke="#4a5828" stroke-width="1"/>
+      <text x="338" y="59" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#4a5828" font-weight="600">No WCAG ref.</text>
+      <text x="338" y="68" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#f87171">No entry.</text>
+      <!-- gate bars — 3 solid, 1 bent/broken on right -->
+      <line x1="302" y1="80" x2="302" y2="218" stroke="#6b7c3a" stroke-width="3"/>
+      <line x1="322" y1="80" x2="322" y2="218" stroke="#6b7c3a" stroke-width="3"/>
+      <line x1="342" y1="80" x2="342" y2="218" stroke="#6b7c3a" stroke-width="3"/>
+      <!-- broken bar — bent at y=160, gap at bottom -->
+      <line x1="362" y1="80" x2="358" y2="160" stroke="#6b7c3a" stroke-width="3"/>
+      <line x1="358" y1="160" x2="366" y2="185" stroke="#6b7c3a" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.5"/>
+      <!-- gap label -->
+      <rect x="372" y="168" width="44" height="14" rx="3" fill="#fbbf24"/>
+      <text x="394" y="179" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#7a4a00" font-weight="600">gap!</text>
+      <!-- QA ENGINEER — right of gate, facing left, celebratory -->
+      <circle cx="460" cy="122" r="18" fill="#f5e6d0" stroke="#3d4235" stroke-width="1.5"/>
+      <!-- big grin -->
+      <path d="M451 128 Q460 136 469 128" fill="none" stroke="#3d4235" stroke-width="1.5"/>
+      <!-- happy squint eyes -->
+      <path d="M453 118 Q457 115 461 118" fill="none" stroke="#3d4235" stroke-width="1.2"/>
+      <path d="M459 118 Q463 115 467 118" fill="none" stroke="#3d4235" stroke-width="1.2"/>
+      <!-- body -->
+      <ellipse cx="460" cy="152" rx="18" ry="22" fill="#f5dde5" stroke="#9a2a4a" stroke-width="1.5"/>
+      <rect x="449" y="142" width="22" height="14" rx="2" fill="#f5dde5" stroke="#9a2a4a" stroke-width="0.5"/>
+      <text x="460" y="153" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#9a2a4a" font-weight="600">QA</text>
+      <!-- arm UP holding trophy -->
+      <line x1="460" y1="144" x2="438" y2="110" stroke="#3d4235" stroke-width="2"/>
+      <!-- trophy cup -->
+      <ellipse cx="432" cy="103" rx="13" ry="8" fill="#fbbf24" stroke="#9a6e1a" stroke-width="1"/>
+      <rect x="423" y="103" width="18" height="16" rx="2" fill="#f5edd6" stroke="#9a6e1a" stroke-width="1"/>
+      <rect x="420" y="119" width="24" height="4" rx="1" fill="#9a6e1a"/>
+      <text x="432" y="114" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="6" fill="#7a4a00" font-weight="700">GOT IT</text>
+      <!-- other arm pointing at caught bug -->
+      <line x1="460" y1="144" x2="424" y2="158" stroke="#3d4235" stroke-width="2"/>
+      <!-- legs -->
+      <line x1="452" y1="174" x2="443" y2="218" stroke="#3d4235" stroke-width="2"/>
+      <line x1="468" y1="174" x2="477" y2="218" stroke="#3d4235" stroke-width="2"/>
+      <!-- QA speech bubble -->
+      <rect x="484" y="88" width="172" height="42" rx="6" fill="#d8f0e0" stroke="#1a7a3a" stroke-width="1"/>
+      <path d="M486 109 L476 113 L486 117" fill="#d8f0e0" stroke="#1a7a3a" stroke-width="1"/>
+      <text x="570" y="107" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#1a3a1a" font-weight="500">Got the big ones!</text>
+      <text x="570" y="120" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#1a3a1a">Accessibility: sorted.</text>
+      <!-- BIG CAUGHT BUG — right of gate, left of QA -->
+      <circle cx="456" cy="170" r="24" fill="#f87171" stroke="#9a2a4a" stroke-width="1.5" opacity="0.9"/>
+      <text x="456" y="166" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#7f1d1d" font-weight="600">Missing</text>
+      <text x="456" y="177" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#7f1d1d" font-weight="600">alt text</text>
+      <text x="448" y="161" font-family="DM Sans,sans-serif" font-size="9" fill="#7f1d1d" font-weight="700">x</text>
+      <text x="460" y="161" font-family="DM Sans,sans-serif" font-size="9" fill="#7f1d1d" font-weight="700">x</text>
+      <line x1="450" y1="147" x2="445" y2="136" stroke="#9a2a4a" stroke-width="1"/>
+      <circle cx="445" cy="135" r="3" fill="#f87171"/>
+      <line x1="462" y1="147" x2="467" y2="136" stroke="#9a2a4a" stroke-width="1"/>
+      <circle cx="467" cy="135" r="3" fill="#f87171"/>
+      <!-- SMALL BUGS sneaking through gate gap -->
+      <!-- bug 1: focus order — just through gap -->
+      <circle cx="240" cy="196" r="13" fill="#a78bfa" stroke="#7a4a9a" stroke-width="1" opacity="0.9"/>
+      <text x="240" y="193" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#3c1a6e" font-weight="600">focus</text>
+      <text x="240" y="202" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#3c1a6e" font-weight="600">order</text>
+      <line x1="234" y1="208" x2="230" y2="218" stroke="#7a4a9a" stroke-width="1"/>
+      <line x1="246" y1="208" x2="250" y2="218" stroke="#7a4a9a" stroke-width="1"/>
+      <line x1="236" y1="184" x2="232" y2="174" stroke="#7a4a9a" stroke-width="1"/>
+      <circle cx="232" cy="173" r="3" fill="#a78bfa"/>
+      <line x1="244" y1="184" x2="248" y2="174" stroke="#7a4a9a" stroke-width="1"/>
+      <circle cx="248" cy="173" r="3" fill="#a78bfa"/>
+      <!-- bug 2: colour alone -->  
+      <circle cx="158" cy="200" r="13" fill="#60a5fa" stroke="#2a5c9a" stroke-width="1" opacity="0.85"/>
+      <text x="158" y="197" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#1e3a7a" font-weight="600">colour</text>
+      <text x="158" y="206" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#1e3a7a" font-weight="600">alone</text>
+      <line x1="152" y1="212" x2="148" y2="218" stroke="#2a5c9a" stroke-width="1"/>
+      <line x1="164" y1="212" x2="168" y2="218" stroke="#2a5c9a" stroke-width="1"/>
+      <!-- bug 3: reflow — waving, further left -->
+      <circle cx="74" cy="202" r="13" fill="#fbbf24" stroke="#9a6e1a" stroke-width="1" opacity="0.85"/>
+      <text x="74" y="199" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#7a4a00" font-weight="600">reflow</text>
+      <text x="74" y="208" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#7a4a00" font-weight="600">320px</text>
+      <line x1="86" y1="200" x2="96" y2="192" stroke="#9a6e1a" stroke-width="1"/>
+      <path d="M97 189 Q101 185 105 189" fill="none" stroke="#9a6e1a" stroke-width="0.8"/>
+      <!-- caption -->
+      <text x="340" y="266" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#9a9e90" font-style="italic">QA catches the obvious ones. The subtle ones wave goodbye on the way through.</text>
+    </svg>
+  </figure>
+
+    </div>
+
+    <!-- MAINTENANCE -->
+    <div class="role-card" role="listitem">
+      <div class="role-header">
+        <div class="role-icon" style="background:var(--teal-bg);color:var(--teal)">Ops</div>
+        <div>
+          <div class="role-name">Maintenance / Operations</div>
+          <div class="role-phase">Phase 5: Live and post-launch</div>
+        </div>
+      </div>
+      <div class="role-body">
+        <div class="role-owns">
+          <strong>Owns:</strong> Running Pa11y or axe-core nightly on production to catch regressions. Triaging and resolving user-reported accessibility issues within a defined SLA. Maintaining the VPAT if required for enterprise procurement. Keeping an audit trail as compliance evidence. Ensuring new content published post-launch meets the same standards as launch content.
+        </div>
+        <div class="role-example">
+          <div class="role-example-label" style="color:var(--teal)">What good looks like</div>
+          <div class="role-example-text">A nightly Pa11y run detects that a third-party chat widget introduced a keyboard trap in the last deployment. An alert fires. The widget is rolled back within hours. The accessibility regression never reaches users for more than a day.</div>
+        </div>
+        <div class="role-drop" style="background:var(--red-bg)">
+          <div class="role-drop-label">What breaks when this lane is dropped</div>
+          <div class="role-drop-text">A third-party script update silently breaks keyboard navigation across the entire site. Nobody notices for three months: until a user files a formal complaint. By then the issue has been live long enough to constitute a legal liability in some jurisdictions.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 3 -->
+  <h2 id="what-breaks">3. What Breaks When Each Lane Is Dropped</h2>
+
+  <p>The table below maps each role to the specific defect type that appears in QA when that role has not held its lane. This is useful when writing defects: it tells you where the root cause actually sits, not just where the symptom was found.</p>
 
   <div class="table-wrap">
     <table>
-      <caption class="visually-hidden">HTML landmark elements, their roles, and what to check</caption>
+      <caption class="visually-hidden">Defects that appear in QA when each upstream role drops their lane</caption>
       <thead>
         <tr>
-          <th scope="col">Element</th>
-          <th scope="col">Landmark role</th>
-          <th scope="col">What to check</th>
+          <th scope="col">Role that dropped the lane</th>
+          <th scope="col">Defect found in QA</th>
+          <th scope="col">Root cause phase</th>
+          <th scope="col">Cost to fix</th>
         </tr>
       </thead>
       <tbody>
-        <tr><td>&lt;header&gt;</td><td>banner</td><td>Present once at the top of the page. Not nested inside other landmarks.</td></tr>
-        <tr><td>&lt;nav&gt;</td><td>navigation</td><td>Each nav has a unique <code>aria-label</code> if more than one exists. "Main navigation", "Breadcrumb", "Footer navigation": not just "navigation" twice.</td></tr>
-        <tr><td>&lt;main&gt;</td><td>main</td><td>Exactly one per page. Contains the primary content. Not nested inside another landmark.</td></tr>
-        <tr><td>&lt;footer&gt;</td><td>contentinfo</td><td>Present at the page level. Not confused with component-level footers inside articles.</td></tr>
-        <tr><td>&lt;aside&gt;</td><td>complementary</td><td>Used for genuinely supplementary content. Not used as a generic container.</td></tr>
-        <tr><td>&lt;section&gt;</td><td>region (only with aria-label)</td><td>Needs an <code>aria-labelledby</code> or <code>aria-label</code> to become a navigable landmark. Without it, it is not a landmark.</td></tr>
-        <tr><td>&lt;form&gt;</td><td>form (only with aria-label)</td><td>Needs an accessible name to become a landmark. Without it, a screen reader cannot jump to it directly.</td></tr>
+        <tr>
+          <td>PM / PO</td>
+          <td>No acceptance criteria for accessibility : QA has nothing to test against</td>
+          <td>Phase 0</td>
+          <td style="color:var(--amber)">Medium: governance rework mid-project</td>
+        </tr>
+        <tr>
+          <td>UX / Designer</td>
+          <td>Contrast failures across brand palette, missing focus indicators, no error copy</td>
+          <td>Phase 1</td>
+          <td style="color:var(--red)">High: design system rework, component rebuild</td>
+        </tr>
+        <tr>
+          <td>Content Author (CMS) or Developer (non-CMS)</td>
+          <td>Missing alt text, heading hierarchy broken, "click here" links, videos without captions</td>
+          <td>Phase 2 (CMS) or Phase 3 (non-CMS)</td>
+          <td style="color:var(--amber)">Medium: content re-authoring at scale</td>
+        </tr>
+        <tr>
+          <td>Developer</td>
+          <td>Keyboard traps, div soup, broken ARIA, missing semantic structure, focus not managed</td>
+          <td>Phase 3</td>
+          <td style="color:var(--red)">High: component rework, retest across all instances</td>
+        </tr>
+        <tr>
+          <td>QA</td>
+          <td>All of the above reach production</td>
+          <td>Phase 4</td>
+          <td style="color:var(--red)">Critical: legal risk, emergency sprint, audit cost</td>
+        </tr>
+        <tr>
+          <td>Operations</td>
+          <td>Regressions accumulate silently post-launch</td>
+          <td>Phase 5</td>
+          <td style="color:var(--red)">Critical: complaints, legal exposure, reputation</td>
+        </tr>
       </tbody>
     </table>
   </div>
-
-  <h3>Common landmark failures</h3>
-  <ul>
-    <li><strong>Missing main landmark</strong>: the entire page content is in divs with no <code>&lt;main&gt;</code>. Screen reader users cannot skip to the main content.</li>
-    <li><strong>Multiple unlabelled navs</strong>: two or more <code>&lt;nav&gt;</code> elements with no <code>aria-label</code>. Both announced as "navigation" with no way to distinguish them.</li>
-    <li><strong>Landmarks nested inside each other</strong>: a <code>&lt;header&gt;</code> inside <code>&lt;main&gt;</code> creates a confusing landmark tree.</li>
-    <li><strong>Overuse of section</strong>: every div replaced with <code>&lt;section&gt;</code> without <code>aria-label</code>. Creates phantom landmarks that add noise without navigation value.</li>
-  </ul>
 
   <!-- 4 -->
-  <h2 id="skip-links">4. Skip Links: The First Tab Stop Rule</h2>
+  <h2 id="myths">4. Myths About Accessibility Ownership</h2>
 
-  <p>A skip link is a visually hidden link at the very top of every page that becomes visible on focus and jumps the user directly to the main content area. It exists for one reason: keyboard users should not have to Tab through an entire navigation bar on every page load to reach the content they came for.</p>
+  <div class="myth-cards" role="list" aria-label="Common myths about accessibility ownership">
 
-  <div class="callout green" role="note">
-    WCAG 2.4.1 requires a mechanism to bypass repeated navigation blocks. A skip link is the standard implementation. It must be the first focusable element on the page.
-  </div>
-
-  <div class="code-pair">
-    <div class="code-box code-pass">
-      <div class="code-label">Correct skip link pattern</div>
-      <div class="c-block">&lt;!-- First element in body --&gt;
-&lt;a href="#main-content"
-   class="skip-link"&gt;
-  Skip to main content
-&lt;/a&gt;
-
-&lt;!-- CSS --&gt;
-.skip-link {
-  position: absolute;
-  top: -100%;
-  left: 1rem;
-}
-.skip-link:focus {
-  top: 0;
-}</div>
+    <div class="myth-card" role="listitem">
+      <div class="myth-q">"Accessibility is QA's job."</div>
+      <div class="myth-a">QA is the <strong>last gate</strong>, not the only gate. When accessibility arrives in QA untouched by design, content, and development, QA becomes a remediation team. The defect volume is unmanageable and the cost multiplier is at its highest. QA verifies: it cannot retroactively fix decisions made four phases earlier.</div>
     </div>
-    <div class="code-box code-fail">
-      <div class="code-label">Common failures</div>
-      <div class="c-block">&lt;!-- Not first element:
-     nav comes before it --&gt;
-&lt;nav&gt;...&lt;/nav&gt;
-&lt;a href="#main"&gt;Skip&lt;/a&gt;
 
-&lt;!-- Hidden with display:none:
-     not reachable by keyboard --&gt;
-.skip-link {
-  display: none;
-}
-
-&lt;!-- href points to missing ID --&gt;
-&lt;a href="#main"&gt;Skip&lt;/a&gt;
-&lt;!-- &lt;main id="content"&gt; not "#main" --&gt;</div>
+    <div class="myth-card" role="listitem">
+      <div class="myth-q">"Developers handle accessibility when they write the code."</div>
+      <div class="myth-a">Developers can implement accessibility correctly: but only if the design gave them a contrast-validated palette, the content model enforced alt text, and the acceptance criteria specified what "accessible" means. <strong>You cannot code your way out of a design that was never accessibility-reviewed.</strong></div>
     </div>
+
+    <div class="myth-card" role="listitem">
+      <div class="myth-q">"We run automated tests, so we're covered."</div>
+      <div class="myth-a">Automated tools catch 30–50% of accessibility issues. Focus visibility, keyboard usability, screen reader context, and cognitive load require human testing. Automated tests are the floor, not the ceiling. <strong>A 100% Lighthouse score is not an accessibility sign-off.</strong></div>
+    </div>
+
+    <div class="myth-card" role="listitem">
+      <div class="myth-q">"The client owns accessibility: it's their legal obligation."</div>
+      <div class="myth-a">The client carries the legal obligation, but the delivery team carries the quality responsibility. Shipping an inaccessible product and pointing to the contract is not a defence. <strong>Dual ownership is required</strong>: a named owner on the delivery team and a named owner on the client side. Without both, decisions stall and accountability disappears.</div>
+    </div>
+
   </div>
 
-  <h3>How to test a skip link</h3>
-  <p>Load the page. Press <span class="key">Tab</span> once. The skip link must appear. Press <span class="key">Enter</span>. Focus must move to the main content area and the page must scroll to it. If Tab does nothing, or the skip link appears but Enter does nothing, or focus moves to the wrong element: each of those is a separate defect.</p>
+  <h2 id="named-owner">5. The One Thing Most Teams Get Wrong</h2>
 
-  <!-- 5 -->
+  <p>Of everything in the responsibility matrix, the single most impactful thing a team can do is name one person as the accessibility owner, not a team, not a role: a person.</p>
 
-  <!-- PLATFORM TESTING -->
-  <h2 id="platform-testing">5. Testing Headings and Landmarks by Platform</h2>
+  <p>"The accessibility team owns it" means nobody does. "Sarah owns it" means Sarah gets the call when a decision needs making, a gate needs holding, or a third-party tool needs challenging.</p>
 
-  <p>The same structural failures present differently depending on the screen reader. Here is how to navigate headings and landmarks on each platform.</p>
+  <p>The second thing: <strong>dual ownership</strong>. The delivery team needs a named owner, and so does the client. Without both, decisions stall. I have seen accessibility sign-off sit in email threads for weeks: not because anyone disagreed, but because nobody on the client side had authority to approve.</p>
 
-  <h3>Windows: NVDA</h3>
-  <div class="table-wrap">
-    <table>
-      <caption class="visually-hidden">NVDA keyboard shortcuts for heading and landmark navigation</caption>
-      <thead><tr><th scope="col">Action</th><th scope="col">Key</th></tr></thead>
-      <tbody>
-        <tr><td>Next heading</td><td><span class="key">H</span></td></tr>
-        <tr><td>Previous heading</td><td><span class="key">Shift</span>+<span class="key">H</span></td></tr>
-        <tr><td>Heading by level (e.g. H2)</td><td><span class="key">2</span> (or 1–6)</td></tr>
-        <tr><td>Open headings list</td><td><span class="key">Insert</span>+<span class="key">F6</span></td></tr>
-        <tr><td>Next landmark</td><td><span class="key">D</span></td></tr>
-        <tr><td>Previous landmark</td><td><span class="key">Shift</span>+<span class="key">D</span></td></tr>
-        <tr><td>Open elements list</td><td><span class="key">Insert</span>+<span class="key">F7</span></td></tr>
-      </tbody>
-    </table>
+  <div class="callout" role="note">
+    Accessibility ownership is not a title. It is a commitment to hold a lane for the entire lifecycle: from the first user story to the first production regression.
   </div>
 
-  <h3>Mac: VoiceOver</h3>
-  <p>VO modifier key is <span class="key">Ctrl</span>+<span class="key">Option</span> (written as VO below). VoiceOver must be enabled first: <span class="key">Cmd</span>+<span class="key">F5</span>. Use Safari. VoiceOver and Chrome do not pair reliably for heading navigation.</p>
-  <div class="table-wrap">
-    <table>
-      <caption class="visually-hidden">VoiceOver on Mac shortcuts for heading and landmark navigation</caption>
-      <thead><tr><th scope="col">Action</th><th scope="col">Key</th></tr></thead>
-      <tbody>
-        <tr><td>Next heading</td><td><span class="key">VO</span>+<span class="key">Cmd</span>+<span class="key">H</span></td></tr>
-        <tr><td>Previous heading</td><td><span class="key">VO</span>+<span class="key">Cmd</span>+<span class="key">Shift</span>+<span class="key">H</span></td></tr>
-        <tr><td>Open rotor (elements list)</td><td><span class="key">VO</span>+<span class="key">U</span> then arrow keys to filter by Headings or Landmarks</td></tr>
-        <tr><td>Next landmark</td><td><span class="key">VO</span>+<span class="key">Cmd</span>+<span class="key">L</span></td></tr>
-        <tr><td>Read page title</td><td><span class="key">VO</span>+<span class="key">F2</span>+<span class="key">F2</span></td></tr>
-      </tbody>
-    </table>
-  </div>
+  <p>Name the person. Document the lane. Hold the gate.</p>
 
-  <h3>iOS: VoiceOver</h3>
-  <p>Enable VoiceOver: Settings → Accessibility → VoiceOver → Toggle ON. Use Safari. The rotor is the primary navigation control: rotate two fingers on the screen to open it, then select Headings or Landmarks.</p>
-  <div class="table-wrap">
-    <table>
-      <caption class="visually-hidden">VoiceOver on iOS gestures for heading and landmark navigation</caption>
-      <thead><tr><th scope="col">Action</th><th scope="col">Gesture</th></tr></thead>
-      <tbody>
-        <tr><td>Navigate elements</td><td>Single-finger swipe right (next) or left (previous)</td></tr>
-        <tr><td>Open rotor</td><td>Rotate two fingers on screen</td></tr>
-        <tr><td>Set rotor to Headings</td><td>Open rotor, rotate to Headings</td></tr>
-        <tr><td>Navigate headings only</td><td>Rotor set to Headings, then swipe up or down</td></tr>
-        <tr><td>Set rotor to Landmarks</td><td>Open rotor, rotate to Landmarks</td></tr>
-        <tr><td>Activate element</td><td>Double-tap anywhere after element is focused</td></tr>
-      </tbody>
-    </table>
-  </div>
+  <!-- SERIES NAV -->
 
-  <h3>Android: TalkBack</h3>
-  <p>Enable TalkBack: Settings → Accessibility → TalkBack → Toggle ON (or hold both volume keys for 3 seconds). Use Chrome.</p>
-  <div class="table-wrap">
-    <table>
-      <caption class="visually-hidden">TalkBack on Android gestures for heading and landmark navigation</caption>
-      <thead><tr><th scope="col">Action</th><th scope="col">Gesture</th></tr></thead>
-      <tbody>
-        <tr><td>Navigate elements</td><td>Single-finger swipe right (next) or left (previous)</td></tr>
-        <tr><td>Navigate headings only</td><td>Swipe up then right to open reading controls, select Headings, then swipe right/left</td></tr>
-        <tr><td>Activate element</td><td>Double-tap anywhere after element is focused and announced</td></tr>
-        <tr><td>Scroll</td><td>Two-finger swipe up or down</td></tr>
-        <tr><td>Open TalkBack menu</td><td>Swipe down then right</td></tr>
-        <tr><td>Go back</td><td>Swipe down then left</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="callout amber" role="note">
-    Mobile testing requires a physical device. Xcode Simulator and Android Emulator do not accurately simulate VoiceOver or TalkBack behaviour. A broken heading structure found on desktop produces an equally broken experience on mobile: the gestures just feel different.
-  </div>
-
-  <h2 id="how-to-test-tiers">How to Test: Tiers and Platform Coverage</h2>
-  <h3>Tier 1: Pipeline automation</h3>
-  <p>axe-core catches: missing landmark regions, skipped heading levels, missing skip links, and empty headings. Run with <code>withTags(['wcag2a','wcag2aa'])</code> in CI. These structural violations are among the most reliable automated checks: the DOM either has the correct structure or it does not.</p>
-  <h3>Tier 2: Semi-automated tools</h3>
-  <p><span class="tool">WAVE</span> Structure tab gives the fastest visual overview of heading hierarchy and landmark regions. <span class="tool">ANDI</span> Structure module lists all headings in document order: faster than tabbing through headings with a screen reader for a first structural check. <span class="tool">Accessibility Insights</span> FastPass catches landmark and heading violations with WCAG criterion references.</p>
-  <h3>Tier 3: Manual: platform coverage</h3>
-  <ul>
-    <li><strong>NVDA + Firefox (Windows):</strong> Press H to walk headings. Press D for landmarks. Press 1–6 for heading levels. Verify structure matches the visual hierarchy.</li>
-    <li><strong>VoiceOver + Safari (Mac):</strong> Open rotor (VO+U). Check Headings and Landmarks lists. Verify all landmark regions are named where multiple exist.</li>
-    <li><strong>VoiceOver on iOS (physical iPhone):</strong> Set rotor to Headings. Swipe up/down to navigate. Verify heading structure in mobile view.</li>
-    <li><strong>TalkBack on Android (physical device):</strong> Set reading controls to Headings. Swipe up to navigate. Verify structure.</li>
-  </ul>
-
-  <h2 id="how-to-test">6. How to Test: Tools and Manual Checks</h2>
-
-  <div style="background:var(--amber-bg);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:0 0 1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
+  <div style="background:var(--amber-bg);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
     <div style="font-size:1.1rem;line-height:1;padding-top:2px;" aria-hidden="true">&#127919;</div>
     <div>
-      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--amber);font-weight:500;margin-bottom:4px;">Practice these yourself</div>
-      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">The heading and landmark failures described below are available as interactive demos in the <a href="A11y-Test-Playground/12 A11y Test Playground - Headings and Landmarks.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Headings and Landmarks Playground</a>. For mobile testing steps, see the <a href="A11y-Test-Playground/12 12 A11y Headings Mobile Testing Guide.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Mobile Testing Guide</a>.</div>
+      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--amber);font-weight:500;margin-bottom:4px;">Practice on real examples</div>
+      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">Use this to demonstrate which violations would be caught if each phase ran their own scan: <a href="A11y-Test-Playground/27 A11y Test Playground - Axe DevTools.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Axe DevTools Playground</a>.</div>
     </div>
   </div>
-
-  <h3>What automation catches</h3>
-  <p><span class="tool">axe-core</span> (in <span class="tool">Playwright</span>, <span class="tool">Cypress</span>, or <span class="tool">axe DevTools</span>) and <span class="tool">Pa11y</span> will flag these automatically:</p>
-  <ul>
-    <li>Missing <code>&lt;main&gt;</code> landmark</li>
-    <li>Multiple elements with the same landmark role and no distinguishing label (e.g. two unlabelled <code>&lt;nav&gt;</code> elements)</li>
-    <li>Empty heading elements (<code>&lt;h2&gt;&lt;/h2&gt;</code>)</li>
-    <li>Page with no headings at all</li>
-    <li>Incorrect ARIA roles on landmark elements</li>
-  </ul>
-  <p>Run <span class="tool">axe-core</span> in your CI/CD pipeline to catch these on every pull request. They are structural issues: deterministic, no interpretation needed.</p>
-
-  <h3>What automation misses: manual check required</h3>
-  <p>Automation cannot evaluate meaning or logic. These require human judgement:</p>
-  <ul>
-    <li><strong>Skipped heading levels</strong>: axe-core flags some skipped levels but not all. A page with H1 then H3 sometimes passes automated checks. Always verify with <span class="tool">WAVE</span> Structure tab or <span class="tool">NVDA</span> Insert+F6.</li>
-    <li><strong>Visual headings not marked up as headings</strong>: automation sees a <code>&lt;div&gt;</code> styled to look like a heading. It has no way to know it should be a heading. Only a human reviewing the page visually against the DOM can catch this.</li>
-    <li><strong>Heading hierarchy that matches the DOM but not the visual layout</strong>: automation checks the code order, not whether the heading order makes logical sense to a reader.</li>
-    <li><strong>Skip link href pointing to a non-existent ID</strong>: some automated tools flag this; many do not. Always test manually: press Tab once, then Enter.</li>
-    <li><strong>Landmark labels that are technically present but meaningless</strong>: <code>aria-label="nav1"</code> passes automation. It fails a real user.</li>
-  </ul>
-
-  <h3>WAVE Structure tab</h3>
-  <p>The fastest way to inspect heading hierarchy on a live page. Open <span class="tool">WAVE</span>, click the Structure tab. The heading tree is displayed with levels, text, and any skipped levels flagged in yellow. Landmark regions are also shown with their roles. Takes under 60 seconds per page. Catches what axe-core misses on heading structure.</p>
-
-  <h3>NVDA heading navigation</h3>
-  <p>With <span class="tool">NVDA</span> running, press <span class="key">H</span> to move to the next heading, <span class="key">Shift</span>+<span class="key">H</span> to move back. Press <span class="key">Insert</span>+<span class="key">F6</span> to open the headings list: all headings on the page displayed with their levels. This is the ground truth: it shows exactly what a screen reader user experiences, not just what the DOM contains.</p>
-
-  <h3>Accessibility Insights</h3>
-  <p><span class="tool">Accessibility Insights</span> FastPass runs automated axe-core checks and a tab stops visualisation. Assessment mode provides guided checks for landmark structure. Useful for combining automated and manual verification in one workflow.</p>
-
-  <h3>Chrome DevTools accessibility tree</h3>
-  <p>In <span class="tool">Chrome DevTools</span>, enable the full page accessibility tree from the Accessibility panel. Every heading, landmark, and ARIA role is visible in a tree view. Useful for checking whether a heading is marked up correctly or just visually styled: particularly helpful when WAVE flags something you cannot immediately locate in the DOM.</p>
-
-  <h3>Manual check: the three questions</h3>
-  <ul>
-    <li><strong>Skip link:</strong> Press Tab once on page load. Does it appear? Press Enter. Does focus move to main content?</li>
-    <li><strong>Headings:</strong> Does the page have exactly one H1? Do heading levels progress sequentially with no skips? Are all major sections reachable via <span class="tool">NVDA</span> heading navigation?</li>
-    <li><strong>Landmarks:</strong> Is there a <code>&lt;main&gt;</code>? Are multiple <code>&lt;nav&gt;</code> elements labelled distinctly? Test on VoiceOver (Mac/iOS) and TalkBack (Android) to confirm mobile landmark navigation works: automation does not cover this.</li>
-  </ul>
-
-  <!-- 6 -->
-  <h2 id="defects">7. Common Defects and How to Write Them</h2>
-
-  <div class="table-wrap">
-    <table>
-      <caption class="visually-hidden">Common structure defects with WCAG reference, severity, and reproduction steps</caption>
-      <thead>
-        <tr>
-          <th scope="col">Defect</th>
-          <th scope="col">WCAG</th>
-          <th scope="col">Severity</th>
-          <th scope="col">Reproduction</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Skip link missing</td>
-          <td>2.4.1</td>
-          <td style="color:var(--red)">Major</td>
-          <td>Load page. Press Tab. No skip link appears as first focusable element.</td>
-        </tr>
-        <tr>
-          <td>Skip link present but broken</td>
-          <td>2.4.1</td>
-          <td style="color:var(--red)">Major</td>
-          <td>Press Tab, skip link appears, press Enter. Focus does not move to main content. Inspect: href ID does not match target element ID.</td>
-        </tr>
-        <tr>
-          <td>Multiple H1 elements</td>
-          <td>1.3.1</td>
-          <td style="color:var(--red)">Major</td>
-          <td>Open WAVE Structure tab or NVDA headings list (Insert+F6). Two or more H1 elements visible.</td>
-        </tr>
-        <tr>
-          <td>Skipped heading level</td>
-          <td>1.3.1</td>
-          <td style="color:var(--amber)">Moderate</td>
-          <td>Open WAVE Structure tab. Heading jumps from H1 to H3 or H2 to H4 with no intermediate level.</td>
-        </tr>
-        <tr>
-          <td>Missing main landmark</td>
-          <td>1.3.1</td>
-          <td style="color:var(--red)">Major</td>
-          <td>Open WAVE Structure tab or Chrome DevTools accessibility tree. No main landmark present.</td>
-        </tr>
-        <tr>
-          <td>Multiple navs without aria-label</td>
-          <td>1.3.1</td>
-          <td style="color:var(--amber)">Moderate</td>
-          <td>Open WAVE. Two or more nav elements both labelled "navigation" with no distinguishing label.</td>
-        </tr>
-        <tr>
-          <td>Section used as landmark without label</td>
-          <td>1.3.1</td>
-          <td style="color:var(--text-3)">Minor</td>
-          <td>Chrome DevTools accessibility tree shows section element with no accessible name. Not a navigable landmark.</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="takeaway" role="note">
-    <div class="label">The fast check</div>
-    <p>Open <span class="tool">WAVE</span>, click Structure, look for red and yellow flags. This catches 80% of heading and landmark defects in under a minute. Manual verification with <span class="tool">NVDA</span> confirms the rest.</p>
-  </div>
-
-
   <h2 id="mobile-testing">Testing on Mobile Devices</h2>
   <p>The principles and checks in this blog apply equally to native mobile apps. Use these apps to practise on real implementations on iOS and Android:</p>
   <div class="table-wrap"><table>
@@ -567,26 +1004,26 @@
     <tbody>
       <tr><td><a href="https://dequeuniversity.com/demo/mars/" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Deque University Mars Demo</a></td><td>iOS + Android (web)</td><td>Real accessibility failures across forms, images, headings and dynamic content</td></tr>
       <tr><td><a href="https://apps.apple.com/us/app/appt-app-accessibility/id1527923025" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Appt App</a></td><td>iOS</td><td>Native iOS correct and incorrect implementations</td></tr>
-      <tr><td><a href="https://play.google.com/store/apps/details?id=nl.appt" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Appt App</a></td><td>Android</td><td>Android equivalent: practise TalkBack on native accessibility failures</td></tr>
-      <tr><td><a href="https://play.google.com/store/apps/details?id=com.google.android.apps.accessibility.auditor" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Accessibility Scanner</a></td><td>Android</td><td>Automated scan of native Android screens for missing labels and contrast failures</td></tr>
-      <tr><td><a href="https://apps.apple.com/us/app/accessibility-checker-ai-eaa/id1095478187" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Accessibility Checker AI EAA</a></td><td>iOS</td><td>Scan iOS screens for missing accessibility labels on native UI elements</td></tr>
+      <tr><td><a href="https://play.google.com/store/apps/details?id=nl.appt" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Appt App</a></td><td>Android</td><td>Android equivalent</td></tr>
+      <tr><td><a href="https://play.google.com/store/apps/details?id=com.google.android.apps.accessibility.auditor" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Accessibility Scanner</a></td><td>Android</td><td>Automated scan of native Android screens</td></tr>
+      <tr><td><a href="https://apps.apple.com/us/app/accessibility-checker-ai-eaa/id1095478187" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Accessibility Checker AI EAA</a></td><td>iOS</td><td>Scan iOS screens for missing accessibility labels</td></tr>
     </tbody>
   </table></div>
 
   <div class="series-nav">
     <span class="label">Navigate the series</span>
     <div class="nav-pair">
-      <a href="11-Focus-Indicators.html" class="nav-blog">
+      <a href="03-wcag-explained-12missed.html" class="nav-blog">
         <span class="nav-blog-arrow" aria-hidden="true">←</span>
         <div>
-          <div class="nav-blog-title">Blog 11: Focus Indicators</div>
-          <div class="nav-blog-sub">Visible, logical, never suppressed</div>
+          <div class="nav-blog-title">Blog 03: WCAG 2.1 AA Explained</div>
+          <div class="nav-blog-sub">The 12 requirements that catch teams off guard</div>
         </div>
       </a>
-      <a href="13-Colour-Contrast-Testing.html" class="nav-blog">
+      <a href="05-Design-Phase-Accessibility-Review.html" class="nav-blog">
         <div>
-          <div class="nav-blog-title">Blog 13: Colour Contrast Testing</div>
-          <div class="nav-blog-sub">Web, Android, iOS and colour blindness simulation</div>
+          <div class="nav-blog-title">Blog 05: Design Phase Review</div>
+          <div class="nav-blog-sub">What to check before a line of code is written</div>
         </div>
         <span class="nav-blog-arrow" aria-hidden="true">→</span>
       </a>
@@ -596,10 +1033,10 @@
   <aside class="references" aria-label="References">
     <div class="ref-title">References</div>
     <ul role="list">
-      <li><a href="https://www.w3.org/TR/WCAG21/#bypass-blocks" target="_blank" rel="noopener noreferrer">WCAG 2.4.1: Bypass Blocks</a></li>
-      <li><a href="https://www.w3.org/TR/WCAG21/#info-and-relationships" target="_blank" rel="noopener noreferrer">WCAG 1.3.1: Info and Relationships</a></li>
-      <li><a href="https://www.w3.org/WAI/ARIA/apg/patterns/landmarks/" target="_blank" rel="noopener noreferrer">ARIA Authoring Practices: Landmark regions</a></li>
-      <li><a href="https://webaim.org/techniques/skipnav/" target="_blank" rel="noopener noreferrer">WebAIM: Skip navigation links</a></li>
+      <li><a href="https://www.w3.org/TR/WCAG21/" target="_blank" rel="noopener noreferrer">WCAG 2.1: Official W3C specification</a></li>
+      <li><a href="https://www.w3.org/WAI/planning-and-managing/" target="_blank" rel="noopener noreferrer">W3C: Planning and Managing Web Accessibility</a></li>
+      <li><a href="https://www.w3.org/WAI/business-case/" target="_blank" rel="noopener noreferrer">W3C: The Business Case for Digital Accessibility</a></li>
+      <li><a href="https://inclusive.microsoft.design/" target="_blank" rel="noopener noreferrer">Microsoft Inclusive Design Framework</a></li>
     </ul>
   </aside>
 
