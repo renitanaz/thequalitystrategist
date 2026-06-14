@@ -429,6 +429,19 @@
     Mobile testing requires a physical device. Xcode Simulator and Android Emulator do not accurately simulate VoiceOver or TalkBack behaviour. A broken heading structure found on desktop produces an equally broken experience on mobile: the gestures just feel different.
   </div>
 
+  <h2 id="how-to-test-tiers">How to Test: Tiers and Platform Coverage</h2>
+  <h3>Tier 1: Pipeline automation</h3>
+  <p>axe-core catches: missing landmark regions, skipped heading levels, missing skip links, and empty headings. Run with <code>withTags(['wcag2a','wcag2aa'])</code> in CI. These structural violations are among the most reliable automated checks: the DOM either has the correct structure or it does not.</p>
+  <h3>Tier 2: Semi-automated tools</h3>
+  <p><span class="tool">WAVE</span> Structure tab gives the fastest visual overview of heading hierarchy and landmark regions. <span class="tool">ANDI</span> Structure module lists all headings in document order: faster than tabbing through headings with a screen reader for a first structural check. <span class="tool">Accessibility Insights</span> FastPass catches landmark and heading violations with WCAG criterion references.</p>
+  <h3>Tier 3: Manual: platform coverage</h3>
+  <ul>
+    <li><strong>NVDA + Firefox (Windows):</strong> Press H to walk headings. Press D for landmarks. Press 1–6 for heading levels. Verify structure matches the visual hierarchy.</li>
+    <li><strong>VoiceOver + Safari (Mac):</strong> Open rotor (VO+U). Check Headings and Landmarks lists. Verify all landmark regions are named where multiple exist.</li>
+    <li><strong>VoiceOver on iOS (physical iPhone):</strong> Set rotor to Headings. Swipe up/down to navigate. Verify heading structure in mobile view.</li>
+    <li><strong>TalkBack on Android (physical device):</strong> Set reading controls to Headings. Swipe up to navigate. Verify structure.</li>
+  </ul>
+
   <h2 id="how-to-test">6. How to Test: Tools and Manual Checks</h2>
 
   <div style="background:var(--amber-bg);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:0 0 1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
@@ -544,6 +557,21 @@
     <div class="label">The fast check</div>
     <p>Open <span class="tool">WAVE</span>, click Structure, look for red and yellow flags. This catches 80% of heading and landmark defects in under a minute. Manual verification with <span class="tool">NVDA</span> confirms the rest.</p>
   </div>
+
+
+  <h2 id="mobile-testing">Testing on Mobile Devices</h2>
+  <p>The principles and checks in this blog apply equally to native mobile apps. Use these apps to practise on real implementations on iOS and Android:</p>
+  <div class="table-wrap"><table>
+    <caption style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Apps for mobile accessibility testing</caption>
+    <thead><tr><th scope="col">App</th><th scope="col">Platform</th><th scope="col">What to test</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://dequeuniversity.com/demo/mars/" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Deque University Mars Demo</a></td><td>iOS + Android (web)</td><td>Real accessibility failures across forms, images, headings and dynamic content</td></tr>
+      <tr><td><a href="https://apps.apple.com/us/app/appt-app-accessibility/id1527923025" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Appt App</a></td><td>iOS</td><td>Native iOS correct and incorrect implementations</td></tr>
+      <tr><td><a href="https://play.google.com/store/apps/details?id=nl.appt" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Appt App</a></td><td>Android</td><td>Android equivalent: practise TalkBack on native accessibility failures</td></tr>
+      <tr><td><a href="https://play.google.com/store/apps/details?id=com.google.android.apps.accessibility.auditor" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Accessibility Scanner</a></td><td>Android</td><td>Automated scan of native Android screens for missing labels and contrast failures</td></tr>
+      <tr><td><a href="https://apps.apple.com/us/app/accessibility-checker-ai-eaa/id1095478187" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Accessibility Checker AI EAA</a></td><td>iOS</td><td>Scan iOS screens for missing accessibility labels on native UI elements</td></tr>
+    </tbody>
+  </table></div>
 
   <div class="series-nav">
     <span class="label">Navigate the series</span>
