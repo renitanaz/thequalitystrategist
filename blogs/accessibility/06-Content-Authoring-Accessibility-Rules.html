@@ -190,13 +190,24 @@
       <li><a href="#cms-rules">CMS rules that prevent authoring defects</a></li>
       <li><a href="#non-cms">Non-CMS projects: where the content layer lives</a></li>
       <li><a href="#qa-angle">How QA catches content defects</a></li>
+      <li><a href="#how-to-test">How to test: tiers, platforms and practice</a></li>
+      <li><a href="#mobile-testing">Mobile testing</a></li>
     </ol>
   </nav>
 
   <!-- 1 -->
+  <h2 id="how-to-test">Testing Content for Accessibility</h2>
+  <h3>Tier 1: Pipeline automation</h3>
+  <p>axe-core catches some content failures: missing image alt text, empty links, colour contrast on text. It does not catch plain language quality, reading level, vague link text, or logical heading structure. Content accessibility is predominantly a manual concern.</p>
+  <h3>Tier 2: Semi-automated tools</h3>
+  <p><span class="tool">WAVE</span> Structure tab gives the fastest visual overview of heading hierarchy. Its Links panel lists all link text for review. Use the <a href="A11y-Test-Playground/14 A11y Test Playground - Alt Text.html" style="color:var(--blue);">Alt Text Playground</a> and <a href="A11y-Test-Playground/12 A11y Test Playground - Headings and Landmarks.html" style="color:var(--blue);">Headings Playground</a> to practise identifying failures.</p>
+  <h3>Tier 3: Manual</h3>
+  <p><strong>Platform coverage:</strong> Test on Windows (Chrome + Firefox), Mac (Safari + Chrome), iOS (Safari on physical iPhone), and Android (Chrome on physical device). Platform differences in keyboard handling and screen reader behaviour mean a bug on one platform does not guarantee the same behaviour on another.</p>
+  <p>Read every alt text aloud: if it sounds meaningless, it fails. Tab through all links and read only the link text: if the destination is unclear, it fails. Read headings in sequence: if the structure is illogical without surrounding content, it fails. On mobile: verify content scales correctly with iOS Dynamic Type enabled and Android font size at Large.</p>
+
   <h2 id="who-this-is-for">1. Who This Is For</h2>
 
-  <p>This blog is for anyone who puts content into a product — text, images, links, forms, or media. CMS author, developer, UX writer, or QA reviewing it. The rules apply regardless of how the content gets in.</p>
+  <p>This blog is for anyone who puts content into a product: text, images, links, forms, or media. CMS author, developer, UX writer, or QA reviewing it. The rules apply regardless of how the content gets in.</p>
 
   <div class="callout" role="note">
     The content layer is not a CMS feature. It is a phase of delivery. Every project has one.
@@ -294,7 +305,7 @@
 
   <ul>
     <li>One H1 per page.</li>
-    <li>Heading levels must be sequential — H1 then H2 then H3, no skipping.</li>
+    <li>Heading levels must be sequential: H1 then H2 then H3, no skipping.</li>
     <li>Heading levels must reflect content hierarchy, not visual size preferences.</li>
   </ul>
 
@@ -352,9 +363,9 @@
           One H1 per page: the page title. H2 for main sections. H3 for subsections. Never skip a level. Never choose a heading level for its size.
         </div>
         <div class="rule-cms" style="margin-bottom:0.85rem">
-          <div class="rule-cms-label">The CSS vs heading problem — real example</div>
+          <div class="rule-cms-label">The CSS vs heading problem: real example</div>
           <div class="rule-cms-text">
-            A designer wants a section label to look large and bold. An author or developer picks H2 because it renders big — not because it is a section heading in the document structure. The correct fix is one line of CSS:<br><br>
+            A designer wants a section label to look large and bold. An author or developer picks H2 because it renders big: not because it is a section heading in the document structure. The correct fix is one line of CSS:<br><br>
             <code style="display:block;background:var(--bg);padding:8px 12px;border-radius:4px;font-size:0.82em;margin-top:6px;color:var(--text-2)">.section-label { font-size: 1.4rem; font-weight: 600; } /* no heading element needed */</code><br>
             The heading element is for structure. CSS is for size. Mixing them breaks screen reader navigation on every page that inherits the pattern.
           </div>
@@ -510,7 +521,7 @@
   <figure class="blog-illustration" aria-label="Visual comparison of colour-only vs colour plus text for error states and status indicators">
     <svg viewBox="0 0 680 200" width="100%" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#161616;">
       <title>Colour only vs colour plus text: form error and status indicator examples</title>
-      <desc>Left side shows a form field with only a red border for error and a status dot with no label — colour only, fails WCAG. Right side shows the same field with red border plus error icon plus error text, and status dots with Available and Unavailable labels.</desc>
+      <desc>Left side shows a form field with only a red border for error and a status dot with no label: colour only, fails WCAG. Right side shows the same field with red border plus error icon plus error text, and status dots with Available and Unavailable labels.</desc>
       <!-- FAIL: colour only -->
       <text x="14" y="20" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" letter-spacing="1">FAIL — COLOUR ONLY</text>
       <rect x="14" y="28" width="300" height="156" rx="6" fill="#1a0808" stroke="#f87171" stroke-width="0.5" opacity="0.7"/>
@@ -630,6 +641,21 @@
   </div>
 
   <!-- SERIES NAV -->
+
+  <h2 id="mobile-testing">Testing on Mobile Devices</h2>
+  <p>The principles and checks in this blog apply equally to native mobile apps. Use these apps to practise on real implementations on iOS and Android:</p>
+  <div class="table-wrap"><table>
+    <caption style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Apps for mobile accessibility testing</caption>
+    <thead><tr><th scope="col">App</th><th scope="col">Platform</th><th scope="col">What to test</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://dequeuniversity.com/demo/mars/" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Deque University Mars Demo</a></td><td>iOS + Android (web)</td><td>Real accessibility failures across forms, images, headings and dynamic content</td></tr>
+      <tr><td><a href="https://apps.apple.com/us/app/appt-app-accessibility/id1527923025" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Appt App</a></td><td>iOS</td><td>Native iOS correct and incorrect implementations</td></tr>
+      <tr><td><a href="https://play.google.com/store/apps/details?id=nl.appt" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Appt App</a></td><td>Android</td><td>Android equivalent</td></tr>
+      <tr><td><a href="https://play.google.com/store/apps/details?id=com.google.android.apps.accessibility.auditor" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Accessibility Scanner</a></td><td>Android</td><td>Automated scan of native Android screens</td></tr>
+      <tr><td><a href="https://apps.apple.com/us/app/accessibility-checker-ai-eaa/id1095478187" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Accessibility Checker AI EAA</a></td><td>iOS</td><td>Scan iOS screens for missing accessibility labels</td></tr>
+    </tbody>
+  </table></div>
+
   <div class="series-nav">
     <span class="label">Navigate the series</span>
     <div class="nav-pair">
