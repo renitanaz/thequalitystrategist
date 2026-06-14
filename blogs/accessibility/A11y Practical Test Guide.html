@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A11y Practical Test Guide | The Quality Strategist</title>
+  <meta name="description" content="Practical accessibility testing steps by topic. Links open the relevant blog at the testing section directly." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+      --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+      --green:#4ade80; --green-bg:rgba(74,222,128,0.07);
+      --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07);
+      --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07);
+      --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.07);
+      --red:#f87171; --red-bg:rgba(248,113,113,0.07);
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
+    .skip-link:focus { top:0; }
+    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
+    .nav-logo:focus-visible { outline:3px solid var(--green); outline-offset:3px; border-radius:3px; }
+    .nav-series { font-size:0.82rem; color:var(--text-3); text-decoration:none; }
+    .nav-series:hover { color:var(--text-2); }
+
+    .page-header { max-width:860px; margin:0 auto; padding:3.5rem 2rem 2rem; border-bottom:1px solid var(--border); }
+    .pg-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--green); font-weight:500; margin-bottom:0.75rem; }
+    .page-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.6rem,3.5vw,2.2rem); color:var(--text); margin-bottom:0.75rem; }
+    .page-header p { color:var(--text-2); font-weight:300; max-width:620px; margin-bottom:1rem; }
+    .how-to-note { display:flex; align-items:flex-start; gap:10px; background:var(--blue-bg); border:1px solid rgba(96,165,250,0.2); border-radius:8px; padding:0.85rem 1.1rem; font-size:0.85rem; color:var(--blue); }
+
+    main { max-width:860px; margin:0 auto; padding:2.5rem 2rem 5rem; }
+
+    /* MODULE GROUPS */
+    .module { margin-bottom:3rem; }
+    .module-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:1rem; padding-bottom:8px; border-bottom:1px solid var(--border); }
+
+    /* TOPIC CARDS */
+    .topic-card { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:0.9rem 1.25rem; margin-bottom:8px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+    .topic-title-link { font-size:0.92rem; font-weight:500; color:var(--blue); text-decoration:none; transition:color 0.2s; flex-shrink:0; }
+    .topic-title-link:hover { color:var(--text); text-decoration:underline; text-underline-offset:3px; }
+    .topic-title-link:focus-visible { outline:3px solid var(--green); outline-offset:3px; border-radius:3px; }
+    .topic-tags { display:flex; flex-wrap:wrap; gap:5px; }
+    .tag-pill { font-size:0.68rem; padding:2px 8px; border-radius:99px; font-weight:500; white-space:nowrap; }
+    .tag-auto { background:var(--green-bg); color:var(--green); border:1px solid rgba(74,222,128,0.2); }
+    .tag-manual { background:var(--amber-bg); color:var(--amber); border:1px solid rgba(251,191,36,0.2); }
+    .tag-tool { background:var(--purple-bg); color:var(--purple); border:1px solid rgba(167,139,250,0.2); }
+    .tag-mobile { background:var(--blue-bg); color:var(--blue); border:1px solid rgba(96,165,250,0.2); }
+
+    /* COMING SOON */
+    .topic-card.coming-soon { opacity:0.35; }
+    .coming-pill { font-size:0.68rem; padding:2px 8px; border-radius:99px; background:var(--bg3); color:var(--text-3); border:1px solid var(--border); font-weight:500; }
+
+    /* LEGEND */
+    .legend { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:2rem; padding:1rem 1.25rem; background:var(--bg2); border:1px solid var(--border); border-radius:8px; }
+    .legend-label { font-size:0.72rem; color:var(--text-3); margin-right:4px; font-weight:500; width:100%; }
+
+    footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
+    footer a { color:var(--text-3); text-decoration:none; }
+    footer a:hover { color:var(--text-2); }
+
+    @media(max-width:620px) {
+      nav.site-nav, main, .page-header { padding-left:1.25rem; padding-right:1.25rem; }
+      .topic-card { grid-template-columns:1fr; }
+      .topic-arrow { display:none; }
+    }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <a href="https://renitanaz.github.io/thequalitystrategist/#blogs" class="nav-series">← All blogs</a>
+</nav>
+
+<header class="page-header">
+  <div class="pg-label">Shift-Left Accessibility Series</div>
+  <h1>A11y Practical Test Guide</h1>
+  <p>Practical testing steps only: no theory. Each link opens the blog and lands directly at the hands-on testing section.</p>
+  <div class="how-to-note" role="note">
+    <span aria-hidden="true">&#8599;</span>
+    <span>Links open the full blog at the testing section. Use browser back to return here.</span>
+  </div>
+</header>
+
+<main id="main-content">
+
+  <!-- LEGEND -->
+  <div class="legend" role="note" aria-label="Tag legend">
+    <span class="legend-label">What each tag means:</span>
+    <span class="tag-pill tag-auto">Automation</span><span style="font-size:0.78rem;color:var(--text-3);align-self:center;"> caught by axe-core, Pa11y, Playwright, Cypress</span>
+    <span class="tag-pill tag-manual" style="margin-left:12px;">Manual</span><span style="font-size:0.78rem;color:var(--text-3);align-self:center;"> requires human judgement or screen reader</span>
+    <span class="tag-pill tag-tool" style="margin-left:12px;">Tools</span><span style="font-size:0.78rem;color:var(--text-3);align-self:center;"> WAVE, axe DevTools, Chrome DevTools</span>
+    <span class="tag-pill tag-mobile" style="margin-left:12px;">Mobile</span><span style="font-size:0.78rem;color:var(--text-3);align-self:center;"> VoiceOver iOS, TalkBack Android</span>
+  </div>
+
+
+
+  <!-- MODULE: MANUAL TESTING -->
+  <div class="module">
+    <div class="module-label">Keyboard and Focus Testing</div>
+
+    <div class="topic-card">
+      <a href="10-Keyboard-Testing.html#test-sequence" class="topic-title-link">How to test with keyboard only: the 6-step sequence</a>
+      <div class="topic-tags">
+        <span class="tag-pill tag-manual">Manual</span>
+      </div>
+    </div>
+
+    <div class="topic-card">
+      <a href="11-Focus-Indicators.html#how-to-test" class="topic-title-link">How to test focus indicators: tab, measure, and verify</a>
+      <div class="topic-tags">
+        <span class="tag-pill tag-manual">Manual</span>
+        <span class="tag-pill tag-tool">Tools</span>
+        <span class="tag-pill tag-mobile">Mobile</span>
+      </div>
+    </div>
+
+    <div class="topic-card">
+      <a href="12-Headings-Landmarks-Skip-Links.html#how-to-test" class="topic-title-link">How to test headings, landmarks and skip links: WAVE, NVDA, VoiceOver, TalkBack</a>
+      <div class="topic-tags">
+        <span class="tag-pill tag-auto">Automation</span>
+        <span class="tag-pill tag-tool">Tools</span>
+        <span class="tag-pill tag-manual">Manual</span>
+        <span class="tag-pill tag-mobile">Mobile</span>
+      </div>
+    </div>
+
+    <div class="topic-card">
+      <a href="13-Colour-Contrast-Testing.html#how-to-test" class="topic-title-link">How to test colour contrast: web, iOS, Android and colour blindness simulation</a>
+      <div class="topic-tags">
+        <span class="tag-pill tag-auto">Automation</span>
+        <span class="tag-pill tag-tool">Tools</span>
+        <span class="tag-pill tag-manual">Manual</span>
+        <span class="tag-pill tag-mobile">Mobile</span>
+      </div>
+    </div>
+
+    <div class="topic-card">
+      <a href="14-Alt-Text-Testing.html#how-to-test" class="topic-title-link">How to test alt text: WAVE images panel, NVDA graphics list, screen reader walkthrough</a>
+      <div class="topic-tags">
+        <span class="tag-pill tag-auto">Automation</span>
+        <span class="tag-pill tag-tool">Tools</span>
+        <span class="tag-pill tag-manual">Manual</span>
+        <span class="tag-pill tag-mobile">Mobile</span>
+      </div>
+    </div>
+
+    <div class="topic-card">
+      <a href="15-Forms-Labels-Errors.html#how-to-test" class="topic-title-link">How to test forms: labels, errors, required fields and autocomplete</a>
+      <div class="topic-tags">
+        <span class="tag-pill tag-auto">Automation</span>
+        <span class="tag-pill tag-tool">Tools</span>
+        <span class="tag-pill tag-manual">Manual</span>
+        <span class="tag-pill tag-mobile">Mobile</span>
+      </div>
+    </div>
+    <div class="topic-card">
+      <a href="16-Dynamic-Content-ARIA-Live-Regions.html#how-to-test" class="topic-title-link">How to test dynamic content and ARIA live regions: toast notifications, filters and loading states</a>
+      <div class="topic-tags">
+        <span class="tag-pill tag-auto">Tier 1</span>
+        <span class="tag-pill tag-tool">Tier 2</span>
+        <span class="tag-pill tag-manual">Tier 3</span>
+        <span class="tag-pill tag-mobile">Mobile</span>
+      </div>
+    </div>
+    
+
+    <div class="topic-card">
+      <a href="17-Zoom-Reflow-Reduced-Motion.html#how-to-test" class="topic-title-link">How to test zoom, reflow and reduced motion: 200%, 400% and 320px</a>
+      <div class="topic-tags">
+        <span class="tag-pill tag-auto">Automation</span>
+        <span class="tag-pill tag-tool">Tools</span>
+        <span class="tag-pill tag-manual">Manual</span>
+        <span class="tag-pill tag-mobile">Mobile</span>
+      </div>
+    </div>
+    <div class="topic-card">
+      <a href="18-Enable-Accessibility-Features.html" class="topic-title-link">How to enable accessibility features: Windows, Mac, iOS and Android setup guide</a>
+      <div class="topic-tags">
+        <span class="tag-pill tag-manual">Reference</span>
+        <span class="tag-pill tag-mobile">Mobile</span>
+      </div>
+    </div>
+    <div class="topic-card">
+      <a href="19-Screen-Reader-Gestures-Cheat-Sheet.html" class="topic-title-link">Screen reader gestures cheat sheet: NVDA, VoiceOver and TalkBack quick reference</a>
+      <div class="topic-tags">
+        <span class="tag-pill tag-manual">Reference</span>
+        <span class="tag-pill tag-mobile">Mobile</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MODULE: SCREEN READERS -->
+  <div class="module">
+    <div class="module-label">Screen Reader Testing</div>
+    <div class="topic-card">
+      <a href="20-NVDA-on-Windows.html#what-to-test" class="topic-title-link">How to test with NVDA: headings, links, images, forms, tables and live regions</a>
+      <div class="topic-tags">
+        <span class="tag-pill tag-manual">Manual</span>
+        <span class="tag-pill tag-mobile">Mobile</span>
+      </div>
+    </div>
+    <div class="topic-card">
+      <a href="21-JAWS-on-Windows.html#what-to-test" class="topic-title-link">How to test with JAWS: enterprise screen reader testing on Windows</a>
+      <div class="topic-tags">
+        <span class="tag-pill tag-manual">Tier 3</span>
+      </div>
+    </div>
+    <div class="topic-card">
+      <a href="22-VoiceOver-on-Mac.html#what-to-test" class="topic-title-link">How to test with VoiceOver on Mac: rotor, form controls and dynamic content</a>
+      <div class="topic-tags">
+        <span class="tag-pill tag-manual">Tier 3</span>
+      </div>
+    </div>
+    <div class="topic-card">
+      <a href="23-VoiceOver-on-iOS.html#what-to-test" class="topic-title-link">How to test with VoiceOver on iOS: gestures, rotor and native app testing</a>
+      <div class="topic-tags">
+        <span class="tag-pill tag-manual">Tier 3</span>
+        <span class="tag-pill tag-mobile">Mobile</span>
+      </div>
+    </div>
+    <div class="topic-card">
+      <a href="24-TalkBack-on-Android.html#what-to-test" class="topic-title-link">How to test with TalkBack on Android: reading controls, explore by touch, native app testing</a>
+      <div class="topic-tags">
+        <span class="tag-pill tag-manual">Tier 3</span>
+        <span class="tag-pill tag-mobile">Mobile</span>
+      </div>
+    </div>
+    <div class="topic-card">
+      <a href="25-What-to-Check-With-a-Screen-Reader.html#the-checklist" class="topic-title-link">What to check with a screen reader: the operational checklist for every session</a>
+      <div class="topic-tags">
+        <span class="tag-pill tag-manual">Manual</span>
+        <span class="tag-pill tag-mobile">Mobile</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODULE: TOOLS -->
+  <div class="module">
+    <div class="module-label">Browser and Audit Tools</div>
+    <div class="topic-card">
+      <a href="26-WAVE.html#how-to-use" class="topic-title-link">How to test with WAVE: visual overlay, systematic workflow, what it misses</a>
+      <div class="topic-tags">
+        <span class="tag-pill tag-tool">Tier 2</span>
+        <span class="tag-pill tag-manual">Manual</span>
+      </div>
+    </div>
+    <div class="topic-card">
+      <a href="27-Axe-DevTools.html#how-to-test" class="topic-title-link">How to test with axe DevTools: pipeline automation, browser scanning, manual follow-up</a>
+      <div class="topic-tags">
+        <span class="tag-pill tag-auto">Tier 1</span>
+        <span class="tag-pill tag-tool">Tier 2</span>
+        <span class="tag-pill tag-manual">Tier 3</span>
+        <span class="tag-pill tag-mobile">Mobile</span>
+      </div>
+    </div>
+    <div class="topic-card">
+      <a href="28-Accessibility-Insights.html#how-to-test" class="topic-title-link">How to test with Accessibility Insights: FastPass, Tab Stops, Assessment and platform coverage</a>
+      <div class="topic-tags">
+        <span class="tag-pill tag-tool">Tier 2</span>
+        <span class="tag-pill tag-manual">Tier 3</span>
+        <span class="tag-pill tag-mobile">Mobile</span>
+      </div>
+    </div>
+    <div class="topic-card">
+      <a href="29-Lighthouse.html#how-to-test" class="topic-title-link">How to test with Lighthouse: CI score tracking, browser audit, what it cannot catch</a>
+      <div class="topic-tags">
+        <span class="tag-pill tag-auto">Tier 1</span>
+        <span class="tag-pill tag-tool">Tier 2</span>
+        <span class="tag-pill tag-manual">Tier 3</span>
+        <span class="tag-pill tag-mobile">Mobile</span>
+      </div>
+    </div>
+    <div class="topic-card">
+      <a href="30-ANDI-and-IBM-Equal-Access.html#how-to-test" class="topic-title-link">How to test with ANDI and IBM Equal Access: accessible names, deep scanning, mobile apps</a>
+      <div class="topic-tags">
+        <span class="tag-pill tag-auto">Tier 1</span>
+        <span class="tag-pill tag-tool">Tier 2</span>
+        <span class="tag-pill tag-manual">Tier 3</span>
+        <span class="tag-pill tag-mobile">Mobile</span>
+      </div>
+    </div>
+    <div class="topic-card">
+      <a href="31-Axe-Core-Cypress-Playwright.html#how-to-test" class="topic-title-link">How to test with axe-core in Playwright and Cypress: pipeline setup, interaction states, CI gates</a>
+      <div class="topic-tags">
+        <span class="tag-pill tag-auto">Tier 1</span>
+        <span class="tag-pill tag-tool">Tier 2</span>
+        <span class="tag-pill tag-manual">Tier 3</span>
+        <span class="tag-pill tag-mobile">Mobile</span>
+      </div>
+    </div>
+    <div class="topic-card">
+      <a href="32-Pa11y-in-CI-CD.html#how-to-test" class="topic-title-link">How to test with Pa11y: CLI setup, WCAG2AA config, multi-page scanning, what it cannot catch</a>
+      <div class="topic-tags">
+        <span class="tag-pill tag-auto">Tier 1</span>
+        <span class="tag-pill tag-tool">Tier 2</span>
+        <span class="tag-pill tag-manual">Tier 3</span>
+        <span class="tag-pill tag-mobile">Mobile</span>
+      </div>
+    </div>
+    <div class="topic-card">
+      <a href="33-Automated-Tools-Only-Catch-30-50-Percent.html#how-to-test" class="topic-title-link">How to build the full testing stack: automation floor, semi-automated tools, manual ceiling</a>
+      <div class="topic-tags">
+        <span class="tag-pill tag-auto">Tier 1</span>
+        <span class="tag-pill tag-tool">Tier 2</span>
+        <span class="tag-pill tag-manual">Tier 3</span>
+        <span class="tag-pill tag-mobile">Mobile</span>
+      </div>
+    </div>
+    <div class="topic-card">
+      <a href="34-How-to-Write-an-Accessibility-Defect.html#how-to-test" class="topic-title-link">How to write accessibility defects: from automated output, browser tools, and screen reader testing</a>
+      <div class="topic-tags">
+        <span class="tag-pill tag-auto">Tier 1</span>
+        <span class="tag-pill tag-tool">Tier 2</span>
+        <span class="tag-pill tag-manual">Tier 3</span>
+        <span class="tag-pill tag-mobile">Mobile</span>
+      </div>
+    </div>
+    <div class="topic-card">
+      <a href="35-Testing-Modals-Accordions-Carousels.html#how-to-test" class="topic-title-link">How to test modals, accordions and carousels: pipeline, Tab Stops, keyboard and screen reader</a>
+      <div class="topic-tags">
+        <span class="tag-pill tag-auto">Tier 1</span>
+        <span class="tag-pill tag-tool">Tier 2</span>
+        <span class="tag-pill tag-manual">Tier 3</span>
+        <span class="tag-pill tag-mobile">Mobile</span>
+      </div>
+    </div>
+    <div class="topic-card">
+      <a href="36-Testing-Video-and-Audio.html#how-to-test" class="topic-title-link">How to test video and audio: captions, transcripts, audio descriptions and media player controls</a>
+      <div class="topic-tags">
+        <span class="tag-pill tag-tool">Tier 2</span>
+        <span class="tag-pill tag-manual">Tier 3</span>
+        <span class="tag-pill tag-mobile">Mobile</span>
+      </div>
+    </div>
+    <div class="topic-card">
+      <a href="37-Sprint-Ready-Accessibility-Checklist.html#how-to-test" class="topic-title-link">How to apply the sprint checklist: automation gate, semi-automated scan, manual coverage per story</a>
+      <div class="topic-tags">
+        <span class="tag-pill tag-auto">Tier 1</span>
+        <span class="tag-pill tag-tool">Tier 2</span>
+        <span class="tag-pill tag-manual">Tier 3</span>
+        <span class="tag-pill tag-mobile">Mobile</span>
+      </div>
+    </div>
+    <div class="topic-card">
+      <a href="38-Live-Audit-Full-Page-From-Scratch.html#how-to-test" class="topic-title-link">How to run a full accessibility audit: three tiers in order, documentation and conformance statement</a>
+      <div class="topic-tags">
+        <span class="tag-pill tag-auto">Tier 1</span>
+        <span class="tag-pill tag-tool">Tier 2</span>
+        <span class="tag-pill tag-manual">Tier 3</span>
+        <span class="tag-pill tag-mobile">Mobile</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODULE: CI/CD -->
+  <div class="module">
+    <div class="module-label">Automated Pipeline Testing</div>
+    <div class="topic-card coming-soon">
+      <span class="topic-title-link" style="color:var(--text-3);cursor:default;">How to run axe-core in Cypress and Playwright: and what it still misses</span>
+      <div class="topic-tags"><span class="coming-pill">Coming soon</span></div>
+    </div>
+  </div>
+
+  <!-- MODULE: APPLIED QA -->
+  <div class="module">
+    <div class="module-label">Applied Testing Practice</div>
+    <div class="topic-card coming-soon">
+      <span class="topic-title-link" style="color:var(--text-3);cursor:default;">How to write defects, test components, test media, and run a live audit</span>
+      <div class="topic-tags"><span class="coming-pill">Coming soon</span></div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; Part of the Shift-Left Accessibility series &nbsp;·&nbsp; © 2025
+  </p>
+</footer>
+
+</body>
+</html>

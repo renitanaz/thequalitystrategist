@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>31 Axe-Core in Cypress and Playwright | The Quality Strategist</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0d0d0d;--bg2:#161616;--bg3:#1e1e1e;--border:#2e2e2e;--text:#f0f0f0;--text-2:#c8c8c8;--text-3:#8a8a8a;--green:#4ade80;--green-bg:rgba(74,222,128,0.07);--blue:#60a5fa;--blue-bg:rgba(96,165,250,0.07);--amber:#fbbf24;--amber-bg:rgba(251,191,36,0.07);--purple:#a78bfa;--purple-bg:rgba(167,139,250,0.07);--red:#f87171;--red-bg:rgba(248,113,113,0.07);--teal:#2dd4bf;--teal-bg:rgba(45,212,191,0.07);--accent:#a78bfa;--accent-bg:rgba(167,139,250,0.08)}
+    html{scroll-behavior:smooth}body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;line-height:1.8;-webkit-font-smoothing:antialiased}
+    .skip-link{position:absolute;top:-100%;left:1rem;background:var(--green);color:#000;padding:.5rem 1rem;border-radius:0 0 6px 6px;font-size:.85rem;font-weight:500;text-decoration:none;z-index:999}.skip-link:focus{top:0}
+    nav.site-nav{position:sticky;top:0;z-index:100;background:rgba(13,13,13,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:56px}
+    .nav-logo{font-family:'DM Serif Display',serif;font-size:1rem;color:var(--text);text-decoration:none}
+    .nav-links{display:flex;gap:2rem;list-style:none}.nav-links a{color:var(--text-3);text-decoration:none;font-size:.85rem}.nav-links a:hover{color:var(--text)}
+    .blog-header{max-width:900px;margin:0 auto;padding:4rem 2rem 2.5rem;border-bottom:1px solid var(--border)}
+    .breadcrumb{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}.breadcrumb a{color:var(--text-3);text-decoration:none}
+    .blog-tags{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.25rem}
+    .tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+    .blog-header h1{font-family:'DM Serif Display',serif;font-size:clamp(1.85rem,4vw,2.6rem);line-height:1.2;color:var(--text);margin-bottom:.75rem}
+    .blog-header h1 em{font-style:italic;color:var(--accent)}
+    .blog-subtitle{font-family:'DM Serif Display',serif;font-size:1.1rem;font-style:italic;color:var(--text-3);margin-bottom:1.25rem}
+    .blog-meta{display:flex;align-items:center;gap:1.25rem;font-size:.82rem;color:var(--text-3);flex-wrap:wrap}.blog-meta .series{color:var(--text-2);font-weight:500}
+    main.blog-body{display:block;max-width:900px;margin:0 auto;padding:3rem 2rem 5rem}
+    .toc{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.5rem 1.75rem;margin:0 0 3rem}
+    .toc-title{font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);font-weight:500;margin-bottom:.9rem}
+    .toc ol{padding-left:1.25rem}.toc ol li{margin-bottom:.45rem}.toc ol li a{font-size:.88rem;color:var(--text-2);text-decoration:none}.toc ol li a:hover{color:var(--accent)}
+    .blog-body h2{font-family:'DM Serif Display',serif;font-size:1.5rem;color:var(--text);margin:3.5rem 0 1.1rem;padding-top:1rem;border-top:1px solid var(--border)}
+    .blog-body h3{font-size:1rem;font-weight:500;color:var(--text);margin:1.75rem 0 .5rem}
+    .blog-body p{color:var(--text-2);margin-bottom:1.25rem;font-weight:300}.blog-body p strong{color:var(--text);font-weight:500}
+    .blog-body ul,.blog-body ol{padding-left:1.5rem;margin-bottom:1.25rem;color:var(--text-2);font-weight:300}.blog-body li{margin-bottom:.45rem}.blog-body li strong{color:var(--text);font-weight:500}
+    code{background:var(--bg3);padding:1px 6px;border-radius:3px;font-size:.85em;color:var(--text-2);font-family:monospace}
+    pre{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;font-family:monospace;font-size:.82rem;color:var(--text-2);line-height:1.7;overflow-x:auto;margin:1.25rem 0}
+    .callout{display:block;background:var(--accent-bg);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:1.25rem 1.5rem;margin:1.75rem 0;font-size:.95rem;color:var(--text);font-style:italic;line-height:1.6}
+    .callout.amber{background:var(--amber-bg);border-color:var(--amber)}.callout.green{background:var(--green-bg);border-color:var(--green)}.callout.blue{background:var(--blue-bg);border-color:var(--blue)}.callout.red{background:var(--red-bg);border-color:var(--red)}
+    .tool{display:inline;background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,.2);border-radius:4px;padding:1px 7px;font-size:.85em;font-weight:500}
+    .takeaway{background:var(--green-bg);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:1.25rem 1.5rem;margin:1.75rem 0}
+    .takeaway .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;color:var(--green);font-weight:500;margin-bottom:.5rem;display:block}
+    .takeaway ul{padding-left:1.25rem;color:var(--text-2);font-size:.93rem;display:flex;flex-direction:column;gap:.5rem}
+    .table-wrap{display:block;overflow-x:auto;margin:1.75rem 0;border-radius:10px;border:1px solid var(--border)}
+    table{width:100%;border-collapse:collapse;font-size:.875rem}
+    thead th{background:var(--bg2);padding:10px 14px;text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-3);font-weight:500;border-bottom:1px solid var(--border);white-space:nowrap}
+    tbody td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-2);vertical-align:top;line-height:1.55}tbody tr:last-child td{border-bottom:none}tbody td:first-child{color:var(--text);font-weight:500}tbody tr:hover td{background:var(--bg2)}
+    .check-section{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:1rem 0}
+    .check-header{padding:.75rem 1.1rem;background:var(--bg3);border-bottom:1px solid var(--border);font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);font-weight:500}
+    .check-list{padding:.75rem 1.1rem;display:flex;flex-direction:column;gap:.4rem}
+    .check-item{display:flex;align-items:flex-start;gap:10px;font-size:.88rem;color:var(--text-2);line-height:1.55}
+    .check-box{width:16px;height:16px;border:1.5px solid var(--border);border-radius:3px;flex-shrink:0;margin-top:3px;background:var(--bg3)}
+    .series-nav{margin-top:4rem;padding-top:2rem;border-top:1px solid var(--border)}.series-nav .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);font-weight:500;margin-bottom:.75rem;display:block}
+    .nav-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .nav-blog{display:flex;align-items:center;gap:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.25rem;text-decoration:none;transition:border-color .2s}.nav-blog:hover{border-color:#444;background:var(--bg3)}
+    .nav-blog-arrow{color:var(--text-3);font-size:1rem;flex-shrink:0}.nav-blog-title{font-size:.88rem;font-weight:500;color:var(--text)}.nav-blog-sub{font-size:.75rem;color:var(--text-3);margin-top:2px}
+    .references{margin-top:2.5rem;padding:1.5rem 1.75rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px}.ref-title{font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);font-weight:500;margin-bottom:1rem}
+    .references ul{list-style:none;padding:0}.references ul li{margin-bottom:.5rem}.references ul li a{font-size:.85rem;color:var(--text-2);text-decoration:none;display:inline-flex;align-items:center;gap:.4rem}.references ul li a:hover{color:var(--green)}.references ul li a::before{content:'↗';font-size:.75rem;color:var(--text-3)}
+    footer{border-top:1px solid var(--border);padding:2rem;text-align:center;font-size:.78rem;color:var(--text-3)}footer a{color:var(--text-3);text-decoration:none}
+    @media(max-width:620px){nav.site-nav{padding:0 1.25rem}.nav-links{display:none}.blog-header,main.blog-body{padding-left:1.25rem;padding-right:1.25rem}.nav-pair{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <ul class="nav-links" role="list">
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#playlist">Playlist</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#justlikereal">JustLikeReal</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#meetme">Meet Me</a></li>
+  </ul>
+</nav>
+<header class="blog-header">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a>
+    <span aria-hidden="true">›</span><span>Shift-Left Accessibility</span>
+    <span aria-hidden="true">›</span><span aria-current="page">31 of 38</span>
+  </nav>
+  <div class="blog-tags"><span class="tag" style="background:rgba(167,139,250,0.08);color:#a78bfa;border-color:rgba(167,139,250,0.3)">CI/CD</span><span class="tag" style="">axe-core</span><span class="tag" style="">Playwright</span><span class="tag" style="">Cypress</span></div>
+  <h1>31 Axe-Core in Cypress and Playwright: <em>Accessibility Testing Built Into Every Test Run</em></h1>
+  <p class="blog-subtitle">Axe-core does not need a separate testing pass. It runs inside your existing Playwright and Cypress suites on every build.</p>
+  <div class="blog-meta">
+    <span class="series">Series: Shift-Left Accessibility</span>
+    <span aria-hidden="true">·</span><span>Blog 31 of 38</span>
+    <span aria-hidden="true">·</span><span>9 min read</span>
+  </div>
+</header>
+<main class="blog-body" id="main-content">
+  <nav class="toc" aria-label="Table of contents">
+    <div class="toc-title">In this blog</div>
+    <ol>      <li><a href="#why">Why axe-core in the pipeline</a></li>
+      <li><a href="#playwright">axe-core with Playwright</a></li>
+      <li><a href="#cypress">axe-core with Cypress</a></li>
+      <li><a href="#scoping">Scoping scans: page, component, interaction state</a></li>
+      <li><a href="#config">Configuration: wcag2aa, impact filtering, exclusions</a></li>
+      <li><a href="#fail-build">Failing builds on violations</a></li>
+      <li><a href="#what-catches">What pipeline axe-core catches and misses</a></li></ol>
+  </nav>
+
+  <h2 id="why">1. Why axe-Core in the Pipeline</h2>
+  <p>Browser-based scanning with <span class="tool">axe DevTools</span> finds violations in the browser. Pipeline automation with <span class="tool">axe-core</span> finds the same violations on every commit, on every branch, before any human sees the code. The difference is not capability: it is timing. Catching a missing form label in CI is cheaper than catching it in a QA session, and far cheaper than catching it in production.</p>
+  <p>axe-core integrates directly into <span class="tool">Playwright</span> and <span class="tool">Cypress</span> test suites as an additional assertion. No separate scanning tool. No separate test run. Accessibility checks run alongside your existing functional tests on every build.</p>
+  <div class="callout" role="note">axe-core in the pipeline catches the same violations as axe DevTools in the browser: same engine, same rules. The pipeline adds timing: violations are caught at commit, not at release.</div>
+
+  <h2 id="playwright">2. axe-Core with Playwright</h2>
+  <p>The <code>@axe-core/playwright</code> package provides the <code>checkA11y</code> helper that runs an axe scan on the current page state.</p>
+  <pre>npm install --save-dev @axe-core/playwright</pre>
+  <pre>import {{ test, expect }} from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
+
+test('homepage has no critical accessibility violations', async ({{ page }}) => {{
+  await page.goto('/');
+  const results = await new AxeBuilder({{ page }})
+    .withTags(['wcag2a', 'wcag2aa'])
+    .analyze();
+  expect(results.violations.filter(v =>
+    ['critical','serious'].includes(v.impact)
+  )).toHaveLength(0);
+}});</pre>
+  <ul>
+    <li><strong>withTags:</strong> Scope to WCAG 2.1 AA rules only. Avoids best-practice rules that produce noise in CI.</li>
+    <li><strong>filter by impact:</strong> Fail only on critical and serious. Moderate and minor go in the backlog.</li>
+    <li><strong>results.violations:</strong> Array of violations: each has rule ID, impact, WCAG criterion, and affected elements with DOM selectors.</li>
+  </ul>
+
+  <h2 id="cypress">3. axe-Core with Cypress</h2>
+  <p>The <code>cypress-axe</code> package adds <code>cy.checkA11y()</code> as a Cypress command.</p>
+  <pre>npm install --save-dev cypress-axe axe-core</pre>
+  <pre>// cypress/support/commands.js
+import 'cypress-axe';
+
+// cypress/e2e/accessibility.cy.js
+describe('Accessibility', () => {{
+  it('homepage passes axe wcag2aa', () => {{
+    cy.visit('/');
+    cy.injectAxe();
+    cy.checkA11y(null, {{
+      runOnly: {{ type: 'tag', values: ['wcag2a', 'wcag2aa'] }},
+      includedImpacts: ['critical', 'serious']
+    }});
+  }});
+}});</pre>
+  <ul>
+    <li><strong>cy.injectAxe():</strong> Injects axe-core into the page. Must be called after page load, before cy.checkA11y().</li>
+    <li><strong>First argument null:</strong> Scans the full page. Pass a CSS selector to scope to a component.</li>
+    <li><strong>includedImpacts:</strong> Same impact filtering as Playwright: fail on critical and serious only.</li>
+  </ul>
+
+  <h2 id="scoping">4. Scoping Scans: Page, Component, Interaction State</h2>
+  <p>The most common mistake in pipeline accessibility testing is scanning only the page load state. Most violations live in interaction states: open modals, expanded accordions, submitted forms with errors, filter results. Scope your scans to match your functional test flows.</p>
+  <div class="table-wrap"><table>
+    <caption style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">When to run axe scans within a test flow</caption>
+    <thead><tr><th scope="col">Test point</th><th scope="col">What to scan</th><th scope="col">Why</th></tr></thead>
+    <tbody>
+      <tr><td>Page load</td><td>Full page</td><td>Catches structural issues: missing landmarks, heading hierarchy, page title, language</td></tr>
+      <tr><td>Modal open</td><td>Modal selector or full page</td><td>Catches missing dialog role, missing close button label, focus management violations</td></tr>
+      <tr><td>Form submit with errors</td><td>Full page or form selector</td><td>Catches error identification violations, missing aria-describedby on invalid fields</td></tr>
+      <tr><td>After filter or search</td><td>Results container selector</td><td>Catches dynamic content violations on updated DOM</td></tr>
+      <tr><td>After accordion expand</td><td>Accordion selector</td><td>Catches aria-expanded state violations, revealed content with missing labels</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="config">5. Configuration: wcag2aa, Impact Filtering, Exclusions</h2>
+  <ul>
+    <li><strong>runOnly: WCAG 2.1 AA:</strong> Targets WCAG 2.1 AA rules. Add <code>wcag21aa</code> for WCAG 2.1-specific rules beyond 2.0.</li>
+    <li><strong>Included impacts: Critical and Serious:</strong> Critical and Serious violations fail the build immediately. Moderate and Minor are written to a separate JSON artifact in CI: they are visible to the team but do not block the pipeline. Route them to the backlog with a target sprint.</li>
+    <li><strong>Exclude selectors:</strong> Pass an exclude array to skip known third-party components you cannot fix. Document the exclusion and review it each sprint.</li>
+    <li><strong>Baseline file:</strong> Some teams use a baseline file to suppress known existing violations and catch only new regressions. Use this as a temporary measure: not as a permanent exemption mechanism.</li>
+  </ul>
+
+  <h2 id="fail-build">6. Failing Builds on Violations</h2>
+  <p>The test assertion must cause the build to fail when violations are found. A scan that logs violations without failing the build is not a gate: it is a log that nobody reads.</p>
+  <ul>
+    <li><strong>Playwright:</strong> Use <code>expect(violations).toHaveLength(0)</code> or <code>expect(critical).toHaveLength(0)</code>. Test fails, build fails.</li>
+    <li><strong>Cypress:</strong> <code>cy.checkA11y()</code> throws on violations by default. The test fails, the build fails.</li>
+    <li><strong>Report output:</strong> Log the full violations array to a JSON file and attach it to the CI artifact. Developers need the rule ID, WCAG criterion, and DOM selector to fix the issue without running the suite locally.</li>
+  </ul>
+
+  <h2 id="how-to-test">How to Test: Tiers and Platform Coverage</h2>
+
+  <h3>Tier 1: Pipeline automation</h3>
+  <p>This entire blog is Tier 1. <span class="tool">axe-core</span> in <span class="tool">Playwright</span> or <span class="tool">Cypress</span> is the pipeline accessibility gate. Key configuration for WCAG 2.1 AA compliance:</p>
+  <ul>
+    <li>Scope with <code>withTags(['wcag2a', 'wcag2aa'])</code>: targets WCAG 2.1 AA rules only</li>
+    <li>Filter with <code>includedImpacts: ['critical', 'serious']</code>: only Critical and Serious fail the build</li>
+    <li>Run axe after every meaningful interaction state: not just page load</li>
+    <li>Log the full violations array to a CI artifact as JSON so developers can reproduce without re-running the suite</li>
+    <li><strong>Platforms:</strong> Runs headlessly on any OS in CI (Linux, Mac, Windows). Playwright and Cypress both support cross-browser: run on Chromium and Firefox at minimum.</li>
+  </ul>
+
+  <h3>Tier 2: Semi-automated tools</h3>
+  <p>Use <span class="tool">axe DevTools</span> browser extension for interactive validation of what the pipeline flags. Developers can reproduce a pipeline violation in the browser, see the highlighted element, and verify the fix before pushing. This is the feedback loop between Tier 1 and Tier 3.</p>
+
+  <h3>Tier 3: Manual: what axe-core in CI cannot catch</h3>
+  <ul>
+    <li><strong>Keyboard navigation:</strong> Tab through every interactive element. Focus order logic cannot be automated.</li>
+    <li><strong>Screen reader announcements:</strong> NVDA + Firefox on Windows, VoiceOver + Safari on Mac. ARIA attributes present in the DOM does not mean screen readers announce correctly.</li>
+    <li><strong>Alt text quality:</strong> axe confirms alt exists: a human must verify it is meaningful.</li>
+    <li><strong>iOS VoiceOver:</strong> Physical iPhone + Safari. Pipeline tests do not cover native mobile.</li>
+    <li><strong>Android TalkBack:</strong> Physical Android device + Chrome.</li>
+    <li><strong>Visual overlaps and reflow:</strong> Requires viewport testing: not detectable by axe-core.</li>
+  </ul>
+
+  <div style="background:var(--amber-bg);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
+    <div style="font-size:1.1rem;line-height:1;padding-top:2px;" aria-hidden="true">&#127919;</div>
+    <div>
+      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--amber);font-weight:500;margin-bottom:4px;">Practice on real violations</div>
+      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">Point your Playwright or Cypress test at the <a href="A11y-Test-Playground/31 A11y Test Playground - Axe Core CI.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Axe-Core CI Playground</a>: it contains deliberate Critical, Serious, and Moderate violations plus passing examples. Verify your pipeline catches the failures and passes the correct implementations.</div>
+    </div>
+  </div>
+  <p>Pipeline axe-core catches the same issues as browser axe DevTools: missing labels, invalid ARIA, colour contrast, empty buttons. It misses the same issues too: keyboard navigation logic, screen reader announcements, focus order, alt text quality, and any violation that only appears in an interaction state not covered by your test suite.</p>
+  <p>The pipeline is the automated floor. Manual testing, keyboard testing, and screen reader testing are still required. The pipeline prevents regressions: it does not replace human testing.</p>
+
+  <div class="takeaway" role="note">
+    <div class="label">The minimum viable pipeline setup</div>
+    <ul>
+      <li>Add axe-core to your existing Playwright or Cypress suite: not a separate suite.</li>
+      <li>Scope to wcag2aa rules and critical/serious impact only.</li>
+      <li>Run axe after page load AND after every significant interaction state in your test flow.</li>
+      <li>Fail the build on any critical or serious violation. Zero exceptions without a documented exclusion.</li>
+    </ul>
+  </div>
+
+  <h2 id="mobile-testing">Mobile: What Pipeline Tools Cannot Test</h2>
+  <p>Pipeline automation tools run on desktop CI servers and scan web pages. They cannot test native mobile apps and cannot replicate screen reader experience on a phone. The failures they catch still need to be verified on physical devices. These apps provide real broken implementations to test against:</p>
+  <div class="table-wrap"><table>
+    <caption style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Apps for mobile accessibility testing</caption>
+    <thead><tr><th scope="col">App</th><th scope="col">Platform</th><th scope="col">What to test</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://dequeuniversity.com/demo/mars/" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Deque University Mars Demo</a></td><td>iOS + Android (web)</td><td>Real accessibility failures matching what pipeline tools flag on desktop: verify the same issues on mobile Safari and Chrome</td></tr>
+      <tr><td><a href="https://apps.apple.com/us/app/appt-app-accessibility/id1527923025" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Appt App</a></td><td>iOS</td><td>Native iOS correct and incorrect implementations: verify VoiceOver behaviour on the same patterns pipeline tools catch</td></tr>
+      <tr><td><a href="https://play.google.com/store/apps/details?id=nl.appt" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Appt App</a></td><td>Android</td><td>Android version: verify TalkBack announcements on native accessibility failures</td></tr>
+      <tr><td><a href="https://play.google.com/store/apps/details?id=com.google.android.apps.accessibility.auditor" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Accessibility Scanner</a></td><td>Android</td><td>Automated scan of native Android screens: closest mobile equivalent to running axe-core on a page</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="series-nav">
+    <span class="label">Navigate the series</span>
+    <div class="nav-pair">
+      <a href="30-ANDI-and-IBM-Equal-Access.html" class="nav-blog"><span class="nav-blog-arrow" aria-hidden="true">←</span><div><div class="nav-blog-title">Blog 30: ANDI and IBM Equal Access</div><div class="nav-blog-sub">Specialist tools for accessible names and deep scanning</div></div></a>
+      <a href="32-Pa11y-in-CI-CD.html" class="nav-blog"><div><div class="nav-blog-title">Blog 32: Pa11y in CI/CD</div><div class="nav-blog-sub">Command-line accessibility testing for pipelines</div></div><span class="nav-blog-arrow" aria-hidden="true">→</span></a>
+    </div>
+  </div>
+  <aside class="references" aria-label="References"><div class="ref-title">References</div><ul role="list">      <li><a href="https://github.com/dequelabs/axe-core" target="_blank" rel="noopener noreferrer">axe-core on GitHub</a></li>
+      <li><a href="https://github.com/dequelabs/axe-playwright" target="_blank" rel="noopener noreferrer">@axe-core/playwright</a></li>
+      <li><a href="https://github.com/component-driven/cypress-axe" target="_blank" rel="noopener noreferrer">cypress-axe</a></li></ul></aside>
+</main>
+<footer><p><a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a> &nbsp;·&nbsp; Built with intention. Tested with care. &nbsp;·&nbsp; © 2025</p></footer>
+</body></html>
