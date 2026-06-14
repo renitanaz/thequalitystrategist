@@ -71,7 +71,7 @@
     .nav-links a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; border-radius: 3px; }
 
     .blog-header {
-      max-width: 740px; margin: 0 auto;
+      max-width: 900px; margin: 0 auto;
       padding: 4rem 2rem 2.5rem;
       border-bottom: 1px solid var(--border);
     }
@@ -109,7 +109,7 @@
 
     /* HERO VISUAL */
     .hero-visual {
-      max-width: 740px; margin: 0 auto;
+      max-width: 900px; margin: 0 auto;
       padding: 2.5rem 2rem 0;
     }
     .hero-svg-wrap {
@@ -118,7 +118,7 @@
     }
 
     main.blog-body {
-      display: block; max-width: 740px;
+      display: block; max-width: 900px;
       margin: 0 auto; padding: 3rem 2rem 5rem;
     }
 
@@ -421,7 +421,7 @@
     <span class="tag">Cost</span>
     <span class="tag">Strategy</span>
   </div>
-  <h1>The True Cost of Accessibility Debt: <em>Why Finding It Late Costs 100×</em></h1>
+  <h1>02 The True Cost of Accessibility Debt: <em>Why Finding It Late Costs 100×</em></h1>
   <div class="blog-meta">
     <span class="series">Series: Shift-Left Accessibility</span>
     <span aria-hidden="true">·</span>
@@ -490,10 +490,21 @@
       <li><a href="#hidden-costs">The hidden costs nobody talks about</a></li>
       <li><a href="#argument">How to make the case to your team</a></li>
       <li><a href="#prevention">What prevention looks like in practice</a></li>
+      <li><a href="#how-to-test">How to test: tiers, platforms and practice</a></li>
+      <li><a href="#mobile-testing">Mobile testing</a></li>
     </ol>
   </nav>
 
   <!-- 1 -->
+  <h2 id="how-to-test">Using Defect Data to Measure Shift-Right</h2>
+  <h3>Tier 1: Pipeline automation</h3>
+  <p>Pipeline violation counts per phase are the most direct measure of shift-right. If axe-core CI starts catching Critical violations only at the release gate rather than at commit, that timing gap is the cost this blog describes. Track violation counts by phase: not just by sprint.</p>
+  <h3>Tier 2: Semi-automated tools</h3>
+  <p>Run <span class="tool">axe DevTools</span> at the end of each sprint on every new feature. Violations found here that were not caught during development indicate active shift-right. The browser tool scan is the earliest manual checkpoint after the pipeline.</p>
+  <h3>Tier 3: Manual</h3>
+  <p><strong>Platform coverage:</strong> Test on Windows (Chrome + Firefox), Mac (Safari + Chrome), iOS (Safari on physical iPhone), and Android (Chrome on physical device). Platform differences in keyboard handling and screen reader behaviour mean a bug on one platform does not guarantee the same behaviour on another.</p>
+  <p>Retrospective question: how many accessibility defects were raised in the last release, and at which phase? Critical defects found in UAT cost 6 to 10 times more than the same defect found in development. The Sprint-Ready Checklist (Blog 37) gives the per-story gate that shifts that ratio left.</p>
+
   <h2 id="the-problem">
     1. The Problem With Shift-Right
   </h2>
@@ -506,7 +517,7 @@
     A defect found at discovery costs 1× to fix. The same defect found in production costs 30–100×. Accessibility is no different from any other quality dimension.
   </div>
 
-  <p>This isn't a theory. It comes from decades of software defect cost research — and it applies directly to accessibility because accessibility defects have the same root cause structure as any other defect: a decision made without the right constraint in mind.</p>
+  <p>This isn't a theory. It comes from decades of software defect cost research: and it applies directly to accessibility because accessibility defects have the same root cause structure as any other defect: a decision made without the right constraint in mind.</p>
 
   <!-- 2 -->
   <h2 id="multiplier">
@@ -581,7 +592,7 @@
       </div>
       <h3 class="learning-title">Not restricting heading types in the CMS: discovered too late</h3>
       <p class="learning-body">On one project, the CMS rich text editor was left open (authors could use any heading level, including H1, anywhere in the body). No restrictions were set during the content modelling phase.</p>
-      <p class="learning-body">By the time this was flagged — during QA — a significant volume of content had already been migrated. Every migrated page that contained an incorrect heading structure needed to be identified, reviewed, and corrected individually. The content model then had to be updated to restrict heading levels, which required re-validation of all previously published entries.</p>
+      <p class="learning-body">By the time this was flagged: during QA: a significant volume of content had already been migrated. Every migrated page that contained an incorrect heading structure needed to be identified, reviewed, and corrected individually. The content model then had to be updated to restrict heading levels, which required re-validation of all previously published entries.</p>
       <p class="learning-body">The fix itself (restricting heading levels in the CMS) was straightforward and would have taken a few hours at the modelling stage. The remediation after migration took days across multiple people. A Phase 2 decision left unaddressed became a Phase 4 crisis.</p>
       <div class="learning-lesson">
         <span class="learning-lesson-label">The lesson</span>
@@ -679,7 +690,7 @@
         <div class="learning-phase">Phase 1: Design</div>
       </div>
       <h3 class="learning-title">Colour contrast validated at design, and what the alternative looked like</h3>
-      <p class="learning-body">On one team, the design lead ran contrast checks in Figma — using Stark — before any handoff. The brand colour palette was validated against WCAG 1.4.3 and 1.4.11 before a single component was built. Contrast issues were caught and corrected in hours at the design stage.</p>
+      <p class="learning-body">On one team, the design lead ran contrast checks in Figma: using Stark: before any handoff. The brand colour palette was validated against WCAG 1.4.3 and 1.4.11 before a single component was built. Contrast issues were caught and corrected in hours at the design stage.</p>
       <p class="learning-body">I understood the value of this only when I worked with a different team that did not do it. The website's brand theme (primary colours, typography, button states) had never been validated for contrast. By the time it reached QA, the contrast failures were not isolated to a component. They were baked into the design system itself.</p>
       <p class="learning-body">Fixing a contrast failure in a component is straightforward. Fixing a contrast failure in a brand theme means revisiting colour tokens, updating the design system, regenerating components, retesting every screen. The rework is enormous, and it was all avoidable with a Figma plugin check during Phase 1.</p>
       <div class="learning-lesson">
@@ -921,10 +932,32 @@
   </div>
 
   <!-- SERIES NAV -->
+
+  <div style="background:var(--amber-bg);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
+    <div style="font-size:1.1rem;line-height:1;padding-top:2px;" aria-hidden="true">&#127919;</div>
+    <div>
+      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--amber);font-weight:500;margin-bottom:4px;">Practice on real examples</div>
+      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">Run this playground through your pipeline and measure how many violations reach which stage: <a href="A11y-Test-Playground/31 A11y Test Playground - Axe Core CI.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Axe-Core CI Playground</a>.</div>
+    </div>
+  </div>
+  <h2 id="mobile-testing">Testing on Mobile Devices</h2>
+  <p>The principles and checks in this blog apply equally to native mobile apps. Use these apps to practise on real implementations on iOS and Android:</p>
+  <div class="table-wrap"><table>
+    <caption style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Apps for mobile accessibility testing</caption>
+    <thead><tr><th scope="col">App</th><th scope="col">Platform</th><th scope="col">What to test</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://dequeuniversity.com/demo/mars/" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Deque University Mars Demo</a></td><td>iOS + Android (web)</td><td>Real accessibility failures across forms, images, headings and dynamic content</td></tr>
+      <tr><td><a href="https://apps.apple.com/us/app/appt-app-accessibility/id1527923025" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Appt App</a></td><td>iOS</td><td>Native iOS correct and incorrect implementations</td></tr>
+      <tr><td><a href="https://play.google.com/store/apps/details?id=nl.appt" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Appt App</a></td><td>Android</td><td>Android equivalent</td></tr>
+      <tr><td><a href="https://play.google.com/store/apps/details?id=com.google.android.apps.accessibility.auditor" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Accessibility Scanner</a></td><td>Android</td><td>Automated scan of native Android screens</td></tr>
+      <tr><td><a href="https://apps.apple.com/us/app/accessibility-checker-ai-eaa/id1095478187" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Accessibility Checker AI EAA</a></td><td>iOS</td><td>Scan iOS screens for missing accessibility labels</td></tr>
+    </tbody>
+  </table></div>
+
   <div class="series-nav">
     <span class="label">Navigate the series</span>
     <div class="nav-pair">
-      <a href="01-what-is-accessibility.html" class="nav-blog prev">
+      <a href="01-Accessibility-Is-Not-Just-a-Disability-Issue.html" class="nav-blog prev">
         <span class="nav-blog-arrow" aria-hidden="true">←</span>
         <div>
           <div class="nav-blog-title">Blog 01: What Accessibility Means</div>
