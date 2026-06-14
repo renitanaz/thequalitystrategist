@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A11y Test Playground - Headings Mobile Guide | The Quality Strategist</title>
+  <meta name="description" content="How to test heading hierarchy, landmarks and skip links on iOS VoiceOver and Android TalkBack. Step by step for each failure scenario." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+      --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+      --green:#4ade80; --green-bg:rgba(74,222,128,0.07);
+      --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07);
+      --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07);
+      --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.07);
+      --red:#f87171; --red-bg:rgba(248,113,113,0.07);
+      --ios:#0071e3; --android:#3ddc84;
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
+    .skip-link:focus { top:0; }
+    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
+    .nav-logo:focus-visible { outline:3px solid var(--green); outline-offset:3px; border-radius:3px; }
+    .nav-back { font-size:0.82rem; color:var(--text-3); text-decoration:none; }
+    .nav-back:hover { color:var(--text-2); }
+    .page-header { max-width:860px; margin:0 auto; padding:3.5rem 2rem 2rem; border-bottom:1px solid var(--border); }
+    .pg-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--green); font-weight:500; margin-bottom:0.75rem; }
+    .page-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.6rem,3.5vw,2.2rem); color:var(--text); margin-bottom:0.75rem; }
+    .page-header p { color:var(--text-2); font-weight:300; max-width:640px; }
+    .notice { display:flex; align-items:flex-start; gap:10px; background:var(--amber-bg); border:1px solid rgba(251,191,36,0.2); border-radius:8px; padding:0.85rem 1.1rem; margin-top:1.25rem; font-size:0.85rem; color:var(--amber); }
+    main { max-width:860px; margin:0 auto; padding:2.5rem 2rem 5rem; }
+    .platform-section { margin-bottom:3.5rem; }
+    .platform-header { display:flex; align-items:center; gap:12px; margin-bottom:1.75rem; padding-bottom:1rem; border-bottom:1px solid var(--border); }
+    .platform-badge { padding:4px 14px; border-radius:99px; font-size:0.8rem; font-weight:600; letter-spacing:0.04em; }
+    .badge-ios { background:rgba(0,113,227,0.15); color:#60a5fa; border:1px solid rgba(0,113,227,0.3); }
+    .badge-android { background:rgba(61,220,132,0.1); color:#3ddc84; border:1px solid rgba(61,220,132,0.25); }
+    .platform-title { font-family:'DM Serif Display',serif; font-size:1.3rem; color:var(--text); }
+    .prereq { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:1rem 1.25rem; margin-bottom:1.75rem; font-size:0.85rem; color:var(--text-2); }
+    .prereq strong { color:var(--text); }
+    .prereq ul { padding-left:1.25rem; margin-top:0.5rem; }
+    .prereq li { margin-bottom:0.3rem; }
+    .test-card { background:var(--bg2); border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:12px; }
+    .test-card-header { padding:0.85rem 1.1rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+    .test-num { width:26px; height:26px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:0.78rem; font-weight:700; flex-shrink:0; }
+    .test-num-fail { background:var(--red-bg); color:var(--red); }
+    .test-num-pass { background:var(--green-bg); color:var(--green); }
+    .test-title { font-size:0.9rem; font-weight:500; color:var(--text); }
+    .test-wcag { font-size:0.7rem; color:var(--text-3); background:var(--bg3); border:1px solid var(--border); padding:1px 7px; border-radius:99px; margin-left:auto; font-weight:500; }
+    .test-body { padding:1rem 1.1rem; }
+    .test-scenario { font-size:0.82rem; color:var(--text-3); margin-bottom:0.75rem; font-style:italic; }
+    .steps { display:flex; flex-direction:column; gap:6px; }
+    .step-row { display:flex; gap:10px; align-items:flex-start; }
+    .step-n { width:22px; height:22px; border-radius:5px; background:var(--bg3); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:0.72rem; font-weight:600; color:var(--text-3); flex-shrink:0; margin-top:1px; }
+    .step-text { font-size:0.85rem; color:var(--text-2); line-height:1.55; }
+    .step-text strong { color:var(--text); }
+    .step-text .gesture { display:inline-block; background:var(--bg3); border:1px solid #444; border-radius:4px; padding:1px 7px; font-size:0.8em; color:var(--text); font-family:monospace; }
+    .expected { margin-top:0.75rem; padding:0.7rem 0.9rem; background:var(--bg3); border-radius:6px; font-size:0.82rem; color:var(--text-2); border-left:3px solid; }
+    .expected-fail { border-color:var(--red); }
+    .expected-pass { border-color:var(--green); }
+    .expected strong { color:var(--text); }
+    .quick-ref { background:var(--bg2); border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:2rem; }
+    .quick-ref-header { padding:0.75rem 1.1rem; background:var(--bg3); border-bottom:1px solid var(--border); font-size:0.7rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-3); font-weight:500; }
+    table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+    thead th { padding:8px 12px; text-align:left; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-3); font-weight:500; border-bottom:1px solid var(--border); background:var(--bg2); }
+    tbody td { padding:9px 12px; border-bottom:1px solid var(--border); color:var(--text-2); vertical-align:top; }
+    tbody tr:last-child td { border-bottom:none; }
+    tbody td:first-child { color:var(--text); font-weight:500; }
+    tbody tr:hover td { background:var(--bg3); }
+    hr.divider { border:none; border-top:1px solid var(--border); margin:2.5rem 0; }
+    footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
+    footer a { color:var(--text-3); text-decoration:none; }
+    @media(max-width:620px) { nav.site-nav,main,.page-header { padding-left:1.25rem; padding-right:1.25rem; } }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <a href="../12-Headings-Landmarks-Skip-Links.html" class="nav-back">← Back to Blog 12</a>
+</nav>
+
+<header class="page-header">
+  <div class="pg-label">A11y Test Playground</div>
+  <h1>Headings Mobile Testing Guide</h1>
+  <p>How to test heading hierarchy, landmark regions, and skip links using VoiceOver on iOS and TalkBack on Android. Use alongside the <a href="12 A11y Test Playground - Headings and Landmarks.html" style="color:var(--blue);">Headings and Landmarks Playground</a>: test the same scenarios on a real device using these steps.</p>
+  <div class="notice" role="note">
+    <span aria-hidden="true">&#9888;&#65039;</span>
+    <span>Mobile testing requires a physical device. Xcode Simulator and Android Emulator do not accurately simulate VoiceOver or TalkBack gesture behaviour.</span>
+  </div>
+</header>
+
+<main id="main-content">
+
+  <!-- IOS SECTION -->
+  <div class="platform-section">
+    <div class="platform-header">
+      <span class="platform-badge badge-ios">iOS · VoiceOver</span>
+      <h2 class="platform-title">VoiceOver on iPhone and iPad</h2>
+    </div>
+
+    <div class="prereq">
+      <strong>Before you start:</strong>
+      <ul>
+        <li>Enable VoiceOver: <strong>Settings → Accessibility → VoiceOver → Toggle ON</strong></li>
+        <li>Or add to Accessibility Shortcut: triple-click the side button</li>
+        <li>Use <strong>Safari</strong>. VoiceOver + Chrome heading navigation is unreliable</li>
+        <li>Open the page you want to test in Safari</li>
+      </ul>
+    </div>
+
+    <!-- Quick ref gestures -->
+    <div class="quick-ref">
+      <div class="quick-ref-header">Essential gestures for heading and landmark testing</div>
+      <table>
+        <thead><tr><th scope="col">Action</th><th scope="col">Gesture</th></tr></thead>
+        <tbody>
+          <tr><td>Navigate elements one by one</td><td>Single-finger swipe right (next) or left (previous)</td></tr>
+          <tr><td>Activate selected element</td><td>Double-tap anywhere on screen</td></tr>
+          <tr><td>Open rotor</td><td>Rotate two fingers (like turning a dial)</td></tr>
+          <tr><td>Navigate within rotor category</td><td>After rotor set, swipe up or down</td></tr>
+          <tr><td>Set rotor to Headings</td><td>Rotate two fingers until "Headings" is announced</td></tr>
+          <tr><td>Set rotor to Landmarks</td><td>Rotate two fingers until "Landmarks" is announced</td></tr>
+          <tr><td>Scroll page</td><td>Three-finger swipe up or down</td></tr>
+          <tr><td>Pause/resume speech</td><td>Two-finger single tap</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Test 1 -->
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num test-num-fail">1</div>
+        <div class="test-title">Broken heading hierarchy</div>
+        <div class="test-wcag">WCAG 1.3.1</div>
+      </div>
+      <div class="test-body">
+        <div class="test-scenario">Scenario from Playground page, Scenario 1</div>
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Open the page in Safari. Enable VoiceOver.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Open rotor: <span class="gesture">rotate two fingers</span>. Rotate until <strong>Headings</strong> is announced.</div></div>
+          <div class="step-row"><div class="step-n">3</div><div class="step-text"><span class="gesture">Swipe down</span> to move to the next heading. <span class="gesture">Swipe up</span> to move back.</div></div>
+          <div class="step-row"><div class="step-n">4</div><div class="step-text">Listen to what VoiceOver announces for each heading: it says the level and the text. For example: "Heading level 2, Latest articles."</div></div>
+        </div>
+        <div class="expected expected-fail">
+          <strong>Expected failure:</strong> VoiceOver announces "Heading level 1, Page title" then "Heading level 3, Latest articles": the level 2 is missing. Then "Heading level 1, About this site": a second H1. The sequence is illogical and confusing.
+        </div>
+      </div>
+    </div>
+
+    <!-- Test 2 -->
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num test-num-fail">2</div>
+        <div class="test-title">Visual heading not marked up</div>
+        <div class="test-wcag">WCAG 1.3.1</div>
+      </div>
+      <div class="test-body">
+        <div class="test-scenario">Scenario from Playground page, Scenario 2</div>
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Open rotor, set to <strong>Headings</strong>.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Swipe down through all headings. Count how many VoiceOver announces.</div></div>
+          <div class="step-row"><div class="step-n">3</div><div class="step-text">Now set rotor back to <strong>default</strong> (characters or words). Swipe right through all elements and listen for the section title text.</div></div>
+        </div>
+        <div class="expected expected-fail">
+          <strong>Expected failure:</strong> Rotor Headings mode shows only "Our services" (H2). The "Strategy and Consulting" and "Training and Enablement" sections are completely absent from the heading list. VoiceOver reads them as plain text when swiping through all elements: no heading level announced.
+        </div>
+      </div>
+    </div>
+
+    <!-- Test 3 -->
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num test-num-fail">3</div>
+        <div class="test-title">Missing main landmark</div>
+        <div class="test-wcag">WCAG 1.3.1</div>
+      </div>
+      <div class="test-body">
+        <div class="test-scenario">Scenario from Playground page, Scenario 3</div>
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Open rotor, rotate to <strong>Landmarks</strong>.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Swipe down to navigate between landmarks. Listen for what VoiceOver announces.</div></div>
+        </div>
+        <div class="expected expected-fail">
+          <strong>Expected failure:</strong> VoiceOver finds no "main" landmark. The content area is not reachable via landmark navigation. The user must swipe through every element on the page to reach the main content.
+        </div>
+      </div>
+    </div>
+
+    <!-- Test 4 -->
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num test-num-fail">4</div>
+        <div class="test-title">Multiple unlabelled nav landmarks</div>
+        <div class="test-wcag">WCAG 1.3.1</div>
+      </div>
+      <div class="test-body">
+        <div class="test-scenario">Scenario from Playground page, Scenario 4</div>
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Open rotor, rotate to <strong>Landmarks</strong>.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Swipe down through landmarks. Listen to what VoiceOver announces for each nav.</div></div>
+        </div>
+        <div class="expected expected-fail">
+          <strong>Expected failure:</strong> VoiceOver announces "navigation" twice with no distinguishing label. The user has no way to know which is the main navigation and which is the breadcrumb.
+        </div>
+        <div class="expected expected-pass" style="margin-top:8px;">
+          <strong>What correct looks like:</strong> VoiceOver announces "Main navigation, navigation landmark" and "Breadcrumb, navigation landmark": distinct labels for each.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <hr class="divider" />
+
+  <!-- ANDROID SECTION -->
+  <div class="platform-section">
+    <div class="platform-header">
+      <span class="platform-badge badge-android">Android · TalkBack</span>
+      <h2 class="platform-title">TalkBack on Android</h2>
+    </div>
+
+    <div class="prereq">
+      <strong>Before you start:</strong>
+      <ul>
+        <li>Enable TalkBack: <strong>Settings → Accessibility → TalkBack → Toggle ON</strong></li>
+        <li>Or hold both volume keys for 3 seconds</li>
+        <li>Use <strong>Chrome</strong></li>
+        <li>Open the page you want to test in Chrome</li>
+      </ul>
+    </div>
+
+    <!-- Quick ref gestures -->
+    <div class="quick-ref">
+      <div class="quick-ref-header">Essential gestures for heading and landmark testing</div>
+      <table>
+        <thead><tr><th scope="col">Action</th><th scope="col">Gesture</th></tr></thead>
+        <tbody>
+          <tr><td>Navigate elements one by one</td><td>Single-finger swipe right (next) or left (previous)</td></tr>
+          <tr><td>Activate selected element</td><td>Double-tap anywhere on screen</td></tr>
+          <tr><td>Open reading controls</td><td>Swipe up then right</td></tr>
+          <tr><td>Set navigation to Headings</td><td>Swipe up then right → select Headings</td></tr>
+          <tr><td>Navigate headings once set</td><td>Single-finger swipe right (next heading) or left (previous heading)</td></tr>
+          <tr><td>Open TalkBack menu</td><td>Swipe down then right</td></tr>
+          <tr><td>Scroll page</td><td>Two-finger swipe up or down</td></tr>
+          <tr><td>Go back</td><td>Swipe down then left</td></tr>
+          <tr><td>Pause/resume speech</td><td>Two-finger single tap</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Test 1 -->
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num test-num-fail">1</div>
+        <div class="test-title">Broken heading hierarchy</div>
+        <div class="test-wcag">WCAG 1.3.1</div>
+      </div>
+      <div class="test-body">
+        <div class="test-scenario">Scenario from Playground page, Scenario 1</div>
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Open the page in Chrome with TalkBack enabled.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Open reading controls: <span class="gesture">swipe up then right</span>. Swipe right until <strong>Headings</strong> is selected. Double-tap to confirm.</div></div>
+          <div class="step-row"><div class="step-n">3</div><div class="step-text">Swipe right to move to the next heading. Swipe left to go back.</div></div>
+          <div class="step-row"><div class="step-n">4</div><div class="step-text">Listen to what TalkBack announces: it says the heading level and text. "Heading level 3" after "Heading level 1" with no level 2 in between is the failure.</div></div>
+        </div>
+        <div class="expected expected-fail">
+          <strong>Expected failure:</strong> TalkBack announces H1, then jumps to H3 (level 2 absent), then another H1, then H4 (levels 2 and 3 absent). The hierarchy is broken and navigation is disorienting.
+        </div>
+      </div>
+    </div>
+
+    <!-- Test 2 -->
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num test-num-fail">2</div>
+        <div class="test-title">Visual heading not marked up</div>
+        <div class="test-wcag">WCAG 1.3.1</div>
+      </div>
+      <div class="test-body">
+        <div class="test-scenario">Scenario from Playground page, Scenario 2</div>
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Set reading controls to <strong>Headings</strong>.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Swipe right through all headings. Note how many are announced.</div></div>
+          <div class="step-row"><div class="step-n">3</div><div class="step-text">Switch back to default navigation (Characters). Swipe through the section and listen for the styled div text: no heading level is announced.</div></div>
+        </div>
+        <div class="expected expected-fail">
+          <strong>Expected failure:</strong> Only "Our services" (H2) appears in heading navigation. "Strategy and Consulting" and "Training and Enablement" are invisible to heading navigation: TalkBack reads them as plain text only.
+        </div>
+      </div>
+    </div>
+
+    <!-- Test 3 -->
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num test-num-fail">3</div>
+        <div class="test-title">Missing main landmark</div>
+        <div class="test-wcag">WCAG 1.3.1</div>
+      </div>
+      <div class="test-body">
+        <div class="test-scenario">Scenario from Playground page, Scenario 3</div>
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Open TalkBack menu: <span class="gesture">swipe down then right</span>.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Select <strong>Navigation by landmarks</strong>. Swipe right to navigate between landmarks.</div></div>
+        </div>
+        <div class="expected expected-fail">
+          <strong>Expected failure:</strong> TalkBack finds no main landmark. The primary content area is unreachable by landmark navigation alone. The user must swipe through every element to find it.
+        </div>
+      </div>
+    </div>
+
+    <!-- Test 4 -->
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num test-num-fail">4</div>
+        <div class="test-title">Multiple unlabelled nav landmarks</div>
+        <div class="test-wcag">WCAG 1.3.1</div>
+      </div>
+      <div class="test-body">
+        <div class="test-scenario">Scenario from Playground page, Scenario 4</div>
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Open TalkBack menu → <strong>Navigation by landmarks</strong>.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Swipe right through landmarks. Listen to how TalkBack announces each nav element.</div></div>
+        </div>
+        <div class="expected expected-fail">
+          <strong>Expected failure:</strong> TalkBack announces "navigation" twice. No label distinguishes the main navigation from the breadcrumb.
+        </div>
+      </div>
+    </div>
+
+    <!-- Test pass -->
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num test-num-pass">5</div>
+        <div class="test-title">Correct structure: the passing example</div>
+        <div class="test-wcag">WCAG 1.3.1 · 2.4.1</div>
+      </div>
+      <div class="test-body">
+        <div class="test-scenario">Scenario from Playground page, Scenario 6</div>
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Set reading controls to <strong>Headings</strong>. Navigate through all headings.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Navigate by landmarks. Listen for distinct landmark labels.</div></div>
+        </div>
+        <div class="expected expected-pass">
+          <strong>Expected pass:</strong> H1 → H2 → H3 → H3 → H2: sequential, logical. Landmarks: "Main navigation", "Breadcrumb", "main": all distinct and navigable. Structure reflects the visual layout.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; <a href="../12-Headings-Landmarks-Skip-Links.html">Back to Blog 12</a>
+    &nbsp;·&nbsp; <a href="12 A11y Test Playground - Headings and Landmarks.html">← Desktop Playground</a>
+  </p>
+</footer>
+
+</body>
+</html>

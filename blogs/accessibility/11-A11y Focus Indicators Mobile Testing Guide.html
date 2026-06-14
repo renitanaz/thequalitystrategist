@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A11y Focus Indicators Mobile Testing Guide | The Quality Strategist</title>
+  <meta name="description" content="How to test focus indicator failures on iOS VoiceOver and Android TalkBack. Step-by-step for each scenario from the Focus Indicators Playground." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+      --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+      --green:#4ade80; --green-bg:rgba(74,222,128,0.07);
+      --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07);
+      --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07);
+      --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.07);
+      --red:#f87171; --red-bg:rgba(248,113,113,0.07);
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
+    .skip-link:focus { top:0; }
+    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
+    .nav-logo:focus-visible { outline:3px solid var(--green); outline-offset:3px; border-radius:3px; }
+    .nav-back { font-size:0.82rem; color:var(--text-3); text-decoration:none; }
+    .nav-back:hover { color:var(--text-2); }
+    .page-header { max-width:860px; margin:0 auto; padding:3.5rem 2rem 2rem; border-bottom:1px solid var(--border); }
+    .pg-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--green); font-weight:500; margin-bottom:0.75rem; }
+    .page-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.6rem,3.5vw,2.2rem); color:var(--text); margin-bottom:0.75rem; }
+    .page-header p { color:var(--text-2); font-weight:300; max-width:640px; }
+    .notice { display:flex; align-items:flex-start; gap:10px; background:var(--amber-bg); border:1px solid rgba(251,191,36,0.2); border-radius:8px; padding:0.85rem 1.1rem; margin-top:1.25rem; font-size:0.85rem; color:var(--amber); }
+    main { max-width:860px; margin:0 auto; padding:2.5rem 2rem 5rem; }
+    .platform-section { margin-bottom:3.5rem; }
+    .platform-header { display:flex; align-items:center; gap:12px; margin-bottom:1.75rem; padding-bottom:1rem; border-bottom:1px solid var(--border); }
+    .platform-badge { padding:4px 14px; border-radius:99px; font-size:0.8rem; font-weight:600; letter-spacing:0.04em; }
+    .badge-ios { background:rgba(96,165,250,0.15); color:#60a5fa; border:1px solid rgba(96,165,250,0.3); }
+    .badge-android { background:rgba(61,220,132,0.1); color:#3ddc84; border:1px solid rgba(61,220,132,0.25); }
+    .platform-title { font-family:'DM Serif Display',serif; font-size:1.3rem; color:var(--text); }
+    .prereq { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:1rem 1.25rem; margin-bottom:1.75rem; font-size:0.85rem; color:var(--text-2); }
+    .prereq strong { color:var(--text); }
+    .prereq ul { padding-left:1.25rem; margin-top:0.5rem; }
+    .prereq li { margin-bottom:0.3rem; }
+    .quick-ref { background:var(--bg2); border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:2rem; }
+    .quick-ref-header { padding:0.75rem 1.1rem; background:var(--bg3); border-bottom:1px solid var(--border); font-size:0.7rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-3); font-weight:500; }
+    table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+    thead th { padding:8px 12px; text-align:left; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-3); font-weight:500; border-bottom:1px solid var(--border); background:var(--bg2); }
+    tbody td { padding:9px 12px; border-bottom:1px solid var(--border); color:var(--text-2); vertical-align:top; }
+    tbody tr:last-child td { border-bottom:none; }
+    tbody td:first-child { color:var(--text); font-weight:500; }
+    tbody tr:hover td { background:var(--bg3); }
+    .test-card { background:var(--bg2); border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:12px; }
+    .test-card-header { padding:0.85rem 1.1rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+    .test-num { width:26px; height:26px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:0.78rem; font-weight:700; flex-shrink:0; }
+    .test-num-fail { background:var(--red-bg); color:var(--red); }
+    .test-num-pass { background:var(--green-bg); color:var(--green); }
+    .test-title { font-size:0.9rem; font-weight:500; color:var(--text); }
+    .test-wcag { font-size:0.7rem; color:var(--text-3); background:var(--bg3); border:1px solid var(--border); padding:1px 7px; border-radius:99px; margin-left:auto; font-weight:500; flex-shrink:0; }
+    .test-body { padding:1rem 1.1rem; }
+    .test-scenario { font-size:0.82rem; color:var(--text-3); margin-bottom:0.75rem; font-style:italic; }
+    .steps { display:flex; flex-direction:column; gap:6px; }
+    .step-row { display:flex; gap:10px; align-items:flex-start; }
+    .step-n { width:22px; height:22px; border-radius:5px; background:var(--bg3); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:0.72rem; font-weight:600; color:var(--text-3); flex-shrink:0; margin-top:1px; }
+    .step-text { font-size:0.85rem; color:var(--text-2); line-height:1.55; }
+    .step-text strong { color:var(--text); }
+    .step-text .gesture { display:inline-block; background:var(--bg3); border:1px solid #444; border-radius:4px; padding:1px 7px; font-size:0.8em; color:var(--text); font-family:monospace; }
+    .expected { margin-top:0.75rem; padding:0.7rem 0.9rem; background:var(--bg3); border-radius:6px; font-size:0.82rem; color:var(--text-2); border-left:3px solid; }
+    .expected-fail { border-color:var(--red); }
+    .expected-pass { border-color:var(--green); }
+    .expected strong { color:var(--text); }
+    hr.divider { border:none; border-top:1px solid var(--border); margin:2.5rem 0; }
+    code { background:var(--bg3); padding:1px 6px; border-radius:3px; font-size:0.85em; color:var(--text-2); font-family:monospace; }
+    footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
+    footer a { color:var(--text-3); text-decoration:none; }
+    @media(max-width:620px) { nav.site-nav, main, .page-header { padding-left:1.25rem; padding-right:1.25rem; } }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <a href="../11-Focus-Indicators.html" class="nav-back">← Back to Blog 11</a>
+</nav>
+
+<header class="page-header">
+  <div class="pg-label">A11y Test Playground</div>
+  <h1>A11y Focus Indicators Mobile Testing Guide</h1>
+  <p>How to test focus indicator failures on iOS VoiceOver and Android TalkBack. Use alongside the <a href="A11y Test Playground - Focus Indicators.html" style="color:var(--blue);">Focus Indicators Playground</a>: same six scenarios, tested on a real device.</p>
+  <div class="notice" role="note">
+    <span aria-hidden="true">&#9888;&#65039;</span>
+    <span>Physical device required. Xcode Simulator and Android Emulator do not reliably reproduce VoiceOver and TalkBack focus rect behaviour.</span>
+  </div>
+</header>
+
+<main id="main-content">
+
+  <!-- IOS -->
+  <div class="platform-section">
+    <div class="platform-header">
+      <span class="platform-badge badge-ios">iOS · VoiceOver</span>
+      <h2 class="platform-title">VoiceOver on iPhone and iPad</h2>
+    </div>
+
+    <div class="prereq">
+      <strong>Before you start:</strong>
+      <ul>
+        <li>Enable VoiceOver: Settings, Accessibility, VoiceOver, Toggle ON</li>
+        <li>Or triple-click the side button if added to Accessibility Shortcut</li>
+        <li>Open the <a href="A11y Test Playground - Focus Indicators.html" style="color:var(--blue);">Focus Indicators Playground</a> in <strong>Safari</strong></li>
+        <li>VoiceOver draws a black rectangle around the focused element: this is separate from the CSS focus ring. You are checking for both.</li>
+      </ul>
+    </div>
+
+    <div class="quick-ref">
+      <div class="quick-ref-header">Essential gestures</div>
+      <table>
+        <thead><tr><th scope="col">Action</th><th scope="col">Gesture</th></tr></thead>
+        <tbody>
+          <tr><td>Move to next element</td><td>Single-finger swipe right</td></tr>
+          <tr><td>Move to previous element</td><td>Single-finger swipe left</td></tr>
+          <tr><td>Activate element</td><td>Double-tap anywhere</td></tr>
+          <tr><td>Scroll page</td><td>Three-finger swipe up or down</td></tr>
+          <tr><td>Pause speech</td><td>Two-finger single tap</td></tr>
+          <tr><td>Read from top</td><td>Two-finger swipe up</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num test-num-fail">1</div>
+        <div class="test-title">No focus indicator anywhere</div>
+        <div class="test-wcag">WCAG 2.4.7</div>
+      </div>
+      <div class="test-body">
+        <div class="test-scenario">Scenario 1 from the desktop playground</div>
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Open the playground in Safari with VoiceOver on.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text"><span class="gesture">Swipe right</span> through the button, link, and input in Scenario 1.</div></div>
+          <div class="step-row"><div class="step-n">3</div><div class="step-text">Watch the screen. VoiceOver draws its black rect around each element. Now turn VoiceOver OFF (triple-click). Tab through using a Bluetooth keyboard if available.</div></div>
+        </div>
+        <div class="expected expected-fail">
+          <strong>Expected failure:</strong> With VoiceOver ON, the black VoiceOver rect is visible but there is no CSS focus ring. With VoiceOver OFF, no visual indicator at all. A sighted keyboard user cannot see where focus is.
+        </div>
+        <div class="expected expected-pass" style="margin-top:8px;">
+          <strong>Key distinction:</strong> VoiceOver's black rect is not the CSS focus ring. It is provided by the OS. It hides the missing CSS ring when VoiceOver is active. Always test with VoiceOver OFF too: that is the sighted keyboard user's experience.
+        </div>
+      </div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num test-num-fail">2</div>
+        <div class="test-title">Low contrast focus ring</div>
+        <div class="test-wcag">WCAG 1.4.11</div>
+      </div>
+      <div class="test-body">
+        <div class="test-scenario">Scenario 3 from the desktop playground</div>
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Navigate to Scenario 3 on the playground page.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Turn VoiceOver OFF. Connect a Bluetooth keyboard. Press Tab to focus the button and card.</div></div>
+          <div class="step-row"><div class="step-n">3</div><div class="step-text">Look at the screen in normal lighting. Can you see the focus ring on the light background?</div></div>
+        </div>
+        <div class="expected expected-fail">
+          <strong>Expected failure:</strong> Ring colour #d0ccc0 on background #f0ede6 is 1.3:1 contrast. In normal lighting on a phone screen, the ring is invisible. With VoiceOver ON, the OS rect hides the problem.
+        </div>
+      </div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num test-num-fail">3</div>
+        <div class="test-title">Focus ring lost in error state</div>
+        <div class="test-wcag">WCAG 2.4.7</div>
+      </div>
+      <div class="test-body">
+        <div class="test-scenario">Scenario 5 from the desktop playground</div>
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Navigate to Scenario 5. Turn VoiceOver ON.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text"><span class="gesture">Swipe right</span> to the email input. VoiceOver announces the label and focuses it.</div></div>
+          <div class="step-row"><div class="step-n">3</div><div class="step-text"><span class="gesture">Double-tap</span> the Submit button to trigger the error state.</div></div>
+          <div class="step-row"><div class="step-n">4</div><div class="step-text"><span class="gesture">Swipe right</span> back to the email input. VoiceOver announces "invalid": but is the CSS ring still visible?</div></div>
+        </div>
+        <div class="expected expected-fail">
+          <strong>Expected failure:</strong> VoiceOver announces the error state via aria-invalid. But the CSS ring is gone: replaced only by the red border. Turn VoiceOver OFF with a Bluetooth keyboard to confirm: no ring on the focused error input.
+        </div>
+      </div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num test-num-fail">4</div>
+        <div class="test-title">Programmatic focus with no ring</div>
+        <div class="test-wcag">WCAG 2.4.7</div>
+      </div>
+      <div class="test-body">
+        <div class="test-scenario">Scenario 6 from the desktop playground</div>
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Navigate to Scenario 6. Turn VoiceOver ON.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text"><span class="gesture">Swipe right</span> to the Open modal button. <span class="gesture">Double-tap</span> to activate it.</div></div>
+          <div class="step-row"><div class="step-n">3</div><div class="step-text">VoiceOver announces the modal heading. Look at the screen: is there a CSS ring on the heading?</div></div>
+          <div class="step-row"><div class="step-n">4</div><div class="step-text">Now <span class="gesture">swipe right</span> to the Close button. Notice the ring appears on the button but not on the heading.</div></div>
+        </div>
+        <div class="expected expected-fail">
+          <strong>Expected failure:</strong> VoiceOver places its black rect on the modal heading (confirming focus moved). No CSS ring. Then focus moves to the Close button which has a ring: the contrast makes the heading's missing ring obvious.
+        </div>
+      </div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num test-num-pass">5</div>
+        <div class="test-title">Correct focus indicators</div>
+        <div class="test-wcag">WCAG 2.4.7 · 2.4.11 · 1.4.11</div>
+      </div>
+      <div class="test-body">
+        <div class="test-scenario">Scenario 7 from the desktop playground</div>
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Navigate to Scenario 7. Turn VoiceOver ON then OFF alternately.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">With VoiceOver ON: <span class="gesture">swipe right</span> through all elements. The VoiceOver rect AND the blue CSS ring should both be visible.</div></div>
+          <div class="step-row"><div class="step-n">3</div><div class="step-text">With VoiceOver OFF: use Bluetooth keyboard. CSS ring should be visible on every element independently.</div></div>
+        </div>
+        <div class="expected expected-pass">
+          <strong>Expected pass:</strong> Blue 3px ring visible with VoiceOver ON alongside the OS rect, and independently with VoiceOver OFF. Ring adapts to border-radius of each element. Consistent across all element types.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <hr class="divider" />
+
+  <!-- ANDROID -->
+  <div class="platform-section">
+    <div class="platform-header">
+      <span class="platform-badge badge-android">Android · TalkBack</span>
+      <h2 class="platform-title">TalkBack on Android</h2>
+    </div>
+
+    <div class="prereq">
+      <strong>Before you start:</strong>
+      <ul>
+        <li>Enable TalkBack: Settings, Accessibility, TalkBack, Toggle ON</li>
+        <li>Or hold both volume keys for 3 seconds</li>
+        <li>Open the <a href="A11y Test Playground - Focus Indicators.html" style="color:var(--blue);">Focus Indicators Playground</a> in <strong>Chrome</strong></li>
+        <li>TalkBack draws a green rectangle around the focused element. Same principle as VoiceOver: the green rect is OS-level and independent of the CSS focus ring.</li>
+      </ul>
+    </div>
+
+    <div class="quick-ref">
+      <div class="quick-ref-header">Essential gestures</div>
+      <table>
+        <thead><tr><th scope="col">Action</th><th scope="col">Gesture</th></tr></thead>
+        <tbody>
+          <tr><td>Move to next element</td><td>Single-finger swipe right</td></tr>
+          <tr><td>Move to previous element</td><td>Single-finger swipe left</td></tr>
+          <tr><td>Activate element</td><td>Double-tap anywhere</td></tr>
+          <tr><td>Scroll page</td><td>Two-finger swipe up or down</td></tr>
+          <tr><td>Pause speech</td><td>Two-finger single tap</td></tr>
+          <tr><td>Go back</td><td>Swipe down then left</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num test-num-fail">1</div>
+        <div class="test-title">No focus indicator anywhere</div>
+        <div class="test-wcag">WCAG 2.4.7</div>
+      </div>
+      <div class="test-body">
+        <div class="test-scenario">Scenario 1 from the desktop playground</div>
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Open the playground in Chrome with TalkBack on.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text"><span class="gesture">Swipe right</span> through the button, link, and input in Scenario 1.</div></div>
+          <div class="step-row"><div class="step-n">3</div><div class="step-text">Watch the green TalkBack rect. Then disable TalkBack and connect a Bluetooth keyboard. Tab through the same elements.</div></div>
+        </div>
+        <div class="expected expected-fail">
+          <strong>Expected failure:</strong> TalkBack ON shows the green rect but no CSS ring. TalkBack OFF with a keyboard shows no indicator at all. Same root cause as iOS: the OS rect masks the missing CSS ring.
+        </div>
+      </div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num test-num-fail">2</div>
+        <div class="test-title">Focus ring lost in error state</div>
+        <div class="test-wcag">WCAG 2.4.7</div>
+      </div>
+      <div class="test-body">
+        <div class="test-scenario">Scenario 5 from the desktop playground</div>
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Navigate to Scenario 5 with TalkBack ON.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text"><span class="gesture">Swipe right</span> to the Submit button. <span class="gesture">Double-tap</span> to trigger the error.</div></div>
+          <div class="step-row"><div class="step-n">3</div><div class="step-text">TalkBack announces the error alert. <span class="gesture">Swipe right</span> back to the email input.</div></div>
+          <div class="step-row"><div class="step-n">4</div><div class="step-text">Green TalkBack rect is on the input. Is the CSS ring also visible? Disable TalkBack and check with a Bluetooth keyboard.</div></div>
+        </div>
+        <div class="expected expected-fail">
+          <strong>Expected failure:</strong> TalkBack announces aria-invalid and the error text. The green rect shows focus. But the CSS ring is removed by the error state styles. With TalkBack off, the input has no focus ring in error state.
+        </div>
+      </div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num test-num-fail">3</div>
+        <div class="test-title">Programmatic focus with no ring</div>
+        <div class="test-wcag">WCAG 2.4.7</div>
+      </div>
+      <div class="test-body">
+        <div class="test-scenario">Scenario 6 from the desktop playground</div>
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Navigate to Scenario 6 with TalkBack ON.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text"><span class="gesture">Swipe right</span> to the Open modal button. <span class="gesture">Double-tap</span> to open the modal.</div></div>
+          <div class="step-row"><div class="step-n">3</div><div class="step-text">TalkBack announces the modal heading. Green rect on the heading: but no CSS ring.</div></div>
+          <div class="step-row"><div class="step-n">4</div><div class="step-text"><span class="gesture">Swipe right</span> to the Close button: CSS ring appears. The heading never had one.</div></div>
+        </div>
+        <div class="expected expected-fail">
+          <strong>Expected failure:</strong> TalkBack confirms focus moved to the heading via the green rect and announcement. No CSS ring on the heading. Close button has a ring. The inconsistency is the defect.
+        </div>
+      </div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num test-num-pass">4</div>
+        <div class="test-title">Correct focus indicators</div>
+        <div class="test-wcag">WCAG 2.4.7 · 2.4.11 · 1.4.11</div>
+      </div>
+      <div class="test-body">
+        <div class="test-scenario">Scenario 7 from the desktop playground</div>
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Navigate to Scenario 7 with TalkBack ON.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text"><span class="gesture">Swipe right</span> through all elements. Green TalkBack rect AND blue CSS ring should both be visible on each element.</div></div>
+          <div class="step-row"><div class="step-n">3</div><div class="step-text">Disable TalkBack, connect a Bluetooth keyboard. Tab through. CSS ring visible on every element independently.</div></div>
+        </div>
+        <div class="expected expected-pass">
+          <strong>Expected pass:</strong> Blue 3px ring visible alongside the green TalkBack rect when TalkBack is ON. Visible independently with keyboard when TalkBack is OFF. Consistent across all element types.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; <a href="../11-Focus-Indicators.html">Back to Blog 11</a>
+    &nbsp;·&nbsp; <a href="A11y Test Playground - Focus Indicators.html">← Focus Indicators Playground</a>
+  </p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>14 Alt Text Testing | The Quality Strategist</title>
+  <meta name="description" content="How to test alt text for meaningful, decorative and functional images. What each failure sounds like to a screen reader, and how to catch every type." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+      --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+      --green:#4ade80; --green-bg:rgba(74,222,128,0.07);
+      --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07);
+      --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07);
+      --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.07);
+      --red:#f87171; --red-bg:rgba(248,113,113,0.07);
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
+    .skip-link:focus { top:0; }
+    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
+    .nav-links { display:flex; gap:2rem; list-style:none; }
+    .nav-links a { color:var(--text-3); text-decoration:none; font-size:0.85rem; transition:color 0.2s; }
+    .nav-links a:hover { color:var(--text); }
+    .blog-header { max-width:900px; margin:0 auto; padding:4rem 2rem 2.5rem; border-bottom:1px solid var(--border); }
+    .breadcrumb { font-size:0.78rem; color:var(--text-3); margin-bottom:1.5rem; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; }
+    .breadcrumb a { color:var(--text-3); text-decoration:none; }
+    .breadcrumb a:hover { color:var(--text-2); }
+    .blog-tags { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.25rem; }
+    .tag { font-size:0.7rem; padding:3px 10px; border-radius:99px; background:var(--bg3); color:var(--text-3); border:1px solid var(--border); letter-spacing:0.04em; text-transform:uppercase; font-weight:500; }
+    .tag.accent { background:var(--green-bg); color:var(--green); border-color:rgba(74,222,128,0.25); }
+    .blog-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.85rem,4vw,2.6rem); line-height:1.2; letter-spacing:-0.02em; color:var(--text); margin-bottom:0.75rem; }
+    .blog-header h1 em { font-style:italic; color:var(--green); }
+    .blog-subtitle { font-family:'DM Serif Display',serif; font-size:1.1rem; font-style:italic; color:var(--text-3); margin-bottom:1.25rem; }
+    .blog-meta { display:flex; align-items:center; gap:1.25rem; font-size:0.82rem; color:var(--text-3); flex-wrap:wrap; }
+    .blog-meta .series { color:var(--text-2); font-weight:500; }
+    main.blog-body { display:block; max-width:900px; margin:0 auto; padding:3rem 2rem 5rem; }
+    .toc { display:block; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.5rem 1.75rem; margin:0 0 3rem 0; }
+    .toc-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.9rem; }
+    .toc ol { padding-left:1.25rem; }
+    .toc ol li { margin-bottom:0.45rem; }
+    .toc ol li a { font-size:0.88rem; color:var(--text-2); text-decoration:none; transition:color 0.2s; }
+    .toc ol li a:hover { color:var(--green); }
+    .blog-body h2 { font-family:'DM Serif Display',serif; font-size:1.5rem; letter-spacing:-0.01em; color:var(--text); margin:3.5rem 0 1.1rem; padding-top:1rem; border-top:1px solid var(--border); }
+    .blog-body h3 { font-size:1rem; font-weight:500; color:var(--text); margin:1.75rem 0 0.5rem; }
+    .blog-body p { color:var(--text-2); margin-bottom:1.25rem; font-weight:300; }
+    .blog-body p strong { color:var(--text); font-weight:500; }
+    .blog-body ul, .blog-body ol { padding-left:1.5rem; margin-bottom:1.25rem; color:var(--text-2); font-weight:300; }
+    .blog-body li { margin-bottom:0.45rem; }
+    .blog-body li strong { color:var(--text); font-weight:500; }
+    code { background:var(--bg3); padding:1px 6px; border-radius:3px; font-size:0.85em; color:var(--text-2); font-family:monospace; }
+    .callout { display:block; background:var(--green-bg); border-left:3px solid var(--green); border-radius:0 10px 10px 0; padding:1.25rem 1.5rem; margin:1.75rem 0; font-size:0.95rem; color:var(--text); font-style:italic; line-height:1.6; }
+    .callout.amber { background:var(--amber-bg); border-color:var(--amber); }
+    .callout.red { background:var(--red-bg); border-color:var(--red); }
+    .takeaway { display:block; background:var(--green-bg); border:1px solid rgba(74,222,128,0.2); border-radius:10px; padding:1.25rem 1.5rem; margin:1.75rem 0; }
+    .takeaway .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--green); font-weight:500; margin-bottom:0.5rem; display:block; }
+    .takeaway p { color:var(--text-2); font-size:0.93rem; margin:0; }
+    .tool { display:inline; background:var(--purple-bg); color:var(--purple); border:1px solid rgba(167,139,250,0.2); border-radius:4px; padding:1px 7px; font-size:0.85em; font-weight:500; }
+    .blog-ref { display:inline-flex; align-items:center; gap:6px; background:var(--bg2); border:1px solid var(--border); border-radius:6px; padding:3px 10px; font-size:0.78rem; color:var(--text-2); text-decoration:none; transition:border-color 0.2s,color 0.2s; white-space:nowrap; }
+    .blog-ref:hover { border-color:var(--green); color:var(--green); }
+    .blog-ref::before { content:'↗'; font-size:0.7rem; color:var(--text-3); }
+    .key { display:inline-flex; align-items:center; justify-content:center; background:var(--bg3); border:1px solid #444; border-bottom:3px solid #444; border-radius:5px; padding:2px 8px; font-family:monospace; font-size:0.82em; color:var(--text); min-width:28px; white-space:nowrap; }
+
+    /* ALT TEXT EXAMPLES */
+    .alt-examples { display:flex; flex-direction:column; gap:10px; margin:1.75rem 0; }
+    .alt-example { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1rem 1.25rem; display:grid; grid-template-columns:auto 1fr; gap:14px; align-items:start; }
+    .alt-badge { font-size:0.7rem; padding:3px 10px; border-radius:99px; font-weight:600; white-space:nowrap; flex-shrink:0; margin-top:2px; }
+    .badge-fail { background:var(--red-bg); color:var(--red); border:1px solid rgba(248,113,113,0.25); }
+    .badge-pass { background:var(--green-bg); color:var(--green); border:1px solid rgba(74,222,128,0.25); }
+    .badge-warn { background:var(--amber-bg); color:var(--amber); border:1px solid rgba(251,191,36,0.25); }
+    .alt-content .alt-code { font-family:monospace; font-size:0.82rem; color:var(--text-2); margin-bottom:6px; }
+    .alt-content .alt-announced { font-size:0.82rem; color:var(--text-3); margin-bottom:4px; }
+    .alt-content .alt-announced span { color:var(--amber); font-style:italic; }
+    .alt-content .alt-why { font-size:0.82rem; color:var(--text-2); }
+
+    /* TABLE */
+    .table-wrap { display:block; overflow-x:auto; margin:1.75rem 0; border-radius:10px; border:1px solid var(--border); }
+    table { width:100%; border-collapse:collapse; font-size:0.875rem; }
+    thead th { background:var(--bg2); padding:10px 14px; text-align:left; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-3); font-weight:500; border-bottom:1px solid var(--border); white-space:nowrap; }
+    tbody td { padding:10px 14px; border-bottom:1px solid var(--border); color:var(--text-2); vertical-align:top; line-height:1.55; }
+    tbody tr:last-child td { border-bottom:none; }
+    tbody td:first-child { color:var(--text); font-weight:500; }
+    tbody tr:hover td { background:var(--bg2); }
+
+    .blog-illustration { margin:1.75rem 0; border:none; padding:0; }
+    .series-nav { display:block; margin-top:4rem; padding-top:2rem; border-top:1px solid var(--border); }
+    .series-nav .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.75rem; display:block; }
+    .nav-pair { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .nav-blog { display:flex; align-items:center; gap:1rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.1rem 1.25rem; text-decoration:none; transition:border-color 0.2s,background 0.2s; }
+    .nav-blog:hover { border-color:#444; background:var(--bg3); }
+    .nav-blog-arrow { color:var(--text-3); font-size:1rem; flex-shrink:0; }
+    .nav-blog-title { font-size:0.88rem; font-weight:500; color:var(--text); }
+    .nav-blog-sub { font-size:0.75rem; color:var(--text-3); margin-top:2px; }
+    .references { display:block; margin-top:2.5rem; padding:1.5rem 1.75rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; }
+    .ref-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:1rem; }
+    .references ul { list-style:none; padding:0; }
+    .references ul li { margin-bottom:0.5rem; }
+    .references ul li a { font-size:0.85rem; color:var(--text-2); text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; transition:color 0.2s; }
+    .references ul li a:hover { color:var(--green); }
+    .references ul li a::before { content:'↗'; font-size:0.75rem; color:var(--text-3); }
+    footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
+    footer a { color:var(--text-3); text-decoration:none; }
+    .visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    @media(max-width:620px) {
+      nav.site-nav { padding:0 1.25rem; }
+      .nav-links { display:none; }
+      .blog-header, main.blog-body { padding-left:1.25rem; padding-right:1.25rem; }
+      .blog-header { padding-top:2.5rem; }
+      .nav-pair { grid-template-columns:1fr; }
+      .alt-example { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <ul class="nav-links" role="list">
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#playlist">Playlist</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#justlikereal">JustLikeReal</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#meetme">Meet Me</a></li>
+  </ul>
+</nav>
+
+<header class="blog-header">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a>
+    <span aria-hidden="true">›</span>
+    <span>Shift-Left Accessibility</span>
+    <span aria-hidden="true">›</span>
+    <span aria-current="page">14 of 38</span>
+  </nav>
+  <div class="blog-tags" aria-label="Blog categories">
+    <span class="tag accent">Manual Testing</span>
+    <span class="tag">Images</span>
+    <span class="tag">Screen Reader</span>
+    <span class="tag">WCAG 1.1.1</span>
+  </div>
+  <h1>14 Alt Text Testing: <em>Meaningful vs Decorative vs Wrong</em></h1>
+  <p class="blog-subtitle">The screen reader does not see the image. It reads what you wrote. Write it wrong and the user hears garbage.</p>
+  <div class="blog-meta">
+    <span class="series">Series: Shift-Left Accessibility</span>
+    <span aria-hidden="true">·</span>
+    <span>Blog 14 of 38</span>
+    <span aria-hidden="true">·</span>
+    <span>8 min read</span>
+  </div>
+</header>
+
+<main class="blog-body" id="main-content">
+
+  <nav class="toc" aria-label="Table of contents">
+    <div class="toc-title" id="toc-heading">In this blog</div>
+    <ol aria-labelledby="toc-heading">
+      <li><a href="#what-wcag-requires">What WCAG 1.1.1 requires</a></li>
+      <li><a href="#three-categories">The three categories: meaningful, decorative, functional</a></li>
+      <li><a href="#failure-patterns">Failure patterns and what they sound like</a></li>
+      <li><a href="#how-to-test">How to test: automation, tools, and platform coverage</a></li>
+      <li><a href="#writing-good-alt">Writing good alt text</a></li>
+      <li><a href="#defects">Writing alt text defects</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <h2 id="what-wcag-requires">1. What WCAG 1.1.1 Requires</h2>
+
+  <p>WCAG 1.1.1 (Non-text Content) requires that every non-text element has a text alternative that serves the equivalent purpose. The rule is not "add alt text to every image." The rule is that the text alternative must convey the same information the image conveys to a sighted user.</p>
+
+  <p>This means the requirement differs by image type. A meaningful image needs a description. A decorative image needs an empty alt attribute. A functional image needs alt text that describes its purpose, not its appearance.</p>
+
+  <div class="callout" role="note">
+    A missing alt attribute and an empty alt attribute are not the same thing. Missing alt: the screen reader reads the filename. Empty alt (<code>alt=""</code>): the screen reader skips the image entirely. Both are correct in different situations. Both are wrong in others.
+  </div>
+
+  <!-- 2 -->
+  <h2 id="three-categories">2. The Three Categories</h2>
+
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">The three image categories and their alt text requirements</caption>
+      <thead>
+        <tr>
+          <th scope="col">Category</th>
+          <th scope="col">Definition</th>
+          <th scope="col">Correct alt text</th>
+          <th scope="col">Example</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Meaningful</td>
+          <td>Conveys information that is not available in surrounding text</td>
+          <td>A concise description of what the image shows and why it matters in context</td>
+          <td>A chart showing Q3 revenue: <code>alt="Bar chart showing Q3 revenue of £2.4M, up 18% from Q2"</code></td>
+        </tr>
+        <tr>
+          <td>Decorative</td>
+          <td>Visual styling only. Removing the image would not change the meaning of the page</td>
+          <td><code>alt=""</code>: empty string, no space. Screen reader skips it.</td>
+          <td>A background swoosh, a divider illustration, a stock photo that adds no information</td>
+        </tr>
+        <tr>
+          <td>Functional</td>
+          <td>An image that performs an action: a linked image, an icon button, a logo that links home</td>
+          <td>Describes the destination or action, not the image itself</td>
+          <td>A shopping cart icon that links to checkout: <code>alt="Go to checkout"</code> not <code>alt="shopping cart icon"</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SVG ILLUSTRATION -->
+  <figure class="blog-illustration" aria-label="Three image types side by side showing correct alt text for each">
+    <svg viewBox="0 0 680 230" width="100%" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#161616;">
+      <title>Three image categories: meaningful, decorative, functional — with correct alt text for each</title>
+      <desc>Three panels side by side. Left panel labelled Meaningful shows a bar chart with alt text reading Bar chart: Q3 revenue up 18 percent. Middle panel labelled Decorative shows a wave with alt equals empty string and the label Screen reader skips it. Right panel labelled Functional shows a cart icon with the wrong alt shopping cart icon crossed out and the correct alt Go to checkout ticked.</desc>
+      <rect width="680" height="230" fill="#161616"/>
+
+      <!-- MEANINGFUL -->
+      <rect x="14" y="14" width="200" height="204" rx="6" fill="#0d1a0d" stroke="#4ade80" stroke-width="1.5"/>
+      <rect x="14" y="14" width="200" height="22" rx="6" fill="#1a4a1a"/>
+      <text x="114" y="28" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80" font-weight="600" letter-spacing="0.5">MEANINGFUL</text>
+      <!-- chart -->
+      <rect x="26" y="44" width="176" height="70" rx="4" fill="#1e1e1e"/>
+      <rect x="46" y="84" width="16" height="22" rx="2" fill="#4ade80" opacity="0.7"/>
+      <rect x="70" y="74" width="16" height="32" rx="2" fill="#4ade80" opacity="0.8"/>
+      <rect x="94" y="62" width="16" height="44" rx="2" fill="#4ade80"/>
+      <rect x="118" y="68" width="16" height="38" rx="2" fill="#4ade80" opacity="0.9"/>
+      <rect x="142" y="54" width="16" height="52" rx="2" fill="#4ade80"/>
+      <line x1="34" y1="106" x2="194" y2="106" stroke="#2e2e2e" stroke-width="0.5"/>
+      <text x="114" y="122" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#8a8a8a">Q3 Revenue Chart</text>
+      <!-- alt box -->
+      <rect x="26" y="130" width="176" height="54" rx="4" fill="#0d2a0d" stroke="#4ade80" stroke-width="1"/>
+      <text x="114" y="146" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#4ade80">alt="Bar chart: Q3 revenue</text>
+      <text x="114" y="158" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#4ade80">£2.4M, up 18% from Q2"</text>
+      <text x="114" y="174" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#4ade80">✓ Describes the data</text>
+      <!-- label -->
+      <text x="114" y="206" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4ade80" font-style="italic">describes what it shows</text>
+
+      <!-- DECORATIVE -->
+      <rect x="240" y="14" width="200" height="204" rx="6" fill="#1a1510" stroke="#fbbf24" stroke-width="1.5"/>
+      <rect x="240" y="14" width="200" height="22" rx="6" fill="#4a3a10"/>
+      <text x="340" y="28" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#fbbf24" font-weight="600" letter-spacing="0.5">DECORATIVE</text>
+      <!-- wave -->
+      <rect x="252" y="44" width="176" height="70" rx="4" fill="#1e1e1e"/>
+      <path d="M252 79 Q285 62 316 79 Q347 96 378 79 Q400 67 428 73 L428 114 L252 114 Z" fill="#fbbf24" opacity="0.12"/>
+      <path d="M252 79 Q285 62 316 79 Q347 96 378 79 Q400 67 428 73" fill="none" stroke="#fbbf24" stroke-width="1.5" opacity="0.6"/>
+      <text x="340" y="110" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#8a8a8a">background decoration</text>
+      <!-- alt box -->
+      <rect x="252" y="130" width="176" height="54" rx="4" fill="#2a1f00" stroke="#fbbf24" stroke-width="1"/>
+      <text x="340" y="152" text-anchor="middle" font-family="DM Serif Display,serif" font-size="16" fill="#fbbf24" font-weight="700">alt=""</text>
+      <text x="340" y="168" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#fbbf24">(empty string)</text>
+      <!-- label -->
+      <text x="340" y="206" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#fbbf24" font-style="italic">screen reader skips it</text>
+
+      <!-- FUNCTIONAL -->
+      <rect x="466" y="14" width="200" height="204" rx="6" fill="#0d0d1a" stroke="#60a5fa" stroke-width="1.5"/>
+      <rect x="466" y="14" width="200" height="22" rx="6" fill="#1a1a4a"/>
+      <text x="566" y="28" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#60a5fa" font-weight="600" letter-spacing="0.5">FUNCTIONAL</text>
+      <!-- cart icon -->
+      <rect x="478" y="44" width="176" height="70" rx="4" fill="#1e1e1e"/>
+      <path d="M533 68 L544 68 L552 90 L592 90 L598 74 L550 74" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="558" cy="96" r="4" fill="#60a5fa"/>
+      <circle cx="580" cy="96" r="4" fill="#60a5fa"/>
+      <text x="566" y="110" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#8a8a8a">icon link → /checkout</text>
+      <!-- fail -->
+      <rect x="478" y="130" width="176" height="22" rx="3" fill="#1a0808" stroke="#f87171" stroke-width="0.8"/>
+      <text x="566" y="144" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#f87171">✕  alt="shopping cart icon"</text>
+      <!-- pass -->
+      <rect x="478" y="158" width="176" height="22" rx="3" fill="#0d2a0d" stroke="#4ade80" stroke-width="0.8"/>
+      <text x="566" y="172" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#4ade80">✓  alt="Go to checkout"</text>
+      <!-- label -->
+      <text x="566" y="206" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#60a5fa" font-style="italic">action, not appearance</text>
+    </svg>
+  </figure>
+
+  <!-- 3 -->
+  <h2 id="failure-patterns">3. Failure Patterns and What They Sound Like</h2>
+
+  <p>Every alt text failure has a specific sound when read by a screen reader. Knowing what each failure announces helps testers identify and log defects precisely.</p>
+
+  <div class="alt-examples" role="list" aria-label="Alt text failure patterns">
+
+    <div class="alt-example" role="listitem">
+      <span class="alt-badge badge-fail">Fail</span>
+      <div class="alt-content">
+        <div class="alt-code">No alt attribute: <code>&lt;img src="chart.png"&gt;</code></div>
+        <div class="alt-announced">NVDA announces: <span>"chart dot png graphic"</span></div>
+        <div class="alt-why">The screen reader reads the filename. The user learns nothing about the image. Often worse with generated filenames like <code>IMG_20241103_094512.jpg</code>.</div>
+      </div>
+    </div>
+
+    <div class="alt-example" role="listitem">
+      <span class="alt-badge badge-fail">Fail</span>
+      <div class="alt-content">
+        <div class="alt-code">Filename as alt: <code>&lt;img src="hero.jpg" alt="hero.jpg"&gt;</code></div>
+        <div class="alt-announced">NVDA announces: <span>"hero dot jpg graphic"</span></div>
+        <div class="alt-why">Technically has an alt attribute. Functionally identical to no alt. Often added by CMSs that auto-populate alt from filename.</div>
+      </div>
+    </div>
+
+    <div class="alt-example" role="listitem">
+      <span class="alt-badge badge-fail">Fail</span>
+      <div class="alt-content">
+        <div class="alt-code">Generic alt: <code>&lt;img src="team.jpg" alt="image"&gt;</code></div>
+        <div class="alt-announced">NVDA announces: <span>"image graphic"</span></div>
+        <div class="alt-why">Meaningless. Also fails for <code>alt="photo"</code>, <code>alt="graphic"</code>, <code>alt="icon"</code>. The word "image" is redundant: screen readers already announce the role.</div>
+      </div>
+    </div>
+
+    <div class="alt-example" role="listitem">
+      <span class="alt-badge badge-fail">Fail</span>
+      <div class="alt-content">
+        <div class="alt-code">Decorative image without empty alt: <code>&lt;img src="wave.svg" alt="decorative wave"&gt;</code></div>
+        <div class="alt-announced">NVDA announces: <span>"decorative wave graphic"</span></div>
+        <div class="alt-why">A decorative image should be silent. Using <code>alt="decorative"</code> or <code>alt="decorative wave"</code> makes the screen reader announce it anyway. Use <code>alt=""</code> instead.</div>
+      </div>
+    </div>
+
+    <div class="alt-example" role="listitem">
+      <span class="alt-badge badge-fail">Fail</span>
+      <div class="alt-content">
+        <div class="alt-code">Functional image describes appearance: <code>&lt;a href="/cart"&gt;&lt;img src="cart.svg" alt="shopping cart icon"&gt;&lt;/a&gt;</code></div>
+        <div class="alt-announced">NVDA announces: <span>"shopping cart icon link"</span></div>
+        <div class="alt-why">The user knows it looks like a cart. They do not know where the link goes. Alt text for a functional image must describe the destination or action: <code>alt="Go to checkout"</code>.</div>
+      </div>
+    </div>
+
+    <div class="alt-example" role="listitem">
+      <span class="alt-badge badge-warn">Redundant</span>
+      <div class="alt-content">
+        <div class="alt-code">Alt text repeats surrounding text: <code>&lt;img src="ceo.jpg" alt="Jane Smith, CEO"&gt;</code> immediately followed by <code>&lt;h3&gt;Jane Smith, CEO&lt;/h3&gt;</code></div>
+        <div class="alt-announced">NVDA announces: <span>"Jane Smith, CEO graphic Jane Smith, CEO heading level 3"</span></div>
+        <div class="alt-why">Not a WCAG failure but a poor experience. The information is announced twice. Consider <code>alt=""</code> if the heading already provides the full context.</div>
+      </div>
+    </div>
+
+    <div class="alt-example" role="listitem">
+      <span class="alt-badge badge-pass">Pass</span>
+      <div class="alt-content">
+        <div class="alt-code">Meaningful image: <code>&lt;img src="chart.png" alt="Bar chart: Q3 revenue £2.4M, up 18% from Q2"&gt;</code></div>
+        <div class="alt-announced">NVDA announces: <span>"Bar chart: Q3 revenue £2.4M, up 18% from Q2, graphic"</span></div>
+        <div class="alt-why">The user gets the same information a sighted user gets from the chart. Concise, specific, in context.</div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <figure class="blog-illustration" aria-label="Screen reader user sits through a long decorative image announcement while holding a clock">
+    <svg viewBox="0 0 680 220" width="100%" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#fafcf5;">
+      <title>Screen reader user holds a clock while enduring a 6-word announcement for a decorative wave</title>
+      <desc>Left side shows a web page with a decorative wave between sections. The wave has alt text reading beautiful decorative wave swoosh design element, shown inside a red dashed border. Right side shows a screen reader user with headphones and a pained expression, holding a clock, listening to the unnecessary announcement in a speech bubble.</desc>
+      <rect width="680" height="220" fill="#fafcf5"/>
+      <!-- page mock -->
+      <rect x="20" y="20" width="300" height="180" rx="6" fill="#fff" stroke="#d0ccc0" stroke-width="1"/>
+      <rect x="20" y="20" width="300" height="28" rx="6" fill="#2a2a2a"/>
+      <rect x="32" y="28" width="50" height="12" rx="2" fill="#555"/>
+      <rect x="90" y="28" width="40" height="12" rx="2" fill="#555"/>
+      <rect x="138" y="28" width="40" height="12" rx="2" fill="#555"/>
+      <text x="50" y="72" font-family="DM Serif Display,serif" font-size="14" fill="#1a1a1a" font-weight="700">Welcome to our site</text>
+      <rect x="20" y="82" width="300" height="44" fill="#f0ede6"/>
+      <path d="M20 100 Q65 84 110 100 Q155 116 200 100 Q245 84 290 100 Q310 92 320 96 L320 126 L20 126 Z" fill="#c8b48a" opacity="0.3"/>
+      <path d="M20 100 Q65 84 110 100 Q155 116 200 100 Q245 84 290 100 Q310 92 320 96" fill="none" stroke="#c8b48a" stroke-width="1.5" opacity="0.7"/>
+      <rect x="28" y="88" width="284" height="30" rx="3" fill="none" stroke="#f87171" stroke-width="1.5" stroke-dasharray="3,2"/>
+      <text x="170" y="100" text-anchor="middle" font-family="monospace" font-size="7" fill="#f87171">alt="beautiful decorative wave</text>
+      <text x="170" y="111" text-anchor="middle" font-family="monospace" font-size="7" fill="#f87171">swoosh design element"</text>
+      <rect x="32" y="134" width="260" height="8" rx="2" fill="#e0dbd0"/>
+      <rect x="32" y="148" width="220" height="8" rx="2" fill="#e0dbd0"/>
+      <rect x="32" y="162" width="240" height="8" rx="2" fill="#e0dbd0"/>
+      <!-- screen reader user -->
+      <circle cx="520" cy="110" r="20" fill="#f5e6d0" stroke="#3d4235" stroke-width="1.5"/>
+      <path d="M500 106 Q500 88 520 88 Q540 88 540 106" fill="none" stroke="#3d4235" stroke-width="2.5"/>
+      <rect x="497" y="103" width="8" height="12" rx="3" fill="#3d4235"/>
+      <rect x="535" y="103" width="8" height="12" rx="3" fill="#3d4235"/>
+      <path d="M512 118 Q520 115 528 118" fill="none" stroke="#3d4235" stroke-width="1.5"/>
+      <path d="M512 105 Q516 102 512 99" fill="none" stroke="#3d4235" stroke-width="1.2"/>
+      <path d="M528 105 Q524 102 528 99" fill="none" stroke="#3d4235" stroke-width="1.2"/>
+      <circle cx="515" cy="108" r="2" fill="#3d4235"/>
+      <circle cx="525" cy="108" r="2" fill="#3d4235"/>
+      <ellipse cx="520" cy="148" rx="20" ry="22" fill="#dde8f5" stroke="#3d4235" stroke-width="1.2"/>
+      <line x1="520" y1="136" x2="560" y2="126" stroke="#3d4235" stroke-width="2"/>
+      <circle cx="572" cy="122" r="14" fill="#fff" stroke="#3d4235" stroke-width="1.5"/>
+      <circle cx="572" cy="122" r="2" fill="#3d4235"/>
+      <line x1="572" y1="122" x2="572" y2="112" stroke="#3d4235" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="572" y1="122" x2="580" y2="125" stroke="#3d4235" stroke-width="1" stroke-linecap="round"/>
+      <text x="572" y="108" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#888">tick</text>
+      <text x="572" y="140" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#888">tock</text>
+      <line x1="510" y1="170" x2="504" y2="196" stroke="#3d4235" stroke-width="2"/>
+      <line x1="530" y1="170" x2="536" y2="196" stroke="#3d4235" stroke-width="2"/>
+      <rect x="360" y="42" width="200" height="46" rx="6" fill="#fff0f0" stroke="#f87171" stroke-width="1"/>
+      <path d="M480 88 L476 96 L484 88" fill="#fff0f0" stroke="#f87171" stroke-width="1"/>
+      <text x="460" y="58" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171" font-weight="500">SR announces:</text>
+      <text x="460" y="70" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171" font-style="italic">"beautiful decorative wave</text>
+      <text x="460" y="82" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171" font-style="italic">swoosh design element"</text>
+      <line x1="322" y1="104" x2="350" y2="110" stroke="#f87171" stroke-width="1.5" stroke-dasharray="3,2"/>
+      <text x="340" y="210" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#9a9e90" font-style="italic">Decorative. But not silent.</text>
+    </svg>
+  </figure>
+
+  <!-- 4 -->
+  <h2 id="how-to-test">4. How to Test: Automation, Tools, and Platform Coverage</h2>
+
+  <div style="background:var(--amber-bg);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:0 0 1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
+    <div style="font-size:1.1rem;line-height:1;padding-top:2px;" aria-hidden="true">&#127919;</div>
+    <div>
+      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--amber);font-weight:500;margin-bottom:4px;">Practice these yourself</div>
+      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">All failure patterns above are available as interactive demos in the <a href="A11y-Test-Playground/14 A11y Test Playground - Alt Text.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Alt Text Playground</a>. Mobile testing steps are in the <a href="14 A11y Alt Text Mobile Testing Guide.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Mobile Testing Guide</a>.</div>
+    </div>
+  </div>
+
+  <h3>Tier 1: Pipeline automation</h3>
+  <p><span class="tool">axe-core</span> in <span class="tool">Playwright</span> or <span class="tool">Cypress</span>, and <span class="tool">Pa11y</span>, will flag:</p>
+  <ul>
+    <li>Images with no alt attribute</li>
+    <li>Images with an empty alt attribute used on meaningful images (where the image has no surrounding text providing context)</li>
+    <li>Linked images where the alt text is empty and there is no other accessible name on the link</li>
+    <li>Role="img" elements with no accessible name</li>
+  </ul>
+
+  <h3>Tier 2: Semi-automated tools</h3>
+  <ul>
+    <li><strong><span class="tool">WAVE</span> Images panel</strong>: click the Images tab in WAVE to see every image on the page with its alt text listed alongside. Missing alt flagged in red. Suspicious alt (filename, very short strings) flagged in yellow. Fastest overview of the page's image alt health.</li>
+    <li><strong><span class="tool">axe DevTools</span></strong>: filter by <code>image-alt</code> rule. Shows the exact element and the missing or empty alt attribute.</li>
+    <li><strong><span class="tool">Chrome DevTools</span> accessibility tree</strong>: select any image, check the accessibility panel. Shows the computed accessible name: confirms what the screen reader will actually announce.</li>
+  </ul>
+
+  <h3>Tier 3: Manual checks only</h3>
+  <p>Automation detects missing or empty alt attributes. It cannot judge whether the alt text is accurate, relevant, or appropriate for context. These always require a human:</p>
+  <ul>
+    <li><strong>Filename as alt text</strong>: automation sees a non-empty alt attribute and passes. A human must check whether the value is a filename, a generic word, or meaningless.</li>
+    <li><strong>Alt text that does not match the image</strong>: automation cannot see the image. Only a human can verify that the description is accurate.</li>
+    <li><strong>Alt text that misses key information</strong>: a chart with <code>alt="chart"</code> passes some automated checks. A human must verify that the alt text conveys the data the chart shows.</li>
+    <li><strong>Redundant alt text</strong>: automation does not check for duplication with surrounding text. A human reviewer or screen reader walkthrough catches this.</li>
+    <li><strong>Functional image alt describing appearance not action</strong>: automation confirms the alt is non-empty. A human must verify it describes the destination or action, not the image.</li>
+    <li><strong>Complex images</strong>: charts, diagrams, infographics, maps. These may need a long description in addition to a short alt. Only a human can judge whether the short alt is sufficient.</li>
+  </ul>
+
+  <h3>Windows: NVDA</h3>
+  <p>Tab to each image or press <span class="key">G</span> in NVDA browse mode to jump to the next graphic. NVDA announces the alt text. If it announces a filename, the alt is wrong. If it announces "graphic" with nothing else, the alt is missing or empty on a meaningful image. Press <span class="key">Insert</span>+<span class="key">F7</span> to open the elements list and select Graphics to see all images and their alt text at once.</p>
+
+  <h3>Mac: VoiceOver</h3>
+  <p>Enable VoiceOver with <span class="key">Cmd</span>+<span class="key">F5</span>. Open the rotor with <span class="key">VO</span>+<span class="key">U</span> and navigate to Images. Every image and its announced name is listed. Alternatively, use <span class="key">VO</span>+<span class="key">Cmd</span>+<span class="key">G</span> to jump between graphics and listen to what VoiceOver announces for each one.</p>
+
+  <h3>iOS: VoiceOver</h3>
+  <p>Enable VoiceOver: Settings, Accessibility, VoiceOver, Toggle ON. Open the rotor and set it to Images. Swipe up or down to navigate between images. VoiceOver announces the alt text. A missing alt announces the filename or "image." An empty alt on a meaningful image announces nothing: the image is skipped entirely.</p>
+
+  <h3>Android: TalkBack</h3>
+  <p>Enable TalkBack: Settings, Accessibility, TalkBack, Toggle ON. Single-finger swipe right to navigate elements. When focus lands on an image, TalkBack announces its accessible name. Open reading controls (swipe up then right) and select Images to navigate between images only. A missing alt announces the filename or nothing. A decorative image with <code>alt=""</code> is skipped.</p>
+
+  <div class="callout amber" role="note">
+    Mobile testing for alt text must be done on a real device. Simulators do not reliably replicate how VoiceOver and TalkBack announce image content in web views and native app screens.
+  </div>
+
+  <!-- 5 -->
+  <h2 id="writing-good-alt">5. Writing Good Alt Text</h2>
+
+  <p>Good alt text follows three rules: it is accurate, it is concise, and it is appropriate for context. Context matters more than any formula.</p>
+
+  <ul>
+    <li><strong>Be specific about what matters.</strong> "Photo of a woman" is less useful than "Sarah Chen, lead engineer, at the product launch." The information that is useful to a sighted user is the same information the alt text should convey.</li>
+    <li><strong>Do not start with "image of" or "picture of."</strong> Screen readers already announce the role. Starting with "image of" means users hear "image of image of a woman."</li>
+    <li><strong>For charts and graphs</strong>: include the key data point, not a description of the chart type. <code>alt="Line graph showing revenue growth"</code> tells the user nothing. <code>alt="Revenue grew from £1.2M in Q1 to £2.4M in Q3"</code> gives them the information.</li>
+    <li><strong>For logos used as links</strong>: the alt text is the link destination. <code>alt="Acme Inc: go to homepage"</code> or simply <code>alt="Acme Inc homepage"</code>.</li>
+    <li><strong>For icons</strong>: if the icon has adjacent visible text (a search icon next to the word "Search"), the icon is decorative: use <code>alt=""</code>. If the icon is the only element in a button or link, the alt text is the action.</li>
+    <li><strong>For complex images</strong>: write a short alt (under 100 characters) and provide a longer description in a nearby paragraph, a <code>&lt;details&gt;</code> element, or an <code>aria-describedby</code> reference.</li>
+  </ul>
+
+
+  <figure class="blog-illustration" aria-label="Sighted user sees revenue chart and understands the trend. Screen reader user hears bar chart graphic and shrugs.">
+    <svg viewBox="0 0 680 220" width="100%" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#fafcf5;">
+      <title>Sighted user reads revenue growth from a chart. Screen reader user hears only bar chart, graphic.</title>
+      <desc>Two panels split by a dashed line. Left panel labelled Sighted User shows a bar chart with rising bars. A thought bubble reads Revenue tripled in Q3, time to celebrate. Right panel labelled Screen Reader User shows the same chart as a grey box. The alt text reads bar chart. An announcement bubble reads bar chart, graphic followed by and question marks. The screen reader user is holding a clock and shrugging.</desc>
+      <rect width="680" height="220" fill="#fafcf5"/>
+      <line x1="340" y1="20" x2="340" y2="200" stroke="#d0ccc0" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="340" y="14" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#9a9e90">same image. same alt text.</text>
+      <!-- sighted user -->
+      <text x="170" y="36" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#555" font-weight="500" letter-spacing="0.5">SIGHTED USER</text>
+      <rect x="30" y="44" width="280" height="100" rx="6" fill="#fff" stroke="#d0ccc0" stroke-width="1"/>
+      <rect x="50" y="116" width="28" height="20" rx="2" fill="#60a5fa" opacity="0.6"/>
+      <rect x="88" y="104" width="28" height="32" rx="2" fill="#60a5fa" opacity="0.7"/>
+      <rect x="126" y="88" width="28" height="48" rx="2" fill="#60a5fa" opacity="0.8"/>
+      <rect x="164" y="70" width="28" height="66" rx="2" fill="#60a5fa" opacity="0.9"/>
+      <rect x="202" y="52" width="28" height="84" rx="2" fill="#60a5fa"/>
+      <line x1="42" y1="136" x2="290" y2="136" stroke="#d0ccc0" stroke-width="0.8"/>
+      <text x="50" y="148" font-family="DM Sans,sans-serif" font-size="7" fill="#888">Q1</text>
+      <text x="88" y="148" font-family="DM Sans,sans-serif" font-size="7" fill="#888">Q2</text>
+      <text x="126" y="148" font-family="DM Sans,sans-serif" font-size="7" fill="#888">Q3</text>
+      <text x="164" y="148" font-family="DM Sans,sans-serif" font-size="7" fill="#888">Q4</text>
+      <text x="202" y="148" font-family="DM Sans,sans-serif" font-size="7" fill="#888">Q5</text>
+      <ellipse cx="80" cy="180" rx="6" ry="4" fill="#dde8f5" stroke="#2a5c9a" stroke-width="0.8"/>
+      <ellipse cx="92" cy="174" rx="8" ry="6" fill="#dde8f5" stroke="#2a5c9a" stroke-width="0.8"/>
+      <rect x="104" y="160" width="172" height="30" rx="8" fill="#dde8f5" stroke="#2a5c9a" stroke-width="1"/>
+      <text x="190" y="173" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#1a4a9a" font-weight="600">Revenue tripled in Q3.</text>
+      <text x="190" y="184" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#1a4a9a">Time to celebrate.</text>
+      <circle cx="50" cy="176" r="12" fill="#f5e6d0" stroke="#3d4235" stroke-width="1.2"/>
+      <path d="M44 181 Q50 186 56 181" fill="none" stroke="#3d4235" stroke-width="1.2"/>
+      <circle cx="47" cy="173" r="1.8" fill="#3d4235"/>
+      <circle cx="53" cy="173" r="1.8" fill="#3d4235"/>
+      <line x1="50" y1="188" x2="50" y2="204" stroke="#3d4235" stroke-width="1.5"/>
+      <line x1="50" y1="194" x2="40" y2="200" stroke="#3d4235" stroke-width="1.5"/>
+      <line x1="50" y1="194" x2="60" y2="200" stroke="#3d4235" stroke-width="1.5"/>
+      <!-- screen reader user -->
+      <text x="510" y="36" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#555" font-weight="500" letter-spacing="0.5">SCREEN READER USER</text>
+      <rect x="370" y="44" width="280" height="100" rx="6" fill="#f5f5f5" stroke="#d0ccc0" stroke-width="1"/>
+      <text x="510" y="100" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="12" fill="#c8c8c8">[ image ]</text>
+      <rect x="390" y="112" width="240" height="20" rx="3" fill="#fff0f0" stroke="#f87171" stroke-width="0.8"/>
+      <text x="510" y="126" text-anchor="middle" font-family="monospace" font-size="9" fill="#f87171">alt="bar chart"</text>
+      <ellipse cx="560" cy="176" rx="6" ry="4" fill="#fff0f0" stroke="#f87171" stroke-width="0.8"/>
+      <ellipse cx="548" cy="170" rx="8" ry="6" fill="#fff0f0" stroke="#f87171" stroke-width="0.8"/>
+      <rect x="374" y="155" width="170" height="30" rx="8" fill="#fff0f0" stroke="#f87171" stroke-width="1"/>
+      <text x="459" y="168" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" font-weight="600">"bar chart, graphic"</text>
+      <text x="459" y="180" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">...and?</text>
+      <circle cx="570" cy="175" r="12" fill="#f5e6d0" stroke="#3d4235" stroke-width="1.2"/>
+      <path d="M558 172 Q558 163 570 163 Q582 163 582 172" fill="none" stroke="#3d4235" stroke-width="2"/>
+      <rect x="556" y="170" width="6" height="8" rx="2" fill="#3d4235"/>
+      <rect x="578" y="170" width="6" height="8" rx="2" fill="#3d4235"/>
+      <path d="M564 180 Q570 178 576 180" fill="none" stroke="#3d4235" stroke-width="1.2"/>
+      <circle cx="567" cy="175" r="1.8" fill="#3d4235"/>
+      <circle cx="573" cy="175" r="1.8" fill="#3d4235"/>
+      <line x1="570" y1="187" x2="570" y2="204" stroke="#3d4235" stroke-width="1.5"/>
+      <line x1="570" y1="194" x2="558" y2="196" stroke="#3d4235" stroke-width="1.5"/>
+      <line x1="558" y1="196" x2="554" y2="192" stroke="#3d4235" stroke-width="1.5"/>
+      <line x1="570" y1="194" x2="582" y2="196" stroke="#3d4235" stroke-width="1.5"/>
+      <line x1="582" y1="196" x2="586" y2="192" stroke="#3d4235" stroke-width="1.5"/>
+      <text x="340" y="210" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#9a9e90" font-style="italic">The picture is worth a thousand words. The alt text used two.</text>
+    </svg>
+  </figure>
+
+  <!-- 6 -->
+  <h2 id="defects">6. Writing Alt Text Defects</h2>
+
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">Alt text defect types with WCAG reference, severity, and reproduction steps</caption>
+      <thead>
+        <tr>
+          <th scope="col">Defect</th>
+          <th scope="col">WCAG</th>
+          <th scope="col">Severity</th>
+          <th scope="col">Reproduction</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Image has no alt attribute</td>
+          <td>1.1.1</td>
+          <td style="color:var(--red)">Critical</td>
+          <td>Inspect element: no alt attribute present. NVDA announces filename. WAVE flags red.</td>
+        </tr>
+        <tr>
+          <td>Meaningful image has empty alt</td>
+          <td>1.1.1</td>
+          <td style="color:var(--red)">Major</td>
+          <td>Image conveys information not in surrounding text. <code>alt=""</code> causes screen reader to skip it. Confirm with NVDA: image not announced.</td>
+        </tr>
+        <tr>
+          <td>Alt text is the filename</td>
+          <td>1.1.1</td>
+          <td style="color:var(--red)">Major</td>
+          <td>Inspect element: alt value matches src filename. NVDA announces filename. WAVE flags yellow.</td>
+        </tr>
+        <tr>
+          <td>Alt text is generic</td>
+          <td>1.1.1</td>
+          <td style="color:var(--red)">Major</td>
+          <td>Alt value is "image", "photo", "graphic", "icon". Conveys no information. Check all images via WAVE Images tab.</td>
+        </tr>
+        <tr>
+          <td>Functional image describes appearance not action</td>
+          <td>1.1.1 / 2.4.4</td>
+          <td style="color:var(--red)">Major</td>
+          <td>Linked image alt text describes the image visually. NVDA announces description without link destination. User cannot determine where the link goes.</td>
+        </tr>
+        <tr>
+          <td>Decorative image not suppressed</td>
+          <td>1.1.1</td>
+          <td style="color:var(--amber)">Moderate</td>
+          <td>Decorative image has non-empty alt. NVDA announces it in the content flow, adding noise. Should use <code>alt=""</code>.</td>
+        </tr>
+        <tr>
+          <td>Complex image with insufficient alt</td>
+          <td>1.1.1</td>
+          <td style="color:var(--amber)">Moderate</td>
+          <td>Chart or diagram alt text describes the visual type but not the data. NVDA announces "bar chart" with no data. A longer description is required.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="takeaway" role="note">
+    <div class="label">The fast check</div>
+    <p>Open <span class="tool">WAVE</span> and click the Images tab. Every image on the page, with its alt text, in one list. Red flags are missing alt. Yellow flags are suspicious alt. Then run NVDA and press <span class="key">Insert</span>+<span class="key">F7</span> to open the graphics list and listen to every announcement. Those two steps catch 90% of alt text defects without touching the DOM.</p>
+  </div>
+
+  <div class="series-nav">
+    <span class="label">Navigate the series</span>
+    <div class="nav-pair">
+      <a href="13-Colour-Contrast-Testing.html" class="nav-blog">
+        <span class="nav-blog-arrow" aria-hidden="true">←</span>
+        <div>
+          <div class="nav-blog-title">Blog 13: Colour Contrast Testing</div>
+          <div class="nav-blog-sub">Web, Android, iOS and colour blindness simulation</div>
+        </div>
+      </a>
+      <a href="15-Forms-Labels-Errors.html" class="nav-blog">
+        <div>
+          <div class="nav-blog-title">Blog 15: Forms, Labels, Errors and Instructions</div>
+          <div class="nav-blog-sub">How to test form accessibility</div>
+        </div>
+        <span class="nav-blog-arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+
+  <aside class="references" aria-label="References">
+    <div class="ref-title">References</div>
+    <ul role="list">
+      <li><a href="https://www.w3.org/TR/WCAG21/#non-text-content" target="_blank" rel="noopener noreferrer">WCAG 1.1.1: Non-text Content</a></li>
+      <li><a href="https://www.w3.org/WAI/tutorials/images/" target="_blank" rel="noopener noreferrer">W3C WAI: Images Tutorial: all image types with examples</a></li>
+      <li><a href="https://webaim.org/techniques/alttext/" target="_blank" rel="noopener noreferrer">WebAIM: Alternative Text guide</a></li>
+      <li><a href="https://www.w3.org/WAI/tutorials/images/decision-tree/" target="_blank" rel="noopener noreferrer">W3C Alt Text Decision Tree: what alt to write for any image type</a></li>
+    </ul>
+  </aside>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; Built with intention. Tested with care. &nbsp;·&nbsp; © 2025
+  </p>
+</footer>
+
+</body>
+</html>

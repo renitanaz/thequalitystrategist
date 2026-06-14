@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>16 Dynamic Content and ARIA Live Regions | The Quality Strategist</title>
+  <meta name="description" content="How to test dynamic content announcements. aria-live, role=alert, role=status: what each does, what each failure sounds like, and how to catch every type." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+      --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+      --green:#4ade80; --green-bg:rgba(74,222,128,0.07);
+      --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07);
+      --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07);
+      --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.07);
+      --red:#f87171; --red-bg:rgba(248,113,113,0.07);
+      --teal:#2dd4bf; --teal-bg:rgba(45,212,191,0.07);
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
+    .skip-link:focus { top:0; }
+    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
+    .nav-links { display:flex; gap:2rem; list-style:none; }
+    .nav-links a { color:var(--text-3); text-decoration:none; font-size:0.85rem; transition:color 0.2s; }
+    .nav-links a:hover { color:var(--text); }
+    .blog-header { max-width:900px; margin:0 auto; padding:4rem 2rem 2.5rem; border-bottom:1px solid var(--border); }
+    .breadcrumb { font-size:0.78rem; color:var(--text-3); margin-bottom:1.5rem; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; }
+    .breadcrumb a { color:var(--text-3); text-decoration:none; }
+    .breadcrumb a:hover { color:var(--text-2); }
+    .blog-tags { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.25rem; }
+    .tag { font-size:0.7rem; padding:3px 10px; border-radius:99px; background:var(--bg3); color:var(--text-3); border:1px solid var(--border); letter-spacing:0.04em; text-transform:uppercase; font-weight:500; }
+    .tag.accent { background:var(--teal-bg); color:var(--teal); border-color:rgba(45,212,191,0.25); }
+    .blog-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.85rem,4vw,2.6rem); line-height:1.2; letter-spacing:-0.02em; color:var(--text); margin-bottom:0.75rem; }
+    .blog-header h1 em { font-style:italic; color:var(--teal); }
+    .blog-subtitle { font-family:'DM Serif Display',serif; font-size:1.1rem; font-style:italic; color:var(--text-3); margin-bottom:1.25rem; }
+    .blog-meta { display:flex; align-items:center; gap:1.25rem; font-size:0.82rem; color:var(--text-3); flex-wrap:wrap; }
+    .blog-meta .series { color:var(--text-2); font-weight:500; }
+    main.blog-body { display:block; max-width:900px; margin:0 auto; padding:3rem 2rem 5rem; }
+    .toc { display:block; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.5rem 1.75rem; margin:0 0 3rem 0; }
+    .toc-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.9rem; }
+    .toc ol { padding-left:1.25rem; }
+    .toc ol li { margin-bottom:0.45rem; }
+    .toc ol li a { font-size:0.88rem; color:var(--text-2); text-decoration:none; transition:color 0.2s; }
+    .toc ol li a:hover { color:var(--teal); }
+    .blog-body h2 { font-family:'DM Serif Display',serif; font-size:1.5rem; letter-spacing:-0.01em; color:var(--text); margin:3.5rem 0 1.1rem; padding-top:1rem; border-top:1px solid var(--border); }
+    .blog-body h3 { font-size:1rem; font-weight:500; color:var(--text); margin:1.75rem 0 0.5rem; }
+    .blog-body p { color:var(--text-2); margin-bottom:1.25rem; font-weight:300; }
+    .blog-body p strong { color:var(--text); font-weight:500; }
+    .blog-body ul, .blog-body ol { padding-left:1.5rem; margin-bottom:1.25rem; color:var(--text-2); font-weight:300; }
+    .blog-body li { margin-bottom:0.45rem; }
+    .blog-body li strong { color:var(--text); font-weight:500; }
+    code { background:var(--bg3); padding:1px 6px; border-radius:3px; font-size:0.85em; color:var(--text-2); font-family:monospace; }
+    .callout { display:block; background:var(--teal-bg); border-left:3px solid var(--teal); border-radius:0 10px 10px 0; padding:1.25rem 1.5rem; margin:1.75rem 0; font-size:0.95rem; color:var(--text); font-style:italic; line-height:1.6; }
+    .callout.amber { background:var(--amber-bg); border-color:var(--amber); }
+    .callout.red { background:var(--red-bg); border-color:var(--red); }
+    .callout.green { background:var(--green-bg); border-color:var(--green); }
+    .takeaway { display:block; background:var(--green-bg); border:1px solid rgba(74,222,128,0.2); border-radius:10px; padding:1.25rem 1.5rem; margin:1.75rem 0; }
+    .takeaway .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--green); font-weight:500; margin-bottom:0.5rem; display:block; }
+    .takeaway ul { padding-left:1.25rem; color:var(--text-2); font-size:0.93rem; display:flex; flex-direction:column; gap:0.5rem; }
+    .tool { display:inline; background:var(--purple-bg); color:var(--purple); border:1px solid rgba(167,139,250,0.2); border-radius:4px; padding:1px 7px; font-size:0.85em; font-weight:500; }
+    .key { display:inline-flex; align-items:center; justify-content:center; background:var(--bg3); border:1px solid #444; border-bottom:3px solid #444; border-radius:5px; padding:2px 8px; font-family:monospace; font-size:0.82em; color:var(--text); min-width:28px; white-space:nowrap; }
+    .live-region-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:1.75rem 0; }
+    .lr-card { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.1rem 1.25rem; }
+    .lr-type { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.08em; font-weight:600; margin-bottom:6px; }
+    .lr-code { font-family:monospace; font-size:0.85rem; color:var(--text-2); margin-bottom:8px; }
+    .lr-behaviour { font-size:0.82rem; color:var(--text-2); line-height:1.55; }
+    .lr-when { font-size:0.78rem; color:var(--text-3); margin-top:6px; }
+    .code-pair { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:1.75rem 0; }
+    .code-box { border-radius:8px; padding:1rem 1.1rem; }
+    .code-fail { background:var(--red-bg); border:1px solid rgba(248,113,113,0.2); }
+    .code-pass { background:var(--green-bg); border:1px solid rgba(74,222,128,0.2); }
+    .code-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.07em; font-weight:500; margin-bottom:8px; }
+    .code-fail .code-label { color:var(--red); }
+    .code-pass .code-label { color:var(--green); }
+    .c-block { font-family:monospace; font-size:0.82rem; color:var(--text-2); line-height:1.7; white-space:pre; overflow-x:auto; }
+    .table-wrap { display:block; overflow-x:auto; margin:1.75rem 0; border-radius:10px; border:1px solid var(--border); }
+    table { width:100%; border-collapse:collapse; font-size:0.875rem; }
+    thead th { background:var(--bg2); padding:10px 14px; text-align:left; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-3); font-weight:500; border-bottom:1px solid var(--border); white-space:nowrap; }
+    tbody td { padding:10px 14px; border-bottom:1px solid var(--border); color:var(--text-2); vertical-align:top; line-height:1.55; }
+    tbody tr:last-child td { border-bottom:none; }
+    tbody td:first-child { color:var(--text); font-weight:500; }
+    tbody tr:hover td { background:var(--bg2); }
+    .blog-illustration { margin:1.75rem 0; border:none; padding:0; }
+    .series-nav { display:block; margin-top:4rem; padding-top:2rem; border-top:1px solid var(--border); }
+    .series-nav .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.75rem; display:block; }
+    .nav-pair { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .nav-blog { display:flex; align-items:center; gap:1rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.1rem 1.25rem; text-decoration:none; transition:border-color 0.2s,background 0.2s; }
+    .nav-blog:hover { border-color:#444; background:var(--bg3); }
+    .nav-blog-arrow { color:var(--text-3); font-size:1rem; flex-shrink:0; }
+    .nav-blog-title { font-size:0.88rem; font-weight:500; color:var(--text); }
+    .nav-blog-sub { font-size:0.75rem; color:var(--text-3); margin-top:2px; }
+    .references { display:block; margin-top:2.5rem; padding:1.5rem 1.75rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; }
+    .ref-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:1rem; }
+    .references ul { list-style:none; padding:0; }
+    .references ul li { margin-bottom:0.5rem; }
+    .references ul li a { font-size:0.85rem; color:var(--text-2); text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; transition:color 0.2s; }
+    .references ul li a:hover { color:var(--green); }
+    .references ul li a::before { content:'↗'; font-size:0.75rem; color:var(--text-3); }
+    footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
+    footer a { color:var(--text-3); text-decoration:none; }
+    .visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    @media(max-width:620px) {
+      nav.site-nav { padding:0 1.25rem; }
+      .nav-links { display:none; }
+      .blog-header, main.blog-body { padding-left:1.25rem; padding-right:1.25rem; }
+      .blog-header { padding-top:2.5rem; }
+      .live-region-grid, .code-pair, .nav-pair { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <ul class="nav-links" role="list">
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#playlist">Playlist</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#justlikereal">JustLikeReal</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#meetme">Meet Me</a></li>
+  </ul>
+</nav>
+
+<header class="blog-header">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a>
+    <span aria-hidden="true">›</span>
+    <span>Shift-Left Accessibility</span>
+    <span aria-hidden="true">›</span>
+    <span aria-current="page">16 of 38</span>
+  </nav>
+  <div class="blog-tags" aria-label="Blog categories">
+    <span class="tag accent">Manual Testing</span>
+    <span class="tag">ARIA</span>
+    <span class="tag">Dynamic Content</span>
+    <span class="tag">WCAG 4.1.3</span>
+  </div>
+  <h1>16 Dynamic Content and ARIA Live Regions: <em>Testing Announcements Without a Page Reload</em></h1>
+  <p class="blog-subtitle">A toast notification that nobody hears. A spinner that never announces completion. A filter that updates silently. These are live region failures: and they are everywhere.</p>
+  <div class="blog-meta">
+    <span class="series">Series: Shift-Left Accessibility</span>
+    <span aria-hidden="true">·</span>
+    <span>Blog 16 of 38</span>
+    <span aria-hidden="true">·</span>
+    <span>9 min read</span>
+  </div>
+</header>
+
+<main class="blog-body" id="main-content">
+
+  <nav class="toc" aria-label="Table of contents">
+    <div class="toc-title" id="toc-heading">In this blog</div>
+    <ol aria-labelledby="toc-heading">
+      <li><a href="#what-is-live">What is a live region</a></li>
+      <li><a href="#the-three-types">The three types: alert, status, live</a></li>
+      <li><a href="#failure-patterns">Failure patterns and what they sound like</a></li>
+      <li><a href="#how-to-test">How to test: automation, tools, and platform coverage</a></li>
+      <li><a href="#common-components">Common components that need live regions</a></li>
+      <li><a href="#defects">Writing live region defects</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <h2 id="what-is-live">1. What Is a Live Region</h2>
+
+  <p>A live region is a section of the page whose content changes dynamically: and whose changes need to be announced to screen reader users without requiring them to navigate to it. Without a live region, a screen reader user navigating by Tab or arrow keys will never know the content changed unless they happen to land on it.</p>
+
+  <p>The problem is that most dynamic UI updates are invisible to screen readers by default. A counter updating, a status message appearing, a toast notification sliding in, a list filtering: none of these are announced unless the developer explicitly marks the container with a live region attribute.</p>
+
+  <div class="callout" role="note">
+    WCAG 4.1.3 (Status Messages) requires that status messages: content that gives feedback about an operation without receiving focus: are announced to screen reader users. This is a Level AA requirement added in WCAG 2.1. It is one of the most commonly failed criteria in modern single-page applications.
+  </div>
+
+  <!-- SVG ILLUSTRATION -->
+  <figure class="blog-illustration" aria-label="Toast notification slides in visually while screen reader user hears nothing">
+    <svg viewBox="0 0 680 200" width="100%" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#0d0d0d;">
+      <title>A toast notification appears on screen saying Item added to cart. A screen reader user sits nearby wearing headphones. Their speech bubble shows silence. Caption: It appeared. NVDA was elsewhere.</title>
+      <desc>Left side shows a web page with a green toast notification reading Item added to cart sliding in from the top right. Right side shows a screen reader user with headphones, a confused expression, and a speech bubble showing silence. Caption at bottom reads: It appeared. NVDA was elsewhere.</desc>
+      <rect width="680" height="200" fill="#0d0d0d"/>
+      <!-- page -->
+      <rect x="20" y="20" width="320" height="160" rx="8" fill="#161616" stroke="#2e2e2e" stroke-width="1"/>
+      <!-- nav -->
+      <rect x="20" y="20" width="320" height="26" rx="8" fill="#1e1e1e"/>
+      <rect x="32" y="28" width="60" height="10" rx="2" fill="#333"/>
+      <rect x="104" y="28" width="40" height="10" rx="2" fill="#333"/>
+      <!-- content blocks -->
+      <rect x="32" y="58" width="200" height="10" rx="2" fill="#2e2e2e"/>
+      <rect x="32" y="74" width="240" height="10" rx="2" fill="#2e2e2e"/>
+      <rect x="32" y="90" width="180" height="10" rx="2" fill="#2e2e2e"/>
+      <rect x="32" y="114" width="80" height="28" rx="5" fill="#2a5c9a"/>
+      <text x="72" y="132" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#fff" font-weight="500">Add to cart</text>
+      <!-- TOAST: no aria-live -->
+      <rect x="210" y="148" width="120" height="26" rx="6" fill="#0d2a0d" stroke="#4ade80" stroke-width="1"/>
+      <text x="270" y="164" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4ade80">✓ Item added to cart</text>
+      <!-- arrow pointing to toast -->
+      <text x="196" y="164" font-family="DM Sans,sans-serif" font-size="10" fill="#f87171">↗</text>
+      <text x="100" y="190" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#f87171" font-style="italic">no aria-live — visually visible, screen reader silent</text>
+
+      <!-- screen reader user -->
+      <circle cx="490" cy="90" r="22" fill="#f5e6d0" stroke="#3d4235" stroke-width="1.5"/>
+      <path d="M468 86 Q468 66 490 66 Q512 66 512 86" fill="none" stroke="#3d4235" stroke-width="2.5"/>
+      <rect x="464" y="83" width="8" height="13" rx="3" fill="#3d4235"/>
+      <rect x="508" y="83" width="8" height="13" rx="3" fill="#3d4235"/>
+      <path d="M482 100 Q490 97 498 100" fill="none" stroke="#3d4235" stroke-width="1.5"/>
+      <circle cx="485" cy="87" r="2.2" fill="#3d4235"/>
+      <circle cx="495" cy="87" r="2.2" fill="#3d4235"/>
+      <ellipse cx="490" cy="130" rx="22" ry="24" fill="#dde8f5" stroke="#3d4235" stroke-width="1.2"/>
+      <line x1="478" y1="154" x2="472" y2="178" stroke="#3d4235" stroke-width="2"/>
+      <line x1="502" y1="154" x2="508" y2="178" stroke="#3d4235" stroke-width="2"/>
+      <!-- silence bubble -->
+      <rect x="524" y="54" width="136" height="38" rx="6" fill="#1e1e1e" stroke="#4a4a4a" stroke-width="1"/>
+      <path d="M536 92 L532 100 L540 92" fill="#1e1e1e" stroke="#4a4a4a" stroke-width="1"/>
+      <text x="592" y="70" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#8a8a8a">NVDA announces:</text>
+      <text x="592" y="84" text-anchor="middle" font-family="DM Serif Display,serif" font-size="12" fill="#555" font-style="italic">[ silence ]</text>
+
+      <text x="490" y="196" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#8a8a8a" font-style="italic">It appeared. NVDA was elsewhere.</text>
+    </svg>
+  </figure>
+
+  <!-- 2 -->
+  <h2 id="the-three-types">2. The Three Types: alert, status, live</h2>
+
+  <div class="live-region-grid" role="list" aria-label="The three live region types">
+    <div class="lr-card" role="listitem">
+      <div class="lr-type" style="color:var(--red);">role="alert"</div>
+      <div class="lr-code"><code>role="alert"</code></div>
+      <div class="lr-behaviour">Announced immediately, interrupting whatever the screen reader is currently reading. Implicitly <code>aria-live="assertive"</code> and <code>aria-atomic="true"</code>.</div>
+      <div class="lr-when">Use for: error messages, critical warnings, session expiry notices. Do not overuse: interrupting mid-sentence is disruptive.</div>
+    </div>
+    <div class="lr-card" role="listitem">
+      <div class="lr-type" style="color:var(--green);">role="status"</div>
+      <div class="lr-code"><code>role="status"</code></div>
+      <div class="lr-behaviour">Announced when the screen reader finishes its current task. Implicitly <code>aria-live="polite"</code> and <code>aria-atomic="true"</code>. Does not interrupt.</div>
+      <div class="lr-when">Use for: success confirmations, loading complete, item counts, filter results, toast notifications.</div>
+    </div>
+    <div class="lr-card" role="listitem">
+      <div class="lr-type" style="color:var(--blue);">aria-live="polite"</div>
+      <div class="lr-code"><code>aria-live="polite"</code></div>
+      <div class="lr-behaviour">Same behaviour as <code>role="status"</code>. Announced when idle. Use <code>aria-atomic="true"</code> to announce the full region content, not just the changed portion.</div>
+      <div class="lr-when">Use for: chat messages, live score updates, search suggestions, pagination results.</div>
+    </div>
+  </div>
+
+  <div class="callout amber" role="note">
+    The live region container must exist in the DOM before content is injected into it. If the container is created and populated at the same time, many screen readers will not announce the content. Create the container on page load, empty, and populate it dynamically.
+  </div>
+
+  <h3>What aria-atomic does</h3>
+  <p><code>aria-atomic="true"</code> tells the screen reader to announce the entire live region when any part of it changes, not just the changed node. Without it, a screen reader may announce only "3" when a counter changes from "2 items" to "3 items": missing the context entirely.</p>
+
+  <div class="code-pair">
+    <div class="code-box code-fail">
+      <div class="code-label">Fails: container created at injection time</div>
+      <div class="c-block">// Wrong: div created AND
+// populated at the same time.
+// Screen reader misses it.
+const div = document.createElement('div');
+div.setAttribute('role', 'status');
+div.textContent = 'Item added to cart';
+document.body.appendChild(div);</div>
+    </div>
+    <div class="code-box code-pass">
+      <div class="code-label">Passes: container pre-exists in DOM</div>
+      <div class="c-block">// HTML (on page load):
+&lt;div role="status"
+  aria-live="polite"
+  aria-atomic="true"
+  id="live-msg"&gt;&lt;/div&gt;
+
+// JS (on action):
+document.getElementById('live-msg')
+  .textContent = 'Item added to cart';</div>
+    </div>
+  </div>
+
+  <!-- 3 -->
+  <h2 id="failure-patterns">3. Failure Patterns and What They Sound Like</h2>
+
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">Live region failure patterns and their screen reader behaviour</caption>
+      <thead>
+        <tr>
+          <th scope="col">Failure</th>
+          <th scope="col">NVDA behaviour</th>
+          <th scope="col">Root cause</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Toast notification with no live region</td>
+          <td>Silence: nothing announced</td>
+          <td>No <code>role="status"</code> or <code>aria-live</code> on the container</td>
+        </tr>
+        <tr>
+          <td>Live region container created and populated simultaneously</td>
+          <td>Silence: container not in DOM before content injected</td>
+          <td>Container must pre-exist in DOM; populate it via JS after load</td>
+        </tr>
+        <tr>
+          <td>role="alert" used for non-critical updates</td>
+          <td>Interrupts current reading mid-sentence</td>
+          <td>assertive used where polite would suffice: disruptive</td>
+        </tr>
+        <tr>
+          <td>aria-atomic missing on partial update</td>
+          <td>Announces only the changed text node: "3" instead of "3 items in cart"</td>
+          <td>Add <code>aria-atomic="true"</code> to announce full region</td>
+        </tr>
+        <tr>
+          <td>Loading spinner with no status announcement on complete</td>
+          <td>Screen reader user hears spinner announced but never hears when it finishes</td>
+          <td>No live region update when loading state changes to complete</td>
+        </tr>
+        <tr>
+          <td>Filter results update silently</td>
+          <td>User applies filter: no announcement of result count or content change</td>
+          <td>Results container has no <code>aria-live</code>; user must navigate manually to discover results changed</td>
+        </tr>
+        <tr>
+          <td>Live region with role="alert" on permanent content</td>
+          <td>Content announced every time the page is refreshed or navigated to</td>
+          <td>role="alert" should only be on dynamic containers, not static content</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <figure class="blog-illustration" aria-label="Screen reader user mentally browsing 48 items while filter shows only 3 results with no announcement">
+    <svg viewBox="0 0 680 220" width="100%" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#0d0d0d;">
+      <title>Silent filter: filter applied showing 3 results, screen reader user still mentally browsing all 48 items</title>
+      <desc>Left side shows a filter UI with Design filter active and 3 results visible. A small label reads 3 results visually with no aria-live on the container. Right side shows a screen reader user with headphones thinking they are on item 37 of 48. NVDA announces silence. Caption: Filter applied. 3 results. You are welcome. NVDA: silence.</desc>
+      <rect width="680" height="220" fill="#0d0d0d"/>
+      <defs><marker id="a3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+
+      <!-- filter panel -->
+      <rect x="20" y="18" width="296" height="184" rx="8" fill="#161616" stroke="#2e2e2e" stroke-width="1"/>
+      <rect x="32" y="30" width="50" height="20" rx="4" fill="#1e1e1e" stroke="#2e2e2e" stroke-width="0.5"/>
+      <text x="57" y="43" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#555">All (48)</text>
+      <rect x="90" y="30" width="66" height="20" rx="4" fill="#2a5c9a" stroke="#60a5fa" stroke-width="1"/>
+      <text x="123" y="43" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#60a5fa" font-weight="500">Design ✓</text>
+      <!-- 3 results -->
+      <rect x="32" y="58" width="272" height="16" rx="3" fill="#1e1e1e"/>
+      <text x="44" y="69" font-family="DM Sans,sans-serif" font-size="8" fill="#c8c8c8">Design system review</text>
+      <rect x="32" y="80" width="272" height="16" rx="3" fill="#1e1e1e"/>
+      <text x="44" y="91" font-family="DM Sans,sans-serif" font-size="8" fill="#c8c8c8">Colour contrast audit</text>
+      <rect x="32" y="102" width="272" height="16" rx="3" fill="#1e1e1e"/>
+      <text x="44" y="113" font-family="DM Sans,sans-serif" font-size="8" fill="#c8c8c8">Typography checklist</text>
+      <!-- 3 results label — visual only -->
+      <rect x="32" y="126" width="110" height="18" rx="3" fill="#0d2a0d" stroke="#4ade80" stroke-width="0.5"/>
+      <text x="87" y="138" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#4ade80">3 results. Visually.</text>
+      <!-- no aria-live note -->
+      <text x="168" y="164" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#f87171" font-style="italic">no aria-live on results container</text>
+      <!-- NVDA silence box -->
+      <rect x="32" y="170" width="272" height="22" rx="5" fill="#1e1e1e" stroke="#444" stroke-width="0.8"/>
+      <text x="168" y="184" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#555">NVDA: [ silence ]</text>
+
+      <!-- screen reader user -->
+      <circle cx="490" cy="90" r="20" fill="#f5e6d0" stroke="#3d4235" stroke-width="1.5"/>
+      <path d="M470 86 Q470 68 490 68 Q510 68 510 86" fill="none" stroke="#3d4235" stroke-width="2.5"/>
+      <rect x="466" y="83" width="8" height="12" rx="3" fill="#3d4235"/>
+      <rect x="506" y="83" width="8" height="12" rx="3" fill="#3d4235"/>
+      <path d="M482 99 Q490 103 498 99" fill="none" stroke="#3d4235" stroke-width="1.5"/>
+      <circle cx="484" cy="88" r="2" fill="#3d4235"/>
+      <circle cx="496" cy="88" r="2" fill="#3d4235"/>
+      <ellipse cx="490" cy="126" rx="18" ry="20" fill="#dde8f5" stroke="#3d4235" stroke-width="1.2"/>
+      <line x1="480" y1="146" x2="474" y2="168" stroke="#3d4235" stroke-width="2"/>
+      <line x1="500" y1="146" x2="506" y2="168" stroke="#3d4235" stroke-width="2"/>
+      <!-- thought bubble -->
+      <ellipse cx="524" cy="64" rx="5" ry="3.5" fill="#1e1e1e" stroke="#444" stroke-width="0.8"/>
+      <ellipse cx="536" cy="56" rx="7" ry="5" fill="#1e1e1e" stroke="#444" stroke-width="0.8"/>
+      <rect x="544" y="26" width="122" height="44" rx="6" fill="#1e1e1e" stroke="#444" stroke-width="1"/>
+      <text x="605" y="43" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#c8c8c8">mentally on item</text>
+      <text x="605" y="57" text-anchor="middle" font-family="DM Serif Display,serif" font-size="14" fill="#fbbf24">37 of 48</text>
+
+      <text x="340" y="212" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#8a8a8a" font-style="italic">Filter applied. 3 results. You're welcome. (NVDA: ...)</text>
+    </svg>
+  </figure>
+
+
+  <!-- 4 -->
+  <h2 id="how-to-test">4. How to Test: Automation, Tools, and Platform Coverage</h2>
+
+  <div style="background:var(--amber-bg);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:0 0 1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
+    <div style="font-size:1.1rem;line-height:1;padding-top:2px;" aria-hidden="true">&#127919;</div>
+    <div>
+      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--amber);font-weight:500;margin-bottom:4px;">Practice these yourself</div>
+      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">All failure patterns are available as interactive demos in the <a href="A11y-Test-Playground/16 A11y Test Playground - Dynamic Content.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Dynamic Content Playground</a>. Mobile testing steps are in the <a href="16 A11y Dynamic Content Mobile Testing Guide.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Mobile Testing Guide</a>.</div>
+    </div>
+  </div>
+
+  <h3>Tier 1: Pipeline automation</h3>
+  <p><span class="tool">axe-core</span> in <span class="tool">Playwright</span> or <span class="tool">Cypress</span>, and <span class="tool">Pa11y</span>, can catch:</p>
+  <ul>
+    <li>Elements with <code>role="alert"</code> or <code>role="status"</code> that are missing required owned elements</li>
+    <li>Invalid <code>aria-live</code> values (anything other than off, polite, assertive)</li>
+    <li>Elements using deprecated ARIA patterns on live regions</li>
+  </ul>
+  <p>What pipeline automation cannot catch: whether a live region actually announces at the right time, whether the content is meaningful, or whether the container pre-existed before population. These require runtime testing with a screen reader.</p>
+
+  <h3>Tier 2: Semi-automated tools</h3>
+  <ul>
+    <li><strong><span class="tool">axe DevTools</span></strong>: run a page scan and filter by <code>aria-live</code> and <code>aria-required-children</code>. Flags invalid ARIA usage on live regions. Does not verify announcement timing.</li>
+    <li><strong><span class="tool">Chrome DevTools</span> accessibility tree</strong>: select the live region container and check the computed role and aria-live value. Confirms the attribute is present and correctly set before you test with a screen reader.</li>
+    <li><strong><span class="tool">Chrome DevTools</span> accessibility panel live view</strong>: trigger the dynamic content change and watch the accessibility tree update in real time. If the live region container does not show the new content in the tree, the screen reader will not announce it.</li>
+  </ul>
+
+  <h3>Tier 3: Manual checks only</h3>
+  <p>All live region testing ultimately requires a human with a screen reader. Automation cannot verify announcement timing, interruptive behaviour, or whether the announced content is meaningful.</p>
+  <ul>
+    <li><strong>Trigger the update while focus is elsewhere</strong>: the defining test for live regions. Focus on a different part of the page, trigger the dynamic content change (add to cart, submit filter, complete upload), and listen. If you hear nothing, the live region is missing or broken.</li>
+    <li><strong>Check announcement timing</strong>: <code>role="alert"</code> should interrupt immediately. <code>role="status"</code> should wait. If a critical error waits, or a non-critical toast interrupts mid-sentence, the wrong role is used.</li>
+    <li><strong>Verify atomic announcements</strong>: trigger a partial update and listen to what NVDA announces. If only a number is announced with no surrounding context, <code>aria-atomic="true"</code> is missing.</li>
+    <li><strong>Check loading state completion</strong>: trigger an async action that shows a spinner. When the spinner disappears and content loads, a completion announcement must be made. Navigate away from the loading trigger before it completes to simulate the real screen reader experience.</li>
+  </ul>
+
+  <h3>Windows: NVDA</h3>
+  <p>Enable NVDA. Navigate focus to any element that is not the live region. Trigger the dynamic content change. NVDA should announce the update without requiring focus to move. For <code>role="alert"</code>, announcement is immediate. For <code>role="status"</code> and <code>aria-live="polite"</code>, announcement happens when NVDA finishes its current task. Press <span class="key">Insert</span>+<span class="key">F7</span> and check the elements list for any elements with ARIA live roles.</p>
+
+  <h3>Mac: VoiceOver</h3>
+  <p>Enable VoiceOver with <span class="key">Cmd</span>+<span class="key">F5</span>. Use Safari. Place focus on a non-live-region element. Trigger the dynamic content change. VoiceOver should announce the update. Use <span class="key">VO</span>+<span class="key">U</span> to open the rotor and check for any web spots or ARIA landmarks that contain live regions.</p>
+
+  <h3>iOS: VoiceOver</h3>
+  <p>Enable VoiceOver: Settings, Accessibility, VoiceOver, Toggle ON. Use Safari. Navigate away from the live region, then trigger the update. VoiceOver should announce it without requiring a swipe. If VoiceOver is mid-announcement when a <code>role="alert"</code> fires, it should interrupt and announce the alert immediately.</p>
+
+  <h3>Android: TalkBack</h3>
+  <p>Enable TalkBack: Settings, Accessibility, TalkBack, Toggle ON. Use Chrome. Navigate focus away from the live region container. Trigger the update. TalkBack should announce the change without requiring navigation. If it does not, inspect the element in Chrome DevTools on desktop (via USB debugging) to confirm the <code>aria-live</code> attribute is present and correctly set.</p>
+
+  <!-- 5 -->
+  <h2 id="common-components">5. Common Components That Need Live Regions</h2>
+
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">Common components that require live regions with recommended role and pattern</caption>
+      <thead>
+        <tr>
+          <th scope="col">Component</th>
+          <th scope="col">Recommended role</th>
+          <th scope="col">When to announce</th>
+          <th scope="col">Common failure</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Toast / snackbar notification</td>
+          <td><code>role="status"</code></td>
+          <td>On appearance</td>
+          <td>No live region: visually visible, screen reader silent</td>
+        </tr>
+        <tr>
+          <td>Form error summary</td>
+          <td><code>role="alert"</code></td>
+          <td>On form submit with errors</td>
+          <td>Summary appears but focus stays at bottom of form; no announcement</td>
+        </tr>
+        <tr>
+          <td>Loading spinner / progress</td>
+          <td><code>role="status"</code></td>
+          <td>On loading start and on completion</td>
+          <td>Spinner announced on appear but completion never announced</td>
+        </tr>
+        <tr>
+          <td>Search / filter results</td>
+          <td><code>aria-live="polite"</code></td>
+          <td>When result count or content updates</td>
+          <td>Results update silently: user must navigate to discover new results</td>
+        </tr>
+        <tr>
+          <td>Shopping cart counter</td>
+          <td><code>role="status"</code></td>
+          <td>When item count changes</td>
+          <td>Counter updates visually: no live region on the count element</td>
+        </tr>
+        <tr>
+          <td>Character counter</td>
+          <td><code>aria-live="polite"</code></td>
+          <td>Periodically as user types (not on every keystroke)</td>
+          <td>Live region fires on every keystroke: extremely noisy</td>
+        </tr>
+        <tr>
+          <td>Chat / feed</td>
+          <td><code>aria-live="polite"</code></td>
+          <td>On new message</td>
+          <td>New messages not announced: user must navigate to discover them</td>
+        </tr>
+        <tr>
+          <td>Auto-complete suggestions</td>
+          <td><code>role="status"</code></td>
+          <td>When suggestion count updates</td>
+          <td>Suggestions appear visually: count never announced</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <figure class="blog-illustration" aria-label="Loading spinner announces start but never announces completion. Screen reader user waits with cold tea and cobwebs on headphones.">
+    <svg viewBox="0 0 680 230" width="100%" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#0d0d0d;">
+      <title>Spinner that never calls back: loading announced, completion never announced, user still waiting with cold tea</title>
+      <desc>Three panels in a timeline. T equals zero seconds: spinner appears, aria-live announces Loading, marked as announced. T equals 3 seconds: content loads silently with no live region update, marked as silence. T equals infinity: screen reader user sits with cobwebs on headphones and cold tea, NVDA still waiting for a completion announcement that never comes. Caption: Loading complete. But nobody told the screen reader.</desc>
+      <rect width="680" height="230" fill="#0d0d0d"/>
+      <defs><marker id="a5" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+
+      <!-- T1 panel -->
+      <rect x="14" y="18" width="170" height="148" rx="6" fill="#161616" stroke="#2e2e2e" stroke-width="1"/>
+      <text x="99" y="36" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#8a8a8a">T=0s: loading starts</text>
+      <!-- spinner -->
+      <circle cx="99" cy="90" r="24" fill="none" stroke="#2e2e2e" stroke-width="4"/>
+      <path d="M99 66 A24 24 0 0 1 123 90" fill="none" stroke="#60a5fa" stroke-width="4" stroke-linecap="round"/>
+      <text x="99" y="128" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#60a5fa" font-style="italic">aria-live: "Loading..."</text>
+      <text x="99" y="142" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#4ade80">✓ announced</text>
+
+      <!-- arrow 1→2 -->
+      <line x1="184" y1="92" x2="204" y2="92" stroke="#2e2e2e" stroke-width="1.5" marker-end="url(#a5)"/>
+
+      <!-- T2 panel -->
+      <rect x="204" y="18" width="170" height="148" rx="6" fill="#161616" stroke="#2e2e2e" stroke-width="1"/>
+      <text x="289" y="36" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#8a8a8a">T=3s: content loads</text>
+      <rect x="220" y="48" width="138" height="72" rx="4" fill="#1e1e1e"/>
+      <rect x="228" y="58" width="120" height="8" rx="2" fill="#2e2e2e"/>
+      <rect x="228" y="72" width="90" height="8" rx="2" fill="#2e2e2e"/>
+      <rect x="228" y="86" width="110" height="8" rx="2" fill="#2e2e2e"/>
+      <rect x="228" y="100" width="76" height="8" rx="2" fill="#2e2e2e"/>
+      <text x="289" y="136" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#f87171" font-style="italic">no live region update</text>
+      <text x="289" y="150" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#f87171">✗ silence</text>
+
+      <!-- arrow 2→3 -->
+      <line x1="374" y1="92" x2="394" y2="92" stroke="#2e2e2e" stroke-width="1.5" marker-end="url(#a5)"/>
+
+      <!-- T3 panel -->
+      <rect x="394" y="18" width="272" height="148" rx="6" fill="#161616" stroke="#f87171" stroke-width="1"/>
+      <text x="530" y="36" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#8a8a8a">T=∞: user still waiting</text>
+      <!-- figure with cobwebs -->
+      <circle cx="458" cy="90" r="20" fill="#f5e6d0" stroke="#3d4235" stroke-width="1.5"/>
+      <path d="M438 86 Q438 68 458 68 Q478 68 478 86" fill="none" stroke="#3d4235" stroke-width="2.5"/>
+      <rect x="434" y="83" width="8" height="12" rx="3" fill="#3d4235"/>
+      <rect x="474" y="83" width="8" height="12" rx="3" fill="#3d4235"/>
+      <!-- cobweb on headphones -->
+      <line x1="432" y1="82" x2="444" y2="70" stroke="#888" stroke-width="0.5"/>
+      <line x1="434" y1="76" x2="446" y2="84" stroke="#888" stroke-width="0.5"/>
+      <line x1="438" y1="70" x2="444" y2="84" stroke="#888" stroke-width="0.5"/>
+      <!-- sleepy eyes -->
+      <line x1="451" y1="88" x2="457" y2="88" stroke="#3d4235" stroke-width="1.5"/>
+      <line x1="461" y1="88" x2="467" y2="88" stroke="#3d4235" stroke-width="1.5"/>
+      <!-- neutral mouth -->
+      <line x1="453" y1="98" x2="463" y2="98" stroke="#3d4235" stroke-width="1.2"/>
+      <ellipse cx="458" cy="126" rx="18" ry="20" fill="#dde8f5" stroke="#3d4235" stroke-width="1.2"/>
+      <line x1="448" y1="146" x2="442" y2="162" stroke="#3d4235" stroke-width="2"/>
+      <line x1="468" y1="146" x2="474" y2="162" stroke="#3d4235" stroke-width="2"/>
+      <!-- cold tea cup -->
+      <rect x="486" y="122" width="20" height="24" rx="3" fill="#2a1a0a" stroke="#555" stroke-width="1"/>
+      <path d="M494 122 Q490 114 498 114 Q506 114 502 122" fill="none" stroke="#555" stroke-width="1"/>
+      <text x="496" y="158" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#555" font-style="italic">cold</text>
+      <!-- NVDA bubble -->
+      <rect x="514" y="48" width="140" height="44" rx="5" fill="#1a0808" stroke="#f87171" stroke-width="0.8"/>
+      <path d="M522 92 L518 100 L526 92" fill="#1a0808" stroke="#f87171" stroke-width="0.8"/>
+      <text x="584" y="66" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#f87171">still waiting for</text>
+      <text x="584" y="79" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#f87171">completion...</text>
+      <text x="584" y="92" text-anchor="middle" font-family="DM Serif Display,serif" font-size="10" fill="#555" font-style="italic">[ silence ]</text>
+
+      <text x="340" y="222" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#8a8a8a" font-style="italic">Loading complete. But nobody told the screen reader.</text>
+    </svg>
+  </figure>
+
+
+  <!-- 6 -->
+  <h2 id="defects">6. Writing Live Region Defects</h2>
+
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">Live region defect types with WCAG reference, severity and reproduction steps</caption>
+      <thead>
+        <tr>
+          <th scope="col">Defect</th>
+          <th scope="col">WCAG</th>
+          <th scope="col">Severity</th>
+          <th scope="col">Reproduction</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Toast notification not announced</td><td>4.1.3</td><td style="color:var(--red)">Major</td><td>Enable NVDA. Focus on a non-toast element. Trigger add-to-cart or equivalent. No announcement heard. Inspect: container has no <code>role="status"</code> or <code>aria-live</code>.</td></tr>
+        <tr><td>Form error summary not announced on submit</td><td>4.1.3 / 3.3.1</td><td style="color:var(--red)">Critical</td><td>Enable NVDA. Focus on submit button. Submit form with errors. Error summary appears visually but NVDA announces nothing. No <code>role="alert"</code> on summary container.</td></tr>
+        <tr><td>Filter results update silently</td><td>4.1.3</td><td style="color:var(--red)">Major</td><td>Enable NVDA. Apply a filter. Results update. No announcement of result count or content change. Results container has no <code>aria-live</code>.</td></tr>
+        <tr><td>Loading completion not announced</td><td>4.1.3</td><td style="color:var(--amber)">Moderate</td><td>Enable NVDA. Trigger async action. Spinner appears (may or may not be announced). Content loads. No completion announcement. No live region update on load complete.</td></tr>
+        <tr><td>Live region created and populated simultaneously</td><td>4.1.3</td><td style="color:var(--red)">Major</td><td>Inspect: live region container created via JS at same time as content injection. Pre-existing empty container required. Silence on announcement.</td></tr>
+        <tr><td>aria-atomic missing: partial announcement</td><td>4.1.3</td><td style="color:var(--amber)">Moderate</td><td>Enable NVDA. Trigger update. NVDA announces only the changed text fragment with no surrounding context. Add <code>aria-atomic="true"</code>.</td></tr>
+        <tr><td>role="alert" on non-critical update</td><td>4.1.3</td><td style="color:var(--amber)">Moderate</td><td>Enable NVDA. Mid-sentence, trigger a non-critical update. NVDA interrupts current announcement for a low-priority message. Change to <code>role="status"</code>.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="takeaway" role="note">
+    <div class="label">The two fast checks</div>
+    <ul>
+      <li>Enable NVDA. Focus on a heading or paragraph. Trigger every dynamic content change on the page: adds to cart, filter applies, form submits, toasts appear. Each one must be announced without you moving focus. If any are silent, the live region is missing or broken.</li>
+      <li>Open Chrome DevTools accessibility tree. Inspect each dynamic container. Confirm <code>role="status"</code>, <code>role="alert"</code>, or <code>aria-live</code> is present and the container was in the DOM before content was injected.</li>
+    </ul>
+  </div>
+
+  <div class="series-nav">
+    <span class="label">Navigate the series</span>
+    <div class="nav-pair">
+      <a href="15-Forms-Labels-Errors.html" class="nav-blog">
+        <span class="nav-blog-arrow" aria-hidden="true">←</span>
+        <div>
+          <div class="nav-blog-title">Blog 15: Forms, Labels, Errors and Instructions</div>
+          <div class="nav-blog-sub">How to test form accessibility</div>
+        </div>
+      </a>
+      <a href="17-Zoom-Reflow-Reduced-Motion.html" class="nav-blog">
+        <div>
+          <div class="nav-blog-title">Blog 17: Zoom, Reflow, Reduced Motion</div>
+          <div class="nav-blog-sub">How to test responsive and motion accessibility</div>
+        </div>
+        <span class="nav-blog-arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+
+  <aside class="references" aria-label="References">
+    <div class="ref-title">References</div>
+    <ul role="list">
+      <li><a href="https://www.w3.org/TR/WCAG21/#status-messages" target="_blank" rel="noopener noreferrer">WCAG 4.1.3: Status Messages</a></li>
+      <li><a href="https://www.w3.org/WAI/ARIA/apg/patterns/alert/" target="_blank" rel="noopener noreferrer">ARIA Authoring Practices: Alert pattern</a></li>
+      <li><a href="https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles/status_role" target="_blank" rel="noopener noreferrer">MDN: ARIA status role</a></li>
+      <li><a href="https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Attributes/aria-live" target="_blank" rel="noopener noreferrer">MDN: aria-live attribute</a></li>
+      <li><a href="https://www.smashingmagazine.com/2022/04/accessible-front-end-patterns-for-web-apps-part1/" target="_blank" rel="noopener noreferrer">Smashing Magazine: Accessible patterns for web apps</a></li>
+    </ul>
+  </aside>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; Built with intention. Tested with care. &nbsp;·&nbsp; © 2025
+  </p>
+</footer>
+
+</body>
+</html>

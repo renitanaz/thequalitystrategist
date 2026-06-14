@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>09 Phase Exit Criteria | The Quality Strategist</title>
+  <meta name="description" content="What must be true before each phase closes. The accessibility exit criteria for Discovery, Design, Development, QA, and Production: phase by phase, role by role." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+      --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+      --green:#4ade80; --green-bg:rgba(74,222,128,0.07);
+      --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07);
+      --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07);
+      --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.07);
+      --red:#f87171; --red-bg:rgba(248,113,113,0.07);
+      --teal:#2dd4bf; --teal-bg:rgba(45,212,191,0.07);
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
+    .skip-link:focus { top:0; }
+    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
+    .nav-links { display:flex; gap:2rem; list-style:none; }
+    .nav-links a { color:var(--text-3); text-decoration:none; font-size:0.85rem; transition:color 0.2s; }
+    .nav-links a:hover { color:var(--text); }
+    .blog-header { max-width:900px; margin:0 auto; padding:4rem 2rem 2.5rem; border-bottom:1px solid var(--border); }
+    .breadcrumb { font-size:0.78rem; color:var(--text-3); margin-bottom:1.5rem; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; }
+    .breadcrumb a { color:var(--text-3); text-decoration:none; }
+    .breadcrumb a:hover { color:var(--text-2); }
+    .blog-tags { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.25rem; }
+    .tag { font-size:0.7rem; padding:3px 10px; border-radius:99px; background:var(--bg3); color:var(--text-3); border:1px solid var(--border); letter-spacing:0.04em; text-transform:uppercase; font-weight:500; }
+    .tag.accent { background:var(--amber-bg); color:var(--amber); border-color:rgba(251,191,36,0.25); }
+    .blog-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.85rem,4vw,2.6rem); line-height:1.2; letter-spacing:-0.02em; color:var(--text); margin-bottom:0.75rem; }
+    .blog-header h1 em { font-style:italic; color:var(--amber); }
+    .blog-subtitle { font-family:'DM Serif Display',serif; font-size:1.1rem; font-style:italic; color:var(--text-3); margin-bottom:1.25rem; }
+    .blog-meta { display:flex; align-items:center; gap:1.25rem; font-size:0.82rem; color:var(--text-3); flex-wrap:wrap; }
+    .blog-meta .series { color:var(--text-2); font-weight:500; }
+    main.blog-body { display:block; max-width:900px; margin:0 auto; padding:3rem 2rem 5rem; }
+    .toc { display:block; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.5rem 1.75rem; margin:0 0 3rem 0; }
+    .toc-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.9rem; }
+    .toc ol { padding-left:1.25rem; }
+    .toc ol li { margin-bottom:0.45rem; }
+    .toc ol li a { font-size:0.88rem; color:var(--text-2); text-decoration:none; transition:color 0.2s; }
+    .toc ol li a:hover { color:var(--amber); }
+    .blog-body h2 { font-family:'DM Serif Display',serif; font-size:1.5rem; letter-spacing:-0.01em; color:var(--text); margin:3.5rem 0 1.1rem; padding-top:1rem; border-top:1px solid var(--border); }
+    .blog-body h3 { font-size:1rem; font-weight:500; color:var(--text); margin:1.75rem 0 0.5rem; }
+    .blog-body p { color:var(--text-2); margin-bottom:1.25rem; font-weight:300; }
+    .blog-body p strong { color:var(--text); font-weight:500; }
+    .blog-body ul, .blog-body ol { padding-left:1.5rem; margin-bottom:1.25rem; color:var(--text-2); font-weight:300; }
+    .blog-body li { margin-bottom:0.45rem; }
+    .blog-body li strong { color:var(--text); font-weight:500; }
+    code { background:var(--bg3); padding:1px 6px; border-radius:3px; font-size:0.85em; color:var(--text-2); font-family:monospace; }
+    .callout { display:block; background:var(--amber-bg); border-left:3px solid var(--amber); border-radius:0 10px 10px 0; padding:1.25rem 1.5rem; margin:1.75rem 0; font-size:0.95rem; color:var(--text); font-style:italic; line-height:1.6; }
+    .takeaway { display:block; background:var(--green-bg); border:1px solid rgba(74,222,128,0.2); border-radius:10px; padding:1.25rem 1.5rem; margin:1.75rem 0; }
+    .takeaway .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--green); font-weight:500; margin-bottom:0.5rem; display:block; }
+    .takeaway p { color:var(--text-2); font-size:0.93rem; margin:0; }
+    .tool { display:inline; background:var(--purple-bg); color:var(--purple); border:1px solid rgba(167,139,250,0.2); border-radius:4px; padding:1px 7px; font-size:0.85em; font-weight:500; }
+    .blog-ref { display:inline-flex; align-items:center; gap:6px; background:var(--bg2); border:1px solid var(--border); border-radius:6px; padding:3px 10px; font-size:0.78rem; color:var(--text-2); text-decoration:none; transition:border-color 0.2s,color 0.2s; white-space:nowrap; }
+    .blog-ref:hover { border-color:var(--amber); color:var(--amber); }
+    .blog-ref::before { content:'↗'; font-size:0.7rem; color:var(--text-3); }
+
+    /* PHASE EXIT CARDS */
+    .phase-card { background:var(--bg2); border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:14px; }
+    .phase-header { display:flex; align-items:center; gap:14px; padding:1rem 1.4rem; border-bottom:1px solid var(--border); }
+    .phase-badge { width:48px; height:48px; border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; flex-shrink:0; }
+    .phase-num { font-size:0.6rem; text-transform:uppercase; letter-spacing:0.08em; font-weight:600; }
+    .phase-label { font-size:0.85rem; font-weight:700; }
+    .phase-name { font-size:1rem; font-weight:500; color:var(--text); }
+    .phase-owner { font-size:0.75rem; color:var(--text-3); margin-top:2px; }
+    .phase-body { padding:1.1rem 1.4rem; }
+    .phase-criteria { display:flex; flex-direction:column; gap:8px; }
+    .criterion { display:flex; align-items:flex-start; gap:10px; padding:0.7rem 0.9rem; background:var(--bg3); border-radius:8px; }
+    .criterion-check { width:18px; height:18px; border-radius:4px; border:1.5px solid; flex-shrink:0; margin-top:2px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; }
+    .criterion-text { font-size:0.85rem; color:var(--text-2); line-height:1.55; }
+    .criterion-text strong { color:var(--text); font-weight:500; }
+    .criterion-wcag { font-size:0.68rem; color:var(--text-3); background:var(--bg); border:1px solid var(--border); padding:1px 6px; border-radius:99px; white-space:nowrap; margin-left:auto; align-self:flex-start; flex-shrink:0; font-weight:500; }
+    .phase-note { font-size:0.82rem; color:var(--text-3); margin-top:0.85rem; font-style:italic; padding:0.75rem 0.9rem; background:var(--bg3); border-radius:8px; border-left:3px solid; }
+
+    /* TABLE */
+    .table-wrap { display:block; overflow-x:auto; margin:1.75rem 0; border-radius:10px; border:1px solid var(--border); }
+    table { width:100%; border-collapse:collapse; font-size:0.875rem; }
+    thead th { background:var(--bg2); padding:10px 14px; text-align:left; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-3); font-weight:500; border-bottom:1px solid var(--border); white-space:nowrap; }
+    tbody td { padding:11px 14px; border-bottom:1px solid var(--border); color:var(--text-2); vertical-align:top; line-height:1.55; }
+    tbody tr:last-child td { border-bottom:none; }
+    tbody td:first-child { color:var(--text); font-weight:500; }
+    tbody tr:hover td { background:var(--bg2); }
+
+    /* ILLUSTRATION */
+    .blog-illustration { margin:1.75rem 0; border:none; padding:0; }
+
+    /* SERIES NAV */
+    .series-nav { display:block; margin-top:4rem; padding-top:2rem; border-top:1px solid var(--border); }
+    .series-nav .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.75rem; display:block; }
+    .nav-pair { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .nav-blog { display:flex; align-items:center; gap:1rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.1rem 1.25rem; text-decoration:none; transition:border-color 0.2s,background 0.2s; }
+    .nav-blog:hover { border-color:#444; background:var(--bg3); }
+    .nav-blog-arrow { color:var(--text-3); font-size:1rem; flex-shrink:0; }
+    .nav-blog-title { font-size:0.88rem; font-weight:500; color:var(--text); }
+    .nav-blog-sub { font-size:0.75rem; color:var(--text-3); margin-top:2px; }
+    .references { display:block; margin-top:2.5rem; padding:1.5rem 1.75rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; }
+    .ref-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:1rem; }
+    .references ul { list-style:none; padding:0; }
+    .references ul li { margin-bottom:0.5rem; }
+    .references ul li a { font-size:0.85rem; color:var(--text-2); text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; transition:color 0.2s; }
+    .references ul li a:hover { color:var(--green); }
+    .references ul li a::before { content:'↗'; font-size:0.75rem; color:var(--text-3); }
+    footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
+    footer a { color:var(--text-3); text-decoration:none; }
+    footer a:hover { color:var(--text-2); }
+    .visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    @media (max-width:620px) {
+      nav.site-nav { padding:0 1.25rem; }
+      .nav-links { display:none; }
+      .blog-header, main.blog-body { padding-left:1.25rem; padding-right:1.25rem; }
+      .blog-header { padding-top:2.5rem; }
+      .nav-pair { grid-template-columns:1fr; }
+      .criterion { flex-wrap:wrap; }
+      .criterion-wcag { margin-left:0; }
+    }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <ul class="nav-links" role="list">
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#playlist">Playlist</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#justlikereal">JustLikeReal</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#meetme">Meet Me</a></li>
+  </ul>
+</nav>
+
+<header class="blog-header">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a>
+    <span aria-hidden="true">›</span>
+    <span>Shift-Left Accessibility</span>
+    <span aria-hidden="true">›</span>
+    <span aria-current="page">09 of 38</span>
+  </nav>
+  <div class="blog-tags" aria-label="Blog categories">
+    <span class="tag accent">Phase Gates</span>
+    <span class="tag">Shift-Left</span>
+    <span class="tag">Checklist</span>
+    <span class="tag">Governance</span>
+  </div>
+  <h1>09 Phase Exit Criteria: <em>What Must Be True Before Each Phase Closes</em></h1>
+  <p class="blog-subtitle">The gate that stops an accessibility defect from becoming the next phase's problem.</p>
+  <div class="blog-meta">
+    <span class="series">Series: Shift-Left Accessibility</span>
+    <span aria-hidden="true">·</span>
+    <span>Blog 09 of 38</span>
+    <span aria-hidden="true">·</span>
+    <span>8 min read</span>
+  </div>
+</header>
+
+<main class="blog-body" id="main-content">
+
+  <nav class="toc" aria-label="Table of contents">
+    <div class="toc-title" id="toc-heading">In this blog</div>
+    <ol aria-labelledby="toc-heading">
+      <li><a href="#what-is-exit-criteria">What a phase exit criterion is</a></li>
+      <li><a href="#phase0">Phase 0: Discovery and strategy</a></li>
+      <li><a href="#phase1">Phase 1: UX research and design</a></li>
+      <li><a href="#phase2">Phase 2: Content modelling and authoring</a></li>
+      <li><a href="#phase3">Phase 3: Development</a></li>
+      <li><a href="#phase4">Phase 4: QA and testing</a></li>
+      <li><a href="#phase5">Phase 5: Live and production</a></li>
+      <li><a href="#how-to-use">How to use these in a real project</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <h2 id="what-is-exit-criteria">1. What a Phase Exit Criterion Is</h2>
+
+  <p>A phase exit criterion is a specific, testable condition that must be true before work moves to the next phase. Each phase has a named owner. That owner holds the gate.</p>
+
+  <p>A defect caught at Phase 1 costs a Figma edit. The same defect at Phase 4 costs a sprint. <a href="02-cost-of-shift-right.html" class="blog-ref">Blog 02 has the numbers.</a></p>
+
+  <div class="callout" role="note">
+    If publishing is allowed, the system has approved the content. Phase exit criteria are the governance layer, not a retrospective checklist.
+  </div>
+
+
+  <figure class="blog-illustration" aria-label="Four phase tollbooths on a road. PM, UX Lead, Developer and QA Lead each stand in a booth with a clipboard. A car labelled Feature waits at the final gate.">
+    <svg width="100%" viewBox="0 0 680 260" role="img" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#fafcf5;">
+      <title>Phase gate tollbooths: each phase has an owner holding a barrier before the Feature car can pass</title>
+      <desc>A road with four tollbooths. Phase 0 has PM/PO, Phase 1 has UX Lead, Phase 3 has Developer, Phase 4 has QA Lead. Each holds a clipboard. The first three barriers are down. Phase 4 barrier is raised. A car labelled Feature waits. Caption: Every phase has a gate. Every gate has an owner.</desc>
+      <rect width="680" height="260" fill="#fafcf5"/>
+      <rect x="0" y="0" width="680" height="145" fill="#f0ede6"/>
+      <rect x="0" y="145" width="680" height="75" fill="#9a9a9a"/>
+      <rect x="0" y="143" width="680" height="4" fill="#777"/>
+      <rect x="20" y="175" width="36" height="7" rx="2" fill="#f5edd6" opacity="0.7"/>
+      <rect x="80" y="175" width="36" height="7" rx="2" fill="#f5edd6" opacity="0.7"/>
+      <rect x="560" y="175" width="36" height="7" rx="2" fill="#f5edd6" opacity="0.7"/>
+      <rect x="620" y="175" width="36" height="7" rx="2" fill="#f5edd6" opacity="0.7"/>
+      <rect x="0" y="220" width="680" height="40" fill="#e0dbd0"/>
+      <line x1="0" y1="220" x2="680" y2="220" stroke="#c8c4b8" stroke-width="1.5"/>
+      <!-- BOOTH 1 Phase 0 PM -->
+      <rect x="38" y="48" width="88" height="112" rx="5" fill="#fff" stroke="#4a5828" stroke-width="2"/>
+      <rect x="38" y="48" width="88" height="26" rx="5" fill="#4a5828"/>
+      <text x="82" y="65" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#fff" font-weight="700">Phase 0</text>
+      <rect x="50" y="82" width="64" height="42" rx="3" fill="#f0f4e8" stroke="#4a5828" stroke-width="1"/>
+      <circle cx="82" cy="97" r="11" fill="#f5e6d0" stroke="#3d4235" stroke-width="1.5"/>
+      <path d="M76 101 Q82 106 88 101" fill="none" stroke="#3d4235" stroke-width="1.2"/>
+      <circle cx="79" cy="95" r="1.5" fill="#3d4235"/>
+      <circle cx="85" cy="95" r="1.5" fill="#3d4235"/>
+      <rect x="56" y="113" width="22" height="18" rx="2" fill="#fff" stroke="#4a5828" stroke-width="0.8"/>
+      <line x1="59" y1="117" x2="75" y2="117" stroke="#4a5828" stroke-width="0.5"/>
+      <line x1="59" y1="121" x2="75" y2="121" stroke="#4a5828" stroke-width="0.5"/>
+      <line x1="59" y1="125" x2="70" y2="125" stroke="#4a5828" stroke-width="0.5"/>
+      <text x="82" y="152" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#4a5828" font-weight="600">PM / PO</text>
+      <circle cx="126" cy="143" r="5" fill="#f87171"/>
+      <line x1="126" y1="143" x2="168" y2="143" stroke="#f87171" stroke-width="3.5" stroke-linecap="round"/>
+      <line x1="134" y1="143" x2="137" y2="136" stroke="#fff" stroke-width="1.5"/>
+      <line x1="144" y1="143" x2="147" y2="136" stroke="#fff" stroke-width="1.5"/>
+      <line x1="154" y1="143" x2="157" y2="136" stroke="#fff" stroke-width="1.5"/>
+      <!-- BOOTH 2 Phase 1 UX -->
+      <rect x="188" y="48" width="88" height="112" rx="5" fill="#fff" stroke="#2a5c9a" stroke-width="2"/>
+      <rect x="188" y="48" width="88" height="26" rx="5" fill="#2a5c9a"/>
+      <text x="232" y="65" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#fff" font-weight="700">Phase 1</text>
+      <rect x="200" y="82" width="64" height="42" rx="3" fill="#eef3fc" stroke="#2a5c9a" stroke-width="1"/>
+      <circle cx="232" cy="97" r="11" fill="#f5e6d0" stroke="#3d4235" stroke-width="1.5"/>
+      <path d="M226 101 Q232 106 238 101" fill="none" stroke="#3d4235" stroke-width="1.2"/>
+      <circle cx="229" cy="95" r="1.5" fill="#3d4235"/>
+      <circle cx="235" cy="95" r="1.5" fill="#3d4235"/>
+      <rect x="206" y="113" width="22" height="18" rx="2" fill="#fff" stroke="#2a5c9a" stroke-width="0.8"/>
+      <line x1="209" y1="117" x2="225" y2="117" stroke="#2a5c9a" stroke-width="0.5"/>
+      <line x1="209" y1="121" x2="225" y2="121" stroke="#2a5c9a" stroke-width="0.5"/>
+      <line x1="209" y1="125" x2="220" y2="125" stroke="#2a5c9a" stroke-width="0.5"/>
+      <text x="232" y="152" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#2a5c9a" font-weight="600">UX Lead</text>
+      <circle cx="276" cy="143" r="5" fill="#f87171"/>
+      <line x1="276" y1="143" x2="318" y2="143" stroke="#f87171" stroke-width="3.5" stroke-linecap="round"/>
+      <line x1="284" y1="143" x2="287" y2="136" stroke="#fff" stroke-width="1.5"/>
+      <line x1="294" y1="143" x2="297" y2="136" stroke="#fff" stroke-width="1.5"/>
+      <line x1="304" y1="143" x2="307" y2="136" stroke="#fff" stroke-width="1.5"/>
+      <!-- BOOTH 3 Phase 3 Developer -->
+      <rect x="338" y="48" width="88" height="112" rx="5" fill="#fff" stroke="#7a4a9a" stroke-width="2"/>
+      <rect x="338" y="48" width="88" height="26" rx="5" fill="#7a4a9a"/>
+      <text x="382" y="65" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#fff" font-weight="700">Phase 3</text>
+      <rect x="350" y="82" width="64" height="42" rx="3" fill="#f5eeff" stroke="#7a4a9a" stroke-width="1"/>
+      <circle cx="382" cy="97" r="11" fill="#f5e6d0" stroke="#3d4235" stroke-width="1.5"/>
+      <path d="M376 101 Q382 106 388 101" fill="none" stroke="#3d4235" stroke-width="1.2"/>
+      <circle cx="379" cy="95" r="1.5" fill="#3d4235"/>
+      <circle cx="385" cy="95" r="1.5" fill="#3d4235"/>
+      <rect x="356" y="113" width="22" height="18" rx="2" fill="#fff" stroke="#7a4a9a" stroke-width="0.8"/>
+      <line x1="359" y1="117" x2="375" y2="117" stroke="#7a4a9a" stroke-width="0.5"/>
+      <line x1="359" y1="121" x2="375" y2="121" stroke="#7a4a9a" stroke-width="0.5"/>
+      <line x1="359" y1="125" x2="370" y2="125" stroke="#7a4a9a" stroke-width="0.5"/>
+      <text x="382" y="152" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#7a4a9a" font-weight="600">Developer</text>
+      <circle cx="426" cy="143" r="5" fill="#f87171"/>
+      <line x1="426" y1="143" x2="468" y2="143" stroke="#f87171" stroke-width="3.5" stroke-linecap="round"/>
+      <line x1="434" y1="143" x2="437" y2="136" stroke="#fff" stroke-width="1.5"/>
+      <line x1="444" y1="143" x2="447" y2="136" stroke="#fff" stroke-width="1.5"/>
+      <line x1="454" y1="143" x2="457" y2="136" stroke="#fff" stroke-width="1.5"/>
+      <!-- BOOTH 4 Phase 4 QA Lead barrier raised -->
+      <rect x="488" y="48" width="88" height="112" rx="5" fill="#fff" stroke="#f87171" stroke-width="2"/>
+      <rect x="488" y="48" width="88" height="26" rx="5" fill="#f87171"/>
+      <text x="532" y="65" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#fff" font-weight="700">Phase 4</text>
+      <rect x="500" y="82" width="64" height="42" rx="3" fill="#fff0f0" stroke="#f87171" stroke-width="1"/>
+      <circle cx="532" cy="97" r="11" fill="#f5e6d0" stroke="#3d4235" stroke-width="1.5"/>
+      <path d="M526 101 Q532 106 538 101" fill="none" stroke="#3d4235" stroke-width="1.2"/>
+      <circle cx="529" cy="95" r="1.5" fill="#3d4235"/>
+      <circle cx="535" cy="95" r="1.5" fill="#3d4235"/>
+      <rect x="506" y="113" width="22" height="18" rx="2" fill="#fff" stroke="#f87171" stroke-width="0.8"/>
+      <line x1="509" y1="117" x2="525" y2="117" stroke="#f87171" stroke-width="0.5"/>
+      <line x1="509" y1="121" x2="525" y2="121" stroke="#f87171" stroke-width="0.5"/>
+      <line x1="509" y1="125" x2="520" y2="125" stroke="#f87171" stroke-width="0.5"/>
+      <text x="532" y="152" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" font-weight="600">QA Lead</text>
+      <circle cx="576" cy="143" r="5" fill="#4ade80"/>
+      <line x1="576" y1="103" x2="576" y2="143" stroke="#4ade80" stroke-width="3.5" stroke-linecap="round"/>
+      <!-- car -->
+      <rect x="598" y="153" width="62" height="30" rx="6" fill="#dde5c8" stroke="#4a5828" stroke-width="1.5"/>
+      <rect x="606" y="145" width="44" height="16" rx="4" fill="#dde8f5" stroke="#4a5828" stroke-width="1"/>
+      <circle cx="610" cy="184" r="8" fill="#3d4235"/>
+      <circle cx="610" cy="184" r="4.5" fill="#888"/>
+      <circle cx="648" cy="184" r="8" fill="#3d4235"/>
+      <circle cx="648" cy="184" r="4.5" fill="#888"/>
+      <text x="629" y="173" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4a5828" font-weight="600">Feature</text>
+      <text x="340" y="244" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#9a9e90" font-style="italic">Every phase has a gate. Every gate has an owner.</text>
+    </svg>
+  </figure>
+
+
+  <!-- PHASE 0 -->
+  <h2 id="phase0">2. Phase 0: Discovery and Strategy</h2>
+  <p>Before a single wireframe is drawn, these conditions must be in place. Without them, every downstream phase lacks governance.</p>
+
+  <div class="phase-card">
+    <div class="phase-header">
+      <div class="phase-badge" style="background:var(--green-bg)">
+        <span class="phase-num" style="color:var(--green)">Phase</span>
+        <span class="phase-label" style="color:var(--green)">0</span>
+      </div>
+      <div>
+        <div class="phase-name">Discovery and Strategy</div>
+        <div class="phase-owner">Owner: Product Owner / PM</div>
+      </div>
+    </div>
+    <div class="phase-body">
+      <div class="phase-criteria">
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--green);color:var(--green)">☐</div>
+          <div class="criterion-text">Legal and regulatory obligations identified. <strong>Target conformance level defined as minimum WCAG 2.1 AA.</strong></div>
+          <div class="criterion-wcag">All</div>
+        </div>
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--green);color:var(--green)">☐</div>
+          <div class="criterion-text"><strong>Accessibility ownership assigned</strong> to a named individual on the delivery team, not a team, a person.</div>
+          <div class="criterion-wcag">Governance</div>
+        </div>
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--green);color:var(--green)">☐</div>
+          <div class="criterion-text"><strong>Named owner also assigned on the client side.</strong> Without both, sign-off decisions stall indefinitely.</div>
+          <div class="criterion-wcag">Governance</div>
+        </div>
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--green);color:var(--green)">☐</div>
+          <div class="criterion-text">Sign-off model documented. Who approves at each phase. What constitutes a pass.</div>
+          <div class="criterion-wcag">Governance</div>
+        </div>
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--green);color:var(--green)">☐</div>
+          <div class="criterion-text">Third-party accessibility risk register created. Every integration in scope assessed for accessibility compliance.</div>
+          <div class="criterion-wcag">4.1.1 · 4.1.2</div>
+        </div>
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--green);color:var(--green)">☐</div>
+          <div class="criterion-text">Accessibility acceptance criteria defined for user stories. Every story that involves UI interaction has accessibility conditions in the AC.</div>
+          <div class="criterion-wcag">All</div>
+        </div>
+      </div>
+      <div class="phase-note" style="border-color:var(--green)">Phase 0 sets every downstream gate. A missing conformance target here means QA has nothing to test against at Phase 4.</div>
+    </div>
+  </div>
+
+  <!-- PHASE 1 -->
+  <h2 id="phase1">3. Phase 1: UX Research and Design</h2>
+  <p>Nothing moves to development until the design file is accessibility-validated. A contrast failure caught here costs minutes. The same failure at Phase 4 costs a sprint. <a href="05-Design-Phase-Accessibility-Review.html" class="blog-ref">Blog 05 covers the full design phase review</a> in detail.</p>
+
+  <div class="phase-card">
+    <div class="phase-header">
+      <div class="phase-badge" style="background:var(--blue-bg)">
+        <span class="phase-num" style="color:var(--blue)">Phase</span>
+        <span class="phase-label" style="color:var(--blue)">1</span>
+      </div>
+      <div>
+        <div class="phase-name">UX Research and Design</div>
+        <div class="phase-owner">Owner: UX Lead / Design Lead</div>
+      </div>
+    </div>
+    <div class="phase-body">
+      <div class="phase-criteria">
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--blue);color:var(--blue)">☐</div>
+          <div class="criterion-text">Inclusive personas created including AT users. Screen reader and keyboard user journeys mapped for key flows.</div>
+          <div class="criterion-wcag">1.3.1</div>
+        </div>
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--blue);color:var(--blue)">☐</div>
+          <div class="criterion-text"><strong>Colour contrast validated across the full brand palette.</strong> 4.5:1 for body text, 3:1 for large text and UI component boundaries. <span class="tool">Stark</span> or <span class="tool">Zimmer</span> run and all failures resolved.</div>
+          <div class="criterion-wcag">1.4.3 · 1.4.11</div>
+        </div>
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--blue);color:var(--blue)">☐</div>
+          <div class="criterion-text">Focus indicators designed explicitly for every interactive component. Not browser default. Minimum 3:1 contrast on the focus ring.</div>
+          <div class="criterion-wcag">2.4.7 · 2.4.11</div>
+        </div>
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--blue);color:var(--blue)">☐</div>
+          <div class="criterion-text">Tab order annotated in Figma for all interactive flows including modals, forms, and dynamic content states.</div>
+          <div class="criterion-wcag">2.1.1 · 2.4.3</div>
+        </div>
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--blue);color:var(--blue)">☐</div>
+          <div class="criterion-text">Heading hierarchy defined in all page templates. H1 identified per view. No skipped levels. Consistent across shared components.</div>
+          <div class="criterion-wcag">1.3.1 · 2.4.6</div>
+        </div>
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--blue);color:var(--blue)">☐</div>
+          <div class="criterion-text"><strong>Error message copy written</strong> for every form field validation state. No placeholder text. No "error message here."</div>
+          <div class="criterion-wcag">3.3.1 · 3.3.3</div>
+        </div>
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--blue);color:var(--blue)">☐</div>
+          <div class="criterion-text">Touch and pointer targets minimum 24x24 CSS px. Icon-only buttons annotated with minimum hit area.</div>
+          <div class="criterion-wcag">2.5.8</div>
+        </div>
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--blue);color:var(--blue)">☐</div>
+          <div class="criterion-text">No colour-only communication. Every status, error, or state uses colour plus text or icon.</div>
+          <div class="criterion-wcag">1.4.1</div>
+        </div>
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--blue);color:var(--blue)">☐</div>
+          <div class="criterion-text">Design accessibility sign-off confirmed by QA and design lead. No Critical or Major gaps open.</div>
+          <div class="criterion-wcag">All</div>
+        </div>
+      </div>
+      <div class="phase-note" style="border-color:var(--blue)">Raising a design defect here costs a Figma edit. The same defect at Phase 4 costs a sprint.</div>
+    </div>
+  </div>
+
+  <!-- PHASE 2 -->
+  <h2 id="phase2">4. Phase 2: Content Modelling and Authoring</h2>
+  <p>For CMS projects, this phase is where content rules are enforced. For non-CMS projects, the content layer lives in component props and data models. Either way, the criteria apply.</p>
+
+  <div class="phase-card">
+    <div class="phase-header">
+      <div class="phase-badge" style="background:var(--amber-bg)">
+        <span class="phase-num" style="color:var(--amber)">Phase</span>
+        <span class="phase-label" style="color:var(--amber)">2</span>
+      </div>
+      <div>
+        <div class="phase-name">Content Modelling and Authoring</div>
+        <div class="phase-owner">Owner: Content Author (CMS) or Developer (non-CMS)</div>
+      </div>
+    </div>
+    <div class="phase-body">
+      <div class="phase-criteria">
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--amber);color:var(--amber)">☐</div>
+          <div class="criterion-text"><strong>CMS:</strong> Alt text field required and separate from description. Decorative image flag available. H1 removed from rich text editor.</div>
+          <div class="criterion-wcag">1.1.1 · 1.3.1</div>
+        </div>
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--amber);color:var(--amber)">☐</div>
+          <div class="criterion-text"><strong>Non-CMS:</strong> Alt text enforced as a required component prop. Build fails on missing alt. UX annotations define alt text content.</div>
+          <div class="criterion-wcag">1.1.1</div>
+        </div>
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--amber);color:var(--amber)">☐</div>
+          <div class="criterion-text">Link text validated. No "click here", "read more", or "here" as standalone link text. CMS validation warning in place if applicable.</div>
+          <div class="criterion-wcag">2.4.4</div>
+        </div>
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--amber);color:var(--amber)">☐</div>
+          <div class="criterion-text">Video content: captions file field required. Transcript URL required. Autoplay off by default.</div>
+          <div class="criterion-wcag">1.2.1 · 1.2.2</div>
+        </div>
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--amber);color:var(--amber)">☐</div>
+          <div class="criterion-text">Page language field required. Maps to HTML lang attribute on publish.</div>
+          <div class="criterion-wcag">3.1.1</div>
+        </div>
+      </div>
+      <div class="phase-note" style="border-color:var(--amber)">CMS rules are not optional extras. If publishing is allowed without meeting these criteria, the platform has approved inaccessible content.</div>
+    </div>
+  </div>
+
+  <!-- PHASE 3 -->
+  <h2 id="phase3">5. Phase 3: Development</h2>
+  <p>The developer's lane covers semantic HTML, ARIA, keyboard support, and the automated checks that catch issues before they reach QA.</p>
+
+  <div class="phase-card">
+    <div class="phase-header">
+      <div class="phase-badge" style="background:var(--purple-bg)">
+        <span class="phase-num" style="color:var(--purple)">Phase</span>
+        <span class="phase-label" style="color:var(--purple)">3</span>
+      </div>
+      <div>
+        <div class="phase-name">Development</div>
+        <div class="phase-owner">Owner: Developer</div>
+      </div>
+    </div>
+    <div class="phase-body">
+      <div class="phase-criteria">
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--purple);color:var(--purple)">☐</div>
+          <div class="criterion-text">All interactive elements use native HTML. No <code>&lt;div onclick&gt;</code> or <code>&lt;span onclick&gt;</code> in place of <code>&lt;button&gt;</code> or <code>&lt;a&gt;</code>.</div>
+          <div class="criterion-wcag">4.1.2</div>
+        </div>
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--purple);color:var(--purple)">☐</div>
+          <div class="criterion-text">Page landmark structure present: <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;footer&gt;</code>. Exactly one <code>&lt;main&gt;</code>. Multiple navs have distinct aria-labels.</div>
+          <div class="criterion-wcag">1.3.1</div>
+        </div>
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--purple);color:var(--purple)">☐</div>
+          <div class="criterion-text">All interactive elements have an accessible name. <span class="tool">Chrome DevTools</span> Accessibility panel: computed name not empty on any interactive element.</div>
+          <div class="criterion-wcag">4.1.2</div>
+        </div>
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--purple);color:var(--purple)">☐</div>
+          <div class="criterion-text">Dynamic state communicated. <code>aria-expanded</code> on accordions and dropdowns. <code>aria-live</code> on status regions. Modal focus managed correctly.</div>
+          <div class="criterion-wcag">4.1.3</div>
+        </div>
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--purple);color:var(--purple)">☐</div>
+          <div class="criterion-text"><strong><span class="tool">eslint-plugin-jsx-a11y</span> installed</strong> and configured. No open violations at the time of PR raise.</div>
+          <div class="criterion-wcag">Multiple</div>
+        </div>
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--purple);color:var(--purple)">☐</div>
+          <div class="criterion-text"><strong>No open Critical or Serious violations</strong> in <span class="tool">axe-core</span> test suite. CI/CD pipeline fails on Critical violations.</div>
+          <div class="criterion-wcag">Multiple</div>
+        </div>
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--purple);color:var(--purple)">☐</div>
+          <div class="criterion-text">HTML lang attribute set correctly on the <code>&lt;html&gt;</code> element.</div>
+          <div class="criterion-wcag">3.1.1</div>
+        </div>
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--purple);color:var(--purple)">☐</div>
+          <div class="criterion-text">All iframes have a meaningful title attribute.</div>
+          <div class="criterion-wcag">4.1.2</div>
+        </div>
+      </div>
+      <div class="phase-note" style="border-color:var(--purple)">A missing CI gate means structural defects reach Phase 4 that automated tools should have caught. The developer owns this gate.</div>
+    </div>
+  </div>
+
+  <!-- PHASE 4 -->
+  <h2 id="phase4">6. Phase 4: QA and Testing</h2>
+  <p>Phase 4 is QA's primary gate. It covers manual testing that no automated tool can replicate: keyboard navigation, screen reader testing, and full user journey validation.</p>
+
+  <div class="phase-card">
+    <div class="phase-header">
+      <div class="phase-badge" style="background:var(--red-bg)">
+        <span class="phase-num" style="color:var(--red)">Phase</span>
+        <span class="phase-label" style="color:var(--red)">4</span>
+      </div>
+      <div>
+        <div class="phase-name">QA and Testing</div>
+        <div class="phase-owner">Owner: QA Lead / Accessibility Lead</div>
+      </div>
+    </div>
+    <div class="phase-body">
+      <div class="phase-criteria">
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--red);color:var(--red)">☐</div>
+          <div class="criterion-text"><strong>Full keyboard testing completed</strong> across all user journeys. No keyboard traps. All interactive elements reachable and operable by keyboard alone.</div>
+          <div class="criterion-wcag">2.1.1 · 2.1.2</div>
+        </div>
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--red);color:var(--red)">☐</div>
+          <div class="criterion-text">Focus indicators visible on all interactive elements. Focus order follows visual reading order.</div>
+          <div class="criterion-wcag">2.4.3 · 2.4.7</div>
+        </div>
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--red);color:var(--red)">☐</div>
+          <div class="criterion-text"><strong>Screen reader testing completed</strong> on key journeys. Minimum: <span class="tool">NVDA</span> on Windows, <span class="tool">VoiceOver</span> on Mac. Mobile: <span class="tool">VoiceOver</span> on iOS or <span class="tool">TalkBack</span> on Android.</div>
+          <div class="criterion-wcag">Multiple</div>
+        </div>
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--red);color:var(--red)">☐</div>
+          <div class="criterion-text"><span class="tool">axe DevTools</span> and <span class="tool">WAVE</span> scans run on all key pages. All Critical and Serious violations resolved.</div>
+          <div class="criterion-wcag">Multiple</div>
+        </div>
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--red);color:var(--red)">☐</div>
+          <div class="criterion-text">Colour contrast validated in the rendered application, not just in Figma. 4.5:1 for body text, 3:1 for large text and UI boundaries.</div>
+          <div class="criterion-wcag">1.4.3 · 1.4.11</div>
+        </div>
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--red);color:var(--red)">☐</div>
+          <div class="criterion-text">All form inputs have visible labels. Error states announced by screen readers. Required fields marked with more than colour alone.</div>
+          <div class="criterion-wcag">1.3.1 · 3.3.1 · 3.3.2</div>
+        </div>
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--red);color:var(--red)">☐</div>
+          <div class="criterion-text">Dynamic content announcements verified. Modals move focus correctly on open and return focus on close.</div>
+          <div class="criterion-wcag">4.1.3</div>
+        </div>
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--red);color:var(--red)">☐</div>
+          <div class="criterion-text"><strong>No open Critical or Major accessibility defects.</strong> All defects logged with WCAG criterion, severity, and reproduction steps.</div>
+          <div class="criterion-wcag">All</div>
+        </div>
+      </div>
+      <div class="phase-note" style="border-color:var(--red)">Phase 4 does not close until all Critical and Major defects are resolved and retested. QA holds this gate. It is not a negotiation.</div>
+    </div>
+  </div>
+
+
+  <figure class="blog-illustration" aria-label="Bouncer at Production nightclub. Critical bug turned away. Serious bug waiting. Minor bug already inside via side door.">
+    <svg width="100%" viewBox="0 0 680 270" role="img" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#111;">
+      <title>Bouncer labelled QA Lead at Production entrance. Critical bug refused. Serious bug nervously waiting. Minor bug already inside.</title>
+      <desc>A nightclub entrance labelled Production. A large bouncer with QA Lead badge blocks the velvet rope. A Critical bug labelled no keyboard access is being refused on the left. A Serious bug waits nervously in the middle. A Minor bug has slipped through the side door on the right and is waving goodbye.</desc>
+      <rect width="680" height="270" fill="#111"/>
+      <circle cx="40" cy="18" r="1.5" fill="#fff" opacity="0.5"/>
+      <circle cx="120" cy="30" r="1" fill="#fff" opacity="0.4"/>
+      <circle cx="200" cy="12" r="1.5" fill="#fff" opacity="0.4"/>
+      <circle cx="620" cy="20" r="1.5" fill="#fff" opacity="0.5"/>
+      <circle cx="660" cy="35" r="1" fill="#fff" opacity="0.3"/>
+      <rect x="0" y="200" width="680" height="70" fill="#1a1a1a"/>
+      <line x1="0" y1="200" x2="680" y2="200" stroke="#2e2e2e" stroke-width="1.5"/>
+      <rect x="380" y="200" width="90" height="70" fill="#6b1a2e" opacity="0.5"/>
+      <!-- building -->
+      <rect x="390" y="30" width="200" height="185" rx="4" fill="#1e1e1e" stroke="#333" stroke-width="2"/>
+      <rect x="400" y="42" width="180" height="36" rx="4" fill="#0d0d0d"/>
+      <text x="490" y="66" text-anchor="middle" font-family="DM Serif Display,serif" font-size="16" fill="#4ade80">PRODUCTION</text>
+      <rect x="398" y="40" width="184" height="40" rx="6" fill="none" stroke="#4ade80" stroke-width="0.5" opacity="0.25"/>
+      <rect x="440" y="110" width="70" height="105" rx="3" fill="#0d0d0d" stroke="#333" stroke-width="1"/>
+      <circle cx="452" cy="164" r="3" fill="#fbbf24"/>
+      <text x="612" y="108" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#555">side door</text>
+      <rect x="590" y="112" width="34" height="46" rx="3" fill="#0d0d0d" stroke="#2e2e2e" stroke-width="1"/>
+      <!-- velvet rope -->
+      <circle cx="366" cy="202" r="7" fill="#fbbf24" stroke="#c8a800" stroke-width="1.5"/>
+      <circle cx="530" cy="202" r="7" fill="#fbbf24" stroke="#c8a800" stroke-width="1.5"/>
+      <path d="M373 202 Q420 192 475 198 Q500 200 523 202" fill="none" stroke="#9a6e1a" stroke-width="3"/>
+      <!-- bouncer -->
+      <circle cx="430" cy="130" r="20" fill="#f5e6d0" stroke="#3d4235" stroke-width="1.5"/>
+      <path d="M422 136 Q430 132 438 136" fill="none" stroke="#3d4235" stroke-width="1.5"/>
+      <circle cx="425" cy="127" r="2.2" fill="#3d4235"/>
+      <circle cx="435" cy="127" r="2.2" fill="#3d4235"/>
+      <path d="M422 121 Q426 118 430 121" fill="none" stroke="#3d4235" stroke-width="1.2"/>
+      <path d="M430 121 Q434 118 438 121" fill="none" stroke="#3d4235" stroke-width="1.2"/>
+      <ellipse cx="430" cy="172" rx="26" ry="28" fill="#1a1f14" stroke="#3d4235" stroke-width="1.5"/>
+      <rect x="418" y="154" width="24" height="30" rx="2" fill="#2e3a18"/>
+      <line x1="430" y1="154" x2="430" y2="184" stroke="#3d4235" stroke-width="0.8"/>
+      <line x1="418" y1="198" x2="410" y2="228" stroke="#3d4235" stroke-width="2"/>
+      <line x1="442" y1="198" x2="450" y2="228" stroke="#3d4235" stroke-width="2"/>
+      <rect x="416" y="166" width="28" height="13" rx="2" fill="#f87171"/>
+      <text x="430" y="176" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#fff" font-weight="700">QA Lead</text>
+      <line x1="430" y1="162" x2="398" y2="154" stroke="#3d4235" stroke-width="2.5"/>
+      <rect x="370" y="142" width="30" height="24" rx="2" fill="#fff" stroke="#3d4235" stroke-width="1"/>
+      <rect x="379" y="137" width="12" height="8" rx="2" fill="#3d4235"/>
+      <text x="385" y="153" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="6.5" fill="#f87171" font-weight="600">✗ Critical</text>
+      <text x="385" y="161" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="6.5" fill="#fbbf24">? Serious</text>
+      <line x1="430" y1="162" x2="402" y2="178" stroke="#3d4235" stroke-width="2.5"/>
+      <text x="316" y="98" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="18" fill="#f87171" font-weight="700">✕</text>
+      <!-- critical bug -->
+      <circle cx="150" cy="168" r="22" fill="#f87171" stroke="#9a2a4a" stroke-width="1.5"/>
+      <rect x="139" y="180" width="22" height="18" rx="2" fill="#1a1f14"/>
+      <line x1="150" y1="180" x2="150" y2="196" stroke="#fff" stroke-width="1"/>
+      <path d="M142 182 L150 186 L158 182 L150 178 Z" fill="#fff"/>
+      <path d="M143 163 Q150 158 157 163" fill="none" stroke="#7f1d1d" stroke-width="1.5"/>
+      <circle cx="145" cy="161" r="2.2" fill="#7f1d1d"/>
+      <circle cx="155" cy="161" r="2.2" fill="#7f1d1d"/>
+      <line x1="143" y1="147" x2="138" y2="136" stroke="#9a2a4a" stroke-width="1.2"/>
+      <circle cx="138" cy="134" r="4" fill="#f87171"/>
+      <line x1="157" y1="147" x2="162" y2="136" stroke="#9a2a4a" stroke-width="1.2"/>
+      <circle cx="162" cy="134" r="4" fill="#f87171"/>
+      <rect x="76" y="112" width="148" height="16" rx="3" fill="#2a0808"/>
+      <text x="150" y="124" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" font-weight="500">Critical: no keyboard access</text>
+      <text x="150" y="218" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">turned away</text>
+      <!-- serious bug -->
+      <circle cx="300" cy="172" r="16" fill="#fbbf24" stroke="#9a6e1a" stroke-width="1.5"/>
+      <rect x="291" y="181" width="18" height="14" rx="2" fill="#1a1f14"/>
+      <line x1="300" y1="181" x2="300" y2="193" stroke="#fff" stroke-width="1"/>
+      <path d="M293 183 L300 186 L307 183 L300 180 Z" fill="#fff"/>
+      <path d="M295 168 Q300 172 305 168" fill="none" stroke="#9a6e1a" stroke-width="1.2"/>
+      <circle cx="296" cy="165" r="1.8" fill="#9a6e1a"/>
+      <circle cx="304" cy="165" r="1.8" fill="#9a6e1a"/>
+      <line x1="294" y1="157" x2="290" y2="148" stroke="#9a6e1a" stroke-width="1"/>
+      <circle cx="290" cy="147" r="3" fill="#fbbf24"/>
+      <line x1="306" y1="157" x2="310" y2="148" stroke="#9a6e1a" stroke-width="1"/>
+      <circle cx="310" cy="147" r="3" fill="#fbbf24"/>
+      <circle cx="320" cy="162" r="3" fill="#60a5fa" opacity="0.7"/>
+      <circle cx="325" cy="154" r="2" fill="#60a5fa" opacity="0.5"/>
+      <text x="300" y="216" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#fbbf24">Serious: nervously waiting</text>
+      <!-- minor bug inside -->
+      <circle cx="622" cy="148" r="12" fill="#a78bfa" stroke="#7a4a9a" stroke-width="1"/>
+      <rect x="614" y="155" width="16" height="12" rx="2" fill="#1a1f14"/>
+      <path d="M616 155 L622 158 L628 155 L622 152 Z" fill="#fff"/>
+      <line x1="634" y1="146" x2="644" y2="140" stroke="#7a4a9a" stroke-width="1.2"/>
+      <path d="M645 137 Q649 134 653 137" fill="none" stroke="#7a4a9a" stroke-width="1"/>
+      <text x="622" y="180" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#a78bfa">Minor: already inside</text>
+      <text x="340" y="254" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#8a8a8a" font-style="italic">Phase 4 holds the rope. Not everything gets in.</text>
+    </svg>
+  </figure>
+
+  <!-- PHASE 5 -->
+  <h2 id="phase5">7. Phase 5: Live and Production</h2>
+  <p>Going live does not close the accessibility loop. Regressions happen. Third-party scripts update. New content gets authored. Phase 5 is ongoing governance, not a one-time check.</p>
+
+  <div class="phase-card">
+    <div class="phase-header">
+      <div class="phase-badge" style="background:var(--teal-bg)">
+        <span class="phase-num" style="color:var(--teal)">Phase</span>
+        <span class="phase-label" style="color:var(--teal)">5</span>
+      </div>
+      <div>
+        <div class="phase-name">Live and Production</div>
+        <div class="phase-owner">Owner: DevOps / QA / Operations</div>
+      </div>
+    </div>
+    <div class="phase-body">
+      <div class="phase-criteria">
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--teal);color:var(--teal)">☐</div>
+          <div class="criterion-text"><strong>Nightly automated scan in place</strong> using <span class="tool">Pa11y</span> or <span class="tool">axe-core</span>. Alerts fire on Critical violations. Regressions caught within 24 hours.</div>
+          <div class="criterion-wcag">Multiple</div>
+        </div>
+        <div class="criterion">
+          <div class="criterion-check" style="border-color:var(--teal);color:var(--teal)">☐</div>
+          <div class="criterion-text">New content published post-launch meets the same standards as launch content. CMS rules enforced on an ongoing basis.</div>
+          <div class="criterion-wcag">All</div>
+        </div>
+      </div>
+      <div class="phase-note" style="border-color:var(--teal)">Catch a regression the next morning via automated scanning. Not from a user complaint three months later.</div>
+    </div>
+  </div>
+
+  <!-- 8 -->
+  <h2 id="how-to-use">8. How to Use These in a Real Project</h2>
+
+  <p>These criteria are most useful when they are agreed before Phase 0 begins, not presented to a team for the first time at Phase 4. Here is how to introduce them without friction:</p>
+
+  <h3>At project kickoff</h3>
+  <p>Share the Phase 0 criteria with the PM and get named owners assigned before sprint 1. Without named ownership, the criteria have no one to enforce them.</p>
+
+  <h3>At each phase handoff</h3>
+  <p>The phase exit criteria for the next phase become the acceptance criteria for the handoff. Design does not hand off to development until Phase 1 criteria are confirmed. Development does not hand off to QA until Phase 3 criteria are confirmed.</p>
+
+  <h3>When holding a gate</h3>
+  <p>The criteria give QA formal leverage. "Phase 3 exit criterion 06 is not met: the CI/CD pipeline does not fail on Critical axe-core violations": this is a named, documented condition: not an opinion. It is harder to override a specific criterion than a vague concern.</p>
+
+  <h3>When a deadline is under pressure</h3>
+  <p>Critical and Major defects do not get waived under deadline pressure. The criteria exist precisely because that conversation happens on every project. Having them documented before the deadline arrives is the only way to hold the line when it matters.</p>
+
+  <div class="takeaway" role="note">
+    <div class="label">The one thing</div>
+    <p>Agree the criteria at kickoff. Assign a named owner per phase. Review at every handoff. The conversation that happens when you introduce phase exit criteria is worth more than any post-launch audit.</p>
+  </div>
+
+  <!-- SERIES NAV -->
+  <div class="series-nav">
+    <span class="label">Navigate the series</span>
+    <div class="nav-pair">
+      <a href="08-ESLint-and-Axe-Core.html" class="nav-blog">
+        <span class="nav-blog-arrow" aria-hidden="true">←</span>
+        <div>
+          <div class="nav-blog-title">Blog 08: ESLint and Axe-Core</div>
+          <div class="nav-blog-sub">Catching accessibility issues before they reach QA</div>
+        </div>
+      </a>
+      <a href="10-Keyboard-Testing.html" class="nav-blog">
+        <div>
+          <div class="nav-blog-title">Blog 10: Keyboard-Only Testing</div>
+          <div class="nav-blog-sub">Disconnect your mouse and start here</div>
+        </div>
+        <span class="nav-blog-arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+
+  <aside class="references" aria-label="References">
+    <div class="ref-title">References</div>
+    <ul role="list">
+      <li><a href="https://www.w3.org/TR/WCAG21/" target="_blank" rel="noopener noreferrer">WCAG 2.1: Official W3C specification</a></li>
+      <li><a href="https://www.w3.org/WAI/planning-and-managing/" target="_blank" rel="noopener noreferrer">W3C: Planning and Managing Web Accessibility</a></li>
+      <li><a href="https://www.w3.org/WAI/business-case/" target="_blank" rel="noopener noreferrer">W3C: The Business Case for Digital Accessibility</a></li>
+    </ul>
+  </aside>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; Built with intention. Tested with care. &nbsp;·&nbsp; © 2025
+  </p>
+</footer>
+
+</body>
+</html>

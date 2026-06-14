@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>13 Colour Contrast Testing | The Quality Strategist</title>
+  <meta name="description" content="How to test colour contrast on web, Android and iOS. The ratios that matter, the tools that catch failures, colour blindness simulation, and what automation misses." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+      --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+      --green:#4ade80; --green-bg:rgba(74,222,128,0.07);
+      --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07);
+      --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07);
+      --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.07);
+      --red:#f87171; --red-bg:rgba(248,113,113,0.07);
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
+    .skip-link:focus { top:0; }
+    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
+    .nav-links { display:flex; gap:2rem; list-style:none; }
+    .nav-links a { color:var(--text-3); text-decoration:none; font-size:0.85rem; transition:color 0.2s; }
+    .nav-links a:hover { color:var(--text); }
+    .blog-header { max-width:900px; margin:0 auto; padding:4rem 2rem 2.5rem; border-bottom:1px solid var(--border); }
+    .breadcrumb { font-size:0.78rem; color:var(--text-3); margin-bottom:1.5rem; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; }
+    .breadcrumb a { color:var(--text-3); text-decoration:none; }
+    .breadcrumb a:hover { color:var(--text-2); }
+    .blog-tags { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.25rem; }
+    .tag { font-size:0.7rem; padding:3px 10px; border-radius:99px; background:var(--bg3); color:var(--text-3); border:1px solid var(--border); letter-spacing:0.04em; text-transform:uppercase; font-weight:500; }
+    .tag.accent { background:var(--blue-bg); color:var(--blue); border-color:rgba(96,165,250,0.25); }
+    .blog-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.85rem,4vw,2.6rem); line-height:1.2; letter-spacing:-0.02em; color:var(--text); margin-bottom:0.75rem; }
+    .blog-header h1 em { font-style:italic; color:var(--blue); }
+    .blog-subtitle { font-family:'DM Serif Display',serif; font-size:1.1rem; font-style:italic; color:var(--text-3); margin-bottom:1.25rem; }
+    .blog-meta { display:flex; align-items:center; gap:1.25rem; font-size:0.82rem; color:var(--text-3); flex-wrap:wrap; }
+    .blog-meta .series { color:var(--text-2); font-weight:500; }
+    main.blog-body { display:block; max-width:900px; margin:0 auto; padding:3rem 2rem 5rem; }
+    .toc { display:block; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.5rem 1.75rem; margin:0 0 3rem 0; }
+    .toc-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.9rem; }
+    .toc ol { padding-left:1.25rem; }
+    .toc ol li { margin-bottom:0.45rem; }
+    .toc ol li a { font-size:0.88rem; color:var(--text-2); text-decoration:none; transition:color 0.2s; }
+    .toc ol li a:hover { color:var(--blue); }
+    .blog-body h2 { font-family:'DM Serif Display',serif; font-size:1.5rem; letter-spacing:-0.01em; color:var(--text); margin:3.5rem 0 1.1rem; padding-top:1rem; border-top:1px solid var(--border); }
+    .blog-body h3 { font-size:1rem; font-weight:500; color:var(--text); margin:1.75rem 0 0.5rem; }
+    .blog-body p { color:var(--text-2); margin-bottom:1.25rem; font-weight:300; }
+    .blog-body p strong { color:var(--text); font-weight:500; }
+    .blog-body ul, .blog-body ol { padding-left:1.5rem; margin-bottom:1.25rem; color:var(--text-2); font-weight:300; }
+    .blog-body li { margin-bottom:0.45rem; }
+    .blog-body li strong { color:var(--text); font-weight:500; }
+    code { background:var(--bg3); padding:1px 6px; border-radius:3px; font-size:0.85em; color:var(--text-2); font-family:monospace; }
+    .callout { display:block; background:var(--blue-bg); border-left:3px solid var(--blue); border-radius:0 10px 10px 0; padding:1.25rem 1.5rem; margin:1.75rem 0; font-size:0.95rem; color:var(--text); font-style:italic; line-height:1.6; }
+    .callout.amber { background:var(--amber-bg); border-color:var(--amber); }
+    .callout.green { background:var(--green-bg); border-color:var(--green); }
+    .takeaway { display:block; background:var(--green-bg); border:1px solid rgba(74,222,128,0.2); border-radius:10px; padding:1.25rem 1.5rem; margin:1.75rem 0; }
+    .takeaway .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--green); font-weight:500; margin-bottom:0.5rem; display:block; }
+    .takeaway p { color:var(--text-2); font-size:0.93rem; margin:0; }
+    .tool { display:inline; background:var(--purple-bg); color:var(--purple); border:1px solid rgba(167,139,250,0.2); border-radius:4px; padding:1px 7px; font-size:0.85em; font-weight:500; }
+    .blog-ref { display:inline-flex; align-items:center; gap:6px; background:var(--bg2); border:1px solid var(--border); border-radius:6px; padding:3px 10px; font-size:0.78rem; color:var(--text-2); text-decoration:none; transition:border-color 0.2s,color 0.2s; white-space:nowrap; }
+    .blog-ref:hover { border-color:var(--blue); color:var(--blue); }
+    .blog-ref::before { content:'↗'; font-size:0.7rem; color:var(--text-3); }
+    .key { display:inline-flex; align-items:center; justify-content:center; background:var(--bg3); border:1px solid #444; border-bottom:3px solid #444; border-radius:5px; padding:2px 8px; font-family:monospace; font-size:0.82em; color:var(--text); min-width:28px; white-space:nowrap; }
+
+    /* RATIO CARDS */
+    .ratio-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:1.75rem 0; }
+    .ratio-card { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.1rem 1.25rem; }
+    .ratio-value { font-family:'DM Serif Display',serif; font-size:1.8rem; color:var(--text); line-height:1; margin-bottom:4px; }
+    .ratio-label { font-size:0.82rem; color:var(--text-2); line-height:1.5; }
+    .ratio-wcag { font-size:0.7rem; color:var(--text-3); margin-top:6px; }
+
+    /* CONTRAST DEMOS */
+    .contrast-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:1.75rem 0; }
+    .contrast-demo { border-radius:8px; padding:1rem 1.25rem; display:flex; flex-direction:column; gap:8px; }
+    .contrast-demo .c-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.07em; font-weight:500; }
+    .contrast-demo .c-sample { border-radius:6px; padding:10px 14px; font-size:0.9rem; font-weight:500; }
+    .contrast-demo .c-ratio { font-size:0.78rem; margin-top:2px; }
+
+    /* PLATFORM TABLE */
+    .table-wrap { display:block; overflow-x:auto; margin:1.75rem 0; border-radius:10px; border:1px solid var(--border); }
+    table { width:100%; border-collapse:collapse; font-size:0.875rem; }
+    thead th { background:var(--bg2); padding:10px 14px; text-align:left; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-3); font-weight:500; border-bottom:1px solid var(--border); white-space:nowrap; }
+    tbody td { padding:10px 14px; border-bottom:1px solid var(--border); color:var(--text-2); vertical-align:top; line-height:1.55; }
+    tbody tr:last-child td { border-bottom:none; }
+    tbody td:first-child { color:var(--text); font-weight:500; }
+    tbody tr:hover td { background:var(--bg2); }
+
+    .blog-illustration { margin:1.75rem 0; border:none; padding:0; }
+    .series-nav { display:block; margin-top:4rem; padding-top:2rem; border-top:1px solid var(--border); }
+    .series-nav .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.75rem; display:block; }
+    .nav-pair { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .nav-blog { display:flex; align-items:center; gap:1rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.1rem 1.25rem; text-decoration:none; transition:border-color 0.2s,background 0.2s; }
+    .nav-blog:hover { border-color:#444; background:var(--bg3); }
+    .nav-blog-arrow { color:var(--text-3); font-size:1rem; flex-shrink:0; }
+    .nav-blog-title { font-size:0.88rem; font-weight:500; color:var(--text); }
+    .nav-blog-sub { font-size:0.75rem; color:var(--text-3); margin-top:2px; }
+    .references { display:block; margin-top:2.5rem; padding:1.5rem 1.75rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; }
+    .ref-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:1rem; }
+    .references ul { list-style:none; padding:0; }
+    .references ul li { margin-bottom:0.5rem; }
+    .references ul li a { font-size:0.85rem; color:var(--text-2); text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; transition:color 0.2s; }
+    .references ul li a:hover { color:var(--green); }
+    .references ul li a::before { content:'↗'; font-size:0.75rem; color:var(--text-3); }
+    footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
+    footer a { color:var(--text-3); text-decoration:none; }
+    .visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    @media(max-width:620px) {
+      nav.site-nav { padding:0 1.25rem; }
+      .nav-links { display:none; }
+      .blog-header, main.blog-body { padding-left:1.25rem; padding-right:1.25rem; }
+      .blog-header { padding-top:2.5rem; }
+      .ratio-grid { grid-template-columns:1fr; }
+      .contrast-row, .nav-pair { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <ul class="nav-links" role="list">
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#playlist">Playlist</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#justlikereal">JustLikeReal</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#meetme">Meet Me</a></li>
+  </ul>
+</nav>
+
+<header class="blog-header">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a>
+    <span aria-hidden="true">›</span>
+    <span>Shift-Left Accessibility</span>
+    <span aria-hidden="true">›</span>
+    <span aria-current="page">13 of 38</span>
+  </nav>
+  <div class="blog-tags" aria-label="Blog categories">
+    <span class="tag accent">Manual Testing</span>
+    <span class="tag">Contrast</span>
+    <span class="tag">iOS</span>
+    <span class="tag">Android</span>
+  </div>
+  <h1>13 <span aria-label="Colour Contrast Testing"><span style="color:#e63946">C</span><span style="color:#f4a261">o</span><span style="color:#e9c46a">l</span><span style="color:#2a9d8f">o</span><span style="color:#457b9d">u</span><span style="color:#a78bfa">r</span> <span style="color:#e63946">C</span><span style="color:#f4a261">o</span><span style="color:#e9c46a">n</span><span style="color:#2a9d8f">t</span><span style="color:#457b9d">r</span><span style="color:#a78bfa">a</span><span style="color:#e63946">s</span><span style="color:#f4a261">t</span></span> Testing: <em>Web, Android, iOS and Colour Blindness Simulation</em></h1>
+  <p class="blog-subtitle">The numbers are exact. The tools are free. There is no excuse for a contrast failure reaching production.</p>
+  <div class="blog-meta">
+    <span class="series">Series: Shift-Left Accessibility</span>
+    <span aria-hidden="true">·</span>
+    <span>Blog 13 of 38</span>
+    <span aria-hidden="true">·</span>
+    <span>9 min read</span>
+  </div>
+</header>
+
+<main class="blog-body" id="main-content">
+
+  <nav class="toc" aria-label="Table of contents">
+    <div class="toc-title" id="toc-heading">In this blog</div>
+    <ol aria-labelledby="toc-heading">
+      <li><a href="#the-numbers">The ratios: what you are testing against</a></li>
+      <li><a href="#what-fails">What fails contrast and why it matters</a></li>
+      <li><a href="#how-to-test">How to test: automation, tools, and platform coverage</a></li>
+      <li><a href="#web-testing">Testing on web: tools and steps</a></li>
+      <li><a href="#colour-blindness">Colour blindness simulation</a></li>
+      <li><a href="#ios-testing">Testing on iOS</a></li>
+      <li><a href="#android-testing">Testing on Android</a></li>
+      <li><a href="#defects">Writing contrast defects</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <h2 id="the-numbers">1. The Ratios: What You Are Testing Against</h2>
+
+  <p>Contrast testing is not subjective. The WCAG requirements are precise numbers. Either the ratio meets the threshold or it does not.</p>
+
+  <div class="ratio-grid" role="list" aria-label="WCAG contrast ratio requirements">
+    <div class="ratio-card" role="listitem">
+      <div class="ratio-value">4.5:1</div>
+      <div class="ratio-label">Normal text: body copy, labels, links. Under 18pt regular or 14pt bold.</div>
+      <div class="ratio-wcag">WCAG 1.4.3 · Level AA</div>
+    </div>
+    <div class="ratio-card" role="listitem">
+      <div class="ratio-value">3:1</div>
+      <div class="ratio-label">Large text (18pt+ regular or 14pt+ bold) and UI component boundaries: input borders, focus rings, button outlines.</div>
+      <div class="ratio-wcag">WCAG 1.4.3 / 1.4.11 · Level AA</div>
+    </div>
+    <div class="ratio-card" role="listitem">
+      <div class="ratio-value">7:1</div>
+      <div class="ratio-label">Enhanced: WCAG AAA. Not required for AA compliance but worth flagging where ratios are close to the minimum.</div>
+      <div class="ratio-wcag">WCAG 1.4.6 · Level AAA</div>
+    </div>
+  </div>
+
+  <div class="callout" role="note">
+    Decorative text and text in logos are exempt from contrast requirements. Everything else is in scope: including placeholder text, disabled state labels, and tooltip text. These are commonly missed.
+  </div>
+
+
+  <figure class="blog-illustration" aria-label="Inspector at a contrast testing station pointing at a failing specimen">
+    <svg viewBox="0 0 680 260" width="100%" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#fafcf5;">
+      <title>Inspector at the contrast testing station. The ratios are on the wall. The specimen is failing.</title>
+      <desc>An inspector in a hat stands at a contrast testing station. On the wall is a reference card showing the three WCAG ratios: 4.5 to 1 for normal text, 3 to 1 for large text and UI, 7 to 1 for AAA. A test panel shows grey text on white with a readout: ratio 2.3 to 1 FAIL. The inspector holds a clipboard and has a speech bubble reading: 2.3 to 1. You need 4.5 to 1. This is not a grey area.</desc>
+      <rect width="680" height="260" fill="#fafcf5"/>
+      <rect x="0" y="0" width="680" height="200" fill="#f0ede6"/>
+      <line x1="0" y1="200" x2="680" y2="200" stroke="#c8c4b8" stroke-width="1.5"/>
+      <rect x="0" y="200" width="680" height="60" fill="#e8e4da"/>
+      <!-- ratio card -->
+      <rect x="30" y="24" width="200" height="150" rx="6" fill="#fff" stroke="#2e2e2e" stroke-width="1.5"/>
+      <rect x="30" y="24" width="200" height="24" rx="6" fill="#2e2e2e"/>
+      <text x="130" y="40" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#fff" font-weight="600" letter-spacing="1">WCAG CONTRAST RATIOS</text>
+      <rect x="42" y="58" width="176" height="30" rx="4" fill="#d8f0e0"/>
+      <text x="72" y="71" font-family="DM Serif Display,serif" font-size="16" fill="#1a7a3a" font-weight="700">4.5:1</text>
+      <text x="126" y="68" font-family="DM Sans,sans-serif" font-size="8" fill="#1a4a1a" font-weight="500">Normal text</text>
+      <text x="126" y="79" font-family="DM Sans,sans-serif" font-size="7.5" fill="#1a4a1a">Body, labels, links</text>
+      <rect x="42" y="96" width="176" height="30" rx="4" fill="#dde8f5"/>
+      <text x="72" y="109" font-family="DM Serif Display,serif" font-size="16" fill="#1a4a9a" font-weight="700">3:1</text>
+      <text x="126" y="106" font-family="DM Sans,sans-serif" font-size="8" fill="#1a2a4a" font-weight="500">Large text + UI</text>
+      <text x="126" y="117" font-family="DM Sans,sans-serif" font-size="7.5" fill="#1a2a4a">Borders, focus rings</text>
+      <rect x="42" y="134" width="176" height="30" rx="4" fill="#ede0f5"/>
+      <text x="72" y="147" font-family="DM Serif Display,serif" font-size="16" fill="#7a2a9a" font-weight="700">7:1</text>
+      <text x="126" y="144" font-family="DM Sans,sans-serif" font-size="8" fill="#4a1a6a" font-weight="500">Enhanced (AAA)</text>
+      <text x="126" y="155" font-family="DM Sans,sans-serif" font-size="7.5" fill="#4a1a6a">Not required for AA</text>
+      <!-- test panel -->
+      <rect x="270" y="24" width="240" height="150" rx="6" fill="#fff" stroke="#2e2e2e" stroke-width="1.5"/>
+      <rect x="270" y="24" width="240" height="24" rx="6" fill="#2e2e2e"/>
+      <text x="390" y="40" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#fff" font-weight="600" letter-spacing="1">SPECIMEN UNDER TEST</text>
+      <rect x="282" y="56" width="216" height="50" rx="4" fill="#ffffff" stroke="#e0e0e0" stroke-width="1"/>
+      <text x="390" y="76" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="14" fill="#aaaaaa" font-weight="500">Body text sample</text>
+      <text x="390" y="94" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#aaaaaa">#aaaaaa on #ffffff</text>
+      <rect x="282" y="116" width="216" height="48" rx="4" fill="#1a0808" stroke="#f87171" stroke-width="1.5"/>
+      <text x="303" y="132" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171" font-weight="500">Foreground: #aaaaaa</text>
+      <text x="303" y="144" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171" font-weight="500">Background: #ffffff</text>
+      <text x="303" y="156" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" font-weight="700">Ratio: 2.3:1  ✕  FAIL</text>
+      <rect x="444" y="120" width="44" height="20" rx="3" fill="#f87171"/>
+      <text x="466" y="133" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#fff" font-weight="700">FAIL</text>
+      <text x="466" y="152" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="#f87171">need 4.5:1</text>
+      <!-- inspector -->
+      <circle cx="576" cy="158" r="18" fill="#f5e6d0" stroke="#3d4235" stroke-width="1.5"/>
+      <path d="M569 163 Q576 159 583 163" fill="none" stroke="#3d4235" stroke-width="1.5"/>
+      <circle cx="572" cy="155" r="2.2" fill="#3d4235"/>
+      <circle cx="580" cy="155" r="2.2" fill="#3d4235"/>
+      <path d="M571 150 Q574 148 577 150" fill="none" stroke="#3d4235" stroke-width="1.2"/>
+      <path d="M579 150 Q582 148 585 150" fill="none" stroke="#3d4235" stroke-width="1.2"/>
+      <rect x="558" y="136" width="36" height="8" rx="2" fill="#2e3a18"/>
+      <rect x="562" y="126" width="28" height="12" rx="2" fill="#2e3a18"/>
+      <ellipse cx="576" cy="192" rx="22" ry="24" fill="#3d4235" stroke="#2e3a18" stroke-width="1.2"/>
+      <line x1="558" y1="180" x2="510" y2="170" stroke="#3d4235" stroke-width="2"/>
+      <rect x="488" y="158" width="30" height="24" rx="2" fill="#fff" stroke="#3d4235" stroke-width="1"/>
+      <rect x="496" y="154" width="14" height="8" rx="2" fill="#3d4235"/>
+      <text x="503" y="168" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="6" fill="#f87171">2.3:1</text>
+      <text x="503" y="177" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="6" fill="#f87171">FAIL</text>
+      <line x1="566" y1="214" x2="560" y2="240" stroke="#2e3a18" stroke-width="2"/>
+      <line x1="586" y1="214" x2="592" y2="240" stroke="#2e3a18" stroke-width="2"/>
+      <!-- speech bubble -->
+      <rect x="376" y="182" width="244" height="38" rx="6" fill="#fff0f0" stroke="#f87171" stroke-width="1"/>
+      <path d="M562 182 L558 174 L566 182" fill="#fff0f0" stroke="#f87171" stroke-width="1"/>
+      <text x="498" y="197" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" font-weight="600">2.3:1. You need 4.5:1.</text>
+      <text x="498" y="212" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" font-style="italic">This is not a grey area.</text>
+    </svg>
+  </figure>
+
+  <!-- 2 -->
+  <h2 id="what-fails">2. What Fails Contrast and Why It Matters</h2>
+
+  <p>The most common contrast failures in production are not bad design decisions: they are untested assumptions. A colour combination that looks fine on a calibrated designer monitor at 100% brightness can fail for users with low vision, on budget screens, in bright sunlight, or with age-related contrast sensitivity loss.</p>
+
+  <!-- CONTRAST VISUAL EXAMPLES -->
+  <figure class="blog-illustration" aria-label="Contrast pass and fail examples side by side with ratio measurements">
+    <svg viewBox="0 0 680 260" width="100%" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#fafcf5;">
+      <title>Six contrast examples: three failures and three passes with WCAG ratios shown</title>
+      <desc>Six coloured boxes arranged in two rows. Top row shows three failing contrast combinations. Bottom row shows three passing combinations. Each box shows the text, background and ratio.</desc>
+      <rect width="680" height="260" fill="#fafcf5"/>
+
+      <!-- ROW LABELS -->
+      <text x="14" y="22" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" letter-spacing="1" font-weight="600">FAIL</text>
+      <text x="14" y="148" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80" letter-spacing="1" font-weight="600">PASS</text>
+
+      <!-- FAIL 1: light grey on white -->
+      <rect x="14" y="28" width="200" height="106" rx="6" fill="#ffffff" stroke="#f87171" stroke-width="1"/>
+      <text x="114" y="72" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="14" fill="#aaaaaa" font-weight="500">Body text</text>
+      <rect x="24" y="88" width="180" height="36" rx="4" fill="#fff0f0"/>
+      <text x="114" y="102" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">#aaa on #fff</text>
+      <text x="114" y="116" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" font-weight="700">2.3:1 ✕</text>
+
+      <!-- FAIL 2: yellow on white -->
+      <rect x="240" y="28" width="200" height="106" rx="6" fill="#ffffff" stroke="#f87171" stroke-width="1"/>
+      <text x="340" y="72" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="14" fill="#f5c400" font-weight="500">Call to action</text>
+      <rect x="250" y="88" width="180" height="36" rx="4" fill="#fff0f0"/>
+      <text x="340" y="102" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">#f5c400 on #fff</text>
+      <text x="340" y="116" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" font-weight="700">1.9:1 ✕</text>
+
+      <!-- FAIL 3: blue on blue -->
+      <rect x="466" y="28" width="200" height="106" rx="6" fill="#4a90d9" stroke="#f87171" stroke-width="1"/>
+      <text x="566" y="72" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="14" fill="#60a5fa" font-weight="500">Link text</text>
+      <rect x="476" y="88" width="180" height="36" rx="4" fill="#3a2020" opacity="0.6"/>
+      <text x="566" y="102" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">#60a5fa on #4a90d9</text>
+      <text x="566" y="116" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" font-weight="700">1.4:1 ✕</text>
+
+      <!-- PASS 1: dark on white -->
+      <rect x="14" y="154" width="200" height="92" rx="6" fill="#ffffff" stroke="#4ade80" stroke-width="1"/>
+      <text x="114" y="196" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="14" fill="#1a1a1a" font-weight="500">Body text</text>
+      <rect x="24" y="212" width="180" height="26" rx="4" fill="#d8f0e0"/>
+      <text x="114" y="222" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#1a7a3a">#1a1a1a on #fff: 19.5:1 ✓</text>
+
+      <!-- PASS 2: dark on brand yellow -->
+      <rect x="240" y="154" width="200" height="92" rx="6" fill="#f5c400" stroke="#4ade80" stroke-width="1"/>
+      <text x="340" y="196" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="14" fill="#1a1a1a" font-weight="500">Call to action</text>
+      <rect x="250" y="212" width="180" height="26" rx="4" fill="#d8f0e0"/>
+      <text x="340" y="222" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#1a7a3a">#1a1a1a on #f5c400: 11.2:1 ✓</text>
+
+      <!-- PASS 3: white on dark blue -->
+      <rect x="466" y="154" width="200" height="92" rx="6" fill="#1a4a9a" stroke="#4ade80" stroke-width="1"/>
+      <text x="566" y="196" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="14" fill="#ffffff" font-weight="500">Link text</text>
+      <rect x="476" y="212" width="180" height="26" rx="4" fill="#d8f0e0"/>
+      <text x="566" y="222" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#1a7a3a">#fff on #1a4a9a: 7.4:1 ✓</text>
+    </svg>
+  </figure>
+
+  <p>What the examples above show: the same yellow brand colour that fails on white passes easily with dark text on it. Contrast failures are almost always fixable by adjusting one colour token, not redesigning the component.</p>
+
+  <!-- 3 -->
+  <h2 id="how-to-test">3. How to Test: Automation, Tools, and Platform Coverage</h2>
+
+  <div style="background:var(--amber-bg);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:0 0 1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
+    <div style="font-size:1.1rem;line-height:1;padding-top:2px;" aria-hidden="true">&#127919;</div>
+    <div>
+      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--amber);font-weight:500;margin-bottom:4px;">Practice these yourself</div>
+      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">Interactive contrast failure examples are available in the <a href="A11y-Test-Playground/A11y Test Playground - Colour Contrast.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Colour Contrast Playground</a>. Mobile testing steps are in the <a href="A11y-Test-Playground/A11y Colour Contrast Mobile Testing Guide.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Mobile Testing Guide</a>.</div>
+    </div>
+  </div>
+
+  <h3>Tier 1: Pipeline automation</h3>
+  <p>These run in CI/CD without human involvement. They catch failures on every pull request before code merges.</p>
+  <ul>
+    <li><strong><span class="tool">axe-core</span> in <span class="tool">Playwright</span> or <span class="tool">Cypress</span></strong>: flags text colour against background colour failures where both are solid, computed CSS values. Also catches large text failing 3:1 and UI component boundary failures where the boundary colour is in the stylesheet.</li>
+    <li><strong><span class="tool">Pa11y</span></strong>: runs the same axe-core ruleset in a headless browser. Useful for scanning pages that require no authentication and for nightly regression scans across large sites.</li>
+  </ul>
+
+  <h3>Tier 2: Semi-automated tools</h3>
+  <p>A human opens these and runs them on a live page. They automate the measurement work but need a person to trigger them, review results, and investigate flagged elements.</p>
+  <ul>
+    <li><strong><span class="tool"><a href="https://chromewebstore.google.com/detail/jbbplnpkjmmeebjpijfedlgcdilocofh" target="_blank" rel="noopener noreferrer">WAVE</a></span></strong>: open the Contrast tab for an instant visual map of all contrast failures on the page. Shows ratio, required minimum, and highlights the failing element in place.</li>
+    <li><strong><span class="tool"><a href="https://chromewebstore.google.com/detail/lhdoppojpmngadmnindnejefpokejbdd" target="_blank" rel="noopener noreferrer">axe DevTools</a></span></strong>: run a full page scan and filter by <code>color-contrast</code>. Shows exact element, computed ratio, and required minimum. Export to CSV for defect logging.</li>
+    <li><strong><span class="tool">WebAIM Contrast Checker</span></strong>: takes two hex values and returns the ratio with AA and AAA pass/fail. Use it to verify a specific combination or propose a passing fix colour.</li>
+    <li><strong><span class="tool">Chrome DevTools</span> colour picker</strong>: select any text element, click the colour swatch in Styles. Contrast ratio and AA pass/fail displayed inline. No extension needed.</li>
+  </ul>
+
+  <h3>Tier 3: Manual checks only</h3>
+  <p>No tool can detect these. They require a human looking at the rendered page.</p>
+  <ul>
+    <li><strong>Text over images or gradients</strong>: pipeline automation reads the CSS <code>background-color</code> property. If the visual background is an image or gradient, the computed value is wrong or absent. Check visually with the Chrome DevTools eyedropper on the actual rendered pixel.</li>
+    <li><strong>Placeholder text contrast</strong>: many automated tools skip <code>::placeholder</code> pseudo-elements. Inspect the element in DevTools, find the placeholder rule, and check its colour manually.</li>
+    <li><strong>Disabled state contrast</strong>: WCAG exempts genuinely disabled controls. Check whether elements styled to look disabled are actually using the <code>disabled</code> attribute or just CSS styling.</li>
+    <li><strong>Colour blindness simulation</strong>: no tool checks whether meaning is lost for colour-blind users. Use Chrome DevTools Rendering panel (Emulate vision deficiencies) and walk through the UI manually.</li>
+    <li><strong>Dynamic states</strong>: hover, focus, active, error, selected. Trigger each state manually and check contrast at that moment with the DevTools colour picker.</li>
+    <li><strong>Native mobile screens</strong>: pipeline automation cannot reach native iOS or Android UI. Use Accessibility Scanner (Android) or DAC Color Contrast Checker and Accessibility Checker - AI EAA (iOS) per platform.</li>
+  </ul>
+
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">Colour contrast testing by platform</caption>
+      <thead>
+        <tr>
+          <th scope="col">Platform</th>
+          <th scope="col">Automation</th>
+          <th scope="col">Tools</th>
+          <th scope="col">Manual steps</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Web (desktop)</td>
+          <td>axe-core, Pa11y</td>
+          <td>WAVE Contrast tab, axe DevTools, WebAIM Checker, Chrome DevTools colour picker</td>
+          <td>Check text over images, placeholder text, disabled states, hover and focus states</td>
+        </tr>
+        <tr>
+          <td>Web (mobile browser)</td>
+          <td>axe-core in mobile viewport</td>
+          <td>Chrome DevTools device emulation + colour picker</td>
+          <td>Check at device pixel ratios: some colours render differently on mobile screens</td>
+        </tr>
+        <tr>
+          <td>iOS (native)</td>
+          <td>None: no browser access</td>
+          <td>DAC Color Contrast Checker app, Accessibility Scanner</td>
+          <td>Enable Increase Contrast, Differentiate Without Colour, Colour Filters in Settings</td>
+        </tr>
+        <tr>
+          <td>Android (native)</td>
+          <td>None: no browser access</td>
+          <td>Accessibility Scanner, DAC Color Contrast Checker app</td>
+          <td>Enable High Contrast Text, Colour Correction, check each screen with Scanner</td>
+        </tr>
+        <tr>
+          <td>macOS</td>
+          <td>axe-core in Safari/Chrome</td>
+          <td>Colour Contrast Analyser (eyedropper), Chrome DevTools</td>
+          <td>System Preferences, Accessibility, Display: Increase Contrast, Reduce Transparency</td>
+        </tr>
+        <tr>
+          <td>Windows</td>
+          <td>axe-core in Chrome/Firefox/Edge</td>
+          <td>Colour Contrast Analyser, WAVE, axe DevTools</td>
+          <td>Settings, Ease of Access, Colour Filters: Greyscale, Red-Green, Blue-Yellow simulations</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+
+  <figure class="blog-illustration" aria-label="Two panels showing what axe-core sees versus what actually renders on a gradient background">
+    <svg viewBox="0 0 680 240" width="100%" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#fafcf5;">
+      <title>What axe-core sees versus what actually renders on a gradient background</title>
+      <desc>Left panel labelled What axe-core sees: solid blue background, white text, ratio 7.4 to 1, green pass. Right panel labelled What actually renders: same component with a gradient from dark blue to near white. The heading is readable at the top but the subheading text is invisible at the light end of the gradient. A red dashed ellipse highlights the invisible text area. Caption: axe-core reads the CSS value. It cannot see what your eyes see.</desc>
+      <rect width="680" height="240" fill="#fafcf5"/>
+      <!-- left panel -->
+      <rect x="14" y="20" width="298" height="186" rx="8" fill="#f5f7f0" stroke="#4ade80" stroke-width="1.5"/>
+      <rect x="14" y="20" width="298" height="24" rx="8" fill="#d8f0e0"/>
+      <text x="163" y="36" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#1a7a3a" font-weight="600" letter-spacing="0.5">WHAT AXE-CORE SEES</text>
+      <rect x="26" y="52" width="274" height="28" rx="4" fill="#1e1e1e"/>
+      <text x="163" y="63" text-anchor="middle" font-family="monospace" font-size="8" fill="#c586c0">background-color:</text>
+      <text x="163" y="75" text-anchor="middle" font-family="monospace" font-size="8" fill="#4ade80">#1a4a9a  ← reads this CSS value</text>
+      <rect x="26" y="88" width="274" height="72" rx="4" fill="#1a4a9a"/>
+      <text x="163" y="116" text-anchor="middle" font-family="DM Serif Display,serif" font-size="16" fill="#ffffff">Hero heading text</text>
+      <text x="163" y="134" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#ffffff">Subheading copy that supports the hero</text>
+      <rect x="26" y="168" width="274" height="28" rx="4" fill="#0d2a0d" stroke="#4ade80" stroke-width="1"/>
+      <text x="80" y="179" font-family="DM Sans,sans-serif" font-size="8" fill="#4ade80">#fff on #1a4a9a</text>
+      <text x="80" y="190" font-family="DM Sans,sans-serif" font-size="8" fill="#4ade80" font-weight="600">Ratio: 7.4:1  ✓  PASS</text>
+      <circle cx="278" cy="182" r="12" fill="#4ade80"/>
+      <text x="278" y="186" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#000" font-weight="700">✓</text>
+      <!-- vs -->
+      <rect x="318" y="90" width="44" height="44" rx="22" fill="#e8e4da" stroke="#c8c4b8" stroke-width="1"/>
+      <text x="340" y="117" text-anchor="middle" font-family="DM Serif Display,serif" font-size="14" fill="#888">vs</text>
+      <!-- right panel -->
+      <rect x="368" y="20" width="298" height="186" rx="8" fill="#fff8f5" stroke="#f87171" stroke-width="1.5"/>
+      <rect x="368" y="20" width="298" height="24" rx="8" fill="#fff0f0"/>
+      <text x="517" y="36" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" font-weight="600" letter-spacing="0.5">WHAT ACTUALLY RENDERS</text>
+      <rect x="380" y="52" width="274" height="28" rx="4" fill="#1e1e1e"/>
+      <text x="517" y="63" text-anchor="middle" font-family="monospace" font-size="8" fill="#c586c0">background:</text>
+      <text x="517" y="75" text-anchor="middle" font-family="monospace" font-size="8" fill="#fbbf24">linear-gradient(#1a4a9a, #f0ede6)</text>
+      <defs>
+        <linearGradient id="heroGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#1a4a9a"/>
+          <stop offset="100%" style="stop-color:#f0ede6"/>
+        </linearGradient>
+      </defs>
+      <rect x="380" y="88" width="274" height="72" rx="4" fill="url(#heroGrad)"/>
+      <text x="517" y="114" text-anchor="middle" font-family="DM Serif Display,serif" font-size="16" fill="#ffffff">Hero heading text</text>
+      <text x="517" y="134" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#f0ede6" opacity="0.2">Subheading copy that supports the hero</text>
+      <ellipse cx="517" cy="134" rx="120" ry="13" fill="none" stroke="#f87171" stroke-width="2" stroke-dasharray="4,2"/>
+      <line x1="637" y1="134" x2="650" y2="118" stroke="#f87171" stroke-width="1.5"/>
+      <text x="655" y="114" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171" text-anchor="start">invisible</text>
+      <rect x="380" y="168" width="274" height="28" rx="4" fill="#1a0808" stroke="#f87171" stroke-width="1"/>
+      <text x="434" y="179" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">#fff on gradient end #f0ede6</text>
+      <text x="434" y="190" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171" font-weight="600">Ratio: 1.1:1  ✕  FAIL</text>
+      <circle cx="632" cy="182" r="12" fill="#f87171"/>
+      <text x="632" y="186" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#fff" font-weight="700">✕</text>
+      <text x="340" y="226" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#9a9e90" font-style="italic">axe-core reads the CSS value. It cannot see what your eyes see.</text>
+    </svg>
+  </figure>
+
+  <!-- 4 -->
+  <h2 id="web-testing">4. Testing on Web: Tools and Steps</h2>
+
+  <h3>WAVE Contrast tab</h3>
+  <p>Open <span class="tool"><a href="https://chromewebstore.google.com/detail/jbbplnpkjmmeebjpijfedlgcdilocofh" target="_blank" rel="noopener noreferrer">WAVE</a></span> on the page. Click the Contrast tab. Every text element with a contrast failure is listed with its ratio, the required ratio, and a link to the element. This is the fastest first pass: it covers all visible text on the page in one scan.</p>
+
+  <h3>axe DevTools</h3>
+  <p><span class="tool"><a href="https://chromewebstore.google.com/detail/lhdoppojpmngadmnindnejefpokejbdd" target="_blank" rel="noopener noreferrer">axe DevTools</a></span> flags contrast failures as Critical violations. Run a full page scan. Filter by "color-contrast" to isolate contrast issues. The panel shows the exact element, the computed ratio, and the required minimum. Export to CSV for defect logging.</p>
+
+  <h3>WebAIM Contrast Checker</h3>
+  <p><span class="tool">WebAIM Contrast Checker</span> at webaim.org/resources/contrastchecker/ takes two hex values and returns the ratio with AA and AAA pass/fail for normal text, large text, and UI components. Use it when you need to verify a specific colour combination or propose a fix with a passing ratio.</p>
+
+  <h3>Colour Contrast Analyser (desktop app)</h3>
+  <p><span class="tool">Colour Contrast Analyser</span> by TPGi is a free desktop application for Windows and Mac. It includes an eyedropper tool to sample colours directly from any screen content: including images, PDFs, and native apps. Download from tpgi.com/color-contrast-checker/. Essential for testing contrast in non-browser contexts.</p>
+
+  <h3>Chrome DevTools colour picker</h3>
+  <p>In <span class="tool">Chrome DevTools</span>, select any text element. In the Styles panel, click the colour swatch next to the text colour. The colour picker shows the contrast ratio against the current background inline. A AA pass/fail indicator appears immediately. No extension needed.</p>
+
+  <!-- 5 -->
+  <h2 id="colour-blindness">5. Colour Blindness Simulation</h2>
+
+  <p>Approximately 8% of men and 0.5% of women have some form of colour vision deficiency. The most common type is red-green colour blindness (deuteranopia and protanopia), where red and green appear similar. This directly affects error states, success indicators, and any interface that uses colour as the only signal.</p>
+
+  <figure class="blog-illustration" aria-label="Colour blindness simulation showing how a red-green UI looks to someone with deuteranopia">
+    <svg viewBox="0 0 680 180" width="100%" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#161616;">
+      <title>Colour blindness simulation: normal vision vs deuteranopia on a status indicator UI</title>
+      <desc>Left panel shows three status dots in normal vision: green Available, amber Pending, red Unavailable. Right panel shows the same dots simulated for deuteranopia: green and red both appear as a similar yellow-brown, making Available and Unavailable indistinguishable.</desc>
+      <rect width="680" height="180" fill="#161616"/>
+      <!-- LEFT: normal -->
+      <text x="14" y="20" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8" letter-spacing="1">NORMAL VISION</text>
+      <rect x="14" y="28" width="296" height="136" rx="6" fill="#1e1e1e" stroke="#2e2e2e" stroke-width="0.5"/>
+      <circle cx="44" cy="72" r="10" fill="#4ade80"/>
+      <text x="62" y="77" font-family="DM Sans,sans-serif" font-size="13" fill="#c8c8c8" font-weight="500">Available</text>
+      <circle cx="44" cy="108" r="10" fill="#fbbf24"/>
+      <text x="62" y="113" font-family="DM Sans,sans-serif" font-size="13" fill="#c8c8c8" font-weight="500">Pending</text>
+      <circle cx="44" cy="144" r="10" fill="#f87171"/>
+      <text x="62" y="149" font-family="DM Sans,sans-serif" font-size="13" fill="#c8c8c8" font-weight="500">Unavailable</text>
+      <!-- RIGHT: deuteranopia simulation -->
+      <text x="370" y="20" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" letter-spacing="1">DEUTERANOPIA SIMULATION</text>
+      <rect x="370" y="28" width="296" height="136" rx="6" fill="#1e1e1e" stroke="#f87171" stroke-width="0.5"/>
+      <!-- deuteranopia: green and red both shift to yellow-brown -->
+      <circle cx="400" cy="72" r="10" fill="#a89050"/>
+      <text x="418" y="77" font-family="DM Sans,sans-serif" font-size="13" fill="#c8c8c8" font-weight="500">Available</text>
+      <text x="418" y="92" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171" font-style="italic">same colour as below?</text>
+      <circle cx="400" cy="108" r="10" fill="#c8a030"/>
+      <text x="418" y="113" font-family="DM Sans,sans-serif" font-size="13" fill="#c8c8c8" font-weight="500">Pending</text>
+      <circle cx="400" cy="144" r="10" fill="#9a8840"/>
+      <text x="418" y="149" font-family="DM Sans,sans-serif" font-size="13" fill="#c8c8c8" font-weight="500">Unavailable</text>
+      <text x="418" y="163" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171" font-style="italic">indistinguishable from Available</text>
+    </svg>
+  </figure>
+
+  <h3>Web: Chrome DevTools colour blindness simulation</h3>
+  <p>In <span class="tool">Chrome DevTools</span>, open the Rendering panel (More tools → Rendering). Scroll to "Emulate vision deficiencies." Select from: Blurred vision, Protanopia, Deuteranopia, Tritanopia, Achromatopsia. The page re-renders immediately. Walk through the UI with each simulation active and check whether any meaning is lost when colour is removed.</p>
+
+  <h3>Figma: Stark plugin</h3>
+  <p><span class="tool">Stark</span> in Figma runs colour blindness simulation across all eight deficiency types before a design is handed off. <a href="05-Design-Phase-Accessibility-Review.html" class="blog-ref">Blog 05 covers Stark at the design phase</a>.</p>
+
+  <!-- 6 -->
+  <h2 id="ios-testing">6. Testing on iOS</h2>
+
+  <h3>Display Accommodations</h3>
+  <p>iOS has built-in display accessibility settings that simulate how users with visual impairments experience your app. Settings, Accessibility, Display and Text Size:</p>
+  <ul>
+    <li><strong>Increase Contrast</strong>: darkens borders and separates visual elements more strongly. If your UI breaks or becomes unclear when this is enabled, contrast is likely borderline.</li>
+    <li><strong>Differentiate Without Colour</strong>: removes colour from UI controls. Anything that relied on colour alone becomes a blank square or loses meaning. This directly tests WCAG 1.4.1.</li>
+    <li><strong>Reduce Transparency</strong>: solidifies translucent backgrounds. Tests whether layered UI elements maintain readable contrast when glass effects are removed.</li>
+  </ul>
+
+  <h3>Colour filters for colour blindness simulation</h3>
+  <p>Settings, Accessibility, Display and Text Size, Colour Filters. Enable colour filters and select: Greyscale, Red/Green filter (Protanopia), Green/Red filter (Deuteranopia), Blue/Yellow filter (Tritanopia). Navigate through the app with each filter active. Any meaningful information that disappears or becomes ambiguous is a failure.</p>
+
+  <h3>DAC Color Contrast Checker app</h3>
+  <p><span class="tool">DAC Color Contrast Checker</span> (by Digital Accessibility Centre) overlays contrast ratio measurements directly on screenshots of your app. Useful for native app screens where browser-based tools cannot reach. <a href="https://apps.apple.com/us/app/dac-color-contrast-checker/id6743027333" target="_blank" rel="noopener noreferrer">Download from the App Store</a>.</p>
+
+  <h3>Accessibility Checker - AI EAA</h3>
+  <p><span class="tool"><a href="https://apps.apple.com/us/app/accessibility-checker-ai-eaa/id1095478187" target="_blank" rel="noopener noreferrer">Accessibility Checker - AI EAA</a></span> by Accessible Developer Ltd scans your screen for accessibility issues including colour contrast failures. Point it at any app screen and it reports contrast ratios with WCAG pass/fail status.</p>
+
+  <!-- 7 -->
+  <h2 id="android-testing">7. Testing on Android</h2>
+
+  <h3>Display settings</h3>
+  <p>Settings, Accessibility, Display. Key options:</p>
+  <ul>
+    <li><strong>High Contrast Text</strong>: forces text to render with a stronger contrast outline. If text becomes hard to read with this enabled, the original contrast was insufficient.</li>
+    <li><strong>Colour Correction</strong>: Settings, Accessibility, Colour and Motion, Colour Correction. Deuteranomaly, Protanomaly, Tritanomaly modes available. Equivalent to iOS colour filters.</li>
+    <li><strong>Colour Inversion</strong>: inverts all colours. Useful for quick identification of elements where contrast depends entirely on a colour relationship that inverts poorly.</li>
+  </ul>
+
+  <h3>Accessibility Scanner</h3>
+  <p><span class="tool">Accessibility Scanner</span> is a free Android app that scans app screens and flags contrast failures with exact ratios. It requires no code access: it analyses the rendered screen. <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.accessibility.auditor" target="_blank" rel="noopener noreferrer">Download from the Play Store</a>, enable it in Accessibility settings, then navigate through the app. A floating button appears; tap it to scan.</p>
+
+  <h3>DAC Color Contrast Checker app</h3>
+  <p><span class="tool">DAC Color Contrast Checker</span> is also available on Android and provides the same screenshot-based contrast analysis as on iOS. <a href="https://play.google.com/store/apps/details?id=org.digitalaccessibilitycentre.dac_colour_contrast" target="_blank" rel="noopener noreferrer">Download from the Play Store</a>.</p>
+
+
+
+  <!-- 8 -->
+  <h2 id="defects">8. Writing Contrast Defects</h2>
+
+  <p>A contrast defect needs to be specific and reproducible. "Text is hard to read" is not a defect. "Body text #aaaaaa on background #ffffff measures 2.3:1, fails WCAG 1.4.3 AA (minimum 4.5:1)" is a defect.</p>
+
+  <p>Every contrast defect must include:</p>
+  <ul>
+    <li><strong>Foreground colour</strong> (hex or RGB): the exact text or UI component colour</li>
+    <li><strong>Background colour</strong> (hex or RGB): the exact background colour behind it</li>
+    <li><strong>Measured ratio</strong>: e.g. 2.3:1</li>
+    <li><strong>Required ratio</strong>: 4.5:1 for normal text, 3:1 for large text or UI boundaries</li>
+    <li><strong>WCAG criterion</strong>: 1.4.3 for text, 1.4.11 for UI components</li>
+    <li><strong>Element and location</strong>: "placeholder text in search input, homepage header"</li>
+    <li><strong>Tool used</strong>: axe DevTools, WAVE, WebAIM Checker, Colour Contrast Analyser</li>
+  </ul>
+
+  <div class="callout green" role="note">
+    Always include a suggested fix. "Foreground colour changed to #767676 achieves 4.5:1 on #ffffff" saves a design round-trip and gets the defect resolved faster.
+  </div>
+
+  <div class="takeaway" role="note">
+    <div class="label">The fast check</div>
+    <p>Run <span class="tool">WAVE</span> Contrast tab and <span class="tool">axe DevTools</span> on every page before sign-off. Then open <span class="tool">Chrome DevTools</span> Rendering panel and run Deuteranopia simulation. Walk through the UI. Anything that loses meaning under the simulation is a WCAG 1.4.1 failure: colour used as the only signal.</p>
+  </div>
+
+  <div class="series-nav">
+    <span class="label">Navigate the series</span>
+    <div class="nav-pair">
+      <a href="12-Headings-Landmarks-Skip-Links.html" class="nav-blog">
+        <span class="nav-blog-arrow" aria-hidden="true">←</span>
+        <div>
+          <div class="nav-blog-title">Blog 12: Headings, Landmarks and Skip Links</div>
+          <div class="nav-blog-sub">How to validate page structure</div>
+        </div>
+      </a>
+      <a href="14-Alt-Text-Testing.html" class="nav-blog">
+        <div>
+          <div class="nav-blog-title">Blog 14: Alt Text Testing</div>
+          <div class="nav-blog-sub">Meaningful vs decorative vs wrong</div>
+        </div>
+        <span class="nav-blog-arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+
+  <aside class="references" aria-label="References">
+    <div class="ref-title">References</div>
+    <ul role="list">
+      <li><a href="https://www.w3.org/TR/WCAG21/#contrast-minimum" target="_blank" rel="noopener noreferrer">WCAG 1.4.3: Contrast Minimum</a></li>
+      <li><a href="https://www.w3.org/TR/WCAG21/#non-text-contrast" target="_blank" rel="noopener noreferrer">WCAG 1.4.11: Non-text Contrast</a></li>
+      <li><a href="https://webaim.org/resources/contrastchecker/" target="_blank" rel="noopener noreferrer">WebAIM Contrast Checker</a></li>
+      <li><a href="https://www.tpgi.com/color-contrast-checker/" target="_blank" rel="noopener noreferrer">Colour Contrast Analyser by TPGi (desktop app)</a></li>
+      <li><a href="https://play.google.com/store/apps/details?id=com.google.android.apps.accessibility.auditor" target="_blank" rel="noopener noreferrer">Accessibility Scanner by Google (Android)</a></li>
+      <li><a href="https://contrast-grid.eightshapes.com/" target="_blank" rel="noopener noreferrer">Eightshapes Contrast Grid: bulk palette checking</a></li>
+    </ul>
+  </aside>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; Built with intention. Tested with care. &nbsp;·&nbsp; © 2025
+  </p>
+</footer>
+
+</body>
+</html>

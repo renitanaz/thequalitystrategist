@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>14 A11y Alt Text Mobile Testing Guide | The Quality Strategist</title>
+  <meta name="description" content="How to test alt text on iOS VoiceOver and Android TalkBack. Step-by-step for each failure scenario from the Alt Text Playground." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+      --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+      --green:#4ade80; --green-bg:rgba(74,222,128,0.07);
+      --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07);
+      --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07);
+      --red:#f87171; --red-bg:rgba(248,113,113,0.07);
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
+    .skip-link:focus { top:0; }
+    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
+    .nav-back { font-size:0.82rem; color:var(--text-3); text-decoration:none; }
+    .nav-back:hover { color:var(--text-2); }
+    .page-header { max-width:860px; margin:0 auto; padding:3.5rem 2rem 2rem; border-bottom:1px solid var(--border); }
+    .pg-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--green); font-weight:500; margin-bottom:0.75rem; }
+    .page-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.6rem,3.5vw,2.2rem); color:var(--text); margin-bottom:0.75rem; }
+    .page-header p { color:var(--text-2); font-weight:300; max-width:640px; }
+    .notice { display:flex; align-items:flex-start; gap:10px; background:var(--amber-bg); border:1px solid rgba(251,191,36,0.2); border-radius:8px; padding:0.85rem 1.1rem; margin-top:1.25rem; font-size:0.85rem; color:var(--amber); }
+    main { max-width:860px; margin:0 auto; padding:2.5rem 2rem 5rem; }
+    .platform-section { margin-bottom:3.5rem; }
+    .platform-header { display:flex; align-items:center; gap:12px; margin-bottom:1.75rem; padding-bottom:1rem; border-bottom:1px solid var(--border); }
+    .platform-badge { padding:4px 14px; border-radius:99px; font-size:0.8rem; font-weight:600; letter-spacing:0.04em; }
+    .badge-ios { background:rgba(96,165,250,0.15); color:#60a5fa; border:1px solid rgba(96,165,250,0.3); }
+    .badge-android { background:rgba(61,220,132,0.1); color:#3ddc84; border:1px solid rgba(61,220,132,0.25); }
+    .platform-title { font-family:'DM Serif Display',serif; font-size:1.3rem; color:var(--text); }
+    .prereq { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:1rem 1.25rem; margin-bottom:1.75rem; font-size:0.85rem; color:var(--text-2); }
+    .prereq strong { color:var(--text); }
+    .prereq ul { padding-left:1.25rem; margin-top:0.5rem; }
+    .prereq li { margin-bottom:0.3rem; }
+    .quick-ref { background:var(--bg2); border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:2rem; }
+    .quick-ref-header { padding:0.75rem 1.1rem; background:var(--bg3); border-bottom:1px solid var(--border); font-size:0.7rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-3); font-weight:500; }
+    table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+    thead th { padding:8px 12px; text-align:left; font-size:0.68rem; text-transform:uppercase; color:var(--text-3); font-weight:500; border-bottom:1px solid var(--border); background:var(--bg2); }
+    tbody td { padding:9px 12px; border-bottom:1px solid var(--border); color:var(--text-2); vertical-align:top; }
+    tbody tr:last-child td { border-bottom:none; }
+    tbody td:first-child { color:var(--text); font-weight:500; }
+    tbody tr:hover td { background:var(--bg3); }
+    .test-card { background:var(--bg2); border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:12px; }
+    .test-card-header { padding:0.85rem 1.1rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .test-num { width:26px; height:26px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:0.78rem; font-weight:700; flex-shrink:0; }
+    .num-fail { background:var(--red-bg); color:var(--red); }
+    .num-pass { background:var(--green-bg); color:var(--green); }
+    .test-title { font-size:0.9rem; font-weight:500; color:var(--text); }
+    .test-scenario { font-size:0.7rem; color:var(--text-3); background:var(--bg3); border:1px solid var(--border); padding:1px 7px; border-radius:99px; margin-left:auto; font-weight:500; flex-shrink:0; }
+    .test-body { padding:1rem 1.1rem; }
+    .steps { display:flex; flex-direction:column; gap:6px; }
+    .step-row { display:flex; gap:10px; align-items:flex-start; }
+    .step-n { width:22px; height:22px; border-radius:5px; background:var(--bg3); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:0.72rem; font-weight:600; color:var(--text-3); flex-shrink:0; margin-top:1px; }
+    .step-text { font-size:0.85rem; color:var(--text-2); line-height:1.55; }
+    .step-text strong { color:var(--text); }
+    .gesture { display:inline-block; background:var(--bg3); border:1px solid #444; border-radius:4px; padding:1px 7px; font-size:0.8em; color:var(--text); font-family:monospace; }
+    .expected { margin-top:0.75rem; padding:0.7rem 0.9rem; background:var(--bg3); border-radius:6px; font-size:0.82rem; color:var(--text-2); border-left:3px solid; }
+    .expected-fail { border-color:var(--red); }
+    .expected-pass { border-color:var(--green); }
+    .expected strong { color:var(--text); }
+    hr.divider { border:none; border-top:1px solid var(--border); margin:2.5rem 0; }
+    footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
+    footer a { color:var(--text-3); text-decoration:none; }
+    @media(max-width:620px) { nav.site-nav, main, .page-header { padding-left:1.25rem; padding-right:1.25rem; } }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <a href="../14-Alt-Text-Testing.html" class="nav-back">← Back to Blog 14</a>
+</nav>
+
+<header class="page-header">
+  <div class="pg-label">A11y Mobile Testing Guide</div>
+  <h1>14 A11y Alt Text Mobile Testing Guide</h1>
+  <p>How to test alt text failures on iOS VoiceOver and Android TalkBack. Use alongside the <a href="A11y-Test-Playground/14 A11y Test Playground - Alt Text.html" style="color:var(--blue);">Alt Text Playground</a>: same scenarios, tested on a real device.</p>
+  <div class="notice" role="note">
+    <span aria-hidden="true">&#9888;&#65039;</span>
+    <span>Physical device required. Simulators do not reliably replicate how VoiceOver and TalkBack announce image content.</span>
+  </div>
+</header>
+
+<main id="main-content">
+
+  <!-- iOS -->
+  <div class="platform-section">
+    <div class="platform-header">
+      <span class="platform-badge badge-ios">iOS · VoiceOver</span>
+      <h2 class="platform-title">VoiceOver on iPhone and iPad</h2>
+    </div>
+
+    <div class="prereq">
+      <strong>Before you start:</strong>
+      <ul>
+        <li>Enable VoiceOver: Settings, Accessibility, VoiceOver, Toggle ON</li>
+        <li>Open the <a href="A11y-Test-Playground/14 A11y Test Playground - Alt Text.html" style="color:var(--blue);">Alt Text Playground</a> in <strong>Safari</strong></li>
+        <li>Use the rotor to navigate by Images for efficient scanning</li>
+      </ul>
+    </div>
+
+    <div class="quick-ref">
+      <div class="quick-ref-header">Essential gestures for image testing</div>
+      <table>
+        <thead><tr><th scope="col">Action</th><th scope="col">Gesture</th></tr></thead>
+        <tbody>
+          <tr><td>Navigate elements</td><td>Single-finger swipe right (next) or left (previous)</td></tr>
+          <tr><td>Open rotor</td><td>Rotate two fingers on screen</td></tr>
+          <tr><td>Set rotor to Images</td><td>Rotate two fingers until "Images" is announced</td></tr>
+          <tr><td>Navigate images only</td><td>Rotor set to Images, then swipe down (next) or up (previous)</td></tr>
+          <tr><td>Activate link or button</td><td>Double-tap anywhere</td></tr>
+          <tr><td>Pause speech</td><td>Two-finger single tap</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num num-fail">1</div>
+        <div class="test-title">No alt attribute</div>
+        <div class="test-scenario">Playground Scenario 1</div>
+      </div>
+      <div class="test-body">
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Open the playground in Safari. Enable VoiceOver.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Open rotor, set to <strong>Images</strong>. Swipe down to navigate to Scenario 1's image.</div></div>
+          <div class="step-row"><div class="step-n">3</div><div class="step-text">Listen to what VoiceOver announces.</div></div>
+        </div>
+        <div class="expected expected-fail">
+          <strong>Expected failure:</strong> VoiceOver announces the data URI or a partial filename: no meaningful description. The user has no idea what the image shows.
+        </div>
+      </div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num num-fail">2</div>
+        <div class="test-title">Filename as alt text</div>
+        <div class="test-scenario">Playground Scenario 2</div>
+      </div>
+      <div class="test-body">
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Navigate to Scenario 2's image using the rotor Images mode.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Listen carefully to the full announcement.</div></div>
+        </div>
+        <div class="expected expected-fail">
+          <strong>Expected failure:</strong> VoiceOver announces "I M G underscore 2 0 2 4 1 1 0 3 underscore 0 9 4 5 1 2 dot j p g, image": the filename read character by character. Meaningless and disorienting.
+        </div>
+      </div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num num-fail">3</div>
+        <div class="test-title">Decorative image not suppressed</div>
+        <div class="test-scenario">Playground Scenario 4</div>
+      </div>
+      <div class="test-body">
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Set rotor to default (Characters or Words). <span class="gesture">Swipe right</span> through the paragraph, image, and paragraph in Scenario 4.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Count the number of announcements between the two paragraphs.</div></div>
+        </div>
+        <div class="expected expected-fail">
+          <strong>Expected failure:</strong> VoiceOver announces "decorative wave divider, image" between the two paragraphs: interrupting the reading flow for a purely visual element. Should be <code>alt=""</code> so VoiceOver skips it silently.
+        </div>
+      </div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num num-fail">4</div>
+        <div class="test-title">Functional image: alt describes appearance</div>
+        <div class="test-scenario">Playground Scenario 5</div>
+      </div>
+      <div class="test-body">
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Navigate to the cart icon link in Scenario 5 by swiping right.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Listen to what VoiceOver announces. Ask: do you know where this link goes?</div></div>
+        </div>
+        <div class="expected expected-fail">
+          <strong>Expected failure:</strong> VoiceOver announces "shopping cart icon, link": the appearance is described but not the destination. The user cannot decide whether to tap it.
+        </div>
+        <div class="expected expected-pass" style="margin-top:8px;">
+          <strong>Correct:</strong> VoiceOver should announce "Go to checkout, link."
+        </div>
+      </div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num num-pass">5</div>
+        <div class="test-title">Correct alt text: all three types</div>
+        <div class="test-scenario">Playground Scenario 8</div>
+      </div>
+      <div class="test-body">
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Navigate through all three images in Scenario 8 using rotor Images mode.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Listen to what VoiceOver announces for each.</div></div>
+        </div>
+        <div class="expected expected-pass">
+          <strong>Expected pass:</strong> Meaningful image announces the full revenue data. Decorative image is skipped entirely: VoiceOver jumps straight to the next element. Functional image announces "Go to checkout, link."
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <hr class="divider" />
+
+  <!-- Android -->
+  <div class="platform-section">
+    <div class="platform-header">
+      <span class="platform-badge badge-android">Android · TalkBack</span>
+      <h2 class="platform-title">TalkBack on Android</h2>
+    </div>
+
+    <div class="prereq">
+      <strong>Before you start:</strong>
+      <ul>
+        <li>Enable TalkBack: Settings, Accessibility, TalkBack, Toggle ON</li>
+        <li>Open the <a href="A11y-Test-Playground/14 A11y Test Playground - Alt Text.html" style="color:var(--blue);">Alt Text Playground</a> in <strong>Chrome</strong></li>
+        <li>Use reading controls to navigate by Images for efficient scanning</li>
+      </ul>
+    </div>
+
+    <div class="quick-ref">
+      <div class="quick-ref-header">Essential gestures for image testing</div>
+      <table>
+        <thead><tr><th scope="col">Action</th><th scope="col">Gesture</th></tr></thead>
+        <tbody>
+          <tr><td>Navigate elements</td><td>Single-finger swipe right (next) or left (previous)</td></tr>
+          <tr><td>Open reading controls</td><td>Swipe up then right</td></tr>
+          <tr><td>Set navigation to Images</td><td>Swipe up then right, select Images</td></tr>
+          <tr><td>Navigate images only</td><td>Swipe right (next image) or left (previous image)</td></tr>
+          <tr><td>Activate element</td><td>Double-tap anywhere</td></tr>
+          <tr><td>Pause speech</td><td>Two-finger single tap</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num num-fail">1</div>
+        <div class="test-title">No alt attribute</div>
+        <div class="test-scenario">Playground Scenario 1</div>
+      </div>
+      <div class="test-body">
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Open the playground in Chrome with TalkBack enabled.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Open reading controls: <span class="gesture">swipe up then right</span>. Select <strong>Images</strong>. Swipe to Scenario 1's image.</div></div>
+          <div class="step-row"><div class="step-n">3</div><div class="step-text">Listen to what TalkBack announces.</div></div>
+        </div>
+        <div class="expected expected-fail">
+          <strong>Expected failure:</strong> TalkBack announces "unlabelled image" or a partial URI. No meaningful information about the image content.
+        </div>
+      </div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num num-fail">2</div>
+        <div class="test-title">Decorative image not suppressed</div>
+        <div class="test-scenario">Playground Scenario 4</div>
+      </div>
+      <div class="test-body">
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Set reading controls back to default. <span class="gesture">Swipe right</span> through Scenario 4: paragraph, image, paragraph.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Listen to what TalkBack announces for the wave image between the two paragraphs.</div></div>
+        </div>
+        <div class="expected expected-fail">
+          <strong>Expected failure:</strong> TalkBack announces "decorative wave divider, image" between the two paragraphs. A decorative element should use <code>alt=""</code> to be silently skipped.
+        </div>
+      </div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num num-fail">3</div>
+        <div class="test-title">Functional image: alt describes appearance</div>
+        <div class="test-scenario">Playground Scenario 5</div>
+      </div>
+      <div class="test-body">
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Navigate to the cart icon link in Scenario 5. <span class="gesture">Swipe right</span> until focus lands on it.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Listen to TalkBack's announcement. Ask: where does this link go?</div></div>
+        </div>
+        <div class="expected expected-fail">
+          <strong>Expected failure:</strong> TalkBack announces "shopping cart icon, link": appearance described, destination unknown. The user cannot make an informed decision about whether to activate it.
+        </div>
+      </div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-num num-pass">4</div>
+        <div class="test-title">Correct alt text: all three types</div>
+        <div class="test-scenario">Playground Scenario 8</div>
+      </div>
+      <div class="test-body">
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Set reading controls to <strong>Images</strong>. Navigate through the three images in Scenario 8.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Listen to each announcement.</div></div>
+        </div>
+        <div class="expected expected-pass">
+          <strong>Expected pass:</strong> Meaningful image announces the full revenue data. Decorative wave is skipped silently. Cart icon link announces "Go to checkout, link." All three correct.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; <a href="../14-Alt-Text-Testing.html">Back to Blog 14</a>
+    &nbsp;·&nbsp; <a href="A11y-Test-Playground/14 A11y Test Playground - Alt Text.html">← Desktop Playground</a>
+  </p>
+</footer>
+
+</body>
+</html>

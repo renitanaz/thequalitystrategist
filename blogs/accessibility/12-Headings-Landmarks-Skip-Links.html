@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>12 Headings, Landmarks and Skip Links | The Quality Strategist</title>
+  <meta name="description" content="How to validate page structure for accessibility. Heading hierarchy, landmark regions, skip links: what to check, how to check it, and the tools that make it fast." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+      --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+      --green:#4ade80; --green-bg:rgba(74,222,128,0.07);
+      --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07);
+      --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07);
+      --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.07);
+      --red:#f87171; --red-bg:rgba(248,113,113,0.07);
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
+    .skip-link:focus { top:0; }
+    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
+    .nav-links { display:flex; gap:2rem; list-style:none; }
+    .nav-links a { color:var(--text-3); text-decoration:none; font-size:0.85rem; transition:color 0.2s; }
+    .nav-links a:hover { color:var(--text); }
+    .blog-header { max-width:900px; margin:0 auto; padding:4rem 2rem 2.5rem; border-bottom:1px solid var(--border); }
+    .breadcrumb { font-size:0.78rem; color:var(--text-3); margin-bottom:1.5rem; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; }
+    .breadcrumb a { color:var(--text-3); text-decoration:none; }
+    .breadcrumb a:hover { color:var(--text-2); }
+    .blog-tags { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.25rem; }
+    .tag { font-size:0.7rem; padding:3px 10px; border-radius:99px; background:var(--bg3); color:var(--text-3); border:1px solid var(--border); letter-spacing:0.04em; text-transform:uppercase; font-weight:500; }
+    .tag.accent { background:var(--purple-bg); color:var(--purple); border-color:rgba(167,139,250,0.25); }
+    .blog-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.85rem,4vw,2.6rem); line-height:1.2; letter-spacing:-0.02em; color:var(--text); margin-bottom:0.75rem; }
+    .blog-header h1 em { font-style:italic; color:var(--purple); }
+    .blog-subtitle { font-family:'DM Serif Display',serif; font-size:1.1rem; font-style:italic; color:var(--text-3); margin-bottom:1.25rem; }
+    .blog-meta { display:flex; align-items:center; gap:1.25rem; font-size:0.82rem; color:var(--text-3); flex-wrap:wrap; }
+    .blog-meta .series { color:var(--text-2); font-weight:500; }
+    main.blog-body { display:block; max-width:900px; margin:0 auto; padding:3rem 2rem 5rem; }
+    .toc { display:block; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.5rem 1.75rem; margin:0 0 3rem 0; }
+    .toc-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.9rem; }
+    .toc ol { padding-left:1.25rem; }
+    .toc ol li { margin-bottom:0.45rem; }
+    .toc ol li a { font-size:0.88rem; color:var(--text-2); text-decoration:none; transition:color 0.2s; }
+    .toc ol li a:hover { color:var(--purple); }
+    .blog-body h2 { font-family:'DM Serif Display',serif; font-size:1.5rem; letter-spacing:-0.01em; color:var(--text); margin:3.5rem 0 1.1rem; padding-top:1rem; border-top:1px solid var(--border); }
+    .blog-body h3 { font-size:1rem; font-weight:500; color:var(--text); margin:1.75rem 0 0.5rem; }
+    .blog-body p { color:var(--text-2); margin-bottom:1.25rem; font-weight:300; }
+    .blog-body p strong { color:var(--text); font-weight:500; }
+    .blog-body ul, .blog-body ol { padding-left:1.5rem; margin-bottom:1.25rem; color:var(--text-2); font-weight:300; }
+    .blog-body li { margin-bottom:0.45rem; }
+    .blog-body li strong { color:var(--text); font-weight:500; }
+    code { background:var(--bg3); padding:1px 6px; border-radius:3px; font-size:0.85em; color:var(--text-2); font-family:monospace; }
+    .callout { display:block; background:var(--purple-bg); border-left:3px solid var(--purple); border-radius:0 10px 10px 0; padding:1.25rem 1.5rem; margin:1.75rem 0; font-size:0.95rem; color:var(--text); font-style:italic; line-height:1.6; }
+    .callout.green { background:var(--green-bg); border-color:var(--green); }
+    .callout.amber { background:var(--amber-bg); border-color:var(--amber); }
+    .takeaway { display:block; background:var(--green-bg); border:1px solid rgba(74,222,128,0.2); border-radius:10px; padding:1.25rem 1.5rem; margin:1.75rem 0; }
+    .takeaway .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--green); font-weight:500; margin-bottom:0.5rem; display:block; }
+    .takeaway p { color:var(--text-2); font-size:0.93rem; margin:0; }
+    .tool { display:inline; background:var(--purple-bg); color:var(--purple); border:1px solid rgba(167,139,250,0.2); border-radius:4px; padding:1px 7px; font-size:0.85em; font-weight:500; }
+    .blog-ref { display:inline-flex; align-items:center; gap:6px; background:var(--bg2); border:1px solid var(--border); border-radius:6px; padding:3px 10px; font-size:0.78rem; color:var(--text-2); text-decoration:none; transition:border-color 0.2s,color 0.2s; white-space:nowrap; }
+    .blog-ref:hover { border-color:var(--purple); color:var(--purple); }
+    .blog-ref::before { content:'↗'; font-size:0.7rem; color:var(--text-3); }
+    .key { display:inline-flex; align-items:center; justify-content:center; background:var(--bg3); border:1px solid #444; border-bottom:3px solid #444; border-radius:5px; padding:2px 8px; font-family:monospace; font-size:0.82em; color:var(--text); min-width:28px; white-space:nowrap; }
+    .code-pair { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:1.75rem 0; }
+    .code-box { border-radius:8px; padding:1rem 1.1rem; }
+    .code-fail { background:var(--red-bg); border:1px solid rgba(248,113,113,0.2); }
+    .code-pass { background:var(--green-bg); border:1px solid rgba(74,222,128,0.2); }
+    .code-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.07em; font-weight:500; margin-bottom:8px; }
+    .code-fail .code-label { color:var(--red); }
+    .code-pass .code-label { color:var(--green); }
+    .c-block { font-family:monospace; font-size:0.82rem; color:var(--text-2); line-height:1.7; white-space:pre; overflow-x:auto; }
+    .table-wrap { display:block; overflow-x:auto; margin:1.75rem 0; border-radius:10px; border:1px solid var(--border); }
+    table { width:100%; border-collapse:collapse; font-size:0.875rem; }
+    thead th { background:var(--bg2); padding:10px 14px; text-align:left; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-3); font-weight:500; border-bottom:1px solid var(--border); white-space:nowrap; }
+    tbody td { padding:10px 14px; border-bottom:1px solid var(--border); color:var(--text-2); vertical-align:top; line-height:1.55; }
+    tbody tr:last-child td { border-bottom:none; }
+    tbody td:first-child { color:var(--text); font-weight:500; font-family:monospace; font-size:0.85rem; }
+    tbody tr:hover td { background:var(--bg2); }
+    .blog-illustration { margin:1.75rem 0; border:none; padding:0; }
+    .series-nav { display:block; margin-top:4rem; padding-top:2rem; border-top:1px solid var(--border); }
+    .series-nav .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.75rem; display:block; }
+    .nav-pair { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .nav-blog { display:flex; align-items:center; gap:1rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.1rem 1.25rem; text-decoration:none; transition:border-color 0.2s,background 0.2s; }
+    .nav-blog:hover { border-color:#444; background:var(--bg3); }
+    .nav-blog-arrow { color:var(--text-3); font-size:1rem; flex-shrink:0; }
+    .nav-blog-title { font-size:0.88rem; font-weight:500; color:var(--text); }
+    .nav-blog-sub { font-size:0.75rem; color:var(--text-3); margin-top:2px; }
+    .references { display:block; margin-top:2.5rem; padding:1.5rem 1.75rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; }
+    .ref-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:1rem; }
+    .references ul { list-style:none; padding:0; }
+    .references ul li { margin-bottom:0.5rem; }
+    .references ul li a { font-size:0.85rem; color:var(--text-2); text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; transition:color 0.2s; }
+    .references ul li a:hover { color:var(--green); }
+    .references ul li a::before { content:'↗'; font-size:0.75rem; color:var(--text-3); }
+    footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
+    footer a { color:var(--text-3); text-decoration:none; }
+    .visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    @media (max-width:620px) {
+      nav.site-nav { padding:0 1.25rem; }
+      .nav-links { display:none; }
+      .blog-header, main.blog-body { padding-left:1.25rem; padding-right:1.25rem; }
+      .blog-header { padding-top:2.5rem; }
+      .code-pair, .nav-pair { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <ul class="nav-links" role="list">
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#playlist">Playlist</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#justlikereal">JustLikeReal</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#meetme">Meet Me</a></li>
+  </ul>
+</nav>
+
+<header class="blog-header">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a>
+    <span aria-hidden="true">›</span>
+    <span>Shift-Left Accessibility</span>
+    <span aria-hidden="true">›</span>
+    <span aria-current="page">12 of 38</span>
+  </nav>
+  <div class="blog-tags" aria-label="Blog categories">
+    <span class="tag accent">Manual Testing</span>
+    <span class="tag">Structure</span>
+    <span class="tag">NVDA</span>
+    <span class="tag">WAVE</span>
+  </div>
+  <h1>12 Headings, Landmarks and Skip Links: <em>How to Validate Page Structure</em></h1>
+  <p class="blog-subtitle">The invisible architecture of a page. Screen reader users navigate by it. Most pages break it.</p>
+  <div class="blog-meta">
+    <span class="series">Series: Shift-Left Accessibility</span>
+    <span aria-hidden="true">·</span>
+    <span>Blog 12 of 38</span>
+    <span aria-hidden="true">·</span>
+    <span>8 min read</span>
+  </div>
+</header>
+
+<main class="blog-body" id="main-content">
+
+  <nav class="toc" aria-label="Table of contents">
+    <div class="toc-title" id="toc-heading">In this blog</div>
+    <ol aria-labelledby="toc-heading">
+      <li><a href="#why-structure">Why page structure matters</a></li>
+      <li><a href="#headings">Heading hierarchy: the rules and common failures</a></li>
+      <li><a href="#landmarks">Landmark regions: what they are and what to check</a></li>
+      <li><a href="#skip-links">Skip links: the first Tab stop rule</a></li>
+      <li><a href="#platform-testing">Testing headings and landmarks by platform</a></li>
+      <li><a href="#how-to-test">How to test: tools and manual checks</a></li>
+      <li><a href="#defects">Common defects and how to write them</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <h2 id="why-structure">1. Why Page Structure Matters</h2>
+
+  <p>Sighted users scan a page visually: they see headings, sections, sidebars, and navigation areas at a glance. Screen reader users do the same thing: but using structure instead of visual layout. They press <span class="key">H</span> to jump between headings, <span class="key">R</span> to jump between landmark regions, and they expect a skip link at the top of every page to jump over repeated navigation.</p>
+
+  <p>When that structure is missing, broken, or inconsistent, navigating a page by screen reader is like reading a document where someone removed all the paragraph breaks and section titles. The content is there. Finding anything is exhausting.</p>
+
+  <div class="callout" role="note">
+    Heading structure, landmark regions, and skip links are not primarily a visual concern. They are navigation infrastructure for non-visual users. They cannot be seen in a browser. They can only be tested with the right tools.
+  </div>
+
+  <!-- 2 -->
+  <h2 id="headings">2. Heading Hierarchy: The Rules and Common Failures</h2>
+
+  <p>The rules are covered in <a href="06-Content-Authoring-Accessibility-Rules.html" class="blog-ref">Blog 06</a>. This section focuses on how to detect violations in a built page.</p>
+
+  <p>What a correct heading structure looks like on a typical page:</p>
+
+  <div class="code-pair">
+    <div class="code-box code-fail">
+      <div class="code-label">Broken: what QA typically finds</div>
+      <div class="c-block">&lt;h1&gt;Homepage&lt;/h1&gt;
+&lt;h3&gt;Latest news&lt;/h3&gt;  &lt;!-- H2 skipped --&gt;
+&lt;h1&gt;About us&lt;/h1&gt;    &lt;!-- second H1 --&gt;
+&lt;div class="title"&gt;  &lt;!-- heading styled
+  Our story          with CSS, not markup --&gt;
+&lt;/div&gt;
+&lt;h4&gt;Founded 2010&lt;/h4&gt; &lt;!-- H2, H3 skipped --&gt;</div>
+    </div>
+    <div class="code-box code-pass">
+      <div class="code-label">Correct structure</div>
+      <div class="c-block">&lt;h1&gt;Homepage&lt;/h1&gt;
+&lt;h2&gt;Latest news&lt;/h2&gt;
+  &lt;h3&gt;Article title&lt;/h3&gt;
+  &lt;h3&gt;Article title&lt;/h3&gt;
+&lt;h2&gt;About us&lt;/h2&gt;
+  &lt;h3&gt;Our story&lt;/h3&gt;
+    &lt;h4&gt;Founded 2010&lt;/h4&gt;</div>
+    </div>
+  </div>
+
+  <h3>Common failures</h3>
+  <ul>
+    <li><strong>Multiple H1s</strong>: one per page only. SPAs often add a second H1 when a route changes without updating the original.</li>
+    <li><strong>Skipped levels</strong>: H1 to H3, or H2 to H4. Often happens when developers choose heading levels for visual size, not structure.</li>
+    <li><strong>Missing headings entirely</strong>: large page sections with no heading. Screen reader users cannot jump to them.</li>
+    <li><strong>Visual headings not marked up</strong>: text styled to look like a heading with CSS but using a <code>&lt;div&gt;</code> or <code>&lt;p&gt;</code>. Invisible to screen readers.</li>
+    <li><strong>Heading levels that change across pages</strong>: a component that is H2 on one page and H3 on another. Common in reusable components without context-aware heading levels.</li>
+  </ul>
+
+  <!-- ILLUSTRATION: screen reader navigating headings -->
+  <figure class="blog-illustration" aria-label="Screen reader user navigating headings with H key versus sighted user scanning visually">
+    <svg viewBox="0 0 680 200" width="100%" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#161616;">
+      <title>Screen reader heading navigation vs visual scanning</title>
+      <desc>Left: sighted user sees visual layout of a page with sections. Right: screen reader user presses H key and gets a flat list of headings: broken structure revealed immediately.</desc>
+      <rect width="680" height="200" fill="#161616"/>
+      <!-- LEFT: visual page -->
+      <text x="14" y="20" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80" letter-spacing="1">SIGHTED USER SEES</text>
+      <rect x="14" y="28" width="296" height="158" rx="6" fill="#0d1a0d" stroke="#4ade80" stroke-width="0.5"/>
+      <!-- page mock -->
+      <rect x="26" y="40" width="272" height="14" rx="2" fill="#2e3a18"/>
+      <text x="162" y="51" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4ade80">Navigation bar</text>
+      <text x="162" y="72" text-anchor="middle" font-family="DM Serif Display,serif" font-size="14" fill="#f0f0f0">Homepage</text>
+      <rect x="26" y="80" width="272" height="2" fill="#2e2e2e"/>
+      <text x="162" y="96" text-anchor="middle" font-family="DM Serif Display,serif" font-size="11" fill="#c8c8c8">Latest news</text>
+      <text x="162" y="112" text-anchor="middle" font-family="DM Serif Display,serif" font-size="9" fill="#8a8a8a">Article one</text>
+      <text x="162" y="126" text-anchor="middle" font-family="DM Serif Display,serif" font-size="9" fill="#8a8a8a">Article two</text>
+      <rect x="26" y="132" width="272" height="2" fill="#2e2e2e"/>
+      <text x="162" y="148" text-anchor="middle" font-family="DM Serif Display,serif" font-size="11" fill="#c8c8c8">About us</text>
+      <text x="162" y="170" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#555">Visual layout looks fine.</text>
+      <text x="162" y="182" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#555">Structure may be broken underneath.</text>
+
+      <!-- RIGHT: SR heading list -->
+      <text x="370" y="20" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" letter-spacing="1">SCREEN READER HEADING LIST (H KEY)</text>
+      <rect x="370" y="28" width="296" height="158" rx="6" fill="#1a0808" stroke="#f87171" stroke-width="0.5"/>
+      <text x="382" y="46" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">Press H — screen reader announces:</text>
+      <!-- heading list with problems marked -->
+      <rect x="382" y="52" width="22" height="11" rx="2" fill="#f87171"/>
+      <text x="393" y="61" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#fff" font-weight="700">H1</text>
+      <text x="410" y="61" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">Homepage</text>
+
+      <rect x="382" y="68" width="22" height="11" rx="2" fill="#f87171" opacity="0.7"/>
+      <text x="393" y="77" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#fff" font-weight="700">H3</text>
+      <text x="410" y="77" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">Latest news</text>
+      <text x="588" y="77" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">H2 missing</text>
+
+      <rect x="382" y="84" width="22" height="11" rx="2" fill="#f87171"/>
+      <text x="393" y="93" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#fff" font-weight="700">H1</text>
+      <text x="410" y="93" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">About us</text>
+      <text x="570" y="93" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">2nd H1</text>
+
+      <rect x="382" y="100" width="22" height="11" rx="2" fill="#f87171" opacity="0.5"/>
+      <text x="393" y="109" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#fff" font-weight="700">H4</text>
+      <text x="410" y="109" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">Our story</text>
+      <text x="556" y="109" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">H2, H3 missing</text>
+
+      <text x="382" y="132" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171" font-style="italic">3 structure violations visible</text>
+      <text x="382" y="145" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171" font-style="italic">instantly from the heading list.</text>
+      <text x="382" y="162" font-family="DM Sans,sans-serif" font-size="8" fill="#8a8a8a">The page looked fine visually.</text>
+      <text x="382" y="175" font-family="DM Sans,sans-serif" font-size="8" fill="#8a8a8a">It was not.</text>
+    </svg>
+  </figure>
+
+  <!-- 3 -->
+  <h2 id="landmarks">3. Landmark Regions: What They Are and What to Check</h2>
+
+  <p>Landmark regions are HTML sectioning elements that define the major areas of a page. Screen reader users press <span class="key">R</span> (in NVDA) or use the rotor to jump between them directly, the same way sighted users scan the visual layout.</p>
+
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">HTML landmark elements, their roles, and what to check</caption>
+      <thead>
+        <tr>
+          <th scope="col">Element</th>
+          <th scope="col">Landmark role</th>
+          <th scope="col">What to check</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>&lt;header&gt;</td><td>banner</td><td>Present once at the top of the page. Not nested inside other landmarks.</td></tr>
+        <tr><td>&lt;nav&gt;</td><td>navigation</td><td>Each nav has a unique <code>aria-label</code> if more than one exists. "Main navigation", "Breadcrumb", "Footer navigation": not just "navigation" twice.</td></tr>
+        <tr><td>&lt;main&gt;</td><td>main</td><td>Exactly one per page. Contains the primary content. Not nested inside another landmark.</td></tr>
+        <tr><td>&lt;footer&gt;</td><td>contentinfo</td><td>Present at the page level. Not confused with component-level footers inside articles.</td></tr>
+        <tr><td>&lt;aside&gt;</td><td>complementary</td><td>Used for genuinely supplementary content. Not used as a generic container.</td></tr>
+        <tr><td>&lt;section&gt;</td><td>region (only with aria-label)</td><td>Needs an <code>aria-labelledby</code> or <code>aria-label</code> to become a navigable landmark. Without it, it is not a landmark.</td></tr>
+        <tr><td>&lt;form&gt;</td><td>form (only with aria-label)</td><td>Needs an accessible name to become a landmark. Without it, a screen reader cannot jump to it directly.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Common landmark failures</h3>
+  <ul>
+    <li><strong>Missing main landmark</strong>: the entire page content is in divs with no <code>&lt;main&gt;</code>. Screen reader users cannot skip to the main content.</li>
+    <li><strong>Multiple unlabelled navs</strong>: two or more <code>&lt;nav&gt;</code> elements with no <code>aria-label</code>. Both announced as "navigation" with no way to distinguish them.</li>
+    <li><strong>Landmarks nested inside each other</strong>: a <code>&lt;header&gt;</code> inside <code>&lt;main&gt;</code> creates a confusing landmark tree.</li>
+    <li><strong>Overuse of section</strong>: every div replaced with <code>&lt;section&gt;</code> without <code>aria-label</code>. Creates phantom landmarks that add noise without navigation value.</li>
+  </ul>
+
+  <!-- 4 -->
+  <h2 id="skip-links">4. Skip Links: The First Tab Stop Rule</h2>
+
+  <p>A skip link is a visually hidden link at the very top of every page that becomes visible on focus and jumps the user directly to the main content area. It exists for one reason: keyboard users should not have to Tab through an entire navigation bar on every page load to reach the content they came for.</p>
+
+  <div class="callout green" role="note">
+    WCAG 2.4.1 requires a mechanism to bypass repeated navigation blocks. A skip link is the standard implementation. It must be the first focusable element on the page.
+  </div>
+
+  <div class="code-pair">
+    <div class="code-box code-pass">
+      <div class="code-label">Correct skip link pattern</div>
+      <div class="c-block">&lt;!-- First element in body --&gt;
+&lt;a href="#main-content"
+   class="skip-link"&gt;
+  Skip to main content
+&lt;/a&gt;
+
+&lt;!-- CSS --&gt;
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 1rem;
+}
+.skip-link:focus {
+  top: 0;
+}</div>
+    </div>
+    <div class="code-box code-fail">
+      <div class="code-label">Common failures</div>
+      <div class="c-block">&lt;!-- Not first element:
+     nav comes before it --&gt;
+&lt;nav&gt;...&lt;/nav&gt;
+&lt;a href="#main"&gt;Skip&lt;/a&gt;
+
+&lt;!-- Hidden with display:none:
+     not reachable by keyboard --&gt;
+.skip-link {
+  display: none;
+}
+
+&lt;!-- href points to missing ID --&gt;
+&lt;a href="#main"&gt;Skip&lt;/a&gt;
+&lt;!-- &lt;main id="content"&gt; not "#main" --&gt;</div>
+    </div>
+  </div>
+
+  <h3>How to test a skip link</h3>
+  <p>Load the page. Press <span class="key">Tab</span> once. The skip link must appear. Press <span class="key">Enter</span>. Focus must move to the main content area and the page must scroll to it. If Tab does nothing, or the skip link appears but Enter does nothing, or focus moves to the wrong element: each of those is a separate defect.</p>
+
+  <!-- 5 -->
+
+  <!-- PLATFORM TESTING -->
+  <h2 id="platform-testing">5. Testing Headings and Landmarks by Platform</h2>
+
+  <p>The same structural failures present differently depending on the screen reader. Here is how to navigate headings and landmarks on each platform.</p>
+
+  <h3>Windows: NVDA</h3>
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">NVDA keyboard shortcuts for heading and landmark navigation</caption>
+      <thead><tr><th scope="col">Action</th><th scope="col">Key</th></tr></thead>
+      <tbody>
+        <tr><td>Next heading</td><td><span class="key">H</span></td></tr>
+        <tr><td>Previous heading</td><td><span class="key">Shift</span>+<span class="key">H</span></td></tr>
+        <tr><td>Heading by level (e.g. H2)</td><td><span class="key">2</span> (or 1–6)</td></tr>
+        <tr><td>Open headings list</td><td><span class="key">Insert</span>+<span class="key">F6</span></td></tr>
+        <tr><td>Next landmark</td><td><span class="key">D</span></td></tr>
+        <tr><td>Previous landmark</td><td><span class="key">Shift</span>+<span class="key">D</span></td></tr>
+        <tr><td>Open elements list</td><td><span class="key">Insert</span>+<span class="key">F7</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Mac: VoiceOver</h3>
+  <p>VO modifier key is <span class="key">Ctrl</span>+<span class="key">Option</span> (written as VO below). VoiceOver must be enabled first: <span class="key">Cmd</span>+<span class="key">F5</span>. Use Safari. VoiceOver and Chrome do not pair reliably for heading navigation.</p>
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">VoiceOver on Mac shortcuts for heading and landmark navigation</caption>
+      <thead><tr><th scope="col">Action</th><th scope="col">Key</th></tr></thead>
+      <tbody>
+        <tr><td>Next heading</td><td><span class="key">VO</span>+<span class="key">Cmd</span>+<span class="key">H</span></td></tr>
+        <tr><td>Previous heading</td><td><span class="key">VO</span>+<span class="key">Cmd</span>+<span class="key">Shift</span>+<span class="key">H</span></td></tr>
+        <tr><td>Open rotor (elements list)</td><td><span class="key">VO</span>+<span class="key">U</span> then arrow keys to filter by Headings or Landmarks</td></tr>
+        <tr><td>Next landmark</td><td><span class="key">VO</span>+<span class="key">Cmd</span>+<span class="key">L</span></td></tr>
+        <tr><td>Read page title</td><td><span class="key">VO</span>+<span class="key">F2</span>+<span class="key">F2</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>iOS: VoiceOver</h3>
+  <p>Enable VoiceOver: Settings → Accessibility → VoiceOver → Toggle ON. Use Safari. The rotor is the primary navigation control: rotate two fingers on the screen to open it, then select Headings or Landmarks.</p>
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">VoiceOver on iOS gestures for heading and landmark navigation</caption>
+      <thead><tr><th scope="col">Action</th><th scope="col">Gesture</th></tr></thead>
+      <tbody>
+        <tr><td>Navigate elements</td><td>Single-finger swipe right (next) or left (previous)</td></tr>
+        <tr><td>Open rotor</td><td>Rotate two fingers on screen</td></tr>
+        <tr><td>Set rotor to Headings</td><td>Open rotor, rotate to Headings</td></tr>
+        <tr><td>Navigate headings only</td><td>Rotor set to Headings, then swipe up or down</td></tr>
+        <tr><td>Set rotor to Landmarks</td><td>Open rotor, rotate to Landmarks</td></tr>
+        <tr><td>Activate element</td><td>Double-tap anywhere after element is focused</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Android: TalkBack</h3>
+  <p>Enable TalkBack: Settings → Accessibility → TalkBack → Toggle ON (or hold both volume keys for 3 seconds). Use Chrome.</p>
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">TalkBack on Android gestures for heading and landmark navigation</caption>
+      <thead><tr><th scope="col">Action</th><th scope="col">Gesture</th></tr></thead>
+      <tbody>
+        <tr><td>Navigate elements</td><td>Single-finger swipe right (next) or left (previous)</td></tr>
+        <tr><td>Navigate headings only</td><td>Swipe up then right to open reading controls, select Headings, then swipe right/left</td></tr>
+        <tr><td>Activate element</td><td>Double-tap anywhere after element is focused and announced</td></tr>
+        <tr><td>Scroll</td><td>Two-finger swipe up or down</td></tr>
+        <tr><td>Open TalkBack menu</td><td>Swipe down then right</td></tr>
+        <tr><td>Go back</td><td>Swipe down then left</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout amber" role="note">
+    Mobile testing requires a physical device. Xcode Simulator and Android Emulator do not accurately simulate VoiceOver or TalkBack behaviour. A broken heading structure found on desktop produces an equally broken experience on mobile: the gestures just feel different.
+  </div>
+
+  <h2 id="how-to-test">6. How to Test: Tools and Manual Checks</h2>
+
+  <div style="background:var(--amber-bg);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:0 0 1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
+    <div style="font-size:1.1rem;line-height:1;padding-top:2px;" aria-hidden="true">&#127919;</div>
+    <div>
+      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--amber);font-weight:500;margin-bottom:4px;">Practice these yourself</div>
+      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">The heading and landmark failures described below are available as interactive demos in the <a href="A11y-Test-Playground/12 A11y Test Playground - Headings and Landmarks.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Headings and Landmarks Playground</a>. For mobile testing steps, see the <a href="A11y-Test-Playground/12 12 A11y Headings Mobile Testing Guide.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Mobile Testing Guide</a>.</div>
+    </div>
+  </div>
+
+  <h3>What automation catches</h3>
+  <p><span class="tool">axe-core</span> (in <span class="tool">Playwright</span>, <span class="tool">Cypress</span>, or <span class="tool">axe DevTools</span>) and <span class="tool">Pa11y</span> will flag these automatically:</p>
+  <ul>
+    <li>Missing <code>&lt;main&gt;</code> landmark</li>
+    <li>Multiple elements with the same landmark role and no distinguishing label (e.g. two unlabelled <code>&lt;nav&gt;</code> elements)</li>
+    <li>Empty heading elements (<code>&lt;h2&gt;&lt;/h2&gt;</code>)</li>
+    <li>Page with no headings at all</li>
+    <li>Incorrect ARIA roles on landmark elements</li>
+  </ul>
+  <p>Run <span class="tool">axe-core</span> in your CI/CD pipeline to catch these on every pull request. They are structural issues: deterministic, no interpretation needed.</p>
+
+  <h3>What automation misses: manual check required</h3>
+  <p>Automation cannot evaluate meaning or logic. These require human judgement:</p>
+  <ul>
+    <li><strong>Skipped heading levels</strong>: axe-core flags some skipped levels but not all. A page with H1 then H3 sometimes passes automated checks. Always verify with <span class="tool">WAVE</span> Structure tab or <span class="tool">NVDA</span> Insert+F6.</li>
+    <li><strong>Visual headings not marked up as headings</strong>: automation sees a <code>&lt;div&gt;</code> styled to look like a heading. It has no way to know it should be a heading. Only a human reviewing the page visually against the DOM can catch this.</li>
+    <li><strong>Heading hierarchy that matches the DOM but not the visual layout</strong>: automation checks the code order, not whether the heading order makes logical sense to a reader.</li>
+    <li><strong>Skip link href pointing to a non-existent ID</strong>: some automated tools flag this; many do not. Always test manually: press Tab once, then Enter.</li>
+    <li><strong>Landmark labels that are technically present but meaningless</strong>: <code>aria-label="nav1"</code> passes automation. It fails a real user.</li>
+  </ul>
+
+  <h3>WAVE Structure tab</h3>
+  <p>The fastest way to inspect heading hierarchy on a live page. Open <span class="tool">WAVE</span>, click the Structure tab. The heading tree is displayed with levels, text, and any skipped levels flagged in yellow. Landmark regions are also shown with their roles. Takes under 60 seconds per page. Catches what axe-core misses on heading structure.</p>
+
+  <h3>NVDA heading navigation</h3>
+  <p>With <span class="tool">NVDA</span> running, press <span class="key">H</span> to move to the next heading, <span class="key">Shift</span>+<span class="key">H</span> to move back. Press <span class="key">Insert</span>+<span class="key">F6</span> to open the headings list: all headings on the page displayed with their levels. This is the ground truth: it shows exactly what a screen reader user experiences, not just what the DOM contains.</p>
+
+  <h3>Accessibility Insights</h3>
+  <p><span class="tool">Accessibility Insights</span> FastPass runs automated axe-core checks and a tab stops visualisation. Assessment mode provides guided checks for landmark structure. Useful for combining automated and manual verification in one workflow.</p>
+
+  <h3>Chrome DevTools accessibility tree</h3>
+  <p>In <span class="tool">Chrome DevTools</span>, enable the full page accessibility tree from the Accessibility panel. Every heading, landmark, and ARIA role is visible in a tree view. Useful for checking whether a heading is marked up correctly or just visually styled: particularly helpful when WAVE flags something you cannot immediately locate in the DOM.</p>
+
+  <h3>Manual check: the three questions</h3>
+  <ul>
+    <li><strong>Skip link:</strong> Press Tab once on page load. Does it appear? Press Enter. Does focus move to main content?</li>
+    <li><strong>Headings:</strong> Does the page have exactly one H1? Do heading levels progress sequentially with no skips? Are all major sections reachable via <span class="tool">NVDA</span> heading navigation?</li>
+    <li><strong>Landmarks:</strong> Is there a <code>&lt;main&gt;</code>? Are multiple <code>&lt;nav&gt;</code> elements labelled distinctly? Test on VoiceOver (Mac/iOS) and TalkBack (Android) to confirm mobile landmark navigation works: automation does not cover this.</li>
+  </ul>
+
+  <!-- 6 -->
+  <h2 id="defects">7. Common Defects and How to Write Them</h2>
+
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">Common structure defects with WCAG reference, severity, and reproduction steps</caption>
+      <thead>
+        <tr>
+          <th scope="col">Defect</th>
+          <th scope="col">WCAG</th>
+          <th scope="col">Severity</th>
+          <th scope="col">Reproduction</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Skip link missing</td>
+          <td>2.4.1</td>
+          <td style="color:var(--red)">Major</td>
+          <td>Load page. Press Tab. No skip link appears as first focusable element.</td>
+        </tr>
+        <tr>
+          <td>Skip link present but broken</td>
+          <td>2.4.1</td>
+          <td style="color:var(--red)">Major</td>
+          <td>Press Tab, skip link appears, press Enter. Focus does not move to main content. Inspect: href ID does not match target element ID.</td>
+        </tr>
+        <tr>
+          <td>Multiple H1 elements</td>
+          <td>1.3.1</td>
+          <td style="color:var(--red)">Major</td>
+          <td>Open WAVE Structure tab or NVDA headings list (Insert+F6). Two or more H1 elements visible.</td>
+        </tr>
+        <tr>
+          <td>Skipped heading level</td>
+          <td>1.3.1</td>
+          <td style="color:var(--amber)">Moderate</td>
+          <td>Open WAVE Structure tab. Heading jumps from H1 to H3 or H2 to H4 with no intermediate level.</td>
+        </tr>
+        <tr>
+          <td>Missing main landmark</td>
+          <td>1.3.1</td>
+          <td style="color:var(--red)">Major</td>
+          <td>Open WAVE Structure tab or Chrome DevTools accessibility tree. No main landmark present.</td>
+        </tr>
+        <tr>
+          <td>Multiple navs without aria-label</td>
+          <td>1.3.1</td>
+          <td style="color:var(--amber)">Moderate</td>
+          <td>Open WAVE. Two or more nav elements both labelled "navigation" with no distinguishing label.</td>
+        </tr>
+        <tr>
+          <td>Section used as landmark without label</td>
+          <td>1.3.1</td>
+          <td style="color:var(--text-3)">Minor</td>
+          <td>Chrome DevTools accessibility tree shows section element with no accessible name. Not a navigable landmark.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="takeaway" role="note">
+    <div class="label">The fast check</div>
+    <p>Open <span class="tool">WAVE</span>, click Structure, look for red and yellow flags. This catches 80% of heading and landmark defects in under a minute. Manual verification with <span class="tool">NVDA</span> confirms the rest.</p>
+  </div>
+
+  <div class="series-nav">
+    <span class="label">Navigate the series</span>
+    <div class="nav-pair">
+      <a href="11-Focus-Indicators.html" class="nav-blog">
+        <span class="nav-blog-arrow" aria-hidden="true">←</span>
+        <div>
+          <div class="nav-blog-title">Blog 11: Focus Indicators</div>
+          <div class="nav-blog-sub">Visible, logical, never suppressed</div>
+        </div>
+      </a>
+      <a href="13-Colour-Contrast-Testing.html" class="nav-blog">
+        <div>
+          <div class="nav-blog-title">Blog 13: Colour Contrast Testing</div>
+          <div class="nav-blog-sub">Web, Android, iOS and colour blindness simulation</div>
+        </div>
+        <span class="nav-blog-arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+
+  <aside class="references" aria-label="References">
+    <div class="ref-title">References</div>
+    <ul role="list">
+      <li><a href="https://www.w3.org/TR/WCAG21/#bypass-blocks" target="_blank" rel="noopener noreferrer">WCAG 2.4.1: Bypass Blocks</a></li>
+      <li><a href="https://www.w3.org/TR/WCAG21/#info-and-relationships" target="_blank" rel="noopener noreferrer">WCAG 1.3.1: Info and Relationships</a></li>
+      <li><a href="https://www.w3.org/WAI/ARIA/apg/patterns/landmarks/" target="_blank" rel="noopener noreferrer">ARIA Authoring Practices: Landmark regions</a></li>
+      <li><a href="https://webaim.org/techniques/skipnav/" target="_blank" rel="noopener noreferrer">WebAIM: Skip navigation links</a></li>
+    </ul>
+  </aside>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; Built with intention. Tested with care. &nbsp;·&nbsp; © 2025
+  </p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A11y Colour Contrast Mobile Testing Guide | The Quality Strategist</title>
+  <meta name="description" content="How to test colour contrast on iOS and Android. Display settings, colour filters, Accessibility Scanner, and DAC: step by step." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+      --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+      --green:#4ade80; --green-bg:rgba(74,222,128,0.07);
+      --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07);
+      --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07);
+      --red:#f87171; --red-bg:rgba(248,113,113,0.07);
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
+    .skip-link:focus { top:0; }
+    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
+    .nav-back { font-size:0.82rem; color:var(--text-3); text-decoration:none; }
+    .nav-back:hover { color:var(--text-2); }
+    .page-header { max-width:860px; margin:0 auto; padding:3.5rem 2rem 2rem; border-bottom:1px solid var(--border); }
+    .pg-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--green); font-weight:500; margin-bottom:0.75rem; }
+    .page-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.6rem,3.5vw,2.2rem); color:var(--text); margin-bottom:0.75rem; }
+    .page-header p { color:var(--text-2); font-weight:300; max-width:640px; }
+    .notice { display:flex; align-items:flex-start; gap:10px; background:var(--amber-bg); border:1px solid rgba(251,191,36,0.2); border-radius:8px; padding:0.85rem 1.1rem; margin-top:1.25rem; font-size:0.85rem; color:var(--amber); }
+    main { max-width:860px; margin:0 auto; padding:2.5rem 2rem 5rem; }
+    .platform-section { margin-bottom:3.5rem; }
+    .platform-header { display:flex; align-items:center; gap:12px; margin-bottom:1.75rem; padding-bottom:1rem; border-bottom:1px solid var(--border); }
+    .platform-badge { padding:4px 14px; border-radius:99px; font-size:0.8rem; font-weight:600; letter-spacing:0.04em; }
+    .badge-ios { background:rgba(96,165,250,0.15); color:#60a5fa; border:1px solid rgba(96,165,250,0.3); }
+    .badge-android { background:rgba(61,220,132,0.1); color:#3ddc84; border:1px solid rgba(61,220,132,0.25); }
+    .platform-title { font-family:'DM Serif Display',serif; font-size:1.3rem; color:var(--text); }
+    .test-card { background:var(--bg2); border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:12px; }
+    .test-card-header { padding:0.85rem 1.1rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+    .test-title { font-size:0.9rem; font-weight:500; color:var(--text); }
+    .test-wcag { font-size:0.7rem; color:var(--text-3); background:var(--bg3); border:1px solid var(--border); padding:1px 7px; border-radius:99px; margin-left:auto; font-weight:500; flex-shrink:0; }
+    .test-body { padding:1rem 1.1rem; }
+    .steps { display:flex; flex-direction:column; gap:6px; }
+    .step-row { display:flex; gap:10px; align-items:flex-start; }
+    .step-n { width:22px; height:22px; border-radius:5px; background:var(--bg3); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:0.72rem; font-weight:600; color:var(--text-3); flex-shrink:0; margin-top:1px; }
+    .step-text { font-size:0.85rem; color:var(--text-2); line-height:1.55; }
+    .step-text strong { color:var(--text); }
+    .expected { margin-top:0.75rem; padding:0.7rem 0.9rem; background:var(--bg3); border-radius:6px; font-size:0.82rem; color:var(--text-2); border-left:3px solid; }
+    .expected-fail { border-color:var(--red); }
+    .expected-pass { border-color:var(--green); }
+    .expected strong { color:var(--text); }
+    .quick-ref { background:var(--bg2); border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:2rem; }
+    .quick-ref-header { padding:0.75rem 1.1rem; background:var(--bg3); border-bottom:1px solid var(--border); font-size:0.7rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-3); font-weight:500; }
+    table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+    thead th { padding:8px 12px; text-align:left; font-size:0.68rem; text-transform:uppercase; color:var(--text-3); font-weight:500; border-bottom:1px solid var(--border); background:var(--bg2); }
+    tbody td { padding:9px 12px; border-bottom:1px solid var(--border); color:var(--text-2); vertical-align:top; }
+    tbody tr:last-child td { border-bottom:none; }
+    tbody td:first-child { color:var(--text); font-weight:500; }
+    tbody tr:hover td { background:var(--bg3); }
+    hr.divider { border:none; border-top:1px solid var(--border); margin:2.5rem 0; }
+    footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
+    footer a { color:var(--text-3); text-decoration:none; }
+    @media(max-width:620px) { nav.site-nav, main, .page-header { padding-left:1.25rem; padding-right:1.25rem; } }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <a href="../13-Colour-Contrast-Testing.html" class="nav-back">← Back to Blog 13</a>
+</nav>
+
+<header class="page-header">
+  <div class="pg-label">A11y Mobile Testing Guide</div>
+  <h1>A11y Colour Contrast Mobile Testing Guide</h1>
+  <p>How to test colour contrast on iOS and Android. Covers display accommodations, colour blindness simulation, Accessibility Scanner, and the DAC app. Use alongside the <a href="A11y Test Playground - Colour Contrast.html" style="color:var(--blue);">Colour Contrast Playground</a> for the matching desktop scenarios.</p>
+  <div class="notice" role="note">
+    <span aria-hidden="true">&#9888;&#65039;</span>
+    <span>Physical device required. iOS Simulator and Android Emulator do not accurately reproduce display accommodation behaviour or colour filter rendering.</span>
+  </div>
+</header>
+
+<main id="main-content">
+
+  <!-- iOS -->
+  <div class="platform-section">
+    <div class="platform-header">
+      <span class="platform-badge badge-ios">iOS · iPhone and iPad</span>
+      <h2 class="platform-title">Colour Contrast Testing on iOS</h2>
+    </div>
+
+    <div class="quick-ref">
+      <div class="quick-ref-header">iOS display accessibility settings: path reference</div>
+      <table>
+        <thead><tr><th scope="col">Setting</th><th scope="col">Path</th><th scope="col">What it tests</th></tr></thead>
+        <tbody>
+          <tr><td>Increase Contrast</td><td>Settings, Accessibility, Display and Text Size</td><td>Whether borderline contrast holds when borders and separators are darkened</td></tr>
+          <tr><td>Differentiate Without Colour</td><td>Settings, Accessibility, Display and Text Size</td><td>WCAG 1.4.1: meaning lost when colour removed</td></tr>
+          <tr><td>Reduce Transparency</td><td>Settings, Accessibility, Display and Text Size</td><td>Whether layered translucent elements maintain contrast when solidified</td></tr>
+          <tr><td>Colour Filters (Greyscale)</td><td>Settings, Accessibility, Display and Text Size, Colour Filters</td><td>Broad colour independence check</td></tr>
+          <tr><td>Red/Green filter (Protanopia)</td><td>Settings, Accessibility, Display and Text Size, Colour Filters</td><td>Red-green colour blindness simulation</td></tr>
+          <tr><td>Green/Red filter (Deuteranopia)</td><td>Settings, Accessibility, Display and Text Size, Colour Filters</td><td>Most common colour blindness type</td></tr>
+          <tr><td>Blue/Yellow filter (Tritanopia)</td><td>Settings, Accessibility, Display and Text Size, Colour Filters</td><td>Blue-yellow colour blindness simulation</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-title">Test 1: Increase Contrast</div>
+        <div class="test-wcag">WCAG 1.4.3</div>
+      </div>
+      <div class="test-body">
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Navigate to the screen you want to test.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Go to Settings, Accessibility, Display and Text Size. Toggle <strong>Increase Contrast ON</strong>.</div></div>
+          <div class="step-row"><div class="step-n">3</div><div class="step-text">Return to the screen. Look for visual changes: borders darkening, separators becoming more visible.</div></div>
+          <div class="step-row"><div class="step-n">4</div><div class="step-text">If elements that were previously hard to distinguish become clearly visible with this setting, the original contrast was borderline or failing.</div></div>
+        </div>
+        <div class="expected expected-fail">
+          <strong>Failure signal:</strong> Input borders, dividers, or secondary text that were nearly invisible at default settings become visible only after enabling Increase Contrast. The default state was a contrast failure.
+        </div>
+      </div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-title">Test 2: Differentiate Without Colour</div>
+        <div class="test-wcag">WCAG 1.4.1</div>
+      </div>
+      <div class="test-body">
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Go to Settings, Accessibility, Display and Text Size. Toggle <strong>Differentiate Without Colour ON</strong>.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Navigate through the app: status indicators, form validation states, charts, navigation tabs.</div></div>
+          <div class="step-row"><div class="step-n">3</div><div class="step-text">Check whether any previously colour-coded information loses its meaning.</div></div>
+        </div>
+        <div class="expected expected-fail">
+          <strong>Failure signal:</strong> Status dots become the same neutral colour. Error and success states look identical. Selected and unselected tabs become indistinguishable. Any of these is a WCAG 1.4.1 failure.
+        </div>
+        <div class="expected expected-pass" style="margin-top:8px;">
+          <strong>Pass looks like:</strong> Status indicators use shape or icon plus colour. Error states include an icon or text label. Meaning is preserved without colour.
+        </div>
+      </div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-title">Test 3: Colour Filters: Deuteranopia simulation</div>
+        <div class="test-wcag">WCAG 1.4.1</div>
+      </div>
+      <div class="test-body">
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Settings, Accessibility, Display and Text Size, Colour Filters. Toggle Colour Filters ON.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Select <strong>Green/Red Filter</strong> (Deuteranopia). This simulates the most common form of colour blindness.</div></div>
+          <div class="step-row"><div class="step-n">3</div><div class="step-text">Navigate through the app. Pay attention to: status indicators, charts, form validation, success/error states, notification badges.</div></div>
+          <div class="step-row"><div class="step-n">4</div><div class="step-text">Repeat with Red/Green Filter (Protanopia) and Greyscale for thorough coverage.</div></div>
+        </div>
+        <div class="expected expected-fail">
+          <strong>Failure signal:</strong> Red error states and green success states become the same brown-yellow colour. Available and Unavailable status dots are indistinguishable. Chart segments that relied on red vs green lose their distinction.
+        </div>
+      </div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-tTest 4: DAC Color Contrast Checker app</div>
+        <div class="test-wcag">WCAG 1.4.3 · 1.4.11</div>
+      </div>
+      <div class="test-body">
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Download <strong>DAC Color Contrast Checker</strong> from the <a href="https://apps.apple.com/us/app/dac-color-contrast-checker/id6743027333" target="_blank" rel="noopener noreferrer">App Store</a>.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Take a screenshot of the screen you want to test.</div></div>
+          <div class="step-row"><div class="step-n">3</div><div class="step-text">Open DAC Color Contrast Checker, import the screenshot. It overlays contrast ratio measurements on each text element.</div></div>
+          <div class="step-row"><div class="step-n">4</div><div class="step-text">Review elements flagged below 4.5:1 (normal text) or 3:1 (large text and UI boundaries).</div></div>
+        </div>
+        <div class="expected expected-fail">
+          <strong>Useful for:</strong> Native app screens inaccessible to browser-based tools. Screenshots of system dialogs, onboarding flows, and notification previews.
+        </div>
+      </div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-title">Test 5: Accessibility Scanner</div>
+        <div class="test-wcag">WCAG 1.4.3 · 1.4.11</div>
+      </div>
+      <div class="test-body">
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Download <strong>Accessibility Scanner</strong> by Accessible Developer Ltd from the <a href="https://apps.apple.com/us/app/accessibility-checker-ai-eaa/id1095478187" target="_blank" rel="noopener noreferrer">App Store</a>.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Open Accessibility Scanner and navigate to the screen you want to test within your app.</div></div>
+          <div class="step-row"><div class="step-n">3</div><div class="step-text">Accessibility Scanner scans the live screen and reports contrast ratios with WCAG pass/fail status per element. No screenshot needed.</div></div>
+        </div>
+        <div class="expected expected-pass">
+          <strong>DAC vs Accessibility Scanner:</strong> Accessibility Scanner scans live screens directly. DAC Color Contrast Checker works from screenshots. Use both for cross-verification on critical screens.
+        </div>
+      </div>
+    </div    </div>
+
+  </div>
+
+  <hr class="divider" />
+
+  <!-- Android -->
+  <div class="platform-section">
+    <div class="platform-header">
+      <span class="platform-badge badge-android">Android · Chrome</span>
+      <h2 class="platform-title">Colour Contrast Testing on Android</h2>
+    </div>
+
+    <div class="quick-ref">
+      <div class="quick-ref-header">Android display accessibility settings: path reference</div>
+      <table>
+        <thead><tr><th scope="col">Setting</th><th scope="col">Path</th><th scope="col">What it tests</th></tr></thead>
+        <tbody>
+          <tr><td>High Contrast Text</td><td>Settings, Accessibility, Display</td><td>Whether text remains readable when contrast outline is applied</td></tr>
+          <tr><td>Colour Correction (Deuteranomaly)</td><td>Settings, Accessibility, Colour and Motion, Colour Correction</td><td>Red-green colour blindness: most common type</td></tr>
+          <tr><td>Colour Correction (Protanomaly)</td><td>Settings, Accessibility, Colour and Motion, Colour Correction</td><td>Red-green (alternate variant)</td></tr>
+          <tr><td>Colour Correction (Tritanomaly)</td><td>Settings, Accessibility, Colour and Motion, Colour Correction</td><td>Blue-yellow colour blindness</td></tr>
+          <tr><td>Colour Inversion</td><td>Settings, Accessibility, Colour and Motion</td><td>Quick check for colour-dependency issues</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-title">Test 1: High Contrast Text</div>
+        <div class="test-wcag">WCAG 1.4.3</div>
+      </div>
+      <div class="test-body">
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Settings, Accessibility, Display. Toggle <strong>High Contrast Text ON</strong>.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Navigate through the app. Look for text that becomes easier to read or changes appearance significantly.</div></div>
+        </div>
+        <div class="expected expected-fail">
+          <strong>Failure signal:</strong> Text that is noticeably harder to read at default and only becomes clear with High Contrast Text ON was likely below the 4.5:1 threshold. Note the specific text and screen for logging.
+        </div>
+      </div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-title">Test 2: Colour Correction: Deuteranomaly</div>
+        <div class="test-wcag">WCAG 1.4.1</div>
+      </div>
+      <div class="test-body">
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Settings, Accessibility, Colour and Motion, Colour Correction. Toggle ON. Select <strong>Deuteranomaly</strong>.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Navigate through status indicators, charts, form validation states, and navigation tabs.</div></div>
+          <div class="step-row"><div class="step-n">3</div><div class="step-text">Repeat with Protanomaly and Tritanomaly for full coverage.</div></div>
+        </div>
+        <div class="expected expected-fail">
+          <strong>Failure signal:</strong> Red and green indicators become the same brown-yellow. Any colour-coded meaning that is lost is a WCAG 1.4.1 failure.
+        </div>
+      </div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-title">Test 3: Accessibility Scanner</div>
+        <div class="test-wcag">WCAG 1.4.3 · 1.4.11</div>
+      </div>
+      <div class="test-body">
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Install <strong>Accessibility Scanner</strong> from the <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.accessibility.auditor" target="_blank" rel="noopener noreferrer">Play Store</a>.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Enable it: Settings, Accessibility, Accessibility Scanner, Allow. A floating button appears.</div></div>
+          <div class="step-row"><div class="step-n">3</div><div class="step-text">Navigate to the screen to test. Tap the blue floating button to scan.</div></div>
+          <div class="step-row"><div class="step-n">4</div><div class="step-text">Scanner highlights elements with issues. Tap each highlight to see the exact contrast ratio and the required minimum.</div></div>
+          <div class="step-row"><div class="step-n">5</div><div class="step-text">Use the Record feature to scan multiple screens automatically as you navigate.</div></div>
+        </div>
+        <div class="expected expected-fail">
+          <strong>What it catches:</strong> Text contrast failures with exact ratios, small touch target sizes, missing content descriptions. It does not catch colour-only signals: that requires the Colour Correction tests above.
+        </div>
+      </div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-card-header">
+        <div class="test-title">Test 4: DAC Color Contrast Checker app</div>
+        <div class="test-wcag">WCAG 1.4.3 · 1.4.11</div>
+      </div>
+      <div class="test-body">
+        <div class="steps">
+          <div class="step-row"><div class="step-n">1</div><div class="step-text">Download the DAC app from Google Play Store.</div></div>
+          <div class="step-row"><div class="step-n">2</div><div class="step-text">Take a screenshot of the screen to test. Open DAC, import the screenshot.</div></div>
+          <div class="step-row"><div class="step-n">3</div><div class="step-text">DAC Color Contrast Checker overlays measurements on each text element. Review all flagged items below 4.5:1.</div></div>
+        </div>
+        <div class="expected expected-pass">
+          <strong>Use DAC when:</strong> Accessibility Scanner cannot access a screen (system dialogs, permission prompts, onboarding flows). DAC works on any screenshot regardless of the source.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; <a href="../13-Colour-Contrast-Testing.html">Back to Blog 13</a>
+    &nbsp;·&nbsp; <a href="A11y Test Playground - Colour Contrast.html">← Desktop Playground</a>
+  </p>
+</footer>
+
+</body>
+</html>

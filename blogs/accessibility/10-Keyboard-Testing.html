@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>10 Keyboard-Only Testing | The Quality Strategist</title>
+  <meta name="description" content="How to test without a mouse. The essential keyboard shortcuts, the full element interaction table, what a keyboard trap looks like, and the 6-step test sequence to run on every page." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+      --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+      --green:#4ade80; --green-bg:rgba(74,222,128,0.07);
+      --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07);
+      --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07);
+      --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.07);
+      --red:#f87171; --red-bg:rgba(248,113,113,0.07);
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
+    .skip-link:focus { top:0; }
+    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
+    .nav-links { display:flex; gap:2rem; list-style:none; }
+    .nav-links a { color:var(--text-3); text-decoration:none; font-size:0.85rem; transition:color 0.2s; }
+    .nav-links a:hover { color:var(--text); }
+    .blog-header { max-width:900px; margin:0 auto; padding:4rem 2rem 2.5rem; border-bottom:1px solid var(--border); }
+    .breadcrumb { font-size:0.78rem; color:var(--text-3); margin-bottom:1.5rem; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; }
+    .breadcrumb a { color:var(--text-3); text-decoration:none; }
+    .breadcrumb a:hover { color:var(--text-2); }
+    .blog-tags { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.25rem; }
+    .tag { font-size:0.7rem; padding:3px 10px; border-radius:99px; background:var(--bg3); color:var(--text-3); border:1px solid var(--border); letter-spacing:0.04em; text-transform:uppercase; font-weight:500; }
+    .tag.accent { background:var(--blue-bg); color:var(--blue); border-color:rgba(96,165,250,0.25); }
+    .blog-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.85rem,4vw,2.6rem); line-height:1.2; letter-spacing:-0.02em; color:var(--text); margin-bottom:0.75rem; }
+    .blog-header h1 em { font-style:italic; color:var(--blue); }
+    .blog-subtitle { font-family:'DM Serif Display',serif; font-size:1.1rem; font-style:italic; color:var(--text-3); margin-bottom:1.25rem; }
+    .blog-meta { display:flex; align-items:center; gap:1.25rem; font-size:0.82rem; color:var(--text-3); flex-wrap:wrap; }
+    .blog-meta .series { color:var(--text-2); font-weight:500; }
+    main.blog-body { display:block; max-width:900px; margin:0 auto; padding:3rem 2rem 5rem; }
+    .toc { display:block; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.5rem 1.75rem; margin:0 0 3rem 0; }
+    .toc-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.9rem; }
+    .toc ol { padding-left:1.25rem; }
+    .toc ol li { margin-bottom:0.45rem; }
+    .toc ol li a { font-size:0.88rem; color:var(--text-2); text-decoration:none; transition:color 0.2s; }
+    .toc ol li a:hover { color:var(--blue); }
+    .blog-body h2 { font-family:'DM Serif Display',serif; font-size:1.5rem; letter-spacing:-0.01em; color:var(--text); margin:3.5rem 0 1.1rem; padding-top:1rem; border-top:1px solid var(--border); }
+    .blog-body h3 { font-size:1rem; font-weight:500; color:var(--text); margin:1.75rem 0 0.5rem; }
+    .blog-body p { color:var(--text-2); margin-bottom:1.25rem; font-weight:300; }
+    .blog-body p strong { color:var(--text); font-weight:500; }
+    .blog-body ul, .blog-body ol { padding-left:1.5rem; margin-bottom:1.25rem; color:var(--text-2); font-weight:300; }
+    .blog-body li { margin-bottom:0.45rem; }
+    .blog-body li strong { color:var(--text); font-weight:500; }
+    code { background:var(--bg3); padding:1px 6px; border-radius:3px; font-size:0.85em; color:var(--text-2); font-family:monospace; }
+    .callout { display:block; background:var(--blue-bg); border-left:3px solid var(--blue); border-radius:0 10px 10px 0; padding:1.25rem 1.5rem; margin:1.75rem 0; font-size:0.95rem; color:var(--text); font-style:italic; line-height:1.6; }
+    .callout.red { background:var(--red-bg); border-color:var(--red); }
+    .takeaway { display:block; background:var(--green-bg); border:1px solid rgba(74,222,128,0.2); border-radius:10px; padding:1.25rem 1.5rem; margin:1.75rem 0; }
+    .takeaway .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--green); font-weight:500; margin-bottom:0.5rem; display:block; }
+    .takeaway p { color:var(--text-2); font-size:0.93rem; margin:0; }
+    .tool { display:inline; background:var(--purple-bg); color:var(--purple); border:1px solid rgba(167,139,250,0.2); border-radius:4px; padding:1px 7px; font-size:0.85em; font-weight:500; }
+    .blog-ref { display:inline-flex; align-items:center; gap:6px; background:var(--bg2); border:1px solid var(--border); border-radius:6px; padding:3px 10px; font-size:0.78rem; color:var(--text-2); text-decoration:none; transition:border-color 0.2s,color 0.2s; white-space:nowrap; }
+    .blog-ref:hover { border-color:var(--blue); color:var(--blue); }
+    .blog-ref::before { content:'↗'; font-size:0.7rem; color:var(--text-3); }
+
+    /* KEY BADGES */
+    .key { display:inline-flex; align-items:center; justify-content:center; background:var(--bg3); border:1px solid #444; border-bottom:3px solid #444; border-radius:5px; padding:2px 8px; font-family:monospace; font-size:0.82em; color:var(--text); min-width:28px; white-space:nowrap; }
+
+    /* SHORTCUT TABLE */
+    .table-wrap { display:block; overflow-x:auto; margin:1.75rem 0; border-radius:10px; border:1px solid var(--border); }
+    table { width:100%; border-collapse:collapse; font-size:0.875rem; }
+    thead th { background:var(--bg2); padding:10px 14px; text-align:left; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-3); font-weight:500; border-bottom:1px solid var(--border); white-space:nowrap; }
+    tbody td { padding:10px 14px; border-bottom:1px solid var(--border); color:var(--text-2); vertical-align:top; line-height:1.55; }
+    tbody tr:last-child td { border-bottom:none; }
+    tbody td:first-child { color:var(--text); font-weight:500; }
+    tbody tr:hover td { background:var(--bg2); }
+
+    /* CHECKLIST STEPS */
+    .steps { display:flex; flex-direction:column; gap:10px; margin:1.75rem 0; }
+    .step { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1rem 1.25rem; display:grid; grid-template-columns:36px 1fr; gap:12px; align-items:start; }
+    .step-num { font-family:'DM Serif Display',serif; font-size:1.1rem; color:var(--blue); line-height:1.3; }
+    .step-title { font-size:0.92rem; font-weight:500; color:var(--text); margin-bottom:4px; }
+    .step-detail { font-size:0.84rem; color:var(--text-2); line-height:1.6; }
+    .step-detail .key { font-size:0.78em; }
+
+    /* BLOG ILLUSTRATION */
+    .blog-illustration { margin:1.75rem 0; border:none; padding:0; }
+
+    /* SERIES NAV */
+    .series-nav { display:block; margin-top:4rem; padding-top:2rem; border-top:1px solid var(--border); }
+    .series-nav .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.75rem; display:block; }
+    .nav-pair { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .nav-blog { display:flex; align-items:center; gap:1rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.1rem 1.25rem; text-decoration:none; transition:border-color 0.2s,background 0.2s; }
+    .nav-blog:hover { border-color:#444; background:var(--bg3); }
+    .nav-blog-arrow { color:var(--text-3); font-size:1rem; flex-shrink:0; }
+    .nav-blog-title { font-size:0.88rem; font-weight:500; color:var(--text); }
+    .nav-blog-sub { font-size:0.75rem; color:var(--text-3); margin-top:2px; }
+    .references { display:block; margin-top:2.5rem; padding:1.5rem 1.75rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; }
+    .ref-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:1rem; }
+    .references ul { list-style:none; padding:0; }
+    .references ul li { margin-bottom:0.5rem; }
+    .references ul li a { font-size:0.85rem; color:var(--text-2); text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; transition:color 0.2s; }
+    .references ul li a:hover { color:var(--green); }
+    .references ul li a::before { content:'↗'; font-size:0.75rem; color:var(--text-3); }
+    footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
+    footer a { color:var(--text-3); text-decoration:none; }
+    footer a:hover { color:var(--text-2); }
+    .visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    @media (max-width:620px) {
+      nav.site-nav { padding:0 1.25rem; }
+      .nav-links { display:none; }
+      .blog-header, main.blog-body { padding-left:1.25rem; padding-right:1.25rem; }
+      .blog-header { padding-top:2.5rem; }
+      .nav-pair { grid-template-columns:1fr; }
+      .step { grid-template-columns:28px 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <ul class="nav-links" role="list">
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#playlist">Playlist</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#justlikereal">JustLikeReal</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#meetme">Meet Me</a></li>
+  </ul>
+</nav>
+
+<header class="blog-header">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a>
+    <span aria-hidden="true">›</span>
+    <span>Shift-Left Accessibility</span>
+    <span aria-hidden="true">›</span>
+    <span aria-current="page">10 of 38</span>
+  </nav>
+  <div class="blog-tags" aria-label="Blog categories">
+    <span class="tag accent">Manual Testing</span>
+    <span class="tag">Keyboard</span>
+    <span class="tag">Checklist</span>
+  </div>
+  <h1>10 Keyboard-Only Testing: <em>Disconnect Your Mouse and Start Here</em></h1>
+  <p class="blog-subtitle">If you get stuck, that is a defect. No interpretation needed.</p>
+  <div class="blog-meta">
+    <span class="series">Series: Shift-Left Accessibility</span>
+    <span aria-hidden="true">·</span>
+    <span>Blog 10 of 38</span>
+    <span aria-hidden="true">·</span>
+    <span>8 min read</span>
+  </div>
+</header>
+
+<main class="blog-body" id="main-content">
+
+  <nav class="toc" aria-label="Table of contents">
+    <div class="toc-title" id="toc-heading">In this blog</div>
+    <ol aria-labelledby="toc-heading">
+      <li><a href="#why-keyboard">Why keyboard testing matters</a></li>
+      <li><a href="#how-to-start">How to start: the only setup you need</a></li>
+      <li><a href="#essential-shortcuts">Essential keyboard shortcuts</a></li>
+      <li><a href="#element-table">Element interaction table</a></li>
+      <li><a href="#keyboard-trap">What a keyboard trap looks like</a></li>
+      <li><a href="#test-sequence">The 6-step test sequence</a></li>
+      <li><a href="#devtools-trick">Zero-install Chrome DevTools trick</a></li>
+      <li><a href="#practice">Where to practice</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <h2 id="why-keyboard">1. Why Keyboard Testing Matters</h2>
+
+  <p>Keyboard accessibility is not a nice-to-have. It is the foundation that every other input method builds on. Screen readers use the keyboard event model. Switch access devices use it. Voice control uses it. If something is not keyboard accessible, it is inaccessible to every user who cannot operate a mouse: including users with motor impairments, users on mobile keyboards, and users who simply prefer not to use a mouse.</p>
+
+  <p>It is also the most direct test available. There is no interpretation involved. Either you can reach and operate every interactive element using only the keyboard, or you cannot. If you cannot, that is a defect. You do not need a screen reader to find it. You do not need an automated tool. You need Tab, Enter, Space, Escape, and five minutes.</p>
+
+  <div class="callout" role="note">
+    Everything a mouse user can do, a keyboard user must be able to do too. That is the complete rule. The rest of this blog is how to verify it.
+  </div>
+
+  <!-- 2 -->
+  <h2 id="how-to-start">2. How to Start: The Only Setup You Need</h2>
+
+  <p>Unplug your mouse, or on a laptop, commit to not touching the trackpad. Open the page you want to test. Press <span class="key">Tab</span>.</p>
+
+  <p>That is the full setup. No extensions, no configuration, no special tools.</p>
+
+  <p>One thing to check first on macOS: by default, Safari and Firefox on Mac only tab to text fields and lists, not all interactive elements. To fix this, go to System Settings, Keyboard, and turn on "Use keyboard navigation to move focus between controls." In Safari, also enable it under Safari Preferences, Advanced.</p>
+
+  <!-- 3 -->
+  <h2 id="essential-shortcuts">3. Essential Keyboard Shortcuts</h2>
+
+  <p>These are the keys used in keyboard testing. Know them before you start.</p>
+
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">Essential keyboard shortcuts for accessibility testing</caption>
+      <thead>
+        <tr>
+          <th scope="col">Action</th>
+          <th scope="col">Key</th>
+          <th scope="col">What to check</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Move forward</td>
+          <td><span class="key">Tab</span></td>
+          <td>Focus moves to the next interactive element. Focus indicator visible.</td>
+        </tr>
+        <tr>
+          <td>Move backward</td>
+          <td><span class="key">Shift</span> + <span class="key">Tab</span></td>
+          <td>Focus moves to the previous interactive element in reverse order.</td>
+        </tr>
+        <tr>
+          <td>Activate link or button</td>
+          <td><span class="key">Enter</span></td>
+          <td>The action fires. Navigation happens. Form submits.</td>
+        </tr>
+        <tr>
+          <td>Activate button, toggle checkbox, expand dropdown</td>
+          <td><span class="key">Space</span></td>
+          <td>Buttons respond to Space as well as Enter. Checkboxes toggle.</td>
+        </tr>
+        <tr>
+          <td>Navigate within a component</td>
+          <td><span class="key">↑</span> <span class="key">↓</span> <span class="key">←</span> <span class="key">→</span></td>
+          <td>Radio buttons, dropdowns, tabs, sliders, menus. All use arrow keys internally.</td>
+        </tr>
+        <tr>
+          <td>Close modal, collapse menu, cancel</td>
+          <td><span class="key">Escape</span></td>
+          <td>Modal closes and focus returns to the trigger. Menu collapses.</td>
+        </tr>
+        <tr>
+          <td>Jump to top of page</td>
+          <td><span class="key">Home</span></td>
+          <td>Focus or scroll position moves to the start of the page or component.</td>
+        </tr>
+        <tr>
+          <td>Jump to bottom of page</td>
+          <td><span class="key">End</span></td>
+          <td>Focus or scroll position moves to the end.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 4 -->
+  <h2 id="element-table">4. Element Interaction Table</h2>
+
+  <p>Every interactive element has specific expected keyboard behaviour. Deviations are defects. This is the complete reference.</p>
+
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">Expected keyboard behaviour for each interactive element type</caption>
+      <thead>
+        <tr>
+          <th scope="col">Element</th>
+          <th scope="col">Keys</th>
+          <th scope="col">What to verify</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Link</td>
+          <td><span class="key">Enter</span> to activate</td>
+          <td>Navigates to destination. Announces destination text, not "click here."</td>
+        </tr>
+        <tr>
+          <td>Button</td>
+          <td><span class="key">Enter</span> or <span class="key">Space</span></td>
+          <td>Both keys activate. Announces name and role. <code>role="button"</code> on a div must also respond to both.</td>
+        </tr>
+        <tr>
+          <td>Checkbox</td>
+          <td><span class="key">Space</span> to toggle</td>
+          <td>Announces checked/unchecked state on toggle.</td>
+        </tr>
+        <tr>
+          <td>Radio button group</td>
+          <td><span class="key">Space</span> to select, <span class="key">↑</span><span class="key">↓</span> to navigate group, <span class="key">Tab</span> to leave</td>
+          <td>Only one selectable per group. Group label announced on entry.</td>
+        </tr>
+        <tr>
+          <td>Select / Dropdown</td>
+          <td><span class="key">Space</span> to expand, <span class="key">↑</span><span class="key">↓</span> to navigate, <span class="key">Enter</span> or <span class="key">Escape</span> to select</td>
+          <td>Options announced as navigated. Selection confirmed on collapse.</td>
+        </tr>
+        <tr>
+          <td>Text input</td>
+          <td><span class="key">Tab</span> to reach, type to enter</td>
+          <td>Label announced on focus. Placeholder is not a substitute for a label.</td>
+        </tr>
+        <tr>
+          <td>Dialog / Modal</td>
+          <td><span class="key">Escape</span> to close</td>
+          <td>Focus moves into modal on open. Stays trapped inside while open. Returns to trigger on close.</td>
+        </tr>
+        <tr>
+          <td>Accordion</td>
+          <td><span class="key">Enter</span> or <span class="key">Space</span> to toggle</td>
+          <td>Announces expanded/collapsed state. Panel content reachable after expanding.</td>
+        </tr>
+        <tr>
+          <td>Tab panel</td>
+          <td><span class="key">Tab</span> to enter/exit group, <span class="key">←</span><span class="key">→</span> to switch tabs</td>
+          <td>Active tab announced as selected. Panel content updates and is reachable.</td>
+        </tr>
+        <tr>
+          <td>Carousel</td>
+          <td><span class="key">Tab</span> to controls, <span class="key">←</span><span class="key">→</span> between slides</td>
+          <td>Pause/stop control present if auto-advancing. Slide change announced.</td>
+        </tr>
+        <tr>
+          <td>Slider</td>
+          <td><span class="key">↑</span><span class="key">↓</span> or <span class="key">←</span><span class="key">→</span> to adjust, <span class="key">Home</span>/<span class="key">End</span> for min/max</td>
+          <td>Current value announced on change. Range and step size clear.</td>
+        </tr>
+        <tr>
+          <td>Date picker</td>
+          <td><span class="key">Tab</span> to reach, arrow keys to traverse, <span class="key">Enter</span> to select</td>
+          <td>Selected date announced. Fully operable without mouse.</td>
+        </tr>
+        <tr>
+          <td>Menu bar</td>
+          <td><span class="key">↑</span><span class="key">↓</span> within menu, <span class="key">←</span><span class="key">→</span> to expand/collapse submenu, <span class="key">Enter</span> to select</td>
+          <td>Submenus announced on expand. <span class="key">Escape</span> collapses and returns focus one level up.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 5 -->
+  <h2 id="keyboard-trap">5. What a Keyboard Trap Looks Like</h2>
+
+  <p>A keyboard trap is when focus enters a component and cannot leave using standard keyboard keys. The user is stuck. They cannot Tab out, cannot Escape, cannot Shift+Tab back. Their only option is to reload the page.</p>
+
+  <div class="callout red" role="note">
+    WCAG 2.1.2 requires that focus can always be moved away from a component using standard keys. The only exception is a modal dialog, which must trap focus intentionally while open, but must release it when closed with Escape.
+  </div>
+
+  <figure class="blog-illustration" aria-label="Keyboard trap illustration showing focus entering a modal and being unable to exit">
+    <svg viewBox="0 0 680 200" width="100%" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#161616;">
+      <title>Keyboard trap: focus enters a modal with no escape key and cannot leave</title>
+      <desc>Left side: a page with Tab focus moving through nav, hero and footer normally. Right side: focus enters a modal dialog. Arrow shows focus circling inside the modal forever with no way out. No Escape key. No close button accessible. Caption: WCAG 2.1.2 failure: focus has no exit.</desc>
+      <rect width="680" height="200" fill="#161616"/>
+      <!-- LEFT: normal tab flow -->
+      <text x="14" y="20" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80" letter-spacing="1">NORMAL TAB FLOW</text>
+      <rect x="14" y="28" width="280" height="155" rx="6" fill="#0d1a0d" stroke="#4ade80" stroke-width="0.5"/>
+      <!-- page elements -->
+      <rect x="26" y="40" width="256" height="18" rx="3" fill="#1e1e1e" stroke="#4ade80" stroke-width="1.5"/>
+      <text x="154" y="52" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4ade80">Nav link — focused</text>
+      <circle cx="26" cy="49" r="5" fill="#4ade80"/>
+      <text x="19" y="52" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#000" font-weight="700">1</text>
+      <rect x="26" y="68" width="256" height="18" rx="3" fill="#1e1e1e" stroke="#2e2e2e"/>
+      <text x="154" y="80" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#8a8a8a">Button</text>
+      <circle cx="26" cy="77" r="5" fill="#555"/>
+      <text x="19" y="80" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#fff" font-weight="700">2</text>
+      <rect x="26" y="96" width="256" height="18" rx="3" fill="#1e1e1e" stroke="#2e2e2e"/>
+      <text x="154" y="108" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#8a8a8a">Input field</text>
+      <circle cx="26" cy="105" r="5" fill="#555"/>
+      <text x="19" y="108" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#fff" font-weight="700">3</text>
+      <rect x="26" y="124" width="256" height="18" rx="3" fill="#1e1e1e" stroke="#2e2e2e"/>
+      <text x="154" y="136" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#8a8a8a">Footer link</text>
+      <circle cx="26" cy="133" r="5" fill="#555"/>
+      <text x="19" y="136" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#fff" font-weight="700">4</text>
+      <!-- arrow showing flow -->
+      <path d="M154 58 L154 66" fill="none" stroke="#4ade80" stroke-width="1" marker-end="url(#arr)"/>
+      <path d="M154 86 L154 94" fill="none" stroke="#4ade80" stroke-width="1"/>
+      <path d="M154 114 L154 122" fill="none" stroke="#4ade80" stroke-width="1"/>
+      <text x="154" y="158" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4ade80" font-style="italic">Tab moves freely through the page.</text>
+
+      <!-- RIGHT: keyboard trap -->
+      <text x="386" y="20" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" letter-spacing="1">KEYBOARD TRAP</text>
+      <rect x="386" y="28" width="280" height="155" rx="6" fill="#1a0808" stroke="#f87171" stroke-width="0.5"/>
+      <!-- modal box -->
+      <rect x="408" y="46" width="236" height="110" rx="6" fill="#2a1010" stroke="#f87171" stroke-width="1.5"/>
+      <text x="526" y="64" text-anchor="middle" font-family="DM Serif Display,serif" font-size="11" fill="#f0f0f0">Newsletter signup</text>
+      <!-- input inside modal -->
+      <rect x="420" y="74" width="212" height="20" rx="3" fill="#1a1a1a" stroke="#555" stroke-width="1"/>
+      <text x="526" y="88" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#555">email address</text>
+      <!-- submit button -->
+      <rect x="460" y="104" width="130" height="20" rx="3" fill="#1a1a1a" stroke="#555" stroke-width="1"/>
+      <text x="525" y="117" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#555">Subscribe</text>
+      <!-- NO CLOSE BUTTON label -->
+      <text x="526" y="142" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171" font-style="italic">No close button. No Escape.</text>
+      <!-- circular trap arrow -->
+      <path d="M490 74 Q398 60 398 101 Q398 140 490 130" fill="none" stroke="#f87171" stroke-width="1.5" stroke-dasharray="4,2"/>
+      <path d="M488 127 L492 133 L494 126" fill="#f87171"/>
+      <text x="394" y="101" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171">↺</text>
+      <!-- WCAG label -->
+      <text x="526" y="172" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171" font-weight="600">WCAG 2.1.2 failure</text>
+    </svg>
+  </figure>
+
+
+  <figure class="blog-illustration" aria-label="Stick figure trapped inside three nested modal dialogs with no escape key, frantically pressing Tab">
+    <svg width="100%" viewBox="0 0 680 260" role="img" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#fafcf5;">
+      <title>Modal prison: stick figure trapped inside three nested modals with no escape key</title>
+      <desc>A stick figure is trapped inside three nested modal dialogs on a laptop screen. Each modal has no close button. The innermost modal has a sign reading Escape key, never heard of it. The figure presses Tab frantically. Caption: Three modals deep. No Escape key. Send help.</desc>
+      <rect width="680" height="260" fill="#fafcf5"/>
+      <rect x="80" y="30" width="520" height="170" rx="8" fill="#2a2a2a" stroke="#444" stroke-width="2"/>
+      <rect x="92" y="40" width="496" height="150" rx="4" fill="#1a1a1a"/>
+      <rect x="100" y="48" width="480" height="134" rx="3" fill="#0d0d0d"/>
+      <!-- modal 1 -->
+      <rect x="112" y="54" width="456" height="120" rx="6" fill="#1a0808" stroke="#f87171" stroke-width="1.5"/>
+      <rect x="112" y="54" width="456" height="20" rx="6" fill="#f87171" opacity="0.8"/>
+      <text x="250" y="67" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#fff" font-weight="600">Modal 1</text>
+      <text x="555" y="67" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" opacity="0.4">(no ✕)</text>
+      <!-- modal 2 -->
+      <rect x="140" y="80" width="380" height="88" rx="6" fill="#1a1010" stroke="#fbbf24" stroke-width="1.5"/>
+      <rect x="140" y="80" width="380" height="18" rx="6" fill="#fbbf24" opacity="0.7"/>
+      <text x="248" y="92" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#7a4a00" font-weight="600">Modal 2 — opened from inside Modal 1</text>
+      <text x="502" y="92" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#fbbf24" opacity="0.4">(no ✕)</text>
+      <!-- modal 3 -->
+      <rect x="172" y="104" width="300" height="58" rx="6" fill="#0d0d1a" stroke="#a78bfa" stroke-width="1.5"/>
+      <rect x="172" y="104" width="300" height="16" rx="6" fill="#a78bfa" opacity="0.7"/>
+      <text x="242" y="115" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#fff" font-weight="600">Modal 3</text>
+      <text x="451" y="115" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#a78bfa" opacity="0.4">(no ✕)</text>
+      <rect x="184" y="124" width="176" height="28" rx="4" fill="#1a1a2a" stroke="#a78bfa" stroke-width="0.5"/>
+      <text x="272" y="136" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#a78bfa" font-style="italic">Escape key? Never heard of it.</text>
+      <text x="272" y="146" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#555">— this modal</text>
+      <!-- stick figure -->
+      <circle cx="432" cy="128" r="9" fill="#f5e6d0" stroke="#3d4235" stroke-width="1.2"/>
+      <circle cx="429" cy="126" r="1.8" fill="#3d4235"/>
+      <circle cx="435" cy="126" r="1.8" fill="#3d4235"/>
+      <circle cx="429" cy="126" r="0.8" fill="#fff"/>
+      <circle cx="435" cy="126" r="0.8" fill="#fff"/>
+      <ellipse cx="432" cy="131" rx="2.5" ry="2" fill="#3d4235"/>
+      <line x1="432" y1="137" x2="432" y2="152" stroke="#3d4235" stroke-width="1.5"/>
+      <line x1="432" y1="141" x2="422" y2="148" stroke="#3d4235" stroke-width="1.5"/>
+      <line x1="432" y1="141" x2="444" y2="136" stroke="#3d4235" stroke-width="1.5"/>
+      <rect x="446" y="130" width="20" height="12" rx="2" fill="#3a3a3a" stroke="#555" stroke-width="0.8"/>
+      <text x="456" y="140" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#4ade80" font-weight="700">Tab</text>
+      <line x1="418" y1="120" x2="414" y2="115" stroke="#f87171" stroke-width="1"/>
+      <line x1="414" y1="120" x2="409" y2="117" stroke="#f87171" stroke-width="1"/>
+      <line x1="446" y1="120" x2="450" y2="115" stroke="#f87171" stroke-width="1"/>
+      <line x1="432" y1="152" x2="427" y2="162" stroke="#3d4235" stroke-width="1.5"/>
+      <line x1="432" y1="152" x2="437" y2="162" stroke="#3d4235" stroke-width="1.5"/>
+      <rect x="370" y="104" width="54" height="20" rx="4" fill="#fff0f0" stroke="#f87171" stroke-width="0.8"/>
+      <path d="M420 124 L424 128 L426 122" fill="#fff0f0" stroke="#f87171" stroke-width="0.8"/>
+      <text x="397" y="116" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#f87171" font-weight="500">help.</text>
+      <rect x="50" y="200" width="580" height="16" rx="4" fill="#2a2a2a" stroke="#444" stroke-width="1.5"/>
+      <rect x="270" y="198" width="140" height="6" rx="3" fill="#3a3a3a"/>
+      <text x="340" y="240" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#9a9e90" font-style="italic">Three modals deep. No Escape key. Send help.</text>
+    </svg>
+  </figure>
+
+  <p>Common keyboard trap locations:</p>
+  <ul>
+    <li>Modal dialogs with no working Escape key</li>
+    <li>Custom dropdown menus that do not release focus on Escape</li>
+    <li>Date pickers that open a calendar widget with no keyboard exit</li>
+    <li>Embedded maps or media players that absorb Tab focus</li>
+    <li>Chat widgets fixed to the bottom of the screen</li>
+  </ul>
+
+  <!-- 6 -->
+  <h2 id="test-sequence">6. The 6-Step Test Sequence</h2>
+
+  <p>Run this sequence on every page and every interactive component. It is the minimum keyboard test for a release sign-off.</p>
+
+  <div class="steps" role="list" aria-label="6-step keyboard test sequence">
+
+    <div class="step" role="listitem">
+      <div class="step-num">01</div>
+      <div>
+        <div class="step-title">Tab reach verification</div>
+        <div class="step-detail">Tab through the entire page. Every button, link, input, dropdown, and custom control must receive focus. If a control is reachable by mouse but not by <span class="key">Tab</span>, that is a defect.</div>
+      </div>
+    </div>
+
+    <div class="step" role="listitem">
+      <div class="step-num">02</div>
+      <div>
+        <div class="step-title">Tab order validation</div>
+        <div class="step-detail">The tab sequence must follow the visual reading order: left to right, top to bottom. No illogical jumps: footer before header, middle of page before navigation. Form fields must follow logical completion order.</div>
+      </div>
+    </div>
+
+    <div class="step" role="listitem">
+      <div class="step-num">03</div>
+      <div>
+        <div class="step-title">Focus visibility check</div>
+        <div class="step-detail">A visible focus indicator must appear on every focusable element. Minimum 3:1 contrast between the indicator and the background. The indicator must not be obscured by sticky headers, overlapping elements, or z-index stacking.</div>
+      </div>
+    </div>
+
+    <div class="step" role="listitem">
+      <div class="step-num">04</div>
+      <div>
+        <div class="step-title">Activation testing</div>
+        <div class="step-detail">Buttons must activate with both <span class="key">Enter</span> and <span class="key">Space</span>. Links activate with <span class="key">Enter</span> only. Checkboxes toggle with <span class="key">Space</span>. Radio buttons select with <span class="key">Space</span> or arrow keys. If any of these do not work, that is a defect.</div>
+      </div>
+    </div>
+
+    <div class="step" role="listitem">
+      <div class="step-num">05</div>
+      <div>
+        <div class="step-title">Component interaction testing</div>
+        <div class="step-detail">Test every interactive component against the element interaction table in Section 4. Modals must trap focus and release on <span class="key">Escape</span>. Accordions must announce state. Dropdowns must be navigable by arrow keys. Deviations are defects.</div>
+      </div>
+    </div>
+
+    <div class="step" role="listitem">
+      <div class="step-num">06</div>
+      <div>
+        <div class="step-title">Keyboard trap verification</div>
+        <div class="step-detail">Can you Tab into every component? Can you Tab out? Press <span class="key">Escape</span> anywhere you feel stuck. If focus is trapped with no exit, that is a Critical defect. Log it immediately with the component name, the WCAG criterion (2.1.2), and reproduction steps.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 7 -->
+  <h2 id="devtools-trick">7. Zero-Install Chrome DevTools Trick</h2>
+
+  <p>No extension needed. This is built into every Chromium browser.</p>
+
+  <p>Press <span class="key">Ctrl</span>+<span class="key">Shift</span>+<span class="key">P</span> (Windows) or <span class="key">Cmd</span>+<span class="key">Shift</span>+<span class="key">P</span> (Mac) in <span class="tool">Chrome DevTools</span> to open the command palette. Search for "accessibility" and select "Enable Full Page Accessibility Tree."</p>
+
+  <p>The DOM tree is replaced with a full ARIA accessibility tree: exactly what a screen reader sees for every element. Role, name, state, and properties all visible without opening a screen reader. Useful for quickly checking whether a component's ARIA is wired up correctly before committing to a full screen reader session.</p>
+
+  <!-- 8 -->
+  <h2 id="practice">8. Where to Practice</h2>
+
+  <p>The most effective way to build keyboard testing muscle memory is to practice on intentionally broken components, not production sites. The <a href="https://accessibility.actumdigital.com/docs/inaccessible-components/intro" target="_blank" rel="noopener noreferrer" class="blog-ref">Actum Digital inaccessible components playground</a> has broken accordions, modals, carousels, and more: specifically designed for training.</p>
+
+  <p>For everyday practice: pick one page of a site you use regularly and navigate it entirely by keyboard. You will find a defect within ten minutes on almost any site. That is not pessimism: it is the current state of the web.</p>
+
+  <div class="takeaway" role="note">
+    <div class="label">The rule</div>
+    <p>Unplug the mouse. Press Tab. If you get stuck, log a defect. Keyboard testing is the fastest accessibility test you can run: and it requires nothing except the keyboard you are already using.</p>
+  </div>
+
+  <!-- SERIES NAV -->
+  <div class="series-nav">
+    <span class="label">Navigate the series</span>
+    <div class="nav-pair">
+      <a href="09-Phase-Exit-Criteria.html" class="nav-blog">
+        <span class="nav-blog-arrow" aria-hidden="true">←</span>
+        <div>
+          <div class="nav-blog-title">Blog 09: Phase Exit Criteria</div>
+          <div class="nav-blog-sub">What must be true before each phase closes</div>
+        </div>
+      </a>
+      <a href="11-Focus-Indicators.html" class="nav-blog">
+        <div>
+          <div class="nav-blog-title">Blog 11: Focus Indicators</div>
+          <div class="nav-blog-sub">Visible, logical, never suppressed</div>
+        </div>
+        <span class="nav-blog-arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+
+  <aside class="references" aria-label="References">
+    <div class="ref-title">References</div>
+    <ul role="list">
+      <li><a href="https://www.w3.org/TR/WCAG21/#keyboard" target="_blank" rel="noopener noreferrer">WCAG 2.1: Guideline 2.1 Keyboard Accessible</a></li>
+      <li><a href="https://www.w3.org/TR/WCAG21/#no-keyboard-trap" target="_blank" rel="noopener noreferrer">WCAG 2.1.2: No Keyboard Trap: understanding document</a></li>
+      <li><a href="https://webaim.org/techniques/keyboard/" target="_blank" rel="noopener noreferrer">WebAIM: Keyboard Accessibility</a></li>
+      <li><a href="https://accessibility.actumdigital.com/docs/inaccessible-components/intro" target="_blank" rel="noopener noreferrer">Actum Digital: Inaccessible components practice playground</a></li>
+    </ul>
+  </aside>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; Built with intention. Tested with care. &nbsp;·&nbsp; © 2025
+  </p>
+</footer>
+
+</body>
+</html>

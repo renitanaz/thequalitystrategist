@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>15 Forms, Labels, Errors and Instructions | The Quality Strategist</title>
+  <meta name="description" content="How to test form accessibility. Labels, error messages, required fields, instructions, autocomplete: what each failure sounds like and how to catch every type." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+      --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+      --green:#4ade80; --green-bg:rgba(74,222,128,0.07);
+      --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07);
+      --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07);
+      --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.07);
+      --red:#f87171; --red-bg:rgba(248,113,113,0.07);
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
+    .skip-link:focus { top:0; }
+    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
+    .nav-links { display:flex; gap:2rem; list-style:none; }
+    .nav-links a { color:var(--text-3); text-decoration:none; font-size:0.85rem; transition:color 0.2s; }
+    .nav-links a:hover { color:var(--text); }
+    .blog-header { max-width:900px; margin:0 auto; padding:4rem 2rem 2.5rem; border-bottom:1px solid var(--border); }
+    .breadcrumb { font-size:0.78rem; color:var(--text-3); margin-bottom:1.5rem; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; }
+    .breadcrumb a { color:var(--text-3); text-decoration:none; }
+    .breadcrumb a:hover { color:var(--text-2); }
+    .blog-tags { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.25rem; }
+    .tag { font-size:0.7rem; padding:3px 10px; border-radius:99px; background:var(--bg3); color:var(--text-3); border:1px solid var(--border); letter-spacing:0.04em; text-transform:uppercase; font-weight:500; }
+    .tag.accent { background:var(--amber-bg); color:var(--amber); border-color:rgba(251,191,36,0.25); }
+    .blog-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.85rem,4vw,2.6rem); line-height:1.2; letter-spacing:-0.02em; color:var(--text); margin-bottom:0.75rem; }
+    .blog-header h1 em { font-style:italic; color:var(--amber); }
+    .blog-subtitle { font-family:'DM Serif Display',serif; font-size:1.1rem; font-style:italic; color:var(--text-3); margin-bottom:1.25rem; }
+    .blog-meta { display:flex; align-items:center; gap:1.25rem; font-size:0.82rem; color:var(--text-3); flex-wrap:wrap; }
+    .blog-meta .series { color:var(--text-2); font-weight:500; }
+    main.blog-body { display:block; max-width:900px; margin:0 auto; padding:3rem 2rem 5rem; }
+    .toc { display:block; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.5rem 1.75rem; margin:0 0 3rem 0; }
+    .toc-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.9rem; }
+    .toc ol { padding-left:1.25rem; }
+    .toc ol li { margin-bottom:0.45rem; }
+    .toc ol li a { font-size:0.88rem; color:var(--text-2); text-decoration:none; transition:color 0.2s; }
+    .toc ol li a:hover { color:var(--amber); }
+    .blog-body h2 { font-family:'DM Serif Display',serif; font-size:1.5rem; letter-spacing:-0.01em; color:var(--text); margin:3.5rem 0 1.1rem; padding-top:1rem; border-top:1px solid var(--border); }
+    .blog-body h3 { font-size:1rem; font-weight:500; color:var(--text); margin:1.75rem 0 0.5rem; }
+    .blog-body p { color:var(--text-2); margin-bottom:1.25rem; font-weight:300; }
+    .blog-body p strong { color:var(--text); font-weight:500; }
+    .blog-body ul, .blog-body ol { padding-left:1.5rem; margin-bottom:1.25rem; color:var(--text-2); font-weight:300; }
+    .blog-body li { margin-bottom:0.45rem; }
+    .blog-body li strong { color:var(--text); font-weight:500; }
+    code { background:var(--bg3); padding:1px 6px; border-radius:3px; font-size:0.85em; color:var(--text-2); font-family:monospace; }
+    .callout { display:block; background:var(--amber-bg); border-left:3px solid var(--amber); border-radius:0 10px 10px 0; padding:1.25rem 1.5rem; margin:1.75rem 0; font-size:0.95rem; color:var(--text); font-style:italic; line-height:1.6; }
+    .callout.red { background:var(--red-bg); border-color:var(--red); }
+    .callout.green { background:var(--green-bg); border-color:var(--green); }
+    .callout.blue { background:var(--blue-bg); border-color:var(--blue); }
+    .takeaway { display:block; background:var(--green-bg); border:1px solid rgba(74,222,128,0.2); border-radius:10px; padding:1.25rem 1.5rem; margin:1.75rem 0; }
+    .takeaway .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--green); font-weight:500; margin-bottom:0.5rem; display:block; }
+    .takeaway p { color:var(--text-2); font-size:0.93rem; margin:0; }
+    .tool { display:inline; background:var(--purple-bg); color:var(--purple); border:1px solid rgba(167,139,250,0.2); border-radius:4px; padding:1px 7px; font-size:0.85em; font-weight:500; }
+    .blog-ref { display:inline-flex; align-items:center; gap:6px; background:var(--bg2); border:1px solid var(--border); border-radius:6px; padding:3px 10px; font-size:0.78rem; color:var(--text-2); text-decoration:none; transition:border-color 0.2s,color 0.2s; white-space:nowrap; }
+    .blog-ref:hover { border-color:var(--amber); color:var(--amber); }
+    .blog-ref::before { content:'↗'; font-size:0.7rem; color:var(--text-3); }
+    .key { display:inline-flex; align-items:center; justify-content:center; background:var(--bg3); border:1px solid #444; border-bottom:3px solid #444; border-radius:5px; padding:2px 8px; font-family:monospace; font-size:0.82em; color:var(--text); min-width:28px; white-space:nowrap; }
+    .code-pair { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:1.75rem 0; }
+    .code-box { border-radius:8px; padding:1rem 1.1rem; }
+    .code-fail { background:var(--red-bg); border:1px solid rgba(248,113,113,0.2); }
+    .code-pass { background:var(--green-bg); border:1px solid rgba(74,222,128,0.2); }
+    .code-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.07em; font-weight:500; margin-bottom:8px; }
+    .code-fail .code-label { color:var(--red); }
+    .code-pass .code-label { color:var(--green); }
+    .c-block { font-family:monospace; font-size:0.82rem; color:var(--text-2); line-height:1.7; white-space:pre; overflow-x:auto; }
+    .table-wrap { display:block; overflow-x:auto; margin:1.75rem 0; border-radius:10px; border:1px solid var(--border); }
+    table { width:100%; border-collapse:collapse; font-size:0.875rem; }
+    thead th { background:var(--bg2); padding:10px 14px; text-align:left; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-3); font-weight:500; border-bottom:1px solid var(--border); white-space:nowrap; }
+    tbody td { padding:10px 14px; border-bottom:1px solid var(--border); color:var(--text-2); vertical-align:top; line-height:1.55; }
+    tbody tr:last-child td { border-bottom:none; }
+    tbody td:first-child { color:var(--text); font-weight:500; }
+    tbody tr:hover td { background:var(--bg2); }
+    .blog-illustration { margin:1.75rem 0; border:none; padding:0; }
+    .series-nav { display:block; margin-top:4rem; padding-top:2rem; border-top:1px solid var(--border); }
+    .series-nav .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.75rem; display:block; }
+    .nav-pair { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .nav-blog { display:flex; align-items:center; gap:1rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.1rem 1.25rem; text-decoration:none; transition:border-color 0.2s,background 0.2s; }
+    .nav-blog:hover { border-color:#444; background:var(--bg3); }
+    .nav-blog-arrow { color:var(--text-3); font-size:1rem; flex-shrink:0; }
+    .nav-blog-title { font-size:0.88rem; font-weight:500; color:var(--text); }
+    .nav-blog-sub { font-size:0.75rem; color:var(--text-3); margin-top:2px; }
+    .references { display:block; margin-top:2.5rem; padding:1.5rem 1.75rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; }
+    .ref-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:1rem; }
+    .references ul { list-style:none; padding:0; }
+    .references ul li { margin-bottom:0.5rem; }
+    .references ul li a { font-size:0.85rem; color:var(--text-2); text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; transition:color 0.2s; }
+    .references ul li a:hover { color:var(--green); }
+    .references ul li a::before { content:'↗'; font-size:0.75rem; color:var(--text-3); }
+    footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
+    footer a { color:var(--text-3); text-decoration:none; }
+    .visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    @media(max-width:620px) {
+      nav.site-nav { padding:0 1.25rem; }
+      .nav-links { display:none; }
+      .blog-header, main.blog-body { padding-left:1.25rem; padding-right:1.25rem; }
+      .blog-header { padding-top:2.5rem; }
+      .code-pair, .nav-pair { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <ul class="nav-links" role="list">
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#playlist">Playlist</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#justlikereal">JustLikeReal</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#meetme">Meet Me</a></li>
+  </ul>
+</nav>
+
+<header class="blog-header">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a>
+    <span aria-hidden="true">›</span>
+    <span>Shift-Left Accessibility</span>
+    <span aria-hidden="true">›</span>
+    <span aria-current="page">15 of 38</span>
+  </nav>
+  <div class="blog-tags" aria-label="Blog categories">
+    <span class="tag accent">Manual Testing</span>
+    <span class="tag">Forms</span>
+    <span class="tag">WCAG 3.3</span>
+    <span class="tag">Screen Reader</span>
+  </div>
+  <h1>15 Forms, Labels, Errors and Instructions: <em>How to Test Form Accessibility</em></h1>
+  <p class="blog-subtitle">A form without a label is a locked box. An error message without a description is just a red box. Both are testable in under five minutes.</p>
+  <div class="blog-meta">
+    <span class="series">Series: Shift-Left Accessibility</span>
+    <span aria-hidden="true">·</span>
+    <span>Blog 15 of 38</span>
+    <span aria-hidden="true">·</span>
+    <span>9 min read</span>
+  </div>
+</header>
+
+<main class="blog-body" id="main-content">
+
+  <nav class="toc" aria-label="Table of contents">
+    <div class="toc-title" id="toc-heading">In this blog</div>
+    <ol aria-labelledby="toc-heading">
+      <li><a href="#labels">Labels: the non-negotiable baseline</a></li>
+      <li><a href="#errors">Error messages: identify, describe, suggest</a></li>
+      <li><a href="#required">Required fields and instructions</a></li>
+      <li><a href="#autocomplete">Autocomplete attributes</a></li>
+      <li><a href="#how-to-test">How to test: automation, tools, and platform coverage</a></li>
+      <li><a href="#wcag-requirements">WCAG requirements for forms</a></li>
+      <li><a href="#defects">Writing form accessibility defects</a></li>
+    </ol>
+  </nav>
+
+
+
+  <!-- 1 -->
+  <h2 id="labels">1. Labels: The Non-Negotiable Baseline</h2>
+
+  <p>Every form input must have a visible, programmatically associated label. There are four valid ways to associate a label with an input. Only one is wrong.</p>
+
+  <div class="code-pair">
+    <div class="code-box code-pass">
+      <div class="code-label">Correct: explicit for/id association</div>
+      <div class="c-block">&lt;label for="email"&gt;
+  Email address
+&lt;/label&gt;
+&lt;input type="email"
+  id="email"
+  autocomplete="email" /&gt;</div>
+    </div>
+    <div class="code-box code-fail">
+      <div class="code-label">Fails: placeholder only, no label</div>
+      <div class="c-block">&lt;input type="email"
+  placeholder="Email address" /&gt;
+
+/* Placeholder disappears on type.
+   Not announced as a label.
+   Fails 1.3.1 and 3.3.2 */</div>
+    </div>
+  </div>
+
+  <p>Placeholder text is not a label. It disappears when the user starts typing. Screen readers do not reliably announce it as the field's purpose. It fails both visually and programmatically.</p>
+
+  <h3>The four valid labelling methods</h3>
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">Four valid ways to associate a label with an input</caption>
+      <thead>
+        <tr><th scope="col">Method</th><th scope="col">When to use</th><th scope="col">Example</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>for</code> / <code>id</code> association</td><td>Standard. Use this by default.</td><td><code>&lt;label for="name"&gt;</code> + <code>&lt;input id="name"&gt;</code></td></tr>
+        <tr><td>Wrapping <code>&lt;label&gt;</code></td><td>When label and input are naturally grouped.</td><td><code>&lt;label&gt;Name &lt;input type="text"&gt;&lt;/label&gt;</code></td></tr>
+        <tr><td><code>aria-label</code></td><td>When no visible label is possible (icon buttons, search inputs).</td><td><code>&lt;input aria-label="Search"&gt;</code></td></tr>
+        <tr><td><code>aria-labelledby</code></td><td>When the label is existing text elsewhere on the page.</td><td><code>&lt;input aria-labelledby="heading-id"&gt;</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout red" role="note">
+    <code>aria-placeholder</code> is not a label. <code>title</code> attribute is not a reliable label. Visually positioned text with no programmatic association is not a label. Run axe-core: if it passes with no label violations, the association is correct. If it does not, the screen reader cannot find the label.
+  </div>
+
+  <!-- ILLUSTRATION -->
+  <figure class="blog-illustration" aria-label="Screen reader user tabs to an unlabelled input and hears only edit text with no label">
+    <svg viewBox="0 0 680 200" width="100%" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#161616;">
+      <title>Two form fields side by side. Left has no label: NVDA announces edit text. Right has a proper label: NVDA announces email address edit text.</title>
+      <desc>Two panels. Left panel labelled No label: a text input with placeholder showing Email address. NVDA announcement bubble reads edit text, blank. User has a question mark. Right panel labelled Correct label: the same input but with a visible label above it. NVDA announcement reads Email address, edit text.</desc>
+      <rect width="680" height="200" fill="#161616"/>
+      <!-- LEFT: no label -->
+      <rect x="14" y="14" width="296" height="172" rx="6" fill="#1a0808" stroke="#f87171" stroke-width="1"/>
+      <rect x="14" y="14" width="296" height="22" rx="6" fill="#f87171" opacity="0.2"/>
+      <text x="162" y="29" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" font-weight="600" letter-spacing="0.5">NO LABEL</text>
+      <!-- input with placeholder only -->
+      <rect x="30" y="48" width="264" height="38" rx="6" fill="#0d0d0d" stroke="#f87171" stroke-width="1"/>
+      <text x="162" y="72" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#555">Email address</text>
+      <text x="50" y="100" font-family="monospace" font-size="8" fill="#f87171">placeholder="Email address"</text>
+      <text x="50" y="112" font-family="monospace" font-size="8" fill="#f87171">/* no &lt;label&gt; element */</text>
+      <!-- NVDA announcement -->
+      <rect x="30" y="126" width="264" height="28" rx="6" fill="#2a0808" stroke="#f87171" stroke-width="1"/>
+      <text x="162" y="137" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171" font-weight="500">NVDA announces:</text>
+      <text x="162" y="149" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" font-style="italic">"edit text, blank"</text>
+      <!-- confused user -->
+      <text x="162" y="174" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">User: what field is this?</text>
+
+      <!-- RIGHT: correct label -->
+      <rect x="370" y="14" width="296" height="172" rx="6" fill="#0d1a0d" stroke="#4ade80" stroke-width="1"/>
+      <rect x="370" y="14" width="296" height="22" rx="6" fill="#4ade80" opacity="0.2"/>
+      <text x="518" y="29" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80" font-weight="600" letter-spacing="0.5">CORRECT LABEL</text>
+      <!-- visible label -->
+      <text x="386" y="54" font-family="DM Sans,sans-serif" font-size="10" fill="#c8c8c8" font-weight="500">Email address</text>
+      <!-- input -->
+      <rect x="386" y="60" width="264" height="34" rx="6" fill="#0d0d0d" stroke="#4ade80" stroke-width="1"/>
+      <text x="404" y="81" font-family="DM Sans,sans-serif" font-size="10" fill="#555">you@example.com</text>
+      <!-- correct markup -->
+      <text x="386" y="106" font-family="monospace" font-size="8" fill="#4ade80">&lt;label for="email"&gt;</text>
+      <text x="386" y="118" font-family="monospace" font-size="8" fill="#4ade80">  Email address&lt;/label&gt;</text>
+      <text x="386" y="130" font-family="monospace" font-size="8" fill="#4ade80">&lt;input id="email"&gt;</text>
+      <!-- NVDA announcement -->
+      <rect x="386" y="144" width="264" height="28" rx="6" fill="#0d2a0d" stroke="#4ade80" stroke-width="1"/>
+      <text x="518" y="155" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4ade80" font-weight="500">NVDA announces:</text>
+      <text x="518" y="167" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80" font-style="italic">"Email address, edit text"</text>
+    </svg>
+  </figure>
+
+  <!-- 2 -->
+  <h2 id="errors">2. Error Messages: Identify, Describe, Suggest</h2>
+
+  <p>WCAG requires three things from an error message: it identifies which field is in error, it describes what went wrong, and (where possible) it suggests how to fix it. A red border alone fails all three. "Invalid input" fails the description. "Please enter a valid email" is the minimum: it identifies the field and describes the format required.</p>
+
+  <div class="code-pair">
+    <div class="code-box code-fail">
+      <div class="code-label">Fails 3.3.1 and 3.3.3</div>
+      <div class="c-block">&lt;input type="email"
+  class="error"
+  aria-invalid="true" /&gt;
+&lt;span class="error-msg"&gt;
+  Invalid input
+&lt;/span&gt;
+
+/* No aria-describedby linking
+   input to error message.
+   Error text too vague. */</div>
+    </div>
+    <div class="code-box code-pass">
+      <div class="code-label">Passes 3.3.1, 3.3.2, 3.3.3</div>
+      <div class="c-block">&lt;label for="email"&gt;
+  Email address
+&lt;/label&gt;
+&lt;input type="email"
+  id="email"
+  aria-invalid="true"
+  aria-describedby="email-err" /&gt;
+&lt;span id="email-err" role="alert"&gt;
+  Enter a valid email address,
+  e.g. name@example.com
+&lt;/span&gt;</div>
+    </div>
+  </div>
+
+
+  <figure class="blog-illustration" aria-label="Form with three red error fields and no error text. Screen reader user hears only silence.">
+    <svg viewBox="0 0 680 240" width="100%" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#0d0d0d;">
+      <title>Red box of silence: three red fields, no error text, NVDA announces nothing</title>
+      <desc>A contact form with three fields all highlighted with red borders: Full name, Email address, and Phone. Red dot indicators appear but no error text is shown anywhere. A screen reader user sits to the right wearing headphones with a confused expression. The NVDA speech bubble reads: silence. A thought bubble reads: Something is wrong. Somewhere. On this form. Probably. Caption: Red border: visible to eyes. Invisible to NVDA.</desc>
+      <rect width="680" height="240" fill="#0d0d0d"/>
+      <rect x="20" y="20" width="300" height="200" rx="8" fill="#161616" stroke="#2e2e2e" stroke-width="1.5"/>
+      <text x="170" y="48" text-anchor="middle" font-family="DM Serif Display,serif" font-size="13" fill="#f0f0f0">Contact form</text>
+      <text x="36" y="70" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">Full name</text>
+      <rect x="36" y="76" width="268" height="32" rx="5" fill="#1a0808" stroke="#f87171" stroke-width="2"/>
+      <text x="52" y="96" font-family="DM Sans,sans-serif" font-size="9" fill="#555">John Smith</text>
+      <text x="36" y="120" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">Email address</text>
+      <rect x="36" y="126" width="268" height="32" rx="5" fill="#1a0808" stroke="#f87171" stroke-width="2"/>
+      <text x="52" y="146" font-family="DM Sans,sans-serif" font-size="9" fill="#555">notanemail</text>
+      <text x="36" y="170" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">Phone</text>
+      <rect x="36" y="176" width="268" height="32" rx="5" fill="#1a0808" stroke="#f87171" stroke-width="2"/>
+      <text x="52" y="196" font-family="DM Sans,sans-serif" font-size="9" fill="#555">abc</text>
+      <circle cx="298" cy="92" r="5" fill="#f87171"/>
+      <circle cx="298" cy="142" r="5" fill="#f87171"/>
+      <circle cx="298" cy="192" r="5" fill="#f87171"/>
+      <!-- NVDA bubble -->
+      <rect x="356" y="22" width="296" height="48" rx="6" fill="#1e1e1e" stroke="#4a4a4a" stroke-width="1"/>
+      <path d="M476 70 L472 80 L480 70" fill="#1e1e1e" stroke="#4a4a4a" stroke-width="1"/>
+      <text x="504" y="40" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8" font-weight="500">NVDA announces:</text>
+      <text x="504" y="58" text-anchor="middle" font-family="DM Serif Display,serif" font-size="13" fill="#f0f0f0" font-style="italic">[ silence ]</text>
+      <!-- figure -->
+      <circle cx="454" cy="140" r="20" fill="#f5e6d0" stroke="#3d4235" stroke-width="1.5"/>
+      <path d="M434 136 Q434 118 454 118 Q474 118 474 136" fill="none" stroke="#3d4235" stroke-width="2.5"/>
+      <rect x="430" y="133" width="8" height="12" rx="3" fill="#3d4235"/>
+      <rect x="470" y="133" width="8" height="12" rx="3" fill="#3d4235"/>
+      <path d="M446 149 Q454 146 462 149" fill="none" stroke="#3d4235" stroke-width="1.5"/>
+      <circle cx="449" cy="138" r="2.2" fill="#3d4235"/>
+      <circle cx="459" cy="138" r="2.2" fill="#3d4235"/>
+      <ellipse cx="454" cy="176" rx="20" ry="22" fill="#dde8f5" stroke="#3d4235" stroke-width="1.2"/>
+      <line x1="444" y1="198" x2="438" y2="222" stroke="#3d4235" stroke-width="2"/>
+      <line x1="464" y1="198" x2="470" y2="222" stroke="#3d4235" stroke-width="2"/>
+      <!-- thought bubble -->
+      <ellipse cx="497" cy="178" rx="5" ry="3.5" fill="#2a0808" stroke="#f87171" stroke-width="0.8"/>
+      <ellipse cx="509" cy="170" rx="8" ry="6" fill="#2a0808" stroke="#f87171" stroke-width="0.8"/>
+      <rect x="520" y="140" width="212" height="56" rx="8" fill="#2a0808" stroke="#f87171" stroke-width="1"/>
+      <text x="626" y="158" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171">"Something is wrong.</text>
+      <text x="626" y="172" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171">Somewhere. On this form.</text>
+      <text x="626" y="186" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171">Probably."</text>
+      <text x="340" y="232" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#8a8a8a" font-style="italic">Red border: visible to eyes. Invisible to NVDA.</text>
+    </svg>
+  </figure>
+
+  <p>The critical elements: <code>aria-invalid="true"</code> signals to screen readers that the field is in an error state. <code>aria-describedby</code> links the field to its error message so the message is announced when focus enters the field. <code>role="alert"</code> on the error span announces the message immediately when it appears without requiring the user to Tab back to the field.</p>
+
+  <h3>What each failure sounds like on NVDA</h3>
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">Error message failures and their NVDA announcements</caption>
+      <thead>
+        <tr><th scope="col">Failure</th><th scope="col">NVDA announces</th><th scope="col">WCAG</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Error indicated by red border only</td><td>"edit text": no error state announced at all</td><td>3.3.1</td></tr>
+        <tr><td>aria-invalid set but no aria-describedby</td><td>"invalid, edit text": error state announced but no description</td><td>3.3.1</td></tr>
+        <tr><td>Error message not linked with aria-describedby</td><td>User must Tab away and back to find the error message</td><td>3.3.1</td></tr>
+        <tr><td>Error message uses role="alert" but no aria-describedby</td><td>Error announced once on appear, not re-announced when field is refocused</td><td>3.3.1</td></tr>
+        <tr><td>Vague error text ("invalid input")</td><td>Error is announced but user does not know how to fix it</td><td>3.3.3</td></tr>
+        <tr><td>Correct implementation</td><td>"Email address, invalid, enter a valid email address e.g. name@example.com, edit text"</td><td>Pass</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+
+  <figure class="blog-illustration" aria-label="Two identical red email fields. Left has no aria-describedby — user confused. Right has aria-describedby — user already fixing the error.">
+    <svg viewBox="0 0 680 290" width="100%" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#0d0d0d;">
+      <title>Same error, two implementations: without and with aria-describedby</title>
+      <desc>Two panels. Left: red email field, no error text, NVDA announces invalid Email address edit text, user has question marks. Right: same red field, error text visible, NVDA announces full description with example, user already fixing it.</desc>
+      <rect width="680" height="290" fill="#0d0d0d"/>
+
+      <!-- divider -->
+      <line x1="340" y1="28" x2="340" y2="272" stroke="#2e2e2e" stroke-width="1" stroke-dasharray="4,3"/>
+      <!-- caption at bottom only, no overlap -->
+      <text x="340" y="12" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#444">same error. two implementations.</text>
+
+      <!-- LEFT PANEL -->
+      <rect x="14" y="18" width="312" height="256" rx="8" fill="#161616" stroke="#2e2e2e" stroke-width="1"/>
+      <text x="170" y="38" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171" font-weight="600" letter-spacing="0.5">WITHOUT aria-describedby</text>
+      <!-- label -->
+      <text x="28" y="58" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8" font-weight="500">Email address</text>
+      <!-- red input -->
+      <rect x="28" y="64" width="284" height="32" rx="5" fill="#1a0808" stroke="#f87171" stroke-width="2"/>
+      <text x="44" y="84" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171">notanemail</text>
+      <!-- comment -->
+      <text x="28" y="108" font-family="DM Sans,sans-serif" font-size="8" fill="#333" font-style="italic">/* no error text linked */</text>
+      <!-- NVDA bubble -->
+      <rect x="28" y="118" width="284" height="48" rx="6" fill="#1e1e1e" stroke="#4a4a4a" stroke-width="1"/>
+      <text x="170" y="136" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#c8c8c8" font-weight="500">NVDA announces:</text>
+      <text x="170" y="154" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#f0f0f0" font-style="italic">"invalid, Email address, edit text"</text>
+
+      <!-- confused figure — well clear of bubble -->
+      <circle cx="90" cy="210" r="18" fill="#f5e6d0" stroke="#3d4235" stroke-width="1.5"/>
+      <!-- sad mouth -->
+      <path d="M82 218 Q90 214 98 218" fill="none" stroke="#3d4235" stroke-width="1.5"/>
+      <circle cx="85" cy="206" r="2" fill="#3d4235"/>
+      <circle cx="95" cy="206" r="2" fill="#3d4235"/>
+      <!-- body -->
+      <line x1="90" y1="228" x2="90" y2="252" stroke="#3d4235" stroke-width="2"/>
+      <line x1="90" y1="236" x2="74" y2="246" stroke="#3d4235" stroke-width="2"/>
+      <line x1="90" y1="236" x2="106" y2="246" stroke="#3d4235" stroke-width="2"/>
+      <line x1="90" y1="252" x2="78" y2="268" stroke="#3d4235" stroke-width="2"/>
+      <line x1="90" y1="252" x2="102" y2="268" stroke="#3d4235" stroke-width="2"/>
+      <!-- question marks — to the right, clear of figure -->
+      <text x="126" y="208" font-family="DM Sans,sans-serif" font-size="16" fill="#f87171">?</text>
+      <text x="148" y="198" font-family="DM Sans,sans-serif" font-size="13" fill="#f87171">?</text>
+      <text x="168" y="212" font-family="DM Sans,sans-serif" font-size="14" fill="#f87171">?</text>
+
+      <!-- RIGHT PANEL -->
+      <rect x="354" y="18" width="312" height="256" rx="8" fill="#161616" stroke="#2e2e2e" stroke-width="1"/>
+      <text x="510" y="38" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4ade80" font-weight="600" letter-spacing="0.5">WITH aria-describedby</text>
+      <!-- label -->
+      <text x="368" y="58" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8" font-weight="500">Email address</text>
+      <!-- red input -->
+      <rect x="368" y="64" width="284" height="32" rx="5" fill="#1a0808" stroke="#f87171" stroke-width="2"/>
+      <text x="384" y="84" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171">notanemail</text>
+      <!-- visible error text -->
+      <text x="368" y="108" font-family="DM Sans,sans-serif" font-size="8.5" fill="#f87171">Enter a valid email, e.g. name@example.com</text>
+      <!-- NVDA bubble — compact, 3 lines -->
+      <rect x="368" y="118" width="284" height="60" rx="6" fill="#0d2a0d" stroke="#4ade80" stroke-width="1"/>
+      <text x="510" y="134" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4ade80" font-weight="500">NVDA announces:</text>
+      <text x="510" y="150" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8.5" fill="#f0f0f0" font-style="italic">"invalid, Email address,</text>
+      <text x="510" y="164" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8.5" fill="#f0f0f0" font-style="italic">enter valid email e.g. name@example.com,</text>
+      <text x="510" y="178" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f0f0f0" font-style="italic">edit text"</text>
+
+      <!-- happy figure — clear of bubble, well spaced -->
+      <circle cx="420" cy="214" r="18" fill="#f5e6d0" stroke="#3d4235" stroke-width="1.5"/>
+      <!-- smile clearly visible -->
+      <path d="M412 222 Q420 228 428 222" fill="none" stroke="#3d4235" stroke-width="1.5"/>
+      <circle cx="415" cy="210" r="2" fill="#3d4235"/>
+      <circle cx="425" cy="210" r="2" fill="#3d4235"/>
+      <!-- body -->
+      <line x1="420" y1="232" x2="420" y2="256" stroke="#3d4235" stroke-width="2"/>
+      <line x1="420" y1="240" x2="404" y2="250" stroke="#3d4235" stroke-width="2"/>
+      <line x1="420" y1="240" x2="436" y2="250" stroke="#3d4235" stroke-width="2"/>
+      <line x1="420" y1="256" x2="408" y2="272" stroke="#3d4235" stroke-width="2"/>
+      <line x1="420" y1="256" x2="432" y2="272" stroke="#3d4235" stroke-width="2"/>
+      <!-- already fixing it — positioned to the right of figure, no overlap -->
+      <rect x="446" y="206" width="190" height="28" rx="5" fill="#0d2a0d" stroke="#4ade80" stroke-width="1"/>
+      <text x="541" y="224" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80" font-weight="500">already fixing it ✓</text>
+
+      <!-- caption -->
+      <text x="340" y="284" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#8a8a8a" font-style="italic">Same error. One tells you what to do. One just says "wrong."</text>
+    </svg>
+  </figure>
+
+  <!-- 3 -->
+  <h2 id="required">3. Required Fields and Instructions</h2>
+
+  <p>Required fields must be marked in a way that does not rely on colour alone. A red asterisk (*) with no programmatic meaning fails WCAG 1.4.1. The requirement must be conveyed in text or via <code>aria-required="true"</code> or the HTML <code>required</code> attribute.</p>
+
+  <div class="code-pair">
+    <div class="code-box code-fail">
+      <div class="code-label">Fails 1.4.1: colour only</div>
+      <div class="c-block">&lt;label for="name"&gt;
+  Full name
+  &lt;span style="color:red"&gt;*&lt;/span&gt;
+&lt;/label&gt;
+&lt;input id="name" /&gt;
+
+/* Asterisk has no meaning
+   to a screen reader.
+   No required attribute set. */</div>
+    </div>
+    <div class="code-box code-pass">
+      <div class="code-label">Passes 1.4.1 and 3.3.2</div>
+      <div class="c-block">&lt;label for="name"&gt;
+  Full name
+  &lt;span aria-hidden="true"&gt;*&lt;/span&gt;
+  &lt;span class="visually-hidden"&gt;
+    required
+  &lt;/span&gt;
+&lt;/label&gt;
+&lt;input id="name"
+  required
+  aria-required="true" /&gt;</div>
+    </div>
+  </div>
+
+  <p>Instructions that apply to the whole form: "Fields marked with * are required", date format guidance, password rules: must appear before the first field they apply to, not after. A screen reader user who has already passed the instruction cannot easily go back to it when they reach the relevant field.</p>
+
+  <!-- 4 -->
+  <h2 id="autocomplete">4. Autocomplete Attributes</h2>
+
+  <p>WCAG 1.3.5 requires that inputs collecting personal data include the appropriate <code>autocomplete</code> attribute. This helps users with cognitive disabilities, motor impairments, and anyone using a password manager. It is also one of the most commonly missed form requirements.</p>
+
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">Common autocomplete attribute values and their corresponding fields</caption>
+      <thead>
+        <tr><th scope="col">Input type</th><th scope="col">autocomplete value</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Full name</td><td><code>name</code></td></tr>
+        <tr><td>First name</td><td><code>given-name</code></td></tr>
+        <tr><td>Last name</td><td><code>family-name</code></td></tr>
+        <tr><td>Email address</td><td><code>email</code></td></tr>
+        <tr><td>Phone number</td><td><code>tel</code></td></tr>
+        <tr><td>Street address</td><td><code>street-address</code></td></tr>
+        <tr><td>Postcode / ZIP</td><td><code>postal-code</code></td></tr>
+        <tr><td>Country</td><td><code>country</code></td></tr>
+        <tr><td>Credit card number</td><td><code>cc-number</code></td></tr>
+        <tr><td>Username</td><td><code>username</code></td></tr>
+        <tr><td>Current password</td><td><code>current-password</code></td></tr>
+        <tr><td>New password</td><td><code>new-password</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout blue" role="note">
+    Setting <code>autocomplete="off"</code> on fields that collect personal data fails WCAG 1.3.5. This is common in banking and healthcare forms where teams assume it improves security. It does not: and it actively harms users with cognitive disabilities who rely on autofill.
+  </div>
+
+  <!-- 5 -->
+  <h2 id="how-to-test">5. How to Test: Automation, Tools, and Platform Coverage</h2>
+
+  <div style="background:var(--amber-bg);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:0 0 1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
+    <div style="font-size:1.1rem;line-height:1;padding-top:2px;" aria-hidden="true">&#127919;</div>
+    <div>
+      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--amber);font-weight:500;margin-bottom:4px;">Practice these yourself</div>
+      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">All failure patterns are available as interactive demos in the <a href="A11y-Test-Playground/15 A11y Test Playground - Forms.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Forms Playground</a>. Mobile testing steps are in the <a href="15 A11y Forms Mobile Testing Guide.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Mobile Testing Guide</a>.</div>
+    </div>
+  </div>
+
+  <h3>Tier 1: Pipeline automation</h3>
+  <p><span class="tool">axe-core</span> in <span class="tool">Playwright</span> or <span class="tool">Cypress</span>, and <span class="tool">Pa11y</span>, will catch:</p>
+  <ul>
+    <li>Inputs with no label and no <code>aria-label</code> or <code>aria-labelledby</code></li>
+    <li>Inputs with <code>aria-invalid="true"</code> but no associated error message via <code>aria-describedby</code></li>
+    <li>Missing <code>autocomplete</code> attributes on personal data fields</li>
+    <li>Form fields inside a group with no <code>&lt;fieldset&gt;</code> and <code>&lt;legend&gt;</code> (e.g. radio button groups)</li>
+  </ul>
+
+  <h3>Tier 2: Semi-automated tools</h3>
+  <ul>
+    <li><strong><span class="tool">axe DevTools</span></strong>: run a full page scan after triggering a form validation error. Filter by <code>label</code> and <code>color-contrast</code> rules. Shows exact element and fix guidance.</li>
+    <li><strong><span class="tool">WAVE</span></strong>: the Errors tab highlights missing labels with red flags. The Structural view shows form elements and their associated labels. Run after submitting the form with empty fields.</li>
+    <li><strong><span class="tool">Chrome DevTools</span> accessibility tree</strong>: select any input, check the computed accessible name and description. Confirms what the screen reader will announce and whether the error message is linked.</li>
+  </ul>
+
+  <h3>Tier 3: Manual checks only</h3>
+  <ul>
+    <li><strong>Placeholder used as label</strong>: automation may not flag this if the placeholder text matches a label elsewhere. Tab to the input and check the DevTools accessibility tree: if the name is empty or comes only from placeholder, it is a failure.</li>
+    <li><strong>Error message is vague</strong>: automation confirms the error is linked. Only a human can judge whether "Invalid input" meets the 3.3.3 requirement to suggest a fix.</li>
+    <li><strong>Required field marked by colour only</strong>: automation does not check whether the asterisk has a programmatic meaning. Inspect the markup.</li>
+    <li><strong>Instructions appear after the fields they apply to</strong>: automation cannot check reading order in context. Walk through the form with a screen reader.</li>
+    <li><strong>Error announced on submit</strong>: trigger the form submission with invalid data. Verify the error messages are announced without requiring the user to Tab to the error.</li>
+  </ul>
+
+  <h3>Windows: NVDA</h3>
+  <p>Tab into the form. For each field, NVDA should announce: label, field type, and any instructions or constraints. Submit the form with errors. NVDA should announce the error messages via <code>role="alert"</code> immediately. Tab back to any error field: NVDA should re-announce the error description via <code>aria-describedby</code>. Press <span class="key">Insert</span>+<span class="key">F7</span> to open the elements list and select Form Fields: lists all inputs and their labels.</p>
+
+  <h3>Mac: VoiceOver</h3>
+  <p>Enable VoiceOver with <span class="key">Cmd</span>+<span class="key">F5</span>. Use Safari. Press <span class="key">VO</span>+<span class="key">U</span> to open the rotor and select Form Controls: all inputs listed with their labels. Tab through the form: VoiceOver announces "Email address, required, edit text" for a correctly marked required field. Submit the form with errors: error messages with <code>role="alert"</code> are announced immediately.</p>
+
+  <h3>iOS: VoiceOver</h3>
+  <p>Enable VoiceOver: Settings, Accessibility, VoiceOver, Toggle ON. Use Safari. Open the rotor and set it to Form Controls. Swipe through each field. VoiceOver announces the label, type, and required state when focus enters. Trigger validation errors by double-tapping Submit without completing the form. Error messages with <code>role="alert"</code> are announced immediately.</p>
+
+  <h3>Android: TalkBack</h3>
+  <p>Enable TalkBack: Settings, Accessibility, TalkBack, Toggle ON. Use Chrome. Open reading controls (swipe up then right) and select Controls. Navigate through each form field. TalkBack announces the label and type. Submit with errors: <code>role="alert"</code> messages are announced. For each error field, focus it again: TalkBack should re-announce the error description.</p>
+
+  <!-- 6 -->
+  <h2 id="wcag-requirements">6. WCAG Requirements for Forms</h2>
+
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">WCAG success criteria for form accessibility</caption>
+      <thead>
+        <tr>
+          <th scope="col">Criterion</th>
+          <th scope="col">Level</th>
+          <th scope="col">Requirement</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>1.3.1 Info and Relationships</td><td>A</td><td>Labels are programmatically associated with their inputs. Field groups use <code>&lt;fieldset&gt;</code> and <code>&lt;legend&gt;</code>.</td></tr>
+        <tr><td>1.3.5 Identify Input Purpose</td><td>AA</td><td>Input fields collecting personal data have correct <code>autocomplete</code> attributes.</td></tr>
+        <tr><td>2.4.6 Headings and Labels</td><td>AA</td><td>Labels are descriptive. "First name" is descriptive. "Name" alone may not be.</td></tr>
+        <tr><td>3.3.1 Error Identification</td><td>A</td><td>If an error occurs, the item in error is identified and described in text.</td></tr>
+        <tr><td>3.3.2 Labels or Instructions</td><td>A</td><td>Labels or instructions are provided when content requires user input.</td></tr>
+        <tr><td>3.3.3 Error Suggestion</td><td>AA</td><td>If an error is detected and suggestions are known, the suggestion is provided.</td></tr>
+        <tr><td>3.3.4 Error Prevention</td><td>AA</td><td>For legal, financial, or data submissions: reversible, checkable, or confirmable.</td></tr>
+        <tr><td>4.1.3 Status Messages</td><td>AA</td><td>Success and error messages are announced to screen readers without moving focus.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 7 -->
+  <h2 id="defects">7. Writing Form Accessibility Defects</h2>
+
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">Form accessibility defects with WCAG reference, severity, and reproduction steps</caption>
+      <thead>
+        <tr>
+          <th scope="col">Defect</th>
+          <th scope="col">WCAG</th>
+          <th scope="col">Severity</th>
+          <th scope="col">Reproduction</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Input has no label</td><td>1.3.1 / 3.3.2</td><td style="color:var(--red)">Critical</td><td>Inspect element: no <code>&lt;label for&gt;</code>, no <code>aria-label</code>, no <code>aria-labelledby</code>. NVDA announces "edit text, blank."</td></tr>
+        <tr><td>Placeholder used as only label</td><td>1.3.1 / 3.3.2</td><td style="color:var(--red)">Major</td><td>Tab to the input. Type a character. Placeholder disappears. NVDA no longer announces the field purpose.</td></tr>
+        <tr><td>Error indicated by colour only</td><td>1.4.1 / 3.3.1</td><td style="color:var(--red)">Major</td><td>Submit form with invalid data. Red border appears. No text error message. NVDA announces no error state.</td></tr>
+        <tr><td>Error message not programmatically linked</td><td>3.3.1</td><td style="color:var(--red)">Major</td><td>Submit form. Error message appears visually but <code>aria-describedby</code> is absent. NVDA does not announce the error when field is refocused.</td></tr>
+        <tr><td>Error message too vague</td><td>3.3.3</td><td style="color:var(--amber)">Moderate</td><td>Submit form with invalid data. Error text is "Invalid" or "Error" with no description or suggestion.</td></tr>
+        <tr><td>Required field marked by asterisk only</td><td>1.4.1 / 3.3.2</td><td style="color:var(--amber)">Moderate</td><td>Inspect label: asterisk has no <code>aria-hidden</code> and no visually hidden "required" text. <code>required</code> or <code>aria-required</code> absent on input.</td></tr>
+        <tr><td>Missing autocomplete on personal data field</td><td>1.3.5</td><td style="color:var(--amber)">Moderate</td><td>Inspect input: no <code>autocomplete</code> attribute on name, email, address, or phone field.</td></tr>
+        <tr><td>Radio group missing fieldset/legend</td><td>1.3.1</td><td style="color:var(--amber)">Moderate</td><td>Tab to first radio button. NVDA announces the option label but not the group question. No <code>&lt;fieldset&gt;</code> and <code>&lt;legend&gt;</code> wrapping the group.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="takeaway" role="note">
+    <div class="label">The two fast checks</div>
+    <ul style="padding-left:1.25rem;color:var(--text-2);font-size:0.93rem;display:flex;flex-direction:column;gap:0.5rem;">
+      <li>Tab through every field. NVDA should announce label, field type, and any constraints. If you hear "edit text, blank" on any field, the label is missing.</li>
+      <li>Submit the form with empty required fields. Every error must be announced immediately without requiring the user to Tab back. If errors are silent, role="alert" or aria-describedby is missing.</li>
+    </ul>
+  </div>
+
+  <div class="series-nav">
+    <span class="label">Navigate the series</span>
+    <div class="nav-pair">
+      <a href="14-Alt-Text-Testing.html" class="nav-blog">
+        <span class="nav-blog-arrow" aria-hidden="true">←</span>
+        <div>
+          <div class="nav-blog-title">Blog 14: Alt Text Testing</div>
+          <div class="nav-blog-sub">Meaningful vs decorative vs wrong</div>
+        </div>
+      </a>
+      <a href="16-Dynamic-Content-ARIA-Live-Regions.html" class="nav-blog">
+        <div>
+          <div class="nav-blog-title">Blog 16: Dynamic Content and ARIA Live Regions</div>
+          <div class="nav-blog-sub">How to test announcements that happen without a page reload</div>
+        </div>
+        <span class="nav-blog-arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+
+  <aside class="references" aria-label="References">
+    <div class="ref-title">References</div>
+    <ul role="list">
+      <li><a href="https://www.w3.org/TR/WCAG21/#labels-or-instructions" target="_blank" rel="noopener noreferrer">WCAG 3.3.2: Labels or Instructions</a></li>
+      <li><a href="https://www.w3.org/TR/WCAG21/#error-identification" target="_blank" rel="noopener noreferrer">WCAG 3.3.1: Error Identification</a></li>
+      <li><a href="https://www.w3.org/TR/WCAG21/#identify-input-purpose" target="_blank" rel="noopener noreferrer">WCAG 1.3.5: Identify Input Purpose</a></li>
+      <li><a href="https://www.w3.org/WAI/tutorials/forms/" target="_blank" rel="noopener noreferrer">W3C WAI: Forms Tutorial</a></li>
+      <li><a href="https://webaim.org/techniques/forms/" target="_blank" rel="noopener noreferrer">WebAIM: Creating Accessible Forms</a></li>
+    </ul>
+  </aside>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; Built with intention. Tested with care. &nbsp;·&nbsp; © 2025
+  </p>
+</footer>
+
+</body>
+</html>
