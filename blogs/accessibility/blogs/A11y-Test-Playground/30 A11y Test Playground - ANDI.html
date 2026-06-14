@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>30 A11y Test Playground - ANDI | The Quality Strategist</title>
+  <meta name="description" content="Practice using ANDI to inspect accessible names, roles and descriptions. Eight scenarios covering conflicting labels, placeholder-only names, table headers and more." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+      --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+      --green:#4ade80; --green-bg:rgba(74,222,128,0.07);
+      --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07);
+      --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07);
+      --red:#f87171; --red-bg:rgba(248,113,113,0.07);
+      --teal:#2dd4bf; --teal-bg:rgba(45,212,191,0.07);
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
+    .skip-link:focus { top:0; }
+    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
+    .nav-back { font-size:0.82rem; color:var(--text-3); text-decoration:none; }
+    .page-header { max-width:860px; margin:0 auto; padding:3.5rem 2rem 2rem; border-bottom:1px solid var(--border); }
+    .pg-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--teal); font-weight:500; margin-bottom:0.75rem; }
+    .page-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.6rem,3.5vw,2.2rem); color:var(--text); margin-bottom:0.75rem; }
+    .page-header p { color:var(--text-2); font-weight:300; max-width:640px; }
+    .how-to { display:flex; align-items:flex-start; gap:8px; background:var(--teal-bg); border:1px solid rgba(45,212,191,0.2); border-radius:8px; padding:0.7rem 1rem; margin-top:1.25rem; font-size:0.85rem; color:var(--teal); }
+    main { max-width:860px; margin:0 auto; padding:2.5rem 2rem 5rem; }
+    .scenario { margin-bottom:2.5rem; }
+    .scenario-header { display:flex; align-items:center; gap:12px; margin-bottom:1rem; }
+    .scenario-num { width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-family:'DM Serif Display',serif; font-size:1rem; font-weight:700; flex-shrink:0; }
+    .num-fail { background:var(--red-bg); color:var(--red); border:1px solid rgba(248,113,113,0.2); }
+    .num-warn { background:var(--amber-bg); color:var(--amber); border:1px solid rgba(251,191,36,0.2); }
+    .num-pass { background:var(--green-bg); color:var(--green); border:1px solid rgba(74,222,128,0.2); }
+    .scenario-title { font-size:1rem; font-weight:500; color:var(--text); }
+    .scenario-meta { font-size:0.75rem; color:var(--text-3); margin-top:2px; }
+    .scenario-instruction { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:0.85rem 1.1rem; margin-bottom:1rem; font-size:0.85rem; color:var(--text-2); line-height:1.6; }
+    .scenario-instruction strong { color:var(--text); }
+    .demo { border-radius:10px; overflow:hidden; border:1px solid var(--border); margin-bottom:1rem; }
+    .demo-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-3); font-weight:500; padding:8px 14px; background:var(--bg3); border-bottom:1px solid var(--border); }
+    .demo-inner { padding:1.5rem; background:var(--bg2); }
+    .andi-output { background:var(--bg3); border:1px solid var(--teal); border-radius:6px; padding:0.75rem 1rem; font-family:monospace; font-size:0.82rem; color:var(--text-2); margin-top:0.75rem; line-height:1.7; }
+    .andi-output .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.07em; color:var(--teal); font-weight:500; margin-bottom:6px; display:block; font-family:'DM Sans',sans-serif; }
+    .andi-key { color:var(--teal); }
+    .andi-val-bad { color:var(--red); }
+    .andi-val-good { color:var(--green); }
+    .result-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:0.75rem; }
+    .badge { font-size:0.72rem; padding:3px 10px; border-radius:99px; font-weight:600; }
+    .badge-fail { background:var(--red-bg); color:var(--red); border:1px solid rgba(248,113,113,0.25); }
+    .badge-warn { background:var(--amber-bg); color:var(--amber); border:1px solid rgba(251,191,36,0.25); }
+    .badge-pass { background:var(--green-bg); color:var(--green); border:1px solid rgba(74,222,128,0.25); }
+    .badge-wcag { background:var(--bg3); color:var(--text-3); border:1px solid var(--border); }
+    hr.divider { border:none; border-top:1px solid var(--border); margin:2.5rem 0; }
+    code { background:var(--bg3); padding:1px 6px; border-radius:3px; font-size:0.85em; color:var(--text-2); font-family:monospace; }
+    .visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    .table-wrap { overflow-x:auto; border-radius:8px; border:1px solid var(--border); margin:0.75rem 0; }
+    table { width:100%; border-collapse:collapse; font-size:0.875rem; }
+    thead th { background:var(--bg3); padding:8px 12px; text-align:left; font-size:0.68rem; text-transform:uppercase; color:var(--text-3); font-weight:500; border-bottom:1px solid var(--border); }
+    tbody td { padding:8px 12px; border-bottom:1px solid var(--border); color:var(--text-2); }
+    tbody tr:last-child td { border-bottom:none; }
+    footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
+    footer a { color:var(--text-3); text-decoration:none; }
+    @media(max-width:620px) { nav.site-nav, main, .page-header { padding-left:1.25rem; padding-right:1.25rem; } }
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <a href="../30-ANDI-and-IBM-Equal-Access.html" class="nav-back">← Back to Blog 30</a>
+</nav>
+<header class="page-header">
+  <div class="pg-label">A11y Test Playground</div>
+  <h1>ANDI Playground</h1>
+  <p>Practice inspecting accessible names, roles, and descriptions with ANDI. Click each element after activating ANDI and compare what ANDI reports against what you expect.</p>
+  <div class="how-to" role="note">
+    <span aria-hidden="true">&#127919;</span>
+    <span><strong>Setup:</strong> Drag the <a href="https://www.ssa.gov/accessibility/andi/help/install.html" target="_blank" rel="noopener noreferrer" style="color:var(--teal);">ANDI bookmarklet</a> to your bookmarks bar. Click it on this page. Select the Focusable Elements, Images, or Tables module depending on the scenario.</span>
+  </div>
+</header>
+
+<main id="main-content">
+
+  <!-- S1: Placeholder as only label -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">1</div>
+      <div>
+        <div class="scenario-title">Placeholder used as the only accessible name</div>
+        <div class="scenario-meta">ANDI module: Focusable Elements · WCAG 3.3.2</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Activate ANDI, select Focusable Elements. Click the input below. Note what ANDI shows as the Accessible Name source.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 1: input with placeholder only: no label</div>
+      <div class="demo-inner">
+        <input type="text" placeholder="Enter your full name" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:0.9rem;color:var(--text);font-family:'DM Sans',sans-serif;width:100%;max-width:320px;" />
+        <div class="andi-output">
+          <span class="label">ANDI reports on this element:</span>
+          <span class="andi-key">Accessible Name:</span> <span class="andi-val-bad">Enter your full name</span> (from placeholder)<br>
+          <span class="andi-key">Alert:</span> <span class="andi-val-bad">Placeholder is the only accessible name: it disappears when user types</span>
+        </div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 3.3.2</span>
+          <span class="badge badge-wcag">Add a visible label element</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S2: aria-label overrides visible label -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-warn">2</div>
+      <div>
+        <div class="scenario-title">aria-label overrides the visible label text</div>
+        <div class="scenario-meta">ANDI module: Focusable Elements · WCAG 2.5.3</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Activate ANDI, Focusable Elements. Click the button below. Note that ANDI shows the aria-label, not the visible text. These are different: a screen reader user hears something different from what a sighted user sees.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 2: visible label says "Submit" but aria-label says something different</div>
+      <div class="demo-inner">
+        <button aria-label="Send contact form to support team" style="background:var(--blue);color:#000;border:none;border-radius:6px;padding:10px 24px;font-size:0.9rem;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;">Submit</button>
+        <div class="andi-output">
+          <span class="label">ANDI reports on this button:</span>
+          <span class="andi-key">Accessible Name:</span> <span class="andi-val-bad">Send contact form to support team</span> (from aria-label)<br>
+          <span class="andi-key">Visible text:</span> Submit<br>
+          <span class="andi-key">Alert:</span> <span class="andi-val-bad">Accessible name does not match visible label: fails WCAG 2.5.3 Label in Name</span>
+        </div>
+        <div class="result-row">
+          <span class="badge badge-warn">Warning</span>
+          <span class="badge badge-wcag">WCAG 2.5.3</span>
+          <span class="badge badge-wcag">aria-label must contain visible text</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S3: vague link text -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">3</div>
+      <div>
+        <div class="scenario-title">Non-descriptive link text</div>
+        <div class="scenario-meta">ANDI module: Links · WCAG 2.4.4</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Activate ANDI, select Links module. View all links listed. Note which ones have non-descriptive names that would be meaningless out of context.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 3: links with vague text: visible in ANDI Links list</div>
+      <div class="demo-inner" style="display:flex;flex-direction:column;gap:0.75rem;">
+        <div style="background:var(--bg3);border-radius:6px;padding:1rem;">
+          <p style="font-size:0.88rem;color:var(--text-2);margin-bottom:8px;">We published our Q3 accessibility audit report this week.</p>
+          <a href="#" onclick="return false" style="color:var(--blue);font-size:0.88rem;">Read more</a>
+        </div>
+        <div style="background:var(--bg3);border-radius:6px;padding:1rem;">
+          <p style="font-size:0.88rem;color:var(--text-2);margin-bottom:8px;">Download the WCAG 2.1 compliance checklist.</p>
+          <a href="#" onclick="return false" style="color:var(--blue);font-size:0.88rem;">Click here</a>
+        </div>
+        <div class="andi-output">
+          <span class="label">ANDI Links module shows:</span>
+          Link 1: <span class="andi-val-bad">"Read more"</span>: no context when read in isolation<br>
+          Link 2: <span class="andi-val-bad">"Click here"</span>: describes action, not destination
+        </div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 2.4.4</span>
+          <span class="badge badge-wcag">Use descriptive link text or aria-label</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S4: image with filename as alt -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">4</div>
+      <div>
+        <div class="scenario-title">Image with filename as alt text</div>
+        <div class="scenario-meta">ANDI module: Images · WCAG 1.1.1</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Activate ANDI, select Images module. Click the image below. Note ANDI shows the alt text and its source. The alt text exists but is meaningless.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 4: image with alt="chart_Q3_final_v2.png"</div>
+      <div class="demo-inner">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='100'%3E%3Crect width='200' height='100' fill='%231e1e1e' rx='4'/%3E%3Crect x='20' y='60' width='16' height='32' fill='%234ade80' opacity='.5'/%3E%3Crect x='44' y='48' width='16' height='44' fill='%234ade80' opacity='.6'/%3E%3Crect x='68' y='34' width='16' height='58' fill='%234ade80' opacity='.7'/%3E%3Crect x='92' y='20' width='16' height='72' fill='%234ade80'/%3E%3Crect x='116' y='30' width='16' height='62' fill='%234ade80' opacity='.9'/%3E%3C/svg%3E"
+          alt="chart_Q3_final_v2.png" width="200" height="100" style="border-radius:4px;display:block;" />
+        <div class="andi-output">
+          <span class="label">ANDI Images module shows:</span>
+          <span class="andi-key">Accessible Name:</span> <span class="andi-val-bad">chart_Q3_final_v2.png</span><br>
+          <span class="andi-key">Source:</span> alt attribute<br>
+          <span class="andi-key">Alert:</span> <span class="andi-val-bad">Filename used as alt text: not descriptive</span>
+        </div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 1.1.1</span>
+          <span class="badge badge-wcag">Replace filename with meaningful description</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S5: table no headers -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">5</div>
+      <div>
+        <div class="scenario-title">Table with no column headers</div>
+        <div class="scenario-meta">ANDI module: Tables · WCAG 1.3.1</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Activate ANDI, select Tables. Navigate to each cell. Note that ANDI cannot announce a column header because no th elements exist.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 5: data table with td elements only: no th</div>
+      <div class="demo-inner">
+        <div class="table-wrap">
+          <table>
+            <tbody>
+              <tr><td>Jane Smith</td><td>QA Architect</td><td>£90,000</td><td>London</td></tr>
+              <tr><td>Tom Lee</td><td>Lead Engineer</td><td>£85,000</td><td>Manchester</td></tr>
+              <tr><td>Sara Okonkwo</td><td>Product Manager</td><td>£80,000</td><td>Bristol</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="andi-output">
+          <span class="label">ANDI Tables on cell "Jane Smith":</span>
+          <span class="andi-key">Cell content:</span> Jane Smith<br>
+          <span class="andi-key">Column header:</span> <span class="andi-val-bad">none</span><br>
+          <span class="andi-key">Alert:</span> <span class="andi-val-bad">No table headers found: ANDI cannot determine column context</span>
+        </div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 1.3.1</span>
+          <span class="badge badge-wcag">Add th elements with scope="col"</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S6: correct implementations -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-pass">6</div>
+      <div>
+        <div class="scenario-title">Correct implementations: ANDI confirms good names</div>
+        <div class="scenario-meta">All elements have accurate, meaningful accessible names</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to verify:</strong> Activate ANDI and inspect each element below. ANDI should show meaningful accessible names with no alerts.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 6: labelled input, descriptive button, descriptive link, image with useful alt, table with headers</div>
+      <div class="demo-inner" style="display:flex;flex-direction:column;gap:1.25rem;">
+        <div>
+          <label for="pg30-name" style="display:block;font-size:0.88rem;color:var(--text-2);margin-bottom:4px;font-weight:500;">Full name</label>
+          <input id="pg30-name" type="text" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:0.9rem;color:var(--text);font-family:'DM Sans',sans-serif;width:100%;max-width:280px;" />
+          <div class="andi-output" style="max-width:420px;">
+            <span class="andi-key">Name:</span> <span class="andi-val-good">Full name</span> · <span class="andi-key">Source:</span> <span class="andi-val-good">label[for]</span> ✓
+          </div>
+        </div>
+        <div>
+          <a href="#" onclick="return false" style="color:var(--blue);font-size:0.88rem;">Read the Q3 accessibility audit report</a>
+          <div class="andi-output" style="max-width:420px;">
+            <span class="andi-key">Name:</span> <span class="andi-val-good">Read the Q3 accessibility audit report</span> ✓
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th scope="col" style="padding:8px 12px;font-size:0.8rem;color:var(--text-3);font-weight:500;text-align:left;background:var(--bg3);border-bottom:1px solid var(--border);">Name</th>
+              <th scope="col" style="padding:8px 12px;font-size:0.8rem;color:var(--text-3);font-weight:500;text-align:left;background:var(--bg3);border-bottom:1px solid var(--border);">Role</th>
+              <th scope="col" style="padding:8px 12px;font-size:0.8rem;color:var(--text-3);font-weight:500;text-align:left;background:var(--bg3);border-bottom:1px solid var(--border);">Location</th>
+            </tr></thead>
+            <tbody>
+              <tr><td style="padding:8px 12px;color:var(--text-2);">Jane Smith</td><td style="padding:8px 12px;color:var(--text-2);">QA Architect</td><td style="padding:8px 12px;color:var(--text-2);">London</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="andi-output">
+          <span class="andi-key">ANDI Tables on "Jane Smith":</span> <span class="andi-val-good">Name column, Jane Smith</span> ✓
+        </div>
+        <div class="result-row"><span class="badge badge-pass">Pass</span><span class="badge badge-wcag">WCAG 1.1.1 / 1.3.1 / 2.4.4 / 3.3.2</span></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; <a href="../30-ANDI-and-IBM-Equal-Access.html">Back to Blog 30</a>
+  </p>
+</footer>
+</body>
+</html>

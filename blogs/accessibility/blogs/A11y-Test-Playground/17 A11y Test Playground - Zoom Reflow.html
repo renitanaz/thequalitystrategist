@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>17 A11y Test Playground - Zoom and Reflow | The Quality Strategist</title>
+  <meta name="description" content="Practice testing zoom, reflow and reduced motion failures. Eight interactive scenarios covering 320px reflow, 400% zoom breaks, motion, and pinch-to-zoom." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+      --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+      --green:#4ade80; --green-bg:rgba(74,222,128,0.07);
+      --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07);
+      --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07);
+      --red:#f87171; --red-bg:rgba(248,113,113,0.07);
+      --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.07);
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
+    .skip-link:focus { top:0; }
+    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
+    .nav-back { font-size:0.82rem; color:var(--text-3); text-decoration:none; }
+    .nav-back:hover { color:var(--text-2); }
+    .page-header { max-width:860px; margin:0 auto; padding:3.5rem 2rem 2rem; border-bottom:1px solid var(--border); }
+    .pg-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--blue); font-weight:500; margin-bottom:0.75rem; }
+    .page-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.6rem,3.5vw,2.2rem); color:var(--text); margin-bottom:0.75rem; }
+    .page-header p { color:var(--text-2); font-weight:300; max-width:640px; }
+    .how-to { display:flex; align-items:flex-start; gap:8px; background:var(--amber-bg); border:1px solid rgba(251,191,36,0.2); border-radius:8px; padding:0.7rem 1rem; margin-top:1.25rem; font-size:0.85rem; color:var(--amber); }
+    main { max-width:860px; margin:0 auto; padding:2.5rem 2rem 5rem; }
+    .scenario { margin-bottom:3rem; }
+    .scenario-header { display:flex; align-items:center; gap:12px; margin-bottom:1rem; }
+    .scenario-num { width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-family:'DM Serif Display',serif; font-size:1rem; font-weight:700; flex-shrink:0; }
+    .num-fail { background:var(--red-bg); color:var(--red); border:1px solid rgba(248,113,113,0.2); }
+    .num-pass { background:var(--green-bg); color:var(--green); border:1px solid rgba(74,222,128,0.2); }
+    .scenario-title { font-size:1rem; font-weight:500; color:var(--text); }
+    .scenario-meta { font-size:0.75rem; color:var(--text-3); margin-top:2px; }
+    .scenario-instruction { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:0.85rem 1.1rem; margin-bottom:1rem; font-size:0.85rem; color:var(--text-2); line-height:1.6; }
+    .scenario-instruction strong { color:var(--text); }
+    .wcag-tag { display:inline-block; font-size:0.7rem; background:var(--bg3); border:1px solid var(--border); border-radius:99px; padding:1px 8px; color:var(--text-3); margin-left:8px; font-weight:500; }
+    .tool-tag { display:inline-block; font-size:0.7rem; background:var(--purple-bg); border:1px solid rgba(167,139,250,0.2); border-radius:99px; padding:1px 8px; color:var(--purple); margin-left:6px; font-weight:500; }
+    .demo { border-radius:10px; overflow:hidden; border:1px solid var(--border); margin-bottom:1rem; }
+    .demo-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-3); font-weight:500; padding:8px 14px; background:var(--bg3); border-bottom:1px solid var(--border); }
+    .demo-inner { padding:1.5rem; background:var(--bg2); }
+    .result-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:1rem; }
+    .badge { font-size:0.72rem; padding:3px 10px; border-radius:99px; font-weight:600; }
+    .badge-fail { background:var(--red-bg); color:var(--red); border:1px solid rgba(248,113,113,0.25); }
+    .badge-pass { background:var(--green-bg); color:var(--green); border:1px solid rgba(74,222,128,0.25); }
+    .badge-wcag { background:var(--bg3); color:var(--text-3); border:1px solid var(--border); }
+    hr.divider { border:none; border-top:1px solid var(--border); margin:2.5rem 0; }
+    code { background:var(--bg3); padding:1px 6px; border-radius:3px; font-size:0.85em; color:var(--text-2); font-family:monospace; }
+    /* motion animation */
+    @keyframes spin { to { transform:rotate(360deg); } }
+    @keyframes slide-in { from { transform:translateX(-100%); opacity:0; } to { transform:translateX(0); opacity:1; } }
+    @keyframes shimmer { 0%,100%{opacity:0.4} 50%{opacity:1} }
+    @media (prefers-reduced-motion: reduce) {
+      .s7-spinner { animation: spin 2s linear infinite !important; animation-duration: 0.01ms !important; }
+      .s7-slide { animation: none !important; }
+      .s7-shimmer { animation: none !important; }
+    }
+    .visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
+    footer a { color:var(--text-3); text-decoration:none; }
+    @media(max-width:620px) { nav.site-nav, main, .page-header { padding-left:1.25rem; padding-right:1.25rem; } }
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <a href="../17-Zoom-Reflow-Reduced-Motion.html" class="nav-back">← Back to Blog 17</a>
+</nav>
+<header class="page-header">
+  <div class="pg-label">A11y Test Playground</div>
+  <h1>Zoom and Reflow Playground</h1>
+  <p>Eight scenarios covering reflow at 320px, zoom failures at 200% and 400%, and reduced motion. Use <strong>Chrome DevTools</strong> responsive mode (320px) and browser zoom controls (<strong>Ctrl/Cmd +</strong>) to test each scenario.</p>
+  <div class="how-to" role="note">
+    <span aria-hidden="true">&#127919;</span>
+    <span>Open DevTools first. Set responsive mode to <strong>320px</strong> for reflow scenarios. Switch to <strong>400% browser zoom</strong> for zoom scenarios.</span>
+  </div>
+</header>
+
+<main id="main-content">
+
+  <!-- S1: horizontal overflow at 320px -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">1</div>
+      <div>
+        <div class="scenario-title">Horizontal scroll at 320px: reflow failure</div>
+        <div class="scenario-meta">Fixed-width container forces horizontal page scroll.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Open DevTools, set viewport to 320px. Look at the demo below.
+      <span class="wcag-tag">WCAG 1.4.10</span><span class="tool-tag">Chrome DevTools</span><br><br>
+      <strong>What to look for:</strong> The fixed-width container extends beyond 320px, causing a horizontal scrollbar on the page.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 1: fixed-width overflow</div>
+      <div class="demo-inner" style="overflow:hidden;">
+        <!-- intentionally wider than narrow viewports -->
+        <div style="width:600px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:1rem;font-size:0.85rem;color:var(--text-2);">
+          This container is 600px wide. At a 320px viewport it causes horizontal overflow. The user must scroll horizontally to read the full content: which is a WCAG 1.4.10 failure. Every word that extends beyond the viewport is inaccessible without horizontal scroll.
+        </div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 1.4.10</span>
+          <span class="badge badge-wcag">Fixed width 600px exceeds 320px viewport</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S2: nav disappears at narrow width -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">2</div>
+      <div>
+        <div class="scenario-title">Navigation items disappear at 320px</div>
+        <div class="scenario-meta">Desktop nav with no mobile fallback. Items overflow off-screen.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Set DevTools to 320px. Check the nav bar below.
+      <span class="wcag-tag">WCAG 1.4.10</span><span class="tool-tag">Chrome DevTools</span><br><br>
+      <strong>What to look for:</strong> Nav items overflow off the right edge. No hamburger menu. Items are unreachable.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 2: nav overflow with no mobile fallback</div>
+      <div class="demo-inner" style="padding:0;overflow:hidden;">
+        <nav style="background:#1e1e1e;padding:0 1rem;display:flex;align-items:center;gap:1.5rem;height:44px;white-space:nowrap;overflow:hidden;" aria-label="Failing nav example">
+          <a href="#" onclick="return false" style="color:var(--text-2);text-decoration:none;font-size:0.88rem;">Home</a>
+          <a href="#" onclick="return false" style="color:var(--text-2);text-decoration:none;font-size:0.88rem;">Products</a>
+          <a href="#" onclick="return false" style="color:var(--text-2);text-decoration:none;font-size:0.88rem;">About</a>
+          <a href="#" onclick="return false" style="color:var(--text-2);text-decoration:none;font-size:0.88rem;">Services</a>
+          <a href="#" onclick="return false" style="color:var(--text-2);text-decoration:none;font-size:0.88rem;">Blog</a>
+          <a href="#" onclick="return false" style="color:var(--text-2);text-decoration:none;font-size:0.88rem;">Contact</a>
+          <a href="#" onclick="return false" style="color:var(--blue);text-decoration:none;font-size:0.88rem;font-weight:500;">Sign in</a>
+        </nav>
+        <div style="padding:1rem;">
+          <div class="result-row">
+            <span class="badge badge-fail">Fail</span>
+            <span class="badge badge-wcag">WCAG 1.4.10</span>
+            <span class="badge badge-wcag">Nav items cut off: no hamburger fallback</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S3: text overlap at zoom -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">3</div>
+      <div>
+        <div class="scenario-title">Text overlaps at 200% zoom: fixed-height container</div>
+        <div class="scenario-meta">Container height is fixed. Text grows. Overflow clips.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Zoom browser to 200% (Ctrl/Cmd +). Look at the card below.
+      <span class="wcag-tag">WCAG 1.4.4</span><span class="tool-tag">Browser zoom</span><br><br>
+      <strong>What to look for:</strong> The card has a fixed height of 80px. At 200% zoom, the text grows but the container does not: text is clipped and the button disappears.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 3: fixed-height container clips text at zoom</div>
+      <div class="demo-inner">
+        <!-- fixed height container — will clip at zoom -->
+        <div style="height:80px;overflow:hidden;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 16px;position:relative;">
+          <p style="font-size:0.9rem;color:var(--text-2);margin-bottom:8px;">This card has a fixed height of 80px. At 200% zoom the text grows but the card does not. The button below the text disappears.</p>
+          <button style="background:var(--blue);color:#000;border:none;border-radius:5px;padding:6px 16px;font-size:0.85rem;cursor:pointer;">Learn more</button>
+        </div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 1.4.4</span>
+          <span class="badge badge-wcag">height:80px clips content at zoom: use min-height</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S4: table forces horizontal scroll -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">4</div>
+      <div>
+        <div class="scenario-title">Data table forces page-level horizontal scroll</div>
+        <div class="scenario-meta">Table scrolls the whole page: not a contained scroll area.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Set DevTools to 320px. Observe whether the page itself scrolls horizontally.
+      <span class="wcag-tag">WCAG 1.4.10</span><span class="tool-tag">Chrome DevTools</span><br><br>
+      <strong>What to look for:</strong> The table is not in a scrollable wrapper. At 320px it forces the entire page to scroll horizontally, making ALL other content inaccessible without horizontal scroll.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 4: table without overflow wrapper</div>
+      <div class="demo-inner" style="overflow:hidden;">
+        <!-- no overflow-x:auto wrapper — bad -->
+        <table style="border-collapse:collapse;font-size:0.82rem;width:700px;">
+          <thead>
+            <tr>
+              <th style="background:var(--bg3);padding:8px 12px;text-align:left;color:var(--text-3);border-bottom:1px solid var(--border);white-space:nowrap;">Test case</th>
+              <th style="background:var(--bg3);padding:8px 12px;text-align:left;color:var(--text-3);border-bottom:1px solid var(--border);white-space:nowrap;">Priority</th>
+              <th style="background:var(--bg3);padding:8px 12px;text-align:left;color:var(--text-3);border-bottom:1px solid var(--border);white-space:nowrap;">Status</th>
+              <th style="background:var(--bg3);padding:8px 12px;text-align:left;color:var(--text-3);border-bottom:1px solid var(--border);white-space:nowrap;">Assigned</th>
+              <th style="background:var(--bg3);padding:8px 12px;text-align:left;color:var(--text-3);border-bottom:1px solid var(--border);white-space:nowrap;">Last run</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style="padding:8px 12px;color:var(--text-2);border-bottom:1px solid var(--border);">Login form validation</td><td style="padding:8px 12px;color:var(--text-2);border-bottom:1px solid var(--border);">High</td><td style="padding:8px 12px;color:var(--green);border-bottom:1px solid var(--border);">Pass</td><td style="padding:8px 12px;color:var(--text-2);border-bottom:1px solid var(--border);">R. Naz</td><td style="padding:8px 12px;color:var(--text-2);border-bottom:1px solid var(--border);">2024-11-01</td></tr>
+            <tr><td style="padding:8px 12px;color:var(--text-2);">Checkout flow</td><td style="padding:8px 12px;color:var(--text-2);">Critical</td><td style="padding:8px 12px;color:var(--red);">Fail</td><td style="padding:8px 12px;color:var(--text-2);">R. Naz</td><td style="padding:8px 12px;color:var(--text-2);">2024-11-02</td></tr>
+          </tbody>
+        </table>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 1.4.10</span>
+          <span class="badge badge-wcag">Wrap table in div with overflow-x:auto</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S5: animation no reduced motion -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">5</div>
+      <div>
+        <div class="scenario-title">Animation does not respect prefers-reduced-motion</div>
+        <div class="scenario-meta">Enable Reduce Motion in OS: animation still plays.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Open Chrome DevTools, Rendering panel, Emulate CSS media: prefers-reduced-motion: reduce. Observe the spinner and shimmer below.
+      <span class="wcag-tag">WCAG 2.3.3</span><span class="tool-tag">Chrome DevTools Rendering</span><br><br>
+      <strong>What to look for:</strong> Spinner and shimmer continue at full intensity under reduced-motion emulation. No <code>@media (prefers-reduced-motion)</code> override in their CSS.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 5: animations ignoring prefers-reduced-motion</div>
+      <div class="demo-inner" style="display:flex;flex-direction:column;gap:1rem;">
+        <!-- spinner: no reduced-motion override -->
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:32px;height:32px;border:3px solid #2e2e2e;border-top-color:var(--blue);border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+          <span style="font-size:0.85rem;color:var(--text-2);">Spinner: no reduced-motion override</span>
+        </div>
+        <!-- shimmer: no reduced-motion override -->
+        <div style="background:linear-gradient(90deg,var(--bg3) 25%,#2a2a2a 50%,var(--bg3) 75%);background-size:200% 100%;animation:shimmer 1.5s ease-in-out infinite;border-radius:6px;height:16px;width:100%;"></div>
+        <span style="font-size:0.82rem;color:var(--text-3);">Skeleton shimmer: no reduced-motion override</span>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 2.3.3</span>
+          <span class="badge badge-wcag">No @media (prefers-reduced-motion) override</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S6: carousel no pause -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">6</div>
+      <div>
+        <div class="scenario-title">Auto-playing carousel with no pause control</div>
+        <div class="scenario-meta">Content moves. No way to stop it.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Observe the carousel below. Attempt to pause it.
+      <span class="wcag-tag">WCAG 2.2.2</span><br><br>
+      <strong>What to look for:</strong> Carousel advances automatically every 3 seconds. No pause button. No keyboard mechanism to stop it. Content that moves continuously is a distraction and fails 2.2.2.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 6: auto-playing carousel, no pause</div>
+      <div class="demo-inner">
+        <div style="position:relative;overflow:hidden;border-radius:8px;background:var(--bg3);height:80px;">
+          <div id="s6-slides" style="display:flex;transition:transform 0.5s ease;height:100%;">
+            <div style="min-width:100%;display:flex;align-items:center;justify-content:center;font-size:0.9rem;color:var(--text-2);">Slide 1: Feature announcement</div>
+            <div style="min-width:100%;display:flex;align-items:center;justify-content:center;font-size:0.9rem;color:var(--text-2);">Slide 2: New product launch</div>
+            <div style="min-width:100%;display:flex;align-items:center;justify-content:center;font-size:0.9rem;color:var(--text-2);">Slide 3: Upcoming event</div>
+          </div>
+        </div>
+        <p style="font-size:0.82rem;color:var(--text-3);margin-top:8px;">No pause button. Carousel advances every 3 seconds without user control.</p>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 2.2.2</span>
+          <span class="badge badge-wcag">Auto-advancing with no pause, stop, or hide mechanism</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S7: reduced motion respected -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">7</div>
+      <div>
+        <div class="scenario-title">Slide-in animation ignores prefers-reduced-motion</div>
+        <div class="scenario-meta">Page element animates in: with or without reduced motion enabled.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Emulate prefers-reduced-motion: reduce in DevTools Rendering panel. Click Trigger animation.
+      <span class="wcag-tag">WCAG 2.3.3</span><span class="tool-tag">Chrome DevTools Rendering</span><br><br>
+      <strong>What to look for:</strong> The element slides in from the left even with reduced motion enabled. No CSS override is applied.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 7: slide-in animation ignoring reduced motion</div>
+      <div class="demo-inner">
+        <style>
+          .s7-card { background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;font-size:0.88rem;color:var(--text-2);display:none; }
+          .s7-card.active { display:block;animation:slide-in 0.6s ease forwards; }
+          /* MISSING: @media (prefers-reduced-motion: reduce) { .s7-card.active { animation:none; } } */
+        </style>
+        <button onclick="
+          var c = document.getElementById('s7card');
+          c.classList.remove('active');
+          void c.offsetWidth;
+          c.classList.add('active');
+          return false;" style="background:var(--bg3);color:var(--text-2);border:1px solid var(--border);border-radius:6px;padding:9px 20px;font-size:0.88rem;cursor:pointer;margin-bottom:1rem;">Trigger animation</button>
+        <div id="s7card" class="s7-card">This card slides in from the left. Enable prefers-reduced-motion emulation in DevTools and trigger again: it still animates at full intensity.</div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 2.3.3</span>
+          <span class="badge badge-wcag">Missing prefers-reduced-motion override on slide-in</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S8: PASS -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-pass">8</div>
+      <div>
+        <div class="scenario-title">Correct implementations: passing examples</div>
+        <div class="scenario-meta">Reflow-safe layout. Reduced-motion respected. Carousel with pause.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Set DevTools to 320px, zoom to 400%, and emulate prefers-reduced-motion: reduce. Verify each example.
+      <span class="wcag-tag">WCAG 1.4.4 · 1.4.10 · 2.2.2 · 2.3.3</span><span class="tool-tag">Chrome DevTools</span>
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 8: correct implementations</div>
+      <div class="demo-inner" style="display:flex;flex-direction:column;gap:1.5rem;">
+
+        <!-- Fluid layout -->
+        <div>
+          <p style="font-size:0.82rem;color:var(--text-3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em;font-weight:500;">Fluid layout (no fixed widths)</p>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:1rem;font-size:0.85rem;color:var(--text-2);width:100%;max-width:100%;">
+            This container uses width:100% and max-width:100%. At any viewport width it fills the available space without overflow. Text wraps naturally. ✓
+          </div>
+        </div>
+
+        <!-- Table with scroll wrapper -->
+        <div>
+          <p style="font-size:0.82rem;color:var(--text-3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em;font-weight:500;">Table with overflow-x:auto wrapper</p>
+          <div style="overflow-x:auto;border-radius:8px;border:1px solid var(--border);">
+            <table style="border-collapse:collapse;font-size:0.82rem;min-width:500px;width:100%;">
+              <thead><tr>
+                <th style="background:var(--bg3);padding:8px 12px;text-align:left;color:var(--text-3);border-bottom:1px solid var(--border);">Test case</th>
+                <th style="background:var(--bg3);padding:8px 12px;text-align:left;color:var(--text-3);border-bottom:1px solid var(--border);">Priority</th>
+                <th style="background:var(--bg3);padding:8px 12px;text-align:left;color:var(--text-3);border-bottom:1px solid var(--border);">Status</th>
+              </tr></thead>
+              <tbody>
+                <tr><td style="padding:8px 12px;color:var(--text-2);">Login form</td><td style="padding:8px 12px;color:var(--text-2);">High</td><td style="padding:8px 12px;color:var(--green);">Pass ✓</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p style="font-size:0.8rem;color:var(--text-3);margin-top:4px;">Table scrolls within its own container: page does not scroll horizontally ✓</p>
+        </div>
+
+        <!-- Reduced motion spinner -->
+        <div>
+          <p style="font-size:0.82rem;color:var(--text-3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em;font-weight:500;">Spinner with prefers-reduced-motion override</p>
+          <style>
+            .s8-spinner { width:32px;height:32px;border:3px solid #2e2e2e;border-top-color:var(--green);border-radius:50%;animation:spin 0.8s linear infinite; }
+            @media (prefers-reduced-motion: reduce) { .s8-spinner { animation-duration:3s; border-top-color:var(--green);border-right-color:var(--green); } }
+          </style>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div class="s8-spinner"></div>
+            <span style="font-size:0.85rem;color:var(--text-2);">Spinner slows significantly under prefers-reduced-motion ✓</span>
+          </div>
+        </div>
+
+        <div class="result-row">
+          <span class="badge badge-pass">Pass</span>
+          <span class="badge badge-wcag">WCAG 1.4.4 · 1.4.10 · 2.3.3</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; <a href="../17-Zoom-Reflow-Reduced-Motion.html">Back to Blog 17</a>
+    &nbsp;·&nbsp; <a href="../17 A11y Zoom Reflow Mobile Testing Guide.html">Mobile Testing Guide →</a>
+  </p>
+</footer>
+
+<script>
+  var s6current = 0;
+  var s6slides = document.getElementById('s6-slides');
+  if (s6slides) {
+    setInterval(function() {
+      s6current = (s6current + 1) % 3;
+      s6slides.style.transform = 'translateX(-' + (s6current * 100) + '%)';
+    }, 3000);
+  }
+</script>
+</body>
+</html>

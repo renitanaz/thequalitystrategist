@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>28 A11y Test Playground - Accessibility Insights | The Quality Strategist</title>
+  <meta name="description" content="Practice using Accessibility Insights FastPass and Tab Stops. Six scenarios covering automated violations and keyboard focus order failures." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+      --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+      --green:#4ade80; --green-bg:rgba(74,222,128,0.07);
+      --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07);
+      --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07);
+      --red:#f87171; --red-bg:rgba(248,113,113,0.07);
+      --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.07);
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
+    .skip-link:focus { top:0; }
+    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
+    .nav-back { font-size:0.82rem; color:var(--text-3); text-decoration:none; }
+    .page-header { max-width:860px; margin:0 auto; padding:3.5rem 2rem 2rem; border-bottom:1px solid var(--border); }
+    .pg-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--blue); font-weight:500; margin-bottom:0.75rem; }
+    .page-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.6rem,3.5vw,2.2rem); color:var(--text); margin-bottom:0.75rem; }
+    .page-header p { color:var(--text-2); font-weight:300; max-width:640px; }
+    .tool-box { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.1rem 1.4rem; margin-top:1.25rem; display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+    .tool-item { font-size:0.85rem; color:var(--text-2); }
+    .tool-item strong { color:var(--text); display:block; margin-bottom:4px; }
+    main { max-width:860px; margin:0 auto; padding:2.5rem 2rem 5rem; }
+    .section-title { font-family:'DM Serif Display',serif; font-size:1.2rem; color:var(--text); margin:2.5rem 0 1rem; padding-top:1rem; border-top:1px solid var(--border); }
+    .scenario { margin-bottom:2.5rem; }
+    .scenario-header { display:flex; align-items:center; gap:12px; margin-bottom:1rem; }
+    .scenario-num { width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-family:'DM Serif Display',serif; font-size:1rem; font-weight:700; flex-shrink:0; }
+    .num-fastpass { background:var(--blue-bg); color:var(--blue); border:1px solid rgba(96,165,250,0.2); }
+    .num-tabstops { background:var(--amber-bg); color:var(--amber); border:1px solid rgba(251,191,36,0.2); }
+    .num-pass { background:var(--green-bg); color:var(--green); border:1px solid rgba(74,222,128,0.2); }
+    .scenario-title { font-size:1rem; font-weight:500; color:var(--text); }
+    .scenario-meta { font-size:0.75rem; color:var(--text-3); margin-top:2px; }
+    .scenario-instruction { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:0.85rem 1.1rem; margin-bottom:1rem; font-size:0.85rem; color:var(--text-2); line-height:1.6; }
+    .scenario-instruction strong { color:var(--text); }
+    .demo { border-radius:10px; overflow:hidden; border:1px solid var(--border); margin-bottom:1rem; }
+    .demo-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-3); font-weight:500; padding:8px 14px; background:var(--bg3); border-bottom:1px solid var(--border); }
+    .demo-inner { padding:1.5rem; background:var(--bg2); }
+    .expected { background:var(--bg3); border-left:3px solid var(--amber); border-radius:0 6px 6px 0; padding:0.6rem 0.9rem; font-size:0.82rem; color:var(--text-2); margin-top:0.75rem; font-style:italic; }
+    .expected strong { color:var(--amber); font-style:normal; }
+    .expected.pass { border-left-color:var(--green); }
+    .result-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:0.75rem; }
+    .badge { font-size:0.72rem; padding:3px 10px; border-radius:99px; font-weight:600; }
+    .badge-fastpass { background:var(--blue-bg); color:var(--blue); border:1px solid rgba(96,165,250,0.25); }
+    .badge-tabstops { background:var(--amber-bg); color:var(--amber); border:1px solid rgba(251,191,36,0.25); }
+    .badge-pass { background:var(--green-bg); color:var(--green); border:1px solid rgba(74,222,128,0.25); }
+    .badge-wcag { background:var(--bg3); color:var(--text-3); border:1px solid var(--border); }
+    hr.divider { border:none; border-top:1px solid var(--border); margin:2.5rem 0; }
+    code { background:var(--bg3); padding:1px 6px; border-radius:3px; font-size:0.85em; color:var(--text-2); font-family:monospace; }
+    .key { display:inline-flex; align-items:center; justify-content:center; background:var(--bg3); border:1px solid #444; border-bottom:3px solid #444; border-radius:5px; padding:2px 8px; font-family:monospace; font-size:0.82em; color:var(--text); min-width:28px; white-space:nowrap; }
+    .visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
+    footer a { color:var(--text-3); text-decoration:none; }
+    @media(max-width:620px) { nav.site-nav, main, .page-header { padding-left:1.25rem; padding-right:1.25rem; } .tool-box { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <a href="../28-Accessibility-Insights.html" class="nav-back">← Back to Blog 28</a>
+</nav>
+<header class="page-header">
+  <div class="pg-label">A11y Test Playground</div>
+  <h1>Accessibility Insights Playground</h1>
+  <p>Practice FastPass automated scanning and Tab Stops keyboard visualisation. Install Accessibility Insights for Web, then work through each scenario.</p>
+  <div class="tool-box">
+    <div class="tool-item">
+      <strong>FastPass scenarios (1–4)</strong>
+      Open Accessibility Insights, click FastPass, run the scan. Find each violation listed below.
+    </div>
+    <div class="tool-item">
+      <strong>Tab Stops scenarios (5–6)</strong>
+      Click Tab Stops mode in Accessibility Insights. Press Tab through the page and watch where the arrows appear: and where they jump unexpectedly.
+    </div>
+  </div>
+</header>
+
+<main id="main-content">
+
+  <h2 class="section-title">FastPass Scenarios</h2>
+
+  <!-- S1: missing label -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fastpass">1</div>
+      <div>
+        <div class="scenario-title">Missing form label: FastPass catches this</div>
+        <div class="scenario-meta">WCAG 1.3.1 / 3.3.2</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to find:</strong> Run FastPass. The automated check flags this input under the label rule.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 1: unlabelled input</div>
+      <div class="demo-inner">
+        <input type="text" placeholder="Search products..." style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:0.9rem;color:var(--text);font-family:'DM Sans',sans-serif;width:100%;max-width:320px;" />
+        <div class="expected"><strong>FastPass finds:</strong> Automated check: label missing on input element</div>
+        <div class="result-row"><span class="badge badge-fastpass">FastPass</span><span class="badge badge-wcag">WCAG 1.3.1</span></div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S2: colour contrast -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fastpass">2</div>
+      <div>
+        <div class="scenario-title">Colour contrast failure: FastPass Colour Contrast analyser</div>
+        <div class="scenario-meta">WCAG 1.4.3</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to find:</strong> FastPass runs colour contrast automatically. This text should be flagged with its exact ratio.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 2: low contrast text</div>
+      <div class="demo-inner" style="background:#f8f8f8;border-radius:6px;padding:1rem;">
+        <p style="color:#aaaaaa;margin:0;font-size:1rem;">Category label: #aaaaaa on #f8f8f8: approximately 2.32:1. Fails WCAG 1.4.3.</p>
+        <div class="expected"><strong>FastPass Colour Contrast:</strong> Flags element with ratio ~2.32:1, required 4.5:1</div>
+        <div class="result-row"><span class="badge badge-fastpass">FastPass</span><span class="badge badge-wcag">WCAG 1.4.3</span></div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S3: empty link -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fastpass">3</div>
+      <div>
+        <div class="scenario-title">Empty link: FastPass automated check</div>
+        <div class="scenario-meta">WCAG 2.4.4</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to find:</strong> Run FastPass. This link element has no text content and no aria-label: FastPass flags it.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 3: link with no accessible name</div>
+      <div class="demo-inner">
+        <!-- empty link -->
+        <a href="#" onclick="return false" style="display:inline-block;width:32px;height:32px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><path d="M10 16h12M16 10l6 6-6 6" stroke="#c8c8c8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <span style="font-size:0.82rem;color:var(--text-3);margin-left:12px;">Arrow icon link: no aria-label, no text content</span>
+        <div class="expected"><strong>FastPass finds:</strong> Automated check: link has no discernible name</div>
+        <div class="result-row"><span class="badge badge-fastpass">FastPass</span><span class="badge badge-wcag">WCAG 2.4.4</span></div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S4: correct — FastPass passes -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-pass">4</div>
+      <div>
+        <div class="scenario-title">Correct: FastPass finds no violations here</div>
+        <div class="scenario-meta">WCAG 1.3.1 / 1.4.3 / 2.4.4</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to verify:</strong> Scope FastPass to this element only if possible. Zero violations expected.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 4: labelled input, passing contrast, descriptive link</div>
+      <div class="demo-inner" style="display:flex;flex-direction:column;gap:1rem;">
+        <div>
+          <label for="pg28-search" style="display:block;font-size:0.88rem;color:var(--text-2);margin-bottom:4px;font-weight:500;">Search products</label>
+          <input id="pg28-search" type="search" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:0.9rem;color:var(--text);font-family:'DM Sans',sans-serif;width:100%;max-width:320px;" />
+        </div>
+        <a href="#" onclick="return false" aria-label="Go to next page" style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="#c8c8c8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <div class="expected pass"><strong>FastPass:</strong> No automated violations found on these elements ✓</div>
+        <div class="result-row"><span class="badge badge-pass">Pass</span></div>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="section-title">Tab Stops Scenarios</h2>
+
+  <!-- S5: focus order skips content -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-tabstops">5</div>
+      <div>
+        <div class="scenario-title">Focus order skips a focusable element</div>
+        <div class="scenario-meta">WCAG 2.4.3: Tab Stops shows the jump</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Enable Tab Stops mode. Tab through the three elements below. Notice the second button has <code>tabindex="-1"</code>: Tab Stops draws a red indicator where focus jumps over it.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 5: element removed from tab order</div>
+      <div class="demo-inner" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+        <button style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 18px;font-size:0.88rem;color:var(--text-2);cursor:pointer;">First</button>
+        <!-- tabindex -1 removes from tab order but it is still visible -->
+        <button tabindex="-1" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 18px;font-size:0.88rem;color:var(--red);cursor:pointer;opacity:0.6;">Skipped (tabindex=-1)</button>
+        <button style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 18px;font-size:0.88rem;color:var(--text-2);cursor:pointer;">Third</button>
+        <div class="expected"><strong>Tab Stops shows:</strong> Arrow jumps from First directly to Third. Middle button is skipped: it is visually present but not keyboard reachable.</div>
+        <div class="result-row"><span class="badge badge-tabstops">Tab Stops</span><span class="badge badge-wcag">WCAG 2.4.3</span></div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S6: focus trap -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-tabstops">6</div>
+      <div>
+        <div class="scenario-title">Focus trapped in a widget with no Escape</div>
+        <div class="scenario-meta">WCAG 2.1.2: Tab Stops shows the loop</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Enable Tab Stops. Tab into the bordered widget below. Tab through its elements. Tab does not escape the widget. Tab Stops draws a loop arrow showing the trap.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 6: keyboard trap: Tab cycles inside, never escapes</div>
+      <div class="demo-inner">
+        <!-- focus trap: Tab cycles within this div -->
+        <div style="border:2px solid var(--red);border-radius:8px;padding:1.25rem;max-width:400px;" id="pg28-trap">
+          <p style="font-size:0.88rem;color:var(--text-2);margin-bottom:1rem;">Widget: Tab cycles inside this box. Escape does nothing. Focus never leaves.</p>
+          <div style="display:flex;gap:10px;">
+            <button onclick="return false" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 16px;font-size:0.85rem;color:var(--text-2);cursor:pointer;">Option A</button>
+            <button onclick="return false" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 16px;font-size:0.85rem;color:var(--text-2);cursor:pointer;">Option B</button>
+            <button onclick="return false" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 16px;font-size:0.85rem;color:var(--text-2);cursor:pointer;">Option C</button>
+          </div>
+        </div>
+        <div class="expected"><strong>Tab Stops shows:</strong> Arrows loop within the widget. No arrow escapes to the next element on the page. WCAG 2.1.2 failure.</div>
+        <div class="result-row"><span class="badge badge-tabstops">Tab Stops</span><span class="badge badge-wcag">WCAG 2.1.2</span></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; <a href="../28-Accessibility-Insights.html">Back to Blog 28</a>
+  </p>
+</footer>
+<script>
+  // Implement the focus trap for scenario 6
+  const trap = document.getElementById('pg28-trap');
+  if (trap) {
+    const focusable = trap.querySelectorAll('button');
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    trap.addEventListener('keydown', function(e) {
+      if (e.key === 'Tab') {
+        if (e.shiftKey) {
+          if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+        } else {
+          if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+      }
+    });
+  }
+</script>
+</body>
+</html>

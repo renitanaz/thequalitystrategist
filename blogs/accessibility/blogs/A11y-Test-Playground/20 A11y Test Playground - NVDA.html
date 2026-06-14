@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>20 A11y Test Playground - NVDA | The Quality Strategist</title>
+  <meta name="description" content="Practice testing with NVDA. Eight scenarios covering headings, links, images, forms, tables, and live regions: with expected NVDA announcements for each." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+      --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+      --green:#4ade80; --green-bg:rgba(74,222,128,0.07);
+      --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07);
+      --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07);
+      --red:#f87171; --red-bg:rgba(248,113,113,0.07);
+      --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.07);
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
+    .skip-link:focus { top:0; }
+    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
+    .nav-back { font-size:0.82rem; color:var(--text-3); text-decoration:none; }
+    .nav-back:hover { color:var(--text-2); }
+    .page-header { max-width:860px; margin:0 auto; padding:3.5rem 2rem 2rem; border-bottom:1px solid var(--border); }
+    .pg-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--blue); font-weight:500; margin-bottom:0.75rem; }
+    .page-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.6rem,3.5vw,2.2rem); color:var(--text); margin-bottom:0.75rem; }
+    .page-header p { color:var(--text-2); font-weight:300; max-width:640px; }
+    .how-to { display:flex; align-items:flex-start; gap:8px; background:var(--amber-bg); border:1px solid rgba(251,191,36,0.2); border-radius:8px; padding:0.7rem 1rem; margin-top:1.25rem; font-size:0.85rem; color:var(--amber); }
+    main { max-width:860px; margin:0 auto; padding:2.5rem 2rem 5rem; }
+    .scenario { margin-bottom:3rem; }
+    .scenario-header { display:flex; align-items:center; gap:12px; margin-bottom:1rem; }
+    .scenario-num { width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-family:'DM Serif Display',serif; font-size:1rem; font-weight:700; flex-shrink:0; }
+    .num-fail { background:var(--red-bg); color:var(--red); border:1px solid rgba(248,113,113,0.2); }
+    .num-pass { background:var(--green-bg); color:var(--green); border:1px solid rgba(74,222,128,0.2); }
+    .scenario-title { font-size:1rem; font-weight:500; color:var(--text); }
+    .scenario-meta { font-size:0.75rem; color:var(--text-3); margin-top:2px; }
+    .scenario-instruction { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:0.85rem 1.1rem; margin-bottom:1rem; font-size:0.85rem; color:var(--text-2); line-height:1.6; }
+    .scenario-instruction strong { color:var(--text); }
+    .wcag-tag { display:inline-block; font-size:0.7rem; background:var(--bg3); border:1px solid var(--border); border-radius:99px; padding:1px 8px; color:var(--text-3); margin-left:8px; font-weight:500; }
+    .demo { border-radius:10px; overflow:hidden; border:1px solid var(--border); margin-bottom:1rem; }
+    .demo-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-3); font-weight:500; padding:8px 14px; background:var(--bg3); border-bottom:1px solid var(--border); }
+    .demo-inner { padding:1.5rem; background:var(--bg2); }
+    .announced { background:var(--bg3); border-left:3px solid var(--amber); border-radius:0 6px 6px 0; padding:0.6rem 0.9rem; font-size:0.82rem; color:var(--text-2); margin-top:0.75rem; font-style:italic; }
+    .announced strong { color:var(--amber); font-style:normal; }
+    .announced.pass { border-left-color:var(--green); }
+    .result-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:1rem; }
+    .badge { font-size:0.72rem; padding:3px 10px; border-radius:99px; font-weight:600; }
+    .badge-fail { background:var(--red-bg); color:var(--red); border:1px solid rgba(248,113,113,0.25); }
+    .badge-pass { background:var(--green-bg); color:var(--green); border:1px solid rgba(74,222,128,0.25); }
+    .badge-wcag { background:var(--bg3); color:var(--text-3); border:1px solid var(--border); }
+    hr.divider { border:none; border-top:1px solid var(--border); margin:2.5rem 0; }
+    code { background:var(--bg3); padding:1px 6px; border-radius:3px; font-size:0.85em; color:var(--text-2); font-family:monospace; }
+    .key { display:inline-flex; align-items:center; justify-content:center; background:var(--bg3); border:1px solid #444; border-bottom:3px solid #444; border-radius:5px; padding:2px 8px; font-family:monospace; font-size:0.82em; color:var(--text); min-width:28px; white-space:nowrap; }
+    .visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
+    footer a { color:var(--text-3); text-decoration:none; }
+    @media(max-width:620px) { nav.site-nav, main, .page-header { padding-left:1.25rem; padding-right:1.25rem; } }
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <a href="../20-NVDA-on-Windows.html" class="nav-back">← Back to Blog 20</a>
+</nav>
+<header class="page-header">
+  <div class="pg-label">A11y Test Playground</div>
+  <h1>NVDA Playground</h1>
+  <p>Eight scenarios with paired failure and pass examples. Enable NVDA + Firefox before you start. Each scenario shows what NVDA announces for the failure and what it should announce for the correct implementation.</p>
+  <div class="how-to" role="note">
+    <span aria-hidden="true">&#127919;</span>
+    <span><strong>Core rule:</strong> disconnect your mouse. Navigate with keyboard only. If you cannot complete each task by listening alone: that is a defect.</span>
+  </div>
+</header>
+
+<main id="main-content">
+
+  <!-- S1: Headings -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">1</div>
+      <div>
+        <div class="scenario-title">Heading structure: visual heading, not semantic</div>
+        <div class="scenario-meta">Looks like a heading. NVDA does not know it is one.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Press <span class="key">H</span> to navigate headings. Try to land on "Our Services."
+      <span class="wcag-tag">WCAG 1.3.1</span><br><br>
+      <strong>What to look for:</strong> NVDA skips "Our Services" entirely: it is a div with font-size styling, not an h2.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 1: visual heading with no semantic markup</div>
+      <div class="demo-inner">
+        <h2>About us</h2>
+        <p style="font-size:0.88rem;color:var(--text-2);margin-top:4px;margin-bottom:1rem;">We are a quality engineering consultancy.</p>
+        <!-- This looks like a heading but is a div -->
+        <div style="font-size:1.25rem;font-weight:600;color:var(--text);margin-bottom:0.5rem;">Our Services</div>
+        <p style="font-size:0.88rem;color:var(--text-2);">We offer testing strategy, automation, and accessibility auditing.</p>
+        <div class="announced"><strong>NVDA with H:</strong> "About us, heading level 2": then jumps past "Our Services" to the next semantic heading. "Our Services" is not announced as a heading.</div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 1.3.1</span>
+          <span class="badge badge-wcag">div styled as heading: not an h2/h3 element</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S2: Links -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">2</div>
+      <div>
+        <div class="scenario-title">Link text: "read more" with no context</div>
+        <div class="scenario-meta">Destination unknowable from link text alone.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Press <span class="key">K</span> to navigate links. Listen to what NVDA announces for the "Read more" link.
+      <span class="wcag-tag">WCAG 2.4.4</span><br><br>
+      <strong>What to look for:</strong> NVDA announces "Read more, link": the user cannot determine where the link goes without reading surrounding context.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 2: non-descriptive link text</div>
+      <div class="demo-inner">
+        <div style="background:var(--bg3);border-radius:8px;padding:1rem 1.25rem;margin-bottom:0.75rem;">
+          <p style="font-size:0.88rem;color:var(--text-2);margin-bottom:8px;">We published a full accessibility audit report covering WCAG 2.1 AA compliance across 47 components.</p>
+          <a href="#" onclick="return false" style="color:var(--blue);font-size:0.88rem;">Read more</a>
+        </div>
+        <div class="announced"><strong>NVDA announces:</strong> "Read more, link": destination completely unknown when navigating by links list (Insert+F7)</div>
+        <div class="announced pass" style="margin-top:8px;"><strong>Should announce:</strong> "Read our WCAG 2.1 AA audit report, link": or use aria-label to add context</div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 2.4.4</span>
+          <span class="badge badge-wcag">Link purpose not clear from link text alone</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S3: Image alt -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">3</div>
+      <div>
+        <div class="scenario-title">Image: missing alt vs correct alt</div>
+        <div class="scenario-meta">Two identical-looking images. One NVDA can describe. One it cannot.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Press <span class="key">G</span> to navigate graphics. Listen to what NVDA announces for each image.
+      <span class="wcag-tag">WCAG 1.1.1</span><br><br>
+      <strong>What to look for:</strong> First image announces filename. Second image announces the data.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 3: image alt text comparison</div>
+      <div class="demo-inner" style="display:flex;flex-direction:column;gap:1rem;">
+        <div>
+          <p style="font-size:0.8rem;color:var(--text-3);margin-bottom:6px;">Image 1: no alt text</p>
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='80'%3E%3Crect width='200' height='80' fill='%231e1e1e' rx='4'/%3E%3Crect x='20' y='50' width='20' height='22' fill='%234ade80' opacity='.7'/%3E%3Crect x='50' y='40' width='20' height='32' fill='%234ade80' opacity='.8'/%3E%3Crect x='80' y='28' width='20' height='44' fill='%234ade80'/%3E%3Crect x='110' y='18' width='20' height='54' fill='%234ade80'/%3E%3C/svg%3E" width="200" height="80" style="border-radius:4px;display:block;" />
+          <div class="announced"><strong>NVDA announces:</strong> filename or "graphic": no information about the chart data</div>
+        </div>
+        <div>
+          <p style="font-size:0.8rem;color:var(--text-3);margin-bottom:6px;">Image 2: correct alt text</p>
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='80'%3E%3Crect width='200' height='80' fill='%231e1e1e' rx='4'/%3E%3Crect x='20' y='50' width='20' height='22' fill='%234ade80' opacity='.7'/%3E%3Crect x='50' y='40' width='20' height='32' fill='%234ade80' opacity='.8'/%3E%3Crect x='80' y='28' width='20' height='44' fill='%234ade80'/%3E%3Crect x='110' y='18' width='20' height='54' fill='%234ade80'/%3E%3C/svg%3E" alt="Bar chart: defect count reduced from 48 in Q1 to 12 in Q4, a 75% reduction" width="200" height="80" style="border-radius:4px;display:block;" />
+          <div class="announced pass"><strong>NVDA announces:</strong> "Bar chart: defect count reduced from 48 in Q1 to 12 in Q4, a 75% reduction, graphic" ✓</div>
+        </div>
+        <div class="result-row">
+          <span class="badge badge-fail">Image 1: Fail</span>
+          <span class="badge badge-pass">Image 2: Pass</span>
+          <span class="badge badge-wcag">WCAG 1.1.1</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S4: Form label -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">4</div>
+      <div>
+        <div class="scenario-title">Form: unlabelled input vs correctly labelled input</div>
+        <div class="scenario-meta">Tab to each field. Listen.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Tab to each input field below. Listen to NVDA's announcement.
+      <span class="wcag-tag">WCAG 1.3.1 / 3.3.2</span><br><br>
+      <strong>What to look for:</strong> First field: "edit text, blank." Second field: "Email address, required, edit text."
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 4: labelled vs unlabelled inputs</div>
+      <div class="demo-inner" style="display:flex;flex-direction:column;gap:1rem;">
+        <div>
+          <p style="font-size:0.8rem;color:var(--text-3);margin-bottom:6px;">Input 1: no label</p>
+          <input type="text" placeholder="Full name" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:0.9rem;color:var(--text);font-family:'DM Sans',sans-serif;width:100%;max-width:320px;" />
+          <div class="announced"><strong>NVDA announces:</strong> "edit text, blank": no label, no purpose</div>
+        </div>
+        <div>
+          <p style="font-size:0.8rem;color:var(--text-3);margin-bottom:6px;">Input 2: correct label + required</p>
+          <label for="pg20-email" style="display:block;font-size:0.88rem;color:var(--text-2);margin-bottom:4px;font-weight:500;">
+            Email address <span aria-hidden="true" style="color:var(--red);">*</span>
+            <span class="visually-hidden">required</span>
+          </label>
+          <input type="email" id="pg20-email" required aria-required="true" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:0.9rem;color:var(--text);font-family:'DM Sans',sans-serif;width:100%;max-width:320px;" />
+          <div class="announced pass"><strong>NVDA announces:</strong> "Email address, required, edit text" ✓</div>
+        </div>
+        <div class="result-row">
+          <span class="badge badge-fail">Input 1: Fail</span>
+          <span class="badge badge-pass">Input 2: Pass</span>
+          <span class="badge badge-wcag">WCAG 1.3.1 / 3.3.2</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S5: Table -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">5</div>
+      <div>
+        <div class="scenario-title">Table: no column headers vs correct headers</div>
+        <div class="scenario-meta">Navigate cell by cell. Does NVDA tell you what column you are in?</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Press <span class="key">T</span> to find each table. Then use <span class="key">Ctrl</span>+<span class="key">Alt</span>+arrow keys to navigate cell by cell.
+      <span class="wcag-tag">WCAG 1.3.1</span><br><br>
+      <strong>What to look for:</strong> Table 1: cell data announced with no column header. Table 2: column header announced before each cell value.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 5: tables without and with headers</div>
+      <div class="demo-inner" style="display:flex;flex-direction:column;gap:1.5rem;overflow-x:auto;">
+        <div>
+          <p style="font-size:0.8rem;color:var(--text-3);margin-bottom:8px;">Table 1: no th elements</p>
+          <table style="border-collapse:collapse;font-size:0.82rem;width:100%;">
+            <tbody>
+              <tr>
+                <td style="padding:8px 12px;border:1px solid var(--border);color:var(--text-2);">Jane Smith</td>
+                <td style="padding:8px 12px;border:1px solid var(--border);color:var(--text-2);">Lead Engineer</td>
+                <td style="padding:8px 12px;border:1px solid var(--border);color:var(--text-2);">£85,000</td>
+              </tr>
+              <tr>
+                <td style="padding:8px 12px;border:1px solid var(--border);color:var(--text-2);">Tom Lee</td>
+                <td style="padding:8px 12px;border:1px solid var(--border);color:var(--text-2);">QA Architect</td>
+                <td style="padding:8px 12px;border:1px solid var(--border);color:var(--text-2);">£90,000</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="announced"><strong>NVDA on cell navigation:</strong> "Jane Smith": no column header. User does not know if this is Name, Role, or Salary.</div>
+        </div>
+        <div>
+          <p style="font-size:0.8rem;color:var(--text-3);margin-bottom:8px;">Table 2: correct th with scope</p>
+          <table style="border-collapse:collapse;font-size:0.82rem;width:100%;">
+            <thead>
+              <tr>
+                <th scope="col" style="padding:8px 12px;border:1px solid var(--border);background:var(--bg3);color:var(--text-3);text-align:left;">Name</th>
+                <th scope="col" style="padding:8px 12px;border:1px solid var(--border);background:var(--bg3);color:var(--text-3);text-align:left;">Role</th>
+                <th scope="col" style="padding:8px 12px;border:1px solid var(--border);background:var(--bg3);color:var(--text-3);text-align:left;">Salary</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding:8px 12px;border:1px solid var(--border);color:var(--text-2);">Jane Smith</td>
+                <td style="padding:8px 12px;border:1px solid var(--border);color:var(--text-2);">Lead Engineer</td>
+                <td style="padding:8px 12px;border:1px solid var(--border);color:var(--text-2);">£85,000</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="announced pass"><strong>NVDA on cell navigation:</strong> "Name column, Jane Smith": column header announced before cell value ✓</div>
+        </div>
+        <div class="result-row">
+          <span class="badge badge-fail">Table 1: Fail</span>
+          <span class="badge badge-pass">Table 2: Pass</span>
+          <span class="badge badge-wcag">WCAG 1.3.1</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S6: Error message -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">6</div>
+      <div>
+        <div class="scenario-title">Form error: announced vs silent</div>
+        <div class="scenario-meta">Submit empty. Listen for the error.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Tab to each Submit button below. Press Enter or Space to activate. Listen to NVDA. Then Tab back to the input.
+      <span class="wcag-tag">WCAG 3.3.1</span><br><br>
+      <strong>What to look for:</strong> Form 1: silence after submit. Form 2: error announced immediately via role="alert," then described again on field refocus.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 6: error handling comparison</div>
+      <div class="demo-inner" style="display:flex;flex-direction:column;gap:1.5rem;">
+        <div>
+          <p style="font-size:0.8rem;color:var(--text-3);margin-bottom:8px;">Form 1: colour-only error, no ARIA</p>
+          <label for="pg20-s6a" style="display:block;font-size:0.88rem;color:var(--text-2);margin-bottom:4px;">Username</label>
+          <input type="text" id="pg20-s6a" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:0.9rem;color:var(--text);font-family:'DM Sans',sans-serif;width:100%;max-width:320px;" />
+          <br><br>
+          <button onclick="document.getElementById('pg20-s6a').style.borderColor='var(--red)';return false;" style="background:var(--bg3);color:var(--text-2);border:1px solid var(--border);border-radius:6px;padding:8px 18px;font-size:0.88rem;cursor:pointer;">Submit</button>
+          <div class="announced"><strong>NVDA after submit:</strong> silence: only the border colour changed, which NVDA cannot see</div>
+        </div>
+        <div>
+          <p style="font-size:0.8rem;color:var(--text-3);margin-bottom:8px;">Form 2: correct ARIA error</p>
+          <label for="pg20-s6b" style="display:block;font-size:0.88rem;color:var(--text-2);margin-bottom:4px;">Username</label>
+          <input type="text" id="pg20-s6b" aria-describedby="pg20-s6b-err" aria-invalid="false" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:0.9rem;color:var(--text);font-family:'DM Sans',sans-serif;width:100%;max-width:320px;" />
+          <span id="pg20-s6b-err" role="alert" style="display:none;color:var(--red);font-size:0.82rem;margin-top:4px;display:none;">Username is required. Enter at least 3 characters.</span>
+          <br><br>
+          <button onclick="var i=document.getElementById('pg20-s6b'),e=document.getElementById('pg20-s6b-err');if(!i.value){i.setAttribute('aria-invalid','true');i.style.borderColor='var(--red)';e.style.display='block';i.focus();}return false;" style="background:var(--bg3);color:var(--text-2);border:1px solid var(--border);border-radius:6px;padding:8px 18px;font-size:0.88rem;cursor:pointer;">Submit</button>
+          <div class="announced pass"><strong>NVDA after submit:</strong> "Username is required. Enter at least 3 characters." (role="alert" fires immediately) ✓<br><strong>On refocus:</strong> "invalid, Username, Username is required. Enter at least 3 characters., edit text" ✓</div>
+        </div>
+        <div class="result-row">
+          <span class="badge badge-fail">Form 1: Fail</span>
+          <span class="badge badge-pass">Form 2: Pass</span>
+          <span class="badge badge-wcag">WCAG 3.3.1</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S7: Live region -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">7</div>
+      <div>
+        <div class="scenario-title">Live region: toast announced vs silent</div>
+        <div class="scenario-meta">Focus on a heading. Click the button. Listen.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Press <span class="key">H</span> to focus on the heading above each demo. Then Tab to the button and press Enter.
+      <span class="wcag-tag">WCAG 4.1.3</span><br><br>
+      <strong>What to look for:</strong> Button 1: no announcement after click. Button 2: NVDA announces the toast message without focus moving.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 7: live region comparison</div>
+      <div class="demo-inner" style="display:flex;flex-direction:column;gap:1.5rem;position:relative;">
+        <div id="pg20-live" role="status" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);"></div>
+        <div>
+          <h3 style="font-size:0.9rem;color:var(--text);margin-bottom:8px;">Button 1: no live region</h3>
+          <button onclick="var t=document.getElementById('pg20-t1');t.style.display='flex';setTimeout(function(){t.style.display='none';},3000);return false;" style="background:var(--bg3);color:var(--text-2);border:1px solid var(--border);border-radius:6px;padding:8px 18px;font-size:0.88rem;cursor:pointer;">Save draft</button>
+          <div id="pg20-t1" style="display:none;margin-top:8px;background:#0d2a0d;border:1px solid var(--green);border-radius:6px;padding:8px 14px;font-size:0.85rem;color:var(--green);">✓ Draft saved</div>
+          <div class="announced"><strong>NVDA announces:</strong> silence: toast has no live region</div>
+        </div>
+        <div>
+          <h3 style="font-size:0.9rem;color:var(--text);margin-bottom:8px;">Button 2: correct role="status"</h3>
+          <button onclick="var r=document.getElementById('pg20-live'),t=document.getElementById('pg20-t2');r.textContent='Draft saved successfully';t.style.display='flex';setTimeout(function(){t.style.display='none';r.textContent='';},3000);return false;" style="background:var(--bg3);color:var(--text-2);border:1px solid var(--border);border-radius:6px;padding:8px 18px;font-size:0.88rem;cursor:pointer;">Save draft</button>
+          <div id="pg20-t2" style="display:none;margin-top:8px;background:#0d2a0d;border:1px solid var(--green);border-radius:6px;padding:8px 14px;font-size:0.85rem;color:var(--green);">✓ Draft saved</div>
+          <div class="announced pass"><strong>NVDA announces:</strong> "Draft saved successfully": politely, without moving focus ✓</div>
+        </div>
+        <div class="result-row">
+          <span class="badge badge-fail">Button 1: Fail</span>
+          <span class="badge badge-pass">Button 2: Pass</span>
+          <span class="badge badge-wcag">WCAG 4.1.3</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S8: Elements list exercise -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-pass">8</div>
+      <div>
+        <div class="scenario-title">Elements list: structural audit in 30 seconds</div>
+        <div class="scenario-meta">Insert+F7: your fastest structural overview tool.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Press <span class="key">Insert</span>+<span class="key">F7</span>. Switch between Headings, Links, and Form Fields tabs. Review what is listed.
+      <span class="wcag-tag">Technique</span><br><br>
+      <strong>What to look for:</strong> Headings tab shows the page structure. Links tab shows all link text: any "read more" or "click here" are immediately visible. Form Fields tab shows all inputs and their labels.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 8: use the elements list on this page</div>
+      <div class="demo-inner">
+        <p style="font-size:0.88rem;color:var(--text-2);margin-bottom:0.75rem;">Press <strong style="color:var(--text);">Insert+F7</strong> now. The elements list opens as a dialog. Use it to audit this playground page:</p>
+        <ul style="font-size:0.88rem;color:var(--text-2);padding-left:1.25rem;display:flex;flex-direction:column;gap:6px;">
+          <li>Headings tab: is the heading hierarchy logical?</li>
+          <li>Links tab: are all link texts descriptive?</li>
+          <li>Form Fields tab: do all inputs show their labels?</li>
+          <li>Buttons tab: are all button labels meaningful?</li>
+        </ul>
+        <div class="announced pass" style="margin-top:1rem;"><strong>Target:</strong> every heading announced with a level, every link with a clear destination, every field with a label. This is the 30-second structural audit.</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; <a href="../20-NVDA-on-Windows.html">Back to Blog 20</a>
+  </p>
+</footer>
+</body>
+</html>
