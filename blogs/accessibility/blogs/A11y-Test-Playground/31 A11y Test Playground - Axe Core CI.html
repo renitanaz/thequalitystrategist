@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>31 A11y Test Playground - Axe-Core CI | The Quality Strategist</title>
+  <meta name="description" content="A target page for axe-core in Playwright or Cypress. Contains deliberate Critical, Serious and Moderate violations plus passing implementations. Point your pipeline test at this URL." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root { --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e; --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a; --green:#4ade80; --green-bg:rgba(74,222,128,0.07); --blue:#60a5fa; --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07); --red:#f87171; --red-bg:rgba(248,113,113,0.07); --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.07); }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
+    .skip-link:focus { top:0; }
+    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
+    .nav-back { font-size:0.82rem; color:var(--text-3); text-decoration:none; }
+    .page-header { max-width:860px; margin:0 auto; padding:3.5rem 2rem 2rem; border-bottom:1px solid var(--border); }
+    .pg-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--purple); font-weight:500; margin-bottom:0.75rem; }
+    .page-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.6rem,3.5vw,2.2rem); color:var(--text); margin-bottom:0.75rem; }
+    .page-header p { color:var(--text-2); font-weight:300; max-width:640px; }
+    .code-box { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:1rem 1.25rem; font-family:monospace; font-size:0.82rem; color:var(--text-2); line-height:1.7; margin-top:1.25rem; overflow-x:auto; }
+    .code-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.07em; color:var(--purple); font-weight:500; margin-bottom:8px; font-family:'DM Sans',sans-serif; }
+    main { max-width:860px; margin:0 auto; padding:2.5rem 2rem 5rem; }
+    .section { margin-bottom:3rem; }
+    .section-header { font-family:'DM Serif Display',serif; font-size:1.2rem; color:var(--text); margin-bottom:1rem; padding-bottom:0.5rem; border-bottom:1px solid var(--border); }
+    .badge { display:inline-block; font-size:0.7rem; padding:2px 8px; border-radius:99px; font-weight:600; margin-right:6px; }
+    .badge-critical { background:var(--red-bg); color:var(--red); border:1px solid rgba(248,113,113,0.25); }
+    .badge-serious { background:var(--amber-bg); color:var(--amber); border:1px solid rgba(251,191,36,0.25); }
+    .badge-moderate { background:rgba(96,165,250,0.07); color:var(--blue); border:1px solid rgba(96,165,250,0.25); }
+    .badge-pass { background:var(--green-bg); color:var(--green); border:1px solid rgba(74,222,128,0.25); }
+    .item { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:1.1rem 1.25rem; margin-bottom:0.75rem; }
+    .item-title { font-size:0.88rem; font-weight:500; color:var(--text); margin-bottom:0.5rem; }
+    .item-note { font-size:0.8rem; color:var(--text-3); margin-top:0.4rem; font-style:italic; }
+    code { background:var(--bg3); padding:1px 6px; border-radius:3px; font-size:0.85em; color:var(--text-2); font-family:monospace; }
+    .visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
+    footer a { color:var(--text-3); text-decoration:none; }
+    @media(max-width:620px) { nav.site-nav, main, .page-header { padding-left:1.25rem; padding-right:1.25rem; } }
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <a href="../31-Axe-Core-Cypress-Playwright.html" class="nav-back">← Back to Blog 31</a>
+</nav>
+<header class="page-header">
+  <div class="pg-label">A11y Test Playground: CI Target</div>
+  <h1>Axe-Core CI Playground</h1>
+  <p>Point your Playwright or Cypress axe-core test at this page. It contains deliberate violations and correct implementations. Verify your pipeline catches the failures and passes the correct ones.</p>
+  <div class="code-label">Playwright: scan this page</div>
+  <pre class="code-box" style="white-space:pre;font-family:monospace;font-size:0.82rem;line-height:1.7;overflow-x:auto;">import AxeBuilder from '@axe-core/playwright';
+
+test('playground has expected violations', async ({ page }) =&gt; {
+  await page.goto('/blogs/accessibility/A11y-Test-Playground/31 A11y Test Playground - Axe Core CI.html');
+  const results = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa'])
+    .analyze();
+  // Should find: Critical (missing alt, missing label, empty button)
+  //              Serious (colour contrast, invalid ARIA)
+  //              Moderate (duplicate ID)
+  console.log('Violations:', results.violations.length);
+  console.log('Incomplete:', results.incomplete.length);
+});</pre>
+</header>
+
+<main id="main-content">
+
+  <!-- VIOLATIONS SECTION -->
+  <div class="section">
+    <div class="section-header">Violations: axe-core should flag these</div>
+
+    <div class="item">
+      <div class="item-title"><span class="badge badge-critical">Critical</span> Image with no alt text: rule: image-alt · WCAG 1.1.1</div>
+      <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='60'%3E%3Crect width='120' height='60' fill='%231e1e1e' rx='3'/%3E%3Crect x='10' y='35' width='10' height='17' fill='%234ade80'/%3E%3Crect x='26' y='25' width='10' height='27' fill='%234ade80'/%3E%3Crect x='42' y='15' width='10' height='37' fill='%234ade80'/%3E%3C/svg%3E" width="120" height="60" style="border-radius:3px;display:block;margin-top:0.5rem;" />
+      <div class="item-note">No alt attribute on this image. axe reports: Critical: image-alt</div>
+    </div>
+
+    <div class="item">
+      <div class="item-title"><span class="badge badge-critical">Critical</span> Input with no label: rule: label · WCAG 1.3.1</div>
+      <input type="text" placeholder="Your name" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:0.88rem;color:var(--text);font-family:'DM Sans',sans-serif;width:100%;max-width:280px;margin-top:0.5rem;" />
+      <div class="item-note">No label element, no aria-label, no aria-labelledby. axe reports: Critical: label</div>
+    </div>
+
+    <div class="item">
+      <div class="item-title"><span class="badge badge-critical">Critical</span> Button with no accessible name: rule: button-name · WCAG 4.1.2</div>
+      <button style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;width:40px;height:40px;cursor:pointer;margin-top:0.5rem;display:inline-flex;align-items:center;justify-content:center;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c8c8c8" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      </button>
+      <div class="item-note">Icon button with no text and no aria-label. axe reports: Critical: button-name</div>
+    </div>
+
+    <div class="item">
+      <div class="item-title"><span class="badge badge-serious">Serious</span> Colour contrast failure: rule: color-contrast · WCAG 1.4.3</div>
+      <div style="background:#ffffff;border-radius:6px;padding:0.75rem 1rem;margin-top:0.5rem;">
+        <p style="color:#aaaaaa;margin:0;font-size:0.95rem;">Low contrast text: #aaaaaa on white: approximately 2.32:1. Required: 4.5:1.</p>
+      </div>
+      <div class="item-note">axe reports: Serious: color-contrast · ratio ~2.32:1</div>
+    </div>
+
+    <div class="item">
+      <div class="item-title"><span class="badge badge-serious">Serious</span> Invalid ARIA role: rule: aria-roles · WCAG 4.1.2</div>
+      <div role="tooltip-panel" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:0.75rem 1rem;margin-top:0.5rem;font-size:0.88rem;color:var(--text-2);">
+        Element with <code>role="tooltip-panel"</code>: not a valid ARIA role
+      </div>
+      <div class="item-note">axe reports: Serious: aria-roles</div>
+    </div>
+
+    <div class="item">
+      <div class="item-title"><span class="badge badge-moderate">Moderate</span> Duplicate ID: rule: duplicate-id-aria · WCAG 4.1.1</div>
+      <div style="display:flex;flex-direction:column;gap:0.5rem;margin-top:0.5rem;">
+        <label for="pg31-dup" style="font-size:0.88rem;color:var(--text-2);">Email</label>
+        <input id="pg31-dup" type="email" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:0.88rem;color:var(--text);font-family:'DM Sans',sans-serif;width:100%;max-width:280px;" />
+        <label for="pg31-dup" style="font-size:0.88rem;color:var(--text-2);">Phone</label>
+        <input id="pg31-dup" type="tel" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:0.88rem;color:var(--text);font-family:'DM Sans',sans-serif;width:100%;max-width:280px;" />
+      </div>
+      <div class="item-note">Both inputs share id="pg31-dup". axe reports: Moderate: duplicate-id-aria</div>
+    </div>
+  </div>
+
+  <!-- PASSING SECTION -->
+  <div class="section">
+    <div class="section-header">Passing implementations: axe-core should report zero violations here</div>
+
+    <div class="item">
+      <div class="item-title"><span class="badge badge-pass">Pass</span> Image with descriptive alt text</div>
+      <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='60'%3E%3Crect width='120' height='60' fill='%231e1e1e' rx='3'/%3E%3Crect x='10' y='35' width='10' height='17' fill='%234ade80'/%3E%3Crect x='26' y='25' width='10' height='27' fill='%234ade80'/%3E%3Crect x='42' y='15' width='10' height='37' fill='%234ade80'/%3E%3C/svg%3E"
+        alt="Bar chart showing defect counts decreasing from Q1 to Q3"
+        width="120" height="60" style="border-radius:3px;display:block;margin-top:0.5rem;" />
+      <div class="item-note">Meaningful alt text. axe passes: image-alt ✓</div>
+    </div>
+
+    <div class="item">
+      <div class="item-title"><span class="badge badge-pass">Pass</span> Correctly labelled form</div>
+      <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:0.5rem;max-width:320px;">
+        <div>
+          <label for="pg31-name-pass" style="display:block;font-size:0.88rem;color:var(--text-2);margin-bottom:4px;font-weight:500;">Full name <span class="visually-hidden">(required)</span><span aria-hidden="true" style="color:var(--red);">*</span></label>
+          <input id="pg31-name-pass" type="text" required aria-required="true" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:0.88rem;color:var(--text);font-family:'DM Sans',sans-serif;width:100%;" />
+        </div>
+        <div>
+          <label for="pg31-email-pass" style="display:block;font-size:0.88rem;color:var(--text-2);margin-bottom:4px;font-weight:500;">Email address <span class="visually-hidden">(required)</span><span aria-hidden="true" style="color:var(--red);">*</span></label>
+          <input id="pg31-email-pass" type="email" required aria-required="true" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:0.88rem;color:var(--text);font-family:'DM Sans',sans-serif;width:100%;" />
+        </div>
+        <button style="background:var(--green);color:#000;border:none;border-radius:6px;padding:10px 24px;font-size:0.88rem;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;align-self:flex-start;">Submit form</button>
+      </div>
+      <div class="item-note">Labels via for/id, aria-required, descriptive button text. axe passes: label, button-name ✓</div>
+    </div>
+
+    <div class="item">
+      <div class="item-title"><span class="badge badge-pass">Pass</span> Icon button with aria-label</div>
+      <button aria-label="Open chat" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;width:40px;height:40px;cursor:pointer;margin-top:0.5rem;display:inline-flex;align-items:center;justify-content:center;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c8c8c8" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      </button>
+      <div class="item-note">aria-label="Open chat" provides accessible name. axe passes: button-name ✓</div>
+    </div>
+  </div>
+
+  <!-- INCOMPLETE SECTION -->
+  <div class="section">
+    <div class="section-header">Incomplete: axe needs manual verification on these</div>
+
+    <div class="item">
+      <div class="item-title"><span class="badge" style="background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,0.25);">Incomplete</span> Text on gradient background: contrast cannot be computed</div>
+      <div style="background:linear-gradient(135deg,#1e3a5f,#4a1a6b);border-radius:6px;padding:1.25rem;margin-top:0.5rem;">
+        <p style="color:#c8c8c8;margin:0;font-size:0.95rem;">Text on gradient background. axe cannot determine contrast ratio automatically. Appears in the Incomplete tab: requires manual DevTools colour picker check.</p>
+      </div>
+      <div class="item-note">axe Incomplete: color-contrast: background colour could not be determined</div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; <a href="../31-Axe-Core-Cypress-Playwright.html">Back to Blog 31</a>
+  </p>
+</footer>
+</body>
+</html>
