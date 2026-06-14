@@ -374,7 +374,7 @@ button:focus {
     <div style="font-size:1.1rem;line-height:1;padding-top:2px;" aria-hidden="true">&#127919;</div>
     <div>
       <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--amber);font-weight:500;margin-bottom:4px;">Practice these yourself</div>
-      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">All five failure patterns below, plus a passing example, are available as an interactive keyboard-only test in the <a href="A11y-Test-Playground/A11y Test Playground - Focus Indicators.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Focus Indicator Playground</a>. Unplug your mouse and find each one.</div>
+      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">All five failure patterns below, plus a passing example, are available as an interactive keyboard-only test in the <a href="A11y-Test-Playground/10 A11y Test Playground - Focus Indicators.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Focus Indicator Playground</a>. Unplug your mouse and find each one.</div>
     </div>
   </div>
 
@@ -419,13 +419,26 @@ button:focus {
   </div>
 
   <!-- 6 -->
+  <h2 id="how-to-test-tiers">How to Test: Tiers and Platform Coverage</h2>
+  <h3>Tier 1: Pipeline automation</h3>
+  <p>axe-core does not check focus indicator visibility: CSS :focus styles cannot be evaluated programmatically. The pipeline cannot catch this. The only automated signal is if an element has <code>outline: none</code> without a replacement: some linting rules flag this but it is not reliable. Focus indicator testing is Tier 3.</p>
+  <h3>Tier 2: Semi-automated tools</h3>
+  <p><span class="tool">Accessibility Insights</span> Tab Stops draws the focus path. It does not evaluate whether the indicator is visible enough: but it shows you where focus goes so you can check each stop visually. Combine Tab Stops with manual visual inspection of each focused element.</p>
+  <h3>Tier 3: Manual: platform coverage</h3>
+  <ul>
+    <li><strong>Windows Chrome/Firefox:</strong> Tab through every interactive element. Every focus state must be visible. Check against the 3:1 contrast minimum for focus indicators (WCAG 1.4.11).</li>
+    <li><strong>Mac Safari:</strong> Enable full keyboard access. Same walkthrough. Safari has different default focus styles to Chrome.</li>
+    <li><strong>iOS Safari:</strong> External keyboard connected to iPhone. Tab through interactive elements. Verify focus indicator visible on each.</li>
+    <li><strong>Android Chrome:</strong> External keyboard. Same check.</li>
+  </ul>
+
   <h2 id="how-to-test">6. How to Test Focus Indicators</h2>
 
   <div style="background:var(--amber-bg);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:0 0 1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
     <div style="font-size:1.1rem;line-height:1;padding-top:2px;" aria-hidden="true">&#127919;</div>
     <div>
       <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--amber);font-weight:500;margin-bottom:4px;">Practice these yourself</div>
-      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">All failure patterns are available as interactive demos in the <a href="A11y-Test-Playground/A11y Test Playground - Focus Indicators.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Focus Indicators Playground</a>. For mobile testing steps, see the <a href="A11y-Test-Playground/A11y Focus Indicators Mobile Testing Guide.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Mobile Testing Guide</a>.</div>
+      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">All failure patterns are available as interactive demos in the <a href="A11y-Test-Playground/10 A11y Test Playground - Focus Indicators.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Focus Indicators Playground</a>. For mobile testing steps, see the <a href="A11y-Test-Playground/11 A11y Focus Indicators Mobile Testing Guide.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Mobile Testing Guide</a>.</div>
     </div>
   </div>
 
@@ -529,6 +542,21 @@ button:focus {
     <div class="label">The rule</div>
     <p>Tab through the page. If you cannot see where focus is at any point, that is a defect. It is that simple. <a href="10-Keyboard-Testing.html" class="blog-ref">Blog 10 has the full keyboard testing sequence</a> if you need the complete walkthrough.</p>
   </div>
+
+
+  <h2 id="mobile-testing">Testing on Mobile Devices</h2>
+  <p>The principles and checks in this blog apply equally to native mobile apps. Use these apps to practise on real implementations on iOS and Android:</p>
+  <div class="table-wrap"><table>
+    <caption style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Apps for mobile accessibility testing</caption>
+    <thead><tr><th scope="col">App</th><th scope="col">Platform</th><th scope="col">What to test</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://dequeuniversity.com/demo/mars/" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Deque University Mars Demo</a></td><td>iOS + Android (web)</td><td>Real accessibility failures across forms, images, headings and dynamic content</td></tr>
+      <tr><td><a href="https://apps.apple.com/us/app/appt-app-accessibility/id1527923025" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Appt App</a></td><td>iOS</td><td>Native iOS correct and incorrect implementations</td></tr>
+      <tr><td><a href="https://play.google.com/store/apps/details?id=nl.appt" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Appt App</a></td><td>Android</td><td>Android equivalent: practise TalkBack on native accessibility failures</td></tr>
+      <tr><td><a href="https://play.google.com/store/apps/details?id=com.google.android.apps.accessibility.auditor" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Accessibility Scanner</a></td><td>Android</td><td>Automated scan of native Android screens for missing labels and contrast failures</td></tr>
+      <tr><td><a href="https://apps.apple.com/us/app/accessibility-checker-ai-eaa/id1095478187" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Accessibility Checker AI EAA</a></td><td>iOS</td><td>Scan iOS screens for missing accessibility labels on native UI elements</td></tr>
+    </tbody>
+  </table></div>
 
   <div class="series-nav">
     <span class="label">Navigate the series</span>
