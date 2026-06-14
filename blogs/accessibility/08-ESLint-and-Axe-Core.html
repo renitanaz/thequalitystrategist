@@ -178,10 +178,20 @@
       <li><a href="#ci-gate">Setting up a CI/CD accessibility gate</a></li>
       <li><a href="#what-they-miss">What these tools miss</a></li>
       <li><a href="#qa-angle">How QA uses this layer</a></li>
+      <li><a href="#how-to-test">How to test: tiers, platforms and practice</a></li>
+      <li><a href="#mobile-testing">Mobile testing</a></li>
     </ol>
   </nav>
 
   <!-- 1 -->
+  <h2 id="how-to-test">How to Test With ESLint and axe-Core</h2>
+  <h3>Tier 1: Pipeline automation</h3>
+  <p><span class="tool">eslint-plugin-jsx-a11y</span> runs at lint stage: before the browser, before the build. Configure it with the recommended ruleset in <code>.eslintrc</code>. Add <span class="tool">axe-core</span> in Playwright or Cypress for runtime scanning after interactions. Run both on every commit. Use the <a href="A11y-Test-Playground/31 A11y Test Playground - Axe Core CI.html" style="color:var(--blue);">Axe-Core CI Playground</a> to test your pipeline against deliberate violations.</p>
+  <h3>Tier 2: Semi-automated tools</h3>
+  <p>After the pipeline flags a violation, use <span class="tool">axe DevTools</span> in the browser to locate the element visually. axe-core in CI and axe DevTools in the browser use the same rule engine: the violation is identical, the browser adds an element highlight for faster location.</p>
+  <h3>Tier 3: Manual</h3>
+  <p>ESLint and axe-core together cover the automated subset only. Manual follow-up is required for: keyboard navigation logic, screen reader announcements on NVDA + Firefox (Windows), VoiceOver + Safari (Mac), focus order, alt text quality, and iOS VoiceOver and Android TalkBack on physical devices.</p>
+
   <h2 id="three-layers">1. The Three Automated Layers</h2>
 
   <p>Automated accessibility checking happens at three points in the development workflow. Each catches different things. None replaces the others.</p>
@@ -721,6 +731,21 @@ jobs:
   </div>
 
   <!-- SERIES NAV -->
+
+  <h2 id="mobile-testing">Testing on Mobile Devices</h2>
+  <p>The principles and checks in this blog apply equally to native mobile apps. Use these apps to practise on real implementations on iOS and Android:</p>
+  <div class="table-wrap"><table>
+    <caption style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Apps for mobile accessibility testing</caption>
+    <thead><tr><th scope="col">App</th><th scope="col">Platform</th><th scope="col">What to test</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://dequeuniversity.com/demo/mars/" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Deque University Mars Demo</a></td><td>iOS + Android (web)</td><td>Real accessibility failures across forms, images, headings and dynamic content</td></tr>
+      <tr><td><a href="https://apps.apple.com/us/app/appt-app-accessibility/id1527923025" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Appt App</a></td><td>iOS</td><td>Native iOS correct and incorrect implementations</td></tr>
+      <tr><td><a href="https://play.google.com/store/apps/details?id=nl.appt" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Appt App</a></td><td>Android</td><td>Android equivalent</td></tr>
+      <tr><td><a href="https://play.google.com/store/apps/details?id=com.google.android.apps.accessibility.auditor" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Accessibility Scanner</a></td><td>Android</td><td>Automated scan of native Android screens</td></tr>
+      <tr><td><a href="https://apps.apple.com/us/app/accessibility-checker-ai-eaa/id1095478187" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Accessibility Checker AI EAA</a></td><td>iOS</td><td>Scan iOS screens for missing accessibility labels</td></tr>
+    </tbody>
+  </table></div>
+
   <div class="series-nav">
     <span class="label">Navigate the series</span>
     <div class="nav-pair">
