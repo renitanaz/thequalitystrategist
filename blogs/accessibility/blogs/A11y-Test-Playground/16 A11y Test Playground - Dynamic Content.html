@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>16 A11y Test Playground - Dynamic Content | The Quality Strategist</title>
+  <meta name="description" content="Practice testing ARIA live region failures. Eight interactive scenarios covering toast notifications, filter results, loading states, form errors and more." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+      --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+      --green:#4ade80; --green-bg:rgba(74,222,128,0.07);
+      --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07);
+      --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07);
+      --red:#f87171; --red-bg:rgba(248,113,113,0.07);
+      --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.07);
+      --teal:#2dd4bf; --teal-bg:rgba(45,212,191,0.07);
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
+    .skip-link:focus { top:0; }
+    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
+    .nav-back { font-size:0.82rem; color:var(--text-3); text-decoration:none; }
+    .nav-back:hover { color:var(--text-2); }
+    .page-header { max-width:860px; margin:0 auto; padding:3.5rem 2rem 2rem; border-bottom:1px solid var(--border); }
+    .pg-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--teal); font-weight:500; margin-bottom:0.75rem; }
+    .page-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.6rem,3.5vw,2.2rem); color:var(--text); margin-bottom:0.75rem; }
+    .page-header p { color:var(--text-2); font-weight:300; max-width:640px; }
+    .how-to { display:flex; align-items:flex-start; gap:8px; background:var(--amber-bg); border:1px solid rgba(251,191,36,0.2); border-radius:8px; padding:0.7rem 1rem; margin-top:1.25rem; font-size:0.85rem; color:var(--amber); }
+    main { max-width:860px; margin:0 auto; padding:2.5rem 2rem 5rem; }
+    .scenario { margin-bottom:3rem; }
+    .scenario-header { display:flex; align-items:center; gap:12px; margin-bottom:1rem; }
+    .scenario-num { width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-family:'DM Serif Display',serif; font-size:1rem; font-weight:700; flex-shrink:0; }
+    .num-fail { background:var(--red-bg); color:var(--red); border:1px solid rgba(248,113,113,0.2); }
+    .num-pass { background:var(--green-bg); color:var(--green); border:1px solid rgba(74,222,128,0.2); }
+    .scenario-title { font-size:1rem; font-weight:500; color:var(--text); }
+    .scenario-meta { font-size:0.75rem; color:var(--text-3); margin-top:2px; }
+    .scenario-instruction { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:0.85rem 1.1rem; margin-bottom:1rem; font-size:0.85rem; color:var(--text-2); line-height:1.6; }
+    .scenario-instruction strong { color:var(--text); }
+    .wcag-tag { display:inline-block; font-size:0.7rem; background:var(--bg3); border:1px solid var(--border); border-radius:99px; padding:1px 8px; color:var(--text-3); margin-left:8px; font-weight:500; }
+    .tool-tag { display:inline-block; font-size:0.7rem; background:var(--purple-bg); border:1px solid rgba(167,139,250,0.2); border-radius:99px; padding:1px 8px; color:var(--purple); margin-left:6px; font-weight:500; }
+    .demo { border-radius:10px; overflow:hidden; border:1px solid var(--border); margin-bottom:1rem; }
+    .demo-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-3); font-weight:500; padding:8px 14px; background:var(--bg3); border-bottom:1px solid var(--border); }
+    .demo-inner { padding:1.5rem; background:var(--bg2); }
+    .announced { background:var(--bg3); border-left:3px solid var(--amber); border-radius:0 6px 6px 0; padding:0.6rem 0.9rem; font-size:0.82rem; color:var(--text-2); margin-top:0.75rem; font-style:italic; }
+    .announced strong { color:var(--amber); font-style:normal; }
+    .result-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:1rem; }
+    .badge { font-size:0.72rem; padding:3px 10px; border-radius:99px; font-weight:600; }
+    .badge-fail { background:var(--red-bg); color:var(--red); border:1px solid rgba(248,113,113,0.25); }
+    .badge-pass { background:var(--green-bg); color:var(--green); border:1px solid rgba(74,222,128,0.25); }
+    .badge-wcag { background:var(--bg3); color:var(--text-3); border:1px solid var(--border); }
+    hr.divider { border:none; border-top:1px solid var(--border); margin:2.5rem 0; }
+    code { background:var(--bg3); padding:1px 6px; border-radius:3px; font-size:0.85em; color:var(--text-2); font-family:monospace; }
+    .d-btn { background:var(--blue); color:#000; border:none; border-radius:6px; padding:9px 20px; font-size:0.88rem; font-family:'DM Sans',sans-serif; font-weight:500; cursor:pointer; }
+    .d-btn:focus-visible { outline:3px solid var(--blue); outline-offset:3px; }
+    .d-btn.secondary { background:var(--bg3); color:var(--text-2); border:1px solid var(--border); }
+    .d-btn.secondary:focus-visible { outline:3px solid var(--teal); }
+    .visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
+    footer a { color:var(--text-3); text-decoration:none; }
+    @media(max-width:620px) { nav.site-nav, main, .page-header { padding-left:1.25rem; padding-right:1.25rem; } }
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <a href="../16-Dynamic-Content-ARIA-Live-Regions.html" class="nav-back">← Back to Blog 16</a>
+</nav>
+<header class="page-header">
+  <div class="pg-label">A11y Test Playground</div>
+  <h1>Dynamic Content Playground</h1>
+  <p>Eight interactive scenarios. Enable NVDA, VoiceOver or TalkBack, move focus away from each demo area, then trigger the update. Listen for what gets announced: and what doesn't.</p>
+  <div class="how-to" role="note">
+    <span aria-hidden="true">&#127919;</span>
+    <span><strong>Key rule:</strong> always move focus to a heading or paragraph BEFORE triggering each scenario. Live regions only prove themselves when focus is elsewhere.</span>
+  </div>
+</header>
+
+<main id="main-content">
+
+  <!-- S1: toast no live region -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">1</div>
+      <div>
+        <div class="scenario-title">Toast notification with no live region</div>
+        <div class="scenario-meta">Visually appears. Screen reader hears nothing.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Focus on the paragraph below. Click the button. Listen to NVDA.
+      <span class="wcag-tag">WCAG 4.1.3</span><span class="tool-tag">NVDA</span><br><br>
+      <strong>What to look for:</strong> The toast slides in visually. NVDA announces nothing because there is no <code>role="status"</code> or <code>aria-live</code> on the container.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 1: toast with no live region</div>
+      <div class="demo-inner" style="position:relative;">
+        <p id="s1-focus-target" tabindex="-1" style="font-size:0.88rem;color:var(--text-2);margin-bottom:1rem;">Focus here first, then click the button below.</p>
+        <button class="d-btn secondary" onclick="
+          var t = document.getElementById('s1-toast');
+          t.style.display='flex';
+          setTimeout(function(){ t.style.display='none'; }, 3000);
+          return false;">Add to cart</button>
+        <!-- NO aria-live, NO role -->
+        <div id="s1-toast" style="display:none;position:absolute;top:0;right:0;background:#0d2a0d;border:1px solid #4ade80;border-radius:6px;padding:8px 14px;font-size:0.85rem;color:#4ade80;align-items:center;gap:8px;">
+          ✓ Item added to cart
+        </div>
+        <div class="announced"><strong>NVDA announces:</strong> nothing: the toast is visually visible but has no live region</div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 4.1.3</span>
+          <span class="badge badge-wcag">No role="status" or aria-live on toast container</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S2: live region created at injection -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">2</div>
+      <div>
+        <div class="scenario-title">Live region container created and populated simultaneously</div>
+        <div class="scenario-meta">Has role="status". Still silent. Timing is everything.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Focus on the paragraph. Click the button. Listen to NVDA.
+      <span class="wcag-tag">WCAG 4.1.3</span><span class="tool-tag">NVDA</span><br><br>
+      <strong>What to look for:</strong> The div is created with <code>role="status"</code> AND populated in the same JS call. Most screen readers will not announce it.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 2: live region created at injection time</div>
+      <div class="demo-inner">
+        <p tabindex="-1" style="font-size:0.88rem;color:var(--text-2);margin-bottom:1rem;">Focus here first, then click.</p>
+        <button class="d-btn secondary" onclick="
+          var existing = document.getElementById('s2-live');
+          if(existing) existing.remove();
+          var d = document.createElement('div');
+          d.id = 's2-live';
+          d.setAttribute('role','status');
+          d.textContent = 'Search complete: 24 results found';
+          document.getElementById('s2-container').appendChild(d);
+          return false;">Run search</button>
+        <div id="s2-container" style="margin-top:0.75rem;"></div>
+        <div class="announced"><strong>NVDA announces:</strong> nothing (or unreliably): container and content created simultaneously. Screen readers need the container to pre-exist in the DOM.</div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 4.1.3</span>
+          <span class="badge badge-wcag">Container must pre-exist empty: then populate via JS</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S3: filter results silent -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">3</div>
+      <div>
+        <div class="scenario-title">Filter results update silently</div>
+        <div class="scenario-meta">User applies filter. Results change. No announcement.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Focus on the heading above the filter. Click a filter button. Listen to NVDA.
+      <span class="wcag-tag">WCAG 4.1.3</span><span class="tool-tag">NVDA</span><br><br>
+      <strong>What to look for:</strong> Results update visually. No announcement of what changed or how many results remain.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 3: filter with no live region</div>
+      <div class="demo-inner">
+        <div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;">
+          <button class="d-btn secondary" onclick="filterResults('all')">All</button>
+          <button class="d-btn secondary" onclick="filterResults('design')">Design</button>
+          <button class="d-btn secondary" onclick="filterResults('dev')">Development</button>
+        </div>
+        <!-- NO aria-live on results container -->
+        <div id="s3-results">
+          <div data-cat="design" style="padding:6px 10px;background:var(--bg3);border-radius:5px;margin-bottom:6px;font-size:0.85rem;color:var(--text-2);">Design system review</div>
+          <div data-cat="dev" style="padding:6px 10px;background:var(--bg3);border-radius:5px;margin-bottom:6px;font-size:0.85rem;color:var(--text-2);">API integration testing</div>
+          <div data-cat="design" style="padding:6px 10px;background:var(--bg3);border-radius:5px;margin-bottom:6px;font-size:0.85rem;color:var(--text-2);">Colour contrast audit</div>
+          <div data-cat="dev" style="padding:6px 10px;background:var(--bg3);border-radius:5px;margin-bottom:6px;font-size:0.85rem;color:var(--text-2);">CI/CD pipeline setup</div>
+        </div>
+        <div class="announced"><strong>NVDA announces:</strong> nothing when filter is applied: no live region on results container</div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 4.1.3</span>
+          <span class="badge badge-wcag">Add aria-live="polite" and update result count text</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S4: loading state no completion -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">4</div>
+      <div>
+        <div class="scenario-title">Loading spinner: no completion announcement</div>
+        <div class="scenario-meta">Loading starts. Loading ends. NVDA hears the start. Never the end.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Focus elsewhere. Click Load. Wait 3 seconds. Listen to NVDA.
+      <span class="wcag-tag">WCAG 4.1.3</span><span class="tool-tag">NVDA</span><br><br>
+      <strong>What to look for:</strong> "Loading..." may be announced (if there is a live region on the spinner). But when loading completes, nothing is announced.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 4: loading with no completion announcement</div>
+      <div class="demo-inner">
+        <p tabindex="-1" style="font-size:0.88rem;color:var(--text-2);margin-bottom:1rem;">Focus here first, then click Load.</p>
+        <button class="d-btn secondary" id="s4-btn" onclick="startLoading()">Load content</button>
+        <div id="s4-spinner" style="display:none;margin-top:0.75rem;color:var(--text-3);font-size:0.88rem;" aria-live="polite">Loading...</div>
+        <div id="s4-content" style="display:none;margin-top:0.75rem;background:var(--bg3);border-radius:6px;padding:1rem;font-size:0.85rem;color:var(--text-2);">
+          Content loaded successfully. Here are your results.
+          <!-- NO live region update on completion -->
+        </div>
+        <div class="announced"><strong>NVDA announces:</strong> "Loading..." when spinner appears. When content loads, silence: no live region update on completion.</div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 4.1.3</span>
+          <span class="badge badge-wcag">Update live region with completion message when load finishes</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S5: aria-atomic missing -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">5</div>
+      <div>
+        <div class="scenario-title">aria-atomic missing: partial announcement only</div>
+        <div class="scenario-meta">Cart counter updates. NVDA announces just the number.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Focus on the paragraph. Click Add. Listen carefully to NVDA.
+      <span class="wcag-tag">WCAG 4.1.3</span><span class="tool-tag">NVDA</span><br><br>
+      <strong>What to look for:</strong> NVDA announces "2" when the count changes from 1 to 2: not "2 items in cart." The surrounding context is missing because <code>aria-atomic</code> is not set.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 5: live region without aria-atomic</div>
+      <div class="demo-inner">
+        <p tabindex="-1" style="font-size:0.88rem;color:var(--text-2);margin-bottom:1rem;">Focus here first, then click Add item.</p>
+        <!-- aria-live but NO aria-atomic -->
+        <div aria-live="polite" id="s5-cart" style="display:inline-flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 14px;margin-bottom:1rem;font-size:0.88rem;color:var(--text-2);">
+          Cart: <strong id="s5-count" style="color:var(--text);">0</strong> items
+        </div>
+        <br>
+        <button class="d-btn secondary" onclick="
+          var c = document.getElementById('s5-count');
+          c.textContent = parseInt(c.textContent) + 1;
+          return false;">Add item</button>
+        <div class="announced"><strong>NVDA announces:</strong> "1" (or just the updated number): no surrounding context. aria-atomic="true" would announce "Cart: 1 items" as a complete phrase.</div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 4.1.3</span>
+          <span class="badge badge-wcag">Add aria-atomic="true" to announce full region text</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S6: wrong role - alert for non-critical -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">6</div>
+      <div>
+        <div class="scenario-title">role="alert" used for non-critical update</div>
+        <div class="scenario-meta">Interrupts mid-sentence for a low-priority message.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Start reading any page content with NVDA (<span style="font-family:monospace;font-size:0.82em;background:var(--bg3);padding:1px 5px;border-radius:3px;">Insert+Down Arrow</span>). Click Trigger while NVDA is reading.
+      <span class="wcag-tag">WCAG 4.1.3</span><span class="tool-tag">NVDA</span><br><br>
+      <strong>What to look for:</strong> NVDA interrupts mid-sentence to announce a non-critical "tip" message. Should be <code>role="status"</code>.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 6: role="alert" on a tips notification</div>
+      <div class="demo-inner">
+        <p style="font-size:0.88rem;color:var(--text-2);margin-bottom:1rem;">Start reading this paragraph with NVDA (Insert+Down Arrow), then quickly click the button. NVDA will interrupt to announce the tip: which is disruptive since this is not a critical message.</p>
+        <button class="d-btn secondary" onclick="
+          var m = document.getElementById('s6-msg');
+          m.textContent = 'Tip: you can press Ctrl+K to open the command palette.';
+          setTimeout(function(){ m.textContent=''; }, 4000);
+          return false;">Trigger tip</button>
+        <!-- role="alert" on a non-critical tip -->
+        <div id="s6-msg" role="alert" style="margin-top:0.75rem;min-height:24px;font-size:0.85rem;color:var(--amber);"></div>
+        <div class="announced"><strong>NVDA announces:</strong> interrupts whatever it was reading to say "Tip: you can press Ctrl+K to open the command palette." This should be role="status" so it waits politely.</div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 4.1.3</span>
+          <span class="badge badge-wcag">Use role="status" for non-critical updates</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S7: character counter every keystroke -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">7</div>
+      <div>
+        <div class="scenario-title">Character counter announcing on every keystroke</div>
+        <div class="scenario-meta">Live region is correct. Firing rate is not.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Enable NVDA. Type in the textarea below.
+      <span class="wcag-tag">WCAG 4.1.3</span><span class="tool-tag">NVDA</span><br><br>
+      <strong>What to look for:</strong> NVDA announces the character count on every single keystroke. The screen reader becomes unusable as a typing aid.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 7: character counter on every keystroke</div>
+      <div class="demo-inner">
+        <textarea id="s7-textarea" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:0.88rem;color:var(--text);font-family:'DM Sans',sans-serif;resize:vertical;min-height:80px;" placeholder="Type here..." maxlength="200" oninput="
+          var count = this.value.length;
+          document.getElementById('s7-counter').textContent = count + ' / 200 characters';
+        "></textarea>
+        <!-- Fires on EVERY keystroke — should debounce or use aria-live="off" while typing -->
+        <div id="s7-counter" aria-live="polite" style="font-size:0.82rem;color:var(--text-3);margin-top:6px;">0 / 200 characters</div>
+        <div class="announced"><strong>NVDA announces:</strong> "1 / 200 characters", "2 / 200 characters", "3 / 200 characters"... on every keystroke. Should announce only when paused, or at intervals (e.g. every 50 characters).</div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 4.1.3</span>
+          <span class="badge badge-wcag">Debounce updates: announce on pause or at intervals</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S8: PASS — correct implementations -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-pass">8</div>
+      <div>
+        <div class="scenario-title">Correct live regions: passing examples</div>
+        <div class="scenario-meta">Toast with role="status". Alert for errors. Atomic cart counter. Debounced character count.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Focus on the heading above, then trigger each action. Listen to NVDA for each announcement.
+      <span class="wcag-tag">WCAG 4.1.3</span><span class="tool-tag">NVDA</span><br><br>
+      <strong>What to look for:</strong> Each update announces correctly: status waits politely, alert fires immediately, cart announces full context, character count only announces on pause.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 8: correct live region implementations</div>
+      <div class="demo-inner" style="display:flex;flex-direction:column;gap:1.5rem;position:relative;">
+
+        <!-- Pre-existing live region containers -->
+        <div id="s8-toast-region" role="status" aria-live="polite" aria-atomic="true" class="visually-hidden"></div>
+        <div id="s8-alert-region" role="alert" aria-live="assertive" aria-atomic="true" class="visually-hidden"></div>
+
+        <!-- Toast -->
+        <div>
+          <p style="font-size:0.82rem;color:var(--text-3);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.06em;font-weight:500;">Success toast (role="status")</p>
+          <button class="d-btn secondary" onclick="
+            var r = document.getElementById('s8-toast-region');
+            r.textContent = 'Item added to cart';
+            var t = document.getElementById('s8-toast-visual');
+            t.style.display='flex';
+            setTimeout(function(){ t.style.display='none'; r.textContent=''; }, 3000);
+            return false;">Add to cart</button>
+          <div id="s8-toast-visual" style="display:none;margin-top:8px;background:#0d2a0d;border:1px solid #4ade80;border-radius:6px;padding:8px 14px;font-size:0.85rem;color:#4ade80;">✓ Item added to cart</div>
+          <div class="announced"><strong>NVDA announces:</strong> "Item added to cart": politely, without interrupting ✓</div>
+        </div>
+
+        <!-- Error alert -->
+        <div>
+          <p style="font-size:0.82rem;color:var(--text-3);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.06em;font-weight:500;">Error alert (role="alert")</p>
+          <button class="d-btn secondary" onclick="
+            var r = document.getElementById('s8-alert-region');
+            r.textContent = 'Session expired. Please log in again.';
+            document.getElementById('s8-alert-visual').style.display='block';
+            return false;">Trigger session error</button>
+          <div id="s8-alert-visual" style="display:none;margin-top:8px;background:var(--red-bg);border:1px solid rgba(248,113,113,0.3);border-radius:6px;padding:8px 14px;font-size:0.85rem;color:var(--red);">Session expired. Please log in again.</div>
+          <div class="announced"><strong>NVDA announces:</strong> "Session expired. Please log in again.": immediately, interrupts if needed ✓</div>
+        </div>
+
+        <!-- Atomic cart counter -->
+        <div>
+          <p style="font-size:0.82rem;color:var(--text-3);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.06em;font-weight:500;">Cart counter with aria-atomic="true"</p>
+          <div aria-live="polite" aria-atomic="true" id="s8-cart" style="display:inline-flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 14px;margin-bottom:8px;font-size:0.88rem;color:var(--text-2);">
+            Cart: <strong id="s8-count" style="color:var(--text);">0</strong> items
+          </div>
+          <br>
+          <button class="d-btn secondary" onclick="
+            var c = document.getElementById('s8-count');
+            c.textContent = parseInt(c.textContent) + 1;
+            return false;">Add item</button>
+          <div class="announced"><strong>NVDA announces:</strong> "Cart: 1 items": full context, not just the number ✓</div>
+        </div>
+
+        <div class="result-row">
+          <span class="badge badge-pass">Pass</span>
+          <span class="badge badge-wcag">WCAG 4.1.3</span>
+          <span class="badge badge-wcag">Pre-existing containers · Correct roles · aria-atomic</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; <a href="../16-Dynamic-Content-ARIA-Live-Regions.html">Back to Blog 16</a>
+    &nbsp;·&nbsp; <a href="../16 A11y Dynamic Content Mobile Testing Guide.html">Mobile Testing Guide →</a>
+  </p>
+</footer>
+
+<script>
+function filterResults(cat) {
+  var items = document.querySelectorAll('#s3-results [data-cat]');
+  items.forEach(function(item) {
+    item.style.display = (cat === 'all' || item.dataset.cat === cat) ? 'block' : 'none';
+  });
+  // No live region update: this is the failure
+}
+
+function startLoading() {
+  var btn = document.getElementById('s4-btn');
+  var spinner = document.getElementById('s4-spinner');
+  var content = document.getElementById('s4-content');
+  btn.disabled = true;
+  spinner.style.display = 'block';
+  content.style.display = 'none';
+  setTimeout(function() {
+    spinner.style.display = 'none';
+    content.style.display = 'block';
+    btn.disabled = false;
+    // No live region update on completion: this is the failure
+  }, 3000);
+}
+</script>
+
+</body>
+</html>

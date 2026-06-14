@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>14 A11y Test Playground - Alt Text | The Quality Strategist</title>
+  <meta name="description" content="Practice testing alt text failures and passes. Eight scenarios testable with WAVE, axe DevTools, NVDA, VoiceOver and TalkBack." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+      --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+      --green:#4ade80; --green-bg:rgba(74,222,128,0.07);
+      --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07);
+      --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07);
+      --red:#f87171; --red-bg:rgba(248,113,113,0.07);
+      --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.07);
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
+    .skip-link:focus { top:0; }
+    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
+    .nav-logo:focus-visible { outline:3px solid var(--green); outline-offset:3px; border-radius:3px; }
+    .nav-back { font-size:0.82rem; color:var(--text-3); text-decoration:none; }
+    .nav-back:hover { color:var(--text-2); }
+    .nav-back:focus-visible { outline:3px solid var(--green); outline-offset:3px; border-radius:3px; }
+    .page-header { max-width:860px; margin:0 auto; padding:3.5rem 2rem 2rem; border-bottom:1px solid var(--border); }
+    .pg-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--green); font-weight:500; margin-bottom:0.75rem; }
+    .page-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.6rem,3.5vw,2.2rem); color:var(--text); margin-bottom:0.75rem; }
+    .page-header p { color:var(--text-2); font-weight:300; max-width:640px; }
+    .how-to { display:flex; align-items:flex-start; gap:8px; background:var(--amber-bg); border:1px solid rgba(251,191,36,0.2); border-radius:8px; padding:0.7rem 1rem; margin-top:1.25rem; font-size:0.85rem; color:var(--amber); }
+    main { max-width:860px; margin:0 auto; padding:2.5rem 2rem 5rem; }
+    .scenario { margin-bottom:3rem; }
+    .scenario-header { display:flex; align-items:center; gap:12px; margin-bottom:1rem; }
+    .scenario-num { width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-family:'DM Serif Display',serif; font-size:1rem; font-weight:700; flex-shrink:0; }
+    .num-fail { background:var(--red-bg); color:var(--red); border:1px solid rgba(248,113,113,0.2); }
+    .num-warn { background:var(--amber-bg); color:var(--amber); border:1px solid rgba(251,191,36,0.2); }
+    .num-pass { background:var(--green-bg); color:var(--green); border:1px solid rgba(74,222,128,0.2); }
+    .scenario-title { font-size:1rem; font-weight:500; color:var(--text); }
+    .scenario-meta { font-size:0.75rem; color:var(--text-3); margin-top:2px; }
+    .scenario-instruction { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:0.85rem 1.1rem; margin-bottom:1rem; font-size:0.85rem; color:var(--text-2); line-height:1.6; }
+    .scenario-instruction strong { color:var(--text); }
+    .wcag-tag { display:inline-block; font-size:0.7rem; background:var(--bg3); border:1px solid var(--border); border-radius:99px; padding:1px 8px; color:var(--text-3); margin-left:8px; font-weight:500; }
+    .tool-tag { display:inline-block; font-size:0.7rem; background:var(--purple-bg); border:1px solid rgba(167,139,250,0.2); border-radius:99px; padding:1px 8px; color:var(--purple); margin-left:6px; font-weight:500; }
+    .demo { border-radius:10px; overflow:hidden; border:1px solid var(--border); margin-bottom:1rem; }
+    .demo-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-3); font-weight:500; padding:8px 14px; background:var(--bg3); border-bottom:1px solid var(--border); }
+    .demo-inner { padding:1.5rem; background:var(--bg2); }
+    .announced { background:var(--bg3); border-left:3px solid var(--amber); border-radius:0 6px 6px 0; padding:0.6rem 0.9rem; font-size:0.82rem; color:var(--text-2); margin-top:0.75rem; font-style:italic; }
+    .announced strong { color:var(--amber); font-style:normal; }
+    .result-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:1rem; }
+    .badge { font-size:0.72rem; padding:3px 10px; border-radius:99px; font-weight:600; }
+    .badge-fail { background:var(--red-bg); color:var(--red); border:1px solid rgba(248,113,113,0.25); }
+    .badge-warn { background:var(--amber-bg); color:var(--amber); border:1px solid rgba(251,191,36,0.25); }
+    .badge-pass { background:var(--green-bg); color:var(--green); border:1px solid rgba(74,222,128,0.25); }
+    .badge-wcag { background:var(--bg3); color:var(--text-3); border:1px solid var(--border); }
+    hr.divider { border:none; border-top:1px solid var(--border); margin:2.5rem 0; }
+    code { background:var(--bg3); padding:1px 6px; border-radius:3px; font-size:0.85em; color:var(--text-2); font-family:monospace; }
+    /* demo image placeholders */
+    .img-box { display:inline-flex; align-items:center; justify-content:center; background:var(--bg3); border:1px solid var(--border); border-radius:6px; font-size:0.8rem; color:var(--text-3); }
+    a:focus-visible { outline:3px solid var(--blue); outline-offset:3px; border-radius:3px; }
+    footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
+    footer a { color:var(--text-3); text-decoration:none; }
+    @media(max-width:620px) { nav.site-nav, main, .page-header { padding-left:1.25rem; padding-right:1.25rem; } }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <a href="../14-Alt-Text-Testing.html" class="nav-back">← Back to Blog 14</a>
+</nav>
+
+<header class="page-header">
+  <div class="pg-label">A11y Test Playground</div>
+  <h1>Alt Text Playground</h1>
+  <p>Eight scenarios: six failures, one redundant case, and one passing example. Test with <strong>WAVE Images tab</strong>, <strong>axe DevTools</strong>, and a screen reader. Each scenario includes what NVDA announces so you know exactly what to listen for.</p>
+  <div class="how-to" role="note">
+    <span aria-hidden="true">&#127919;</span>
+    <span>Open WAVE on this page and click the <strong>Images</strong> tab to see all eight scenarios mapped at once.</span>
+  </div>
+</header>
+
+<main id="main-content">
+
+  <!-- S1: no alt attribute -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">1</div>
+      <div>
+        <div class="scenario-title">No alt attribute</div>
+        <div class="scenario-meta">Screen reader reads the filename. WAVE flags red.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Run WAVE or axe DevTools. Then use NVDA and Tab to the image.
+      <span class="wcag-tag">WCAG 1.1.1</span><span class="tool-tag">WAVE</span><span class="tool-tag">axe DevTools</span><br><br>
+      <strong>What to look for:</strong> WAVE flags with red error. axe flags <code>image-alt</code> violation. NVDA announces the filename.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 1: missing alt attribute</div>
+      <div class="demo-inner">
+        <p style="font-size:0.88rem;color:var(--text-2);margin-bottom:1rem;">The image below has no alt attribute at all.</p>
+        <!-- intentionally no alt -->
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='100'%3E%3Crect width='200' height='100' fill='%232a5c9a'/%3E%3Ctext x='100' y='55' text-anchor='middle' font-family='sans-serif' font-size='14' fill='white'%3EQ3 Revenue Chart%3C/text%3E%3C/svg%3E" width="200" height="100" style="border-radius:6px;display:block;" />
+        <div class="announced"><strong>NVDA announces:</strong> "image.svg graphic" or the data URI: meaningless filename content</div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 1.1.1</span>
+          <span class="badge badge-wcag">No alt attribute: WAVE red flag</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S2: filename as alt -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">2</div>
+      <div>
+        <div class="scenario-title">Filename used as alt text</div>
+        <div class="scenario-meta">Has an alt attribute. Conveys nothing.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Inspect the image. Check the alt value. Run WAVE: yellow flag for suspicious alt.
+      <span class="wcag-tag">WCAG 1.1.1</span><span class="tool-tag">WAVE</span><br><br>
+      <strong>What to look for:</strong> Alt value matches or resembles a filename. NVDA announces it as if it were a description.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 2: filename as alt text</div>
+      <div class="demo-inner">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='100'%3E%3Crect width='200' height='100' fill='%234a5828'/%3E%3Ctext x='100' y='55' text-anchor='middle' font-family='sans-serif' font-size='12' fill='white'%3ETeam photo%3C/text%3E%3C/svg%3E" alt="IMG_20241103_094512.jpg" width="200" height="100" style="border-radius:6px;display:block;" />
+        <div class="announced"><strong>NVDA announces:</strong> "IMG underscore 20241103 underscore 094512 dot jpg, graphic"</div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 1.1.1</span>
+          <span class="badge badge-wcag">alt="IMG_20241103_094512.jpg"</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S3: generic alt -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">3</div>
+      <div>
+        <div class="scenario-title">Generic alt text</div>
+        <div class="scenario-meta">alt="image": the most useless alt text possible.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Inspect the image. Check the alt value. Tab to it with NVDA.
+      <span class="wcag-tag">WCAG 1.1.1</span><span class="tool-tag">WAVE</span><span class="tool-tag">axe DevTools</span><br><br>
+      <strong>What to look for:</strong> Alt value is "image", "photo", "graphic", or "icon". NVDA announces "image, graphic": the word image is announced twice.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 3: generic alt text</div>
+      <div class="demo-inner">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='100'%3E%3Crect width='200' height='100' fill='%237a4a9a'/%3E%3Ctext x='100' y='55' text-anchor='middle' font-family='sans-serif' font-size='14' fill='white'%3ECelebration event%3C/text%3E%3C/svg%3E" alt="image" width="200" height="100" style="border-radius:6px;display:block;" />
+        <div class="announced"><strong>NVDA announces:</strong> "image, graphic": the word "image" twice, zero information</div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 1.1.1</span>
+          <span class="badge badge-wcag">alt="image": redundant and meaningless</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S4: decorative without empty alt -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">4</div>
+      <div>
+        <div class="scenario-title">Decorative image without empty alt</div>
+        <div class="scenario-meta">Should be silent. Not silent.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Tab to the image with NVDA. Read the paragraph before and after it.
+      <span class="wcag-tag">WCAG 1.1.1</span><br><br>
+      <strong>What to look for:</strong> The wave adds no information. But NVDA announces the alt text anyway, interrupting the reading flow.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 4: decorative image with non-empty alt</div>
+      <div class="demo-inner">
+        <p style="font-size:0.88rem;color:var(--text-2);margin-bottom:0.75rem;">Our services have helped hundreds of teams ship better software.</p>
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='40'%3E%3Crect width='100%25' height='40' fill='%23f0ede6'/%3E%3Cpath d='M0 20 Q80 5 160 20 Q240 35 320 20 Q400 5 480 20 Q560 35 640 20' fill='none' stroke='%23c8b48a' stroke-width='2'/%3E%3C/svg%3E" alt="decorative wave divider" style="display:block;width:100%;border-radius:4px;" />
+        <p style="font-size:0.88rem;color:var(--text-2);margin-top:0.75rem;">We work with teams across product, engineering, and design.</p>
+        <div class="announced"><strong>NVDA announces:</strong> "decorative wave divider, graphic": interrupts reading flow for zero information</div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 1.1.1</span>
+          <span class="badge badge-wcag">Should be alt="" not alt="decorative wave divider"</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S5: functional image describes appearance -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">5</div>
+      <div>
+        <div class="scenario-title">Functional image describes appearance, not action</div>
+        <div class="scenario-meta">Linked icon. Alt text tells you what it looks like, not where it goes.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Tab to the link below with NVDA. Listen to the announcement.
+      <span class="wcag-tag">WCAG 1.1.1 / 2.4.4</span><span class="tool-tag">NVDA</span><br><br>
+      <strong>What to look for:</strong> NVDA announces the image description and "link": but the user cannot tell where the link goes.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 5: linked icon with appearance alt</div>
+      <div class="demo-inner">
+        <p style="font-size:0.88rem;color:var(--text-2);margin-bottom:1rem;">Click the icon to proceed:</p>
+        <a href="#" onclick="return false" style="display:inline-block;">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect width='48' height='48' rx='8' fill='%232a5c9a'/%3E%3Ctext x='24' y='32' text-anchor='middle' font-family='sans-serif' font-size='22' fill='white'%3E🛒%3C/text%3E%3C/svg%3E" alt="shopping cart icon" width="48" height="48" style="border-radius:8px;" />
+        </a>
+        <div class="announced"><strong>NVDA announces:</strong> "shopping cart icon, link": user has no idea the destination is checkout</div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 1.1.1 / 2.4.4</span>
+          <span class="badge badge-wcag">Should be alt="Go to checkout"</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S6: chart with insufficient alt -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">6</div>
+      <div>
+        <div class="scenario-title">Complex image with insufficient alt</div>
+        <div class="scenario-meta">Chart type named. Data not communicated.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Tab to the chart with NVDA. Ask: does the announcement give you the same information a sighted person gets?
+      <span class="wcag-tag">WCAG 1.1.1</span><span class="tool-tag">NVDA</span><br><br>
+      <strong>What to look for:</strong> NVDA announces "bar chart, graphic": axe may not flag this as an error, but the user gets none of the data.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 6: chart with alt="bar chart"</div>
+      <div class="demo-inner">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='140'%3E%3Crect width='300' height='140' fill='%231e1e1e' rx='6'/%3E%3Crect x='30' y='90' width='30' height='30' fill='%234ade80' opacity='.7'/%3E%3Crect x='70' y='70' width='30' height='50' fill='%234ade80' opacity='.8'/%3E%3Crect x='110' y='50' width='30' height='70' fill='%234ade80' opacity='.9'/%3E%3Crect x='150' y='30' width='30' height='90' fill='%234ade80'/%3E%3Crect x='190' y='20' width='30' height='100' fill='%234ade80'/%3E%3Cline x1='20' y1='120' x2='240' y2='120' stroke='%232e2e2e' stroke-width='1'/%3E%3Ctext x='150' y='135' text-anchor='middle' font-family='sans-serif' font-size='10' fill='%238a8a8a'%3EQ1-Q5 Revenue%3C/text%3E%3C/svg%3E" alt="bar chart" width="300" height="140" style="border-radius:6px;display:block;" />
+        <div class="announced"><strong>NVDA announces:</strong> "bar chart, graphic": automation may pass this. A human reviewing knows the data is missing.</div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 1.1.1</span>
+          <span class="badge badge-wcag">Automation blind spot: manual review required</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S7: redundant alt -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-warn">7</div>
+      <div>
+        <div class="scenario-title">Redundant alt text: repeated in adjacent heading</div>
+        <div class="scenario-meta">Not a WCAG failure. Poor experience.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Tab through the card below with NVDA. Count how many times the name is announced.
+      <span class="wcag-tag">Best practice</span><span class="tool-tag">NVDA</span><br><br>
+      <strong>What to look for:</strong> The name and role are announced twice in quick succession: once for the image, once for the heading.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 7: alt text duplicates adjacent heading</div>
+      <div class="demo-inner">
+        <div style="display:flex;align-items:center;gap:1rem;background:var(--bg3);border-radius:8px;padding:1rem;">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Ccircle cx='30' cy='30' r='30' fill='%234a5828'/%3E%3Ctext x='30' y='36' text-anchor='middle' font-family='sans-serif' font-size='18' fill='white'%3ESC%3C/text%3E%3C/svg%3E" alt="Sarah Chen, Lead Engineer" width="60" height="60" style="border-radius:50%;flex-shrink:0;" />
+          <div>
+            <h3 style="font-size:1rem;color:var(--text);font-weight:500;">Sarah Chen, Lead Engineer</h3>
+            <p style="font-size:0.85rem;color:var(--text-3);margin:0;">10 years of experience in quality engineering.</p>
+          </div>
+        </div>
+        <div class="announced"><strong>NVDA announces:</strong> "Sarah Chen, Lead Engineer, graphic" then immediately "Sarah Chen, Lead Engineer, heading level 3"</div>
+        <div class="result-row">
+          <span class="badge badge-warn">Redundant</span>
+          <span class="badge badge-wcag">Not a WCAG fail</span>
+          <span class="badge badge-wcag">Consider alt="" since heading provides full context</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S8: PASS -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-pass">8</div>
+      <div>
+        <div class="scenario-title">Correct alt text: the passing examples</div>
+        <div class="scenario-meta">Meaningful, decorative, and functional: all correct.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Run WAVE Images tab. Tab through with NVDA. Check each announcement.
+      <span class="wcag-tag">WCAG 1.1.1</span><span class="tool-tag">WAVE</span><span class="tool-tag">NVDA</span><br><br>
+      <strong>What to look for:</strong> Meaningful image announces useful data. Decorative image is skipped entirely. Functional image announces the action.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 8: correct alt text for all three types</div>
+      <div class="demo-inner" style="display:flex;flex-direction:column;gap:1.5rem;">
+
+        <div>
+          <p style="font-size:0.82rem;color:var(--text-3);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.06em;font-weight:500;">Meaningful</p>
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='140'%3E%3Crect width='300' height='140' fill='%231e1e1e' rx='6'/%3E%3Crect x='30' y='90' width='30' height='30' fill='%234ade80' opacity='.7'/%3E%3Crect x='70' y='70' width='30' height='50' fill='%234ade80' opacity='.8'/%3E%3Crect x='110' y='50' width='30' height='70' fill='%234ade80' opacity='.9'/%3E%3Crect x='150' y='30' width='30' height='90' fill='%234ade80'/%3E%3Crect x='190' y='20' width='30' height='100' fill='%234ade80'/%3E%3Cline x1='20' y1='120' x2='240' y2='120' stroke='%232e2e2e' stroke-width='1'/%3E%3Ctext x='150' y='135' text-anchor='middle' font-family='sans-serif' font-size='10' fill='%238a8a8a'%3EQ1-Q5 Revenue%3C/text%3E%3C/svg%3E" alt="Bar chart: revenue grew from £0.8M in Q1 to £2.4M in Q5, tripling over five quarters" width="300" height="140" style="border-radius:6px;display:block;" />
+          <div class="announced"><strong>NVDA announces:</strong> "Bar chart: revenue grew from £0.8M in Q1 to £2.4M in Q5, tripling over five quarters, graphic" ✓</div>
+        </div>
+
+        <div>
+          <p style="font-size:0.82rem;color:var(--text-3);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.06em;font-weight:500;">Decorative</p>
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='40'%3E%3Crect width='100%25' height='40' fill='%23f0ede6'/%3E%3Cpath d='M0 20 Q80 5 160 20 Q240 35 320 20 Q400 5 480 20 Q560 35 640 20' fill='none' stroke='%23c8b48a' stroke-width='2'/%3E%3C/svg%3E" alt="" style="display:block;width:100%;border-radius:4px;" />
+          <div class="announced"><strong>NVDA announces:</strong> nothing: image skipped entirely ✓</div>
+        </div>
+
+        <div>
+          <p style="font-size:0.82rem;color:var(--text-3);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.06em;font-weight:500;">Functional</p>
+          <a href="#" onclick="return false">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect width='48' height='48' rx='8' fill='%232a5c9a'/%3E%3Ctext x='24' y='32' text-anchor='middle' font-family='sans-serif' font-size='22' fill='white'%3E🛒%3C/text%3E%3C/svg%3E" alt="Go to checkout" width="48" height="48" style="border-radius:8px;" />
+          </a>
+          <div class="announced"><strong>NVDA announces:</strong> "Go to checkout, link": destination clear ✓</div>
+        </div>
+
+        <div class="result-row">
+          <span class="badge badge-pass">Pass</span>
+          <span class="badge badge-wcag">WCAG 1.1.1</span>
+          <span class="badge badge-wcag">Meaningful describes data · Decorative is silent · Functional describes action</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; <a href="../14-Alt-Text-Testing.html">Back to Blog 14</a>
+    &nbsp;·&nbsp; <a href="../14 A11y Alt Text Mobile Testing Guide.html">Mobile Testing Guide →</a>
+  </p>
+</footer>
+
+</body>
+</html>

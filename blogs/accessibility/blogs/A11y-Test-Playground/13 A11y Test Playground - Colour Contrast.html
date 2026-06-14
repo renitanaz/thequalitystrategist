@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A11y Test Playground - Colour Contrast | The Quality Strategist</title>
+  <meta name="description" content="Practice testing colour contrast failures. Seven scenarios: six failures and one pass: testable with WAVE, axe DevTools and Chrome DevTools." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+      --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+      --green:#4ade80; --green-bg:rgba(74,222,128,0.07);
+      --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07);
+      --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07);
+      --red:#f87171; --red-bg:rgba(248,113,113,0.07);
+      --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.07);
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
+    .skip-link:focus { top:0; }
+    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
+    .nav-logo:focus-visible { outline:3px solid var(--green); outline-offset:3px; border-radius:3px; }
+    .nav-back { font-size:0.82rem; color:var(--text-3); text-decoration:none; }
+    .nav-back:hover { color:var(--text-2); }
+    .nav-back:focus-visible { outline:3px solid var(--green); outline-offset:3px; border-radius:3px; }
+    .page-header { max-width:860px; margin:0 auto; padding:3.5rem 2rem 2rem; border-bottom:1px solid var(--border); }
+    .pg-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--green); font-weight:500; margin-bottom:0.75rem; }
+    .page-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.6rem,3.5vw,2.2rem); color:var(--text); margin-bottom:0.75rem; }
+    .page-header p { color:var(--text-2); font-weight:300; max-width:640px; }
+    .how-to { display:inline-flex; align-items:flex-start; gap:8px; background:var(--amber-bg); border:1px solid rgba(251,191,36,0.2); border-radius:8px; padding:0.7rem 1rem; margin-top:1.25rem; font-size:0.85rem; color:var(--amber); font-weight:500; }
+    main { max-width:860px; margin:0 auto; padding:2.5rem 2rem 5rem; }
+    .scenario { margin-bottom:3rem; }
+    .scenario-header { display:flex; align-items:center; gap:12px; margin-bottom:1rem; }
+    .scenario-num { width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-family:'DM Serif Display',serif; font-size:1rem; font-weight:700; flex-shrink:0; }
+    .num-fail { background:var(--red-bg); color:var(--red); border:1px solid rgba(248,113,113,0.2); }
+    .num-pass { background:var(--green-bg); color:var(--green); border:1px solid rgba(74,222,128,0.2); }
+    .scenario-title { font-size:1rem; font-weight:500; color:var(--text); }
+    .scenario-meta { font-size:0.75rem; color:var(--text-3); margin-top:2px; }
+    .scenario-instruction { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:0.85rem 1.1rem; margin-bottom:1rem; font-size:0.85rem; color:var(--text-2); line-height:1.6; }
+    .scenario-instruction strong { color:var(--text); }
+    .wcag-tag { display:inline-block; font-size:0.7rem; background:var(--bg3); border:1px solid var(--border); border-radius:99px; padding:1px 8px; color:var(--text-3); margin-left:8px; font-weight:500; }
+    .tool-tag { display:inline-block; font-size:0.7rem; background:var(--purple-bg); border:1px solid rgba(167,139,250,0.2); border-radius:99px; padding:1px 8px; color:var(--purple); margin-left:6px; font-weight:500; }
+    .demo { border-radius:10px; overflow:hidden; border:1px solid var(--border); margin-bottom:1rem; }
+    .demo-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-3); font-weight:500; padding:8px 14px; background:var(--bg3); border-bottom:1px solid var(--border); }
+    .demo-inner { padding:1.5rem; }
+    .result-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:1rem; }
+    .badge { font-size:0.72rem; padding:3px 10px; border-radius:99px; font-weight:600; }
+    .badge-fail { background:var(--red-bg); color:var(--red); border:1px solid rgba(248,113,113,0.25); }
+    .badge-pass { background:var(--green-bg); color:var(--green); border:1px solid rgba(74,222,128,0.25); }
+    .badge-wcag { background:var(--bg3); color:var(--text-3); border:1px solid var(--border); }
+    hr.divider { border:none; border-top:1px solid var(--border); margin:2.5rem 0; }
+    code { background:var(--bg3); padding:1px 6px; border-radius:3px; font-size:0.85em; color:var(--text-2); font-family:monospace; }
+    footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
+    footer a { color:var(--text-3); text-decoration:none; }
+    @media(max-width:620px) { nav.site-nav, main, .page-header { padding-left:1.25rem; padding-right:1.25rem; } }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <a href="../13-Colour-Contrast-Testing.html" class="nav-back">← Back to Blog 13</a>
+</nav>
+
+<header class="page-header">
+  <div class="pg-label">A11y Test Playground</div>
+  <h1>Colour Contrast Playground</h1>
+  <p>Seven scenarios: six contrast failures and one passing example. Test with <strong>WAVE Contrast tab</strong>, <strong>axe DevTools</strong>, and <strong>Chrome DevTools colour picker</strong>. Each scenario is a self-contained demo with exact hex values and ratios.</p>
+  <div class="how-to" role="note">
+    <span aria-hidden="true">&#127919;</span>
+    <span>Open WAVE on this page and click the Contrast tab to see all failures mapped at once.</span>
+  </div>
+</header>
+
+<main id="main-content">
+
+  <!-- S1: body text too light -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">1</div>
+      <div>
+        <div class="scenario-title">Body text too light on white background</div>
+        <div class="scenario-meta">The most common production failure: grey text that "looks fine" to a designer on a calibrated monitor.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Run WAVE or axe DevTools on this page. Or use Chrome DevTools colour picker on the paragraph below.
+      <span class="wcag-tag">WCAG 1.4.3</span><span class="tool-tag">WAVE</span><span class="tool-tag">axe DevTools</span><br><br>
+      <strong>What to look for:</strong> Text colour <code>#aaaaaa</code> on white <code>#ffffff</code> measures 2.3:1. Minimum required is 4.5:1.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 1: grey text on white</div>
+      <div class="demo-inner" style="background:#ffffff;">
+        <p style="color:#aaaaaa;font-size:1rem;margin-bottom:0.5rem;">This paragraph uses light grey text on a white background. It may look acceptable at full brightness on a good screen. It fails WCAG 1.4.3 for users with low vision, on budget screens, or in bright sunlight.</p>
+        <a href="#" onclick="return false" style="color:#aaaaaa;">A link styled the same way</a>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 1.4.3</span>
+          <span class="badge badge-wcag">#aaa on #fff = 2.3:1 (need 4.5:1)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S2: yellow CTA on white -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">2</div>
+      <div>
+        <div class="scenario-title">Brand yellow text on white background</div>
+        <div class="scenario-meta">Yellow text on white is almost always a failure regardless of the shade.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Use Chrome DevTools colour picker: inspect the heading, click the colour swatch, check the contrast ratio shown in the picker.
+      <span class="wcag-tag">WCAG 1.4.3</span><span class="tool-tag">Chrome DevTools</span><br><br>
+      <strong>What to look for:</strong> <code>#f5c400</code> on <code>#ffffff</code> = 1.9:1. Well below the 4.5:1 minimum.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 2: yellow text on white</div>
+      <div class="demo-inner" style="background:#ffffff;">
+        <h2 style="color:#f5c400;font-size:1.4rem;margin-bottom:0.5rem;font-family:'DM Serif Display',serif;">This heading uses brand yellow</h2>
+        <p style="color:#f5c400;font-size:0.9rem;">Body copy in the same brand yellow. Both fail even though yellow is a prominent, saturated colour.</p>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 1.4.3</span>
+          <span class="badge badge-wcag">#f5c400 on #fff = 1.9:1 (need 4.5:1)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S3: placeholder text -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">3</div>
+      <div>
+        <div class="scenario-title">Placeholder text contrast failure</div>
+        <div class="scenario-meta">Automation often misses this. Requires manual colour picker check.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Inspect the input below in Chrome DevTools. Find the <code>::placeholder</code> pseudo-element and check its colour against the input background.
+      <span class="wcag-tag">WCAG 1.4.3</span><span class="tool-tag">Chrome DevTools</span><br><br>
+      <strong>What to look for:</strong> Placeholder colour <code>#bbbbbb</code> on <code>#ffffff</code> = 1.6:1. Many automated tools skip placeholder text entirely.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 3: low-contrast placeholder text</div>
+      <div class="demo-inner" style="background:#f9f9f9;">
+        <style>.s3-input::placeholder { color: #bbbbbb; }</style>
+        <label for="s3-email" style="font-size:0.88rem;color:#333;display:block;margin-bottom:6px;">Email address</label>
+        <input id="s3-email" class="s3-input" type="email" placeholder="your@email.com" style="background:#ffffff;border:1px solid #cccccc;border-radius:6px;padding:10px 14px;font-size:0.9rem;color:#333;font-family:'DM Sans',sans-serif;width:100%;max-width:320px;" />
+        <p style="font-size:0.8rem;color:#888;margin-top:8px;">The placeholder text above is <code>#bbbbbb</code> on <code>#ffffff</code>: 1.6:1 contrast.</p>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 1.4.3</span>
+          <span class="badge badge-wcag">#bbb placeholder on #fff = 1.6:1</span>
+          <span class="badge badge-wcag">Often missed by automation</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S4: UI component boundary -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">4</div>
+      <div>
+        <div class="scenario-title">UI component boundary: input border too light</div>
+        <div class="scenario-meta">The border defines the component. If it disappears, the input disappears.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Use Chrome DevTools colour picker on the input border. Or run axe DevTools: it checks <code>border-color</code> against the adjacent background under WCAG 1.4.11.
+      <span class="wcag-tag">WCAG 1.4.11</span><span class="tool-tag">axe DevTools</span><span class="tool-tag">Chrome DevTools</span><br><br>
+      <strong>What to look for:</strong> Border <code>#e0e0e0</code> on background <code>#ffffff</code> = 1.2:1. UI boundaries need 3:1 minimum.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 4: low-contrast input border</div>
+      <div class="demo-inner" style="background:#ffffff;">
+        <label for="s4-name" style="font-size:0.88rem;color:#333;display:block;margin-bottom:6px;">Full name</label>
+        <input id="s4-name" type="text" placeholder="Jane Smith" style="background:#ffffff;border:1px solid #e0e0e0;border-radius:6px;padding:10px 14px;font-size:0.9rem;color:#333;font-family:'DM Sans',sans-serif;width:100%;max-width:320px;" />
+        <p style="font-size:0.8rem;color:#888;margin-top:8px;">Border <code>#e0e0e0</code> on <code>#ffffff</code>: 1.2:1. Near-invisible on white. Users cannot see where the input starts and ends.</p>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 1.4.11</span>
+          <span class="badge badge-wcag">#e0e0e0 border on #fff = 1.2:1 (need 3:1)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S5: text over image -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">5</div>
+      <div>
+        <div class="scenario-title">Text over a gradient background: automation gets it wrong</div>
+        <div class="scenario-meta">axe-core reads the CSS background-color, not the actual visual. This is always a manual check.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Run axe DevTools. Notice it may not flag this. Then use the Chrome DevTools colour picker to sample the actual background colour under the text manually.
+      <span class="wcag-tag">WCAG 1.4.3</span><span class="tool-tag">Chrome DevTools (manual)</span><br><br>
+      <strong>What to look for:</strong> White text on a light part of the gradient fails. axe-core reads the base <code>background-color</code> value, not the gradient at that pixel.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 5: text over gradient: automation blind spot</div>
+      <div class="demo-inner" style="padding:0;">
+        <div style="background:linear-gradient(to right, #1a4a9a, #f0ede6);padding:2rem 1.5rem;border-radius:0 0 8px 8px;">
+          <h2 style="color:#ffffff;font-size:1.2rem;font-family:'DM Serif Display',serif;margin-bottom:0.5rem;">Hero section heading</h2>
+          <p style="color:#ffffff;font-size:0.9rem;">This text starts on dark blue (high contrast) and ends near off-white (very low contrast). axe-core reads the CSS <code style="background:rgba(0,0,0,0.3);color:#fff;">background: linear-gradient(...)</code> and may report no issue: or use the start colour only.</p>
+        </div>
+        <div style="padding:1rem 1.5rem;">
+          <div class="result-row">
+            <span class="badge badge-fail">Fail (right side)</span>
+            <span class="badge badge-wcag">WCAG 1.4.3</span>
+            <span class="badge badge-wcag">#fff on #f0ede6 = 1.1:1 at gradient end</span>
+            <span class="badge badge-wcag">Automation blind spot: check manually</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S6: colour only signal -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">6</div>
+      <div>
+        <div class="scenario-title">Colour used as the only signal: WCAG 1.4.1</div>
+        <div class="scenario-meta">This is a contrast and colour blindness failure. Red and green mean nothing without text or icon support.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Open Chrome DevTools, Rendering panel, Emulate vision deficiencies: Deuteranopia. Look at the status indicators below.
+      <span class="wcag-tag">WCAG 1.4.1</span><span class="tool-tag">Chrome DevTools Rendering</span><br><br>
+      <strong>What to look for:</strong> Under Deuteranopia simulation, red and green dots become indistinguishable. The meaning of Available and Unavailable is lost entirely.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 6: colour-only status indicators</div>
+      <div class="demo-inner" style="background:#1e1e1e;">
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:14px;height:14px;border-radius:50%;background:#4ade80;flex-shrink:0;"></div>
+            <span style="color:#c8c8c8;font-size:0.9rem;">Available</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:14px;height:14px;border-radius:50%;background:#fbbf24;flex-shrink:0;"></div>
+            <span style="color:#c8c8c8;font-size:0.9rem;">Pending</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:14px;height:14px;border-radius:50%;background:#f87171;flex-shrink:0;"></div>
+            <span style="color:#c8c8c8;font-size:0.9rem;">Unavailable</span>
+          </div>
+        </div>
+        <p style="font-size:0.8rem;color:var(--text-3);margin-top:1rem;">Activate Deuteranopia simulation in Chrome DevTools Rendering panel. Available (green) and Unavailable (red) become identical yellow-brown dots.</p>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 1.4.1</span>
+          <span class="badge badge-wcag">Colour only: no icon or text label</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S7: PASS -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-pass">7</div>
+      <div>
+        <div class="scenario-title">Correct contrast: the passing example</div>
+        <div class="scenario-meta">All thresholds met. Colour plus text label. Passes Deuteranopia simulation.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Run WAVE and axe DevTools on this scenario. Enable Deuteranopia simulation.
+      <span class="wcag-tag">WCAG 1.4.3 · 1.4.11 · 1.4.1</span><span class="tool-tag">WAVE</span><span class="tool-tag">axe DevTools</span><br><br>
+      <strong>What to look for:</strong> No contrast violations. Status icons use colour plus shape plus text label: meaning survives colour blindness simulation.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 7: correct contrast and colour independence</div>
+      <div class="demo-inner" style="background:#ffffff;">
+        <p style="color:#1a1a1a;font-size:1rem;margin-bottom:1rem;">Body text <code>#1a1a1a</code> on <code>#ffffff</code>: 19.5:1. Far above the 4.5:1 minimum.</p>
+        <label for="s7-email" style="font-size:0.88rem;color:#1a1a1a;display:block;margin-bottom:6px;">Email address</label>
+        <style>.s7-input::placeholder { color: #767676; }</style>
+        <input id="s7-email" class="s7-input" type="email" placeholder="your@email.com" style="background:#ffffff;border:2px solid #767676;border-radius:6px;padding:10px 14px;font-size:0.9rem;color:#1a1a1a;font-family:'DM Sans',sans-serif;width:100%;max-width:320px;" />
+        <p style="font-size:0.8rem;color:#555;margin-top:6px;margin-bottom:1rem;">Placeholder <code>#767676</code> on <code>#ffffff</code>: 4.6:1. Border <code>#767676</code>: 4.6:1.</p>
+        <!-- Status with icon + text -->
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:14px;height:14px;border-radius:50%;background:#1a7a3a;flex-shrink:0;"></div>
+            <span style="color:#1a1a1a;font-size:0.9rem;font-weight:500;">✓ Available</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:14px;height:14px;border-radius:4px;background:#9a6e1a;flex-shrink:0;"></div>
+            <span style="color:#1a1a1a;font-size:0.9rem;font-weight:500;">◐ Pending</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:14px;height:14px;background:#9a2a2a;clip-path:polygon(50% 0%, 0% 100%, 100% 100%);flex-shrink:0;"></div>
+            <span style="color:#1a1a1a;font-size:0.9rem;font-weight:500;">✕ Unavailable</span>
+          </div>
+        </div>
+        <p style="font-size:0.8rem;color:#555;margin-top:0.75rem;">Colour plus shape plus text label. Enable Deuteranopia simulation: meaning is preserved because shape and text do not change.</p>
+        <div class="result-row">
+          <span class="badge badge-pass">Pass</span>
+          <span class="badge badge-wcag">WCAG 1.4.3 · 1.4.11 · 1.4.1</span>
+          <span class="badge badge-wcag">Text 19.5:1 · Placeholder 4.6:1 · Border 4.6:1</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; <a href="../13-Colour-Contrast-Testing.html">Back to Blog 13</a>
+    &nbsp;·&nbsp; <a href="A11y Colour Contrast Mobile Testing Guide.html">Mobile Testing Guide →</a>
+  </p>
+</footer>
+
+</body>
+</html>

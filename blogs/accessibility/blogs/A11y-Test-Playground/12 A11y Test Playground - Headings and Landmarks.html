@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A11y Test Playground - Headings and Landmarks | The Quality Strategist</title>
+  <meta name="description" content="Practice testing heading hierarchy, landmark regions, and skip link failures using WAVE, NVDA, and keyboard navigation." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+      --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+      --green:#4ade80; --green-bg:rgba(74,222,128,0.07);
+      --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07);
+      --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07);
+      --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.07);
+      --red:#f87171; --red-bg:rgba(248,113,113,0.07);
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+    .skip-link-correct { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
+    .skip-link-correct:focus { top:0; }
+    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
+    .nav-logo:focus-visible { outline:3px solid var(--green); outline-offset:3px; border-radius:3px; }
+    .nav-back { font-size:0.82rem; color:var(--text-3); text-decoration:none; display:flex; align-items:center; gap:6px; }
+    .nav-back:hover { color:var(--text-2); }
+    .nav-back:focus-visible { outline:3px solid var(--green); outline-offset:3px; border-radius:3px; }
+    .page-header { max-width:860px; margin:0 auto; padding:3.5rem 2rem 2rem; border-bottom:1px solid var(--border); }
+    .pg-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--green); font-weight:500; margin-bottom:0.75rem; }
+    .page-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.6rem,3.5vw,2.2rem); color:var(--text); margin-bottom:0.75rem; }
+    .page-header p { color:var(--text-2); font-weight:300; max-width:640px; }
+    .how-to { display:inline-flex; align-items:center; gap:8px; background:var(--amber-bg); border:1px solid rgba(251,191,36,0.2); border-radius:8px; padding:0.7rem 1rem; margin-top:1.25rem; font-size:0.85rem; color:var(--amber); font-weight:500; }
+    main { max-width:860px; margin:0 auto; padding:2.5rem 2rem 5rem; }
+    .scenario { margin-bottom:3.5rem; }
+    .scenario-header { display:flex; align-items:center; gap:12px; margin-bottom:1rem; }
+    .scenario-num { width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-family:'DM Serif Display',serif; font-size:1rem; font-weight:700; flex-shrink:0; }
+    .num-fail { background:var(--red-bg); color:var(--red); border:1px solid rgba(248,113,113,0.2); }
+    .num-pass { background:var(--green-bg); color:var(--green); border:1px solid rgba(74,222,128,0.2); }
+    .scenario-title { font-size:1rem; font-weight:500; color:var(--text); }
+    .scenario-meta { font-size:0.75rem; color:var(--text-3); margin-top:2px; }
+    .scenario-instruction { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:0.85rem 1.1rem; margin-bottom:1rem; font-size:0.85rem; color:var(--text-2); line-height:1.6; }
+    .scenario-instruction strong { color:var(--text); }
+    .wcag-tag { display:inline-block; font-size:0.7rem; background:var(--bg3); border:1px solid var(--border); border-radius:99px; padding:1px 8px; color:var(--text-3); margin-left:8px; font-weight:500; }
+    .tool-tag { display:inline-block; font-size:0.7rem; background:var(--purple-bg); border:1px solid rgba(167,139,250,0.2); border-radius:99px; padding:1px 8px; color:var(--purple); margin-left:6px; font-weight:500; }
+    .demo { border-radius:10px; overflow:hidden; border:1px solid var(--border); margin-bottom:1rem; }
+    .demo-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-3); font-weight:500; padding:8px 14px; background:var(--bg3); border-bottom:1px solid var(--border); }
+    .demo-inner { padding:1.5rem; background:var(--bg2); }
+    .result-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:1rem; }
+    .badge { font-size:0.72rem; padding:3px 10px; border-radius:99px; font-weight:600; }
+    .badge-fail { background:var(--red-bg); color:var(--red); border:1px solid rgba(248,113,113,0.25); }
+    .badge-pass { background:var(--green-bg); color:var(--green); border:1px solid rgba(74,222,128,0.25); }
+    .badge-wcag { background:var(--bg3); color:var(--text-3); border:1px solid var(--border); }
+    hr.divider { border:none; border-top:1px solid var(--border); margin:2.5rem 0; }
+    /* focus styles for interactive elements in demo */
+    .demo-inner a:focus-visible,
+    .demo-inner button:focus-visible { outline:3px solid var(--blue); outline-offset:3px; border-radius:3px; }
+    /* generic link style */
+    .demo-inner a { color:var(--blue); }
+    /* broken skip link: positioned but href is wrong */
+    .broken-skip { position:absolute; top:-100%; left:1rem; background:var(--amber); color:#000; padding:6px 14px; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:50; }
+    .broken-skip:focus { top:0; }
+    footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
+    footer a { color:var(--text-3); text-decoration:none; }
+    code { background:var(--bg3); padding:1px 6px; border-radius:3px; font-size:0.85em; color:var(--text-2); font-family:monospace; }
+    @media(max-width:620px) { nav.site-nav,main,.page-header { padding-left:1.25rem; padding-right:1.25rem; } .nav-links { display:none; } }
+  </style>
+</head>
+<body>
+
+<!-- CORRECT skip link for this page itself -->
+<a class="skip-link-correct" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <a href="../12-Headings-Landmarks-Skip-Links.html" class="nav-back">← Back to Blog 12</a>
+</nav>
+
+<header class="page-header">
+  <div class="pg-label">A11y Test Playground</div>
+  <h1>Headings and Landmarks Playground</h1>
+  <p>Six scenarios: five failures, one pass. Test with <strong>WAVE Structure tab</strong>, <strong>NVDA</strong> heading navigation, and keyboard. Each scenario is a self-contained demo.</p>
+  <div class="how-to" role="note">
+    &#127919; Open WAVE on this page and click the Structure tab to see all failures mapped visually in one view.
+  </div>
+</header>
+
+<main id="main-content">
+
+  <!-- SCENARIO 1: broken heading hierarchy -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">1</div>
+      <div>
+        <div class="scenario-title">Broken heading hierarchy</div>
+        <div class="scenario-meta">H2 skipped, second H1, H4 without H3</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Open WAVE and click Structure tab. Or use NVDA: <strong>Insert+F6</strong> to open heading list.
+      <span class="wcag-tag">WCAG 1.3.1</span><span class="tool-tag">WAVE</span><span class="tool-tag">NVDA</span><br><br>
+      <strong>What to look for:</strong> H1 jumps to H3 (no H2), a second H1 appears, then H4 appears with no H3. Three violations in one section.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 1: broken heading structure</div>
+      <div class="demo-inner">
+        <h1>Page title</h1>
+        <!-- H2 intentionally skipped -->
+        <h3>Latest articles</h3>
+        <p>Some introductory content about the articles section.</p>
+        <!-- second H1 -->
+        <h1>About this site</h1>
+        <p>Content about the site.</p>
+        <!-- H2 and H3 skipped -->
+        <h4>Founded in 2020</h4>
+        <p>More content here.</p>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 1.3.1</span>
+          <span class="badge badge-wcag">H2 missing · Second H1 · H4 without H3</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- SCENARIO 2: visual heading not marked up -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">2</div>
+      <div>
+        <div class="scenario-title">Visual heading not marked up as heading</div>
+        <div class="scenario-meta">Looks like a heading. Not a heading.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Open WAVE Structure tab. Use NVDA <strong>H key</strong> to navigate headings.
+      <span class="wcag-tag">WCAG 1.3.1</span><span class="tool-tag">WAVE</span><span class="tool-tag">NVDA</span><br><br>
+      <strong>What to look for:</strong> The large bold text below looks like a section heading but is a <code>&lt;div&gt;</code>. WAVE does not show it in the heading list. NVDA skips it entirely when pressing H.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 2: div styled as heading</div>
+      <div class="demo-inner">
+        <h2>Our services</h2>
+        <p>We offer a range of services across three areas:</p>
+        <!-- visual heading but no markup -->
+        <div style="font-size:1.2rem;font-weight:600;color:var(--text);margin:1rem 0 0.5rem;">Strategy and Consulting</div>
+        <p>We help teams build quality frameworks that scale.</p>
+        <div style="font-size:1.2rem;font-weight:600;color:var(--text);margin:1rem 0 0.5rem;">Training and Enablement</div>
+        <p>We run workshops and coaching programmes.</p>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 1.3.1</span>
+          <span class="badge badge-wcag">Section titles not in heading list</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- SCENARIO 3: missing main landmark -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">3</div>
+      <div>
+        <div class="scenario-title">Missing main landmark</div>
+        <div class="scenario-meta">Page content exists but no &lt;main&gt; wraps it.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Open WAVE Structure tab: no main landmark shown. Use NVDA: press <strong>Q</strong> to jump to main content. Nothing happens.
+      <span class="wcag-tag">WCAG 1.3.1</span><span class="tool-tag">WAVE</span><span class="tool-tag">NVDA</span><br><br>
+      <strong>What to look for:</strong> The section below is wrapped in a <code>&lt;div id="content"&gt;</code> instead of <code>&lt;main&gt;</code>. Screen reader users cannot jump directly to the main content area.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 3: div instead of main</div>
+      <!-- intentionally NOT using main -->
+      <div class="demo-inner" id="fake-main">
+        <h2>Welcome</h2>
+        <p>This section contains the primary page content but it is wrapped in a <code>&lt;div&gt;</code>, not a <code>&lt;main&gt;</code> element. The main landmark is missing.</p>
+        <p>A screen reader user pressing Q (NVDA) or using the landmark menu cannot jump directly here.</p>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 1.3.1</span>
+          <span class="badge badge-wcag">No main landmark: use &lt;main&gt; not &lt;div&gt;</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- SCENARIO 4: multiple unlabelled navs -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">4</div>
+      <div>
+        <div class="scenario-title">Multiple nav elements without aria-label</div>
+        <div class="scenario-meta">Two navs. Both announced as "navigation". Indistinguishable.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Open WAVE Structure tab: both navs appear as "navigation" with no label. Use NVDA: press <strong>D</strong> to jump between landmarks.
+      <span class="wcag-tag">WCAG 1.3.1</span><span class="tool-tag">WAVE</span><span class="tool-tag">NVDA</span><br><br>
+      <strong>What to look for:</strong> Two nav elements below, neither has an <code>aria-label</code>. NVDA announces both as "navigation landmark": the user cannot tell which is the main nav and which is the breadcrumb.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 4: two navs, no labels</div>
+      <div class="demo-inner">
+        <!-- nav 1: no label -->
+        <nav>
+          <ul style="list-style:none;display:flex;gap:1.5rem;padding:0;margin-bottom:1rem;">
+            <li><a href="#" onclick="return false">Home</a></li>
+            <li><a href="#" onclick="return false">About</a></li>
+            <li><a href="#" onclick="return false">Contact</a></li>
+          </ul>
+        </nav>
+        <!-- nav 2: also no label -->
+        <nav>
+          <ul style="list-style:none;display:flex;gap:1rem;padding:0;font-size:0.85rem;">
+            <li><a href="#" onclick="return false">Home</a></li>
+            <li><span style="color:var(--text-3)">›</span></li>
+            <li><a href="#" onclick="return false">Blog</a></li>
+            <li><span style="color:var(--text-3)">›</span></li>
+            <li style="color:var(--text-3)">Article</li>
+          </ul>
+        </nav>
+        <p style="font-size:0.85rem;color:var(--text-3);margin-top:0.75rem;">Both announced as "navigation": no way to distinguish main nav from breadcrumb.</p>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 1.3.1</span>
+          <span class="badge badge-wcag">Add aria-label="Main navigation" and aria-label="Breadcrumb"</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- SCENARIO 5: broken skip link -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">5</div>
+      <div>
+        <div class="scenario-title">Skip link present but broken</div>
+        <div class="scenario-meta">Link appears on Tab. Enter does nothing.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Click inside the demo area below, then press <strong>Tab</strong>. The skip link will appear. Press <strong>Enter</strong>.
+      <span class="wcag-tag">WCAG 2.4.1</span><br><br>
+      <strong>What to look for:</strong> The skip link appears and looks correct. But the <code>href="#main"</code> points to an ID that does not exist on this page. Focus does not move. The link is broken.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 5: skip link with wrong href</div>
+      <div class="demo-inner" style="position:relative;min-height:100px;">
+        <!-- broken skip link: href="#main" but target id is "#content" -->
+        <a href="#main" class="broken-skip">Skip to main content</a>
+        <nav aria-label="Demo navigation" style="margin-bottom:1rem;">
+          <ul style="list-style:none;display:flex;gap:1.5rem;padding:0;">
+            <li><a href="#" onclick="return false">Home</a></li>
+            <li><a href="#" onclick="return false">Services</a></li>
+            <li><a href="#" onclick="return false">Contact</a></li>
+          </ul>
+        </nav>
+        <div id="content" style="padding:0.75rem;background:var(--bg3);border-radius:6px;font-size:0.85rem;color:var(--text-3);">
+          This is the main content area: id="content". The skip link points to id="main" which does not exist.
+        </div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 2.4.1</span>
+          <span class="badge badge-wcag">href="#main": no element with id="main" exists</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- SCENARIO 6: PASS -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-pass">6</div>
+      <div>
+        <div class="scenario-title">Correct structure: the passing example</div>
+        <div class="scenario-meta">Sequential headings, labelled landmarks, working skip link.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Open WAVE Structure tab. Use NVDA heading and landmark navigation.
+      <span class="wcag-tag">WCAG 1.3.1 · 2.4.1</span><span class="tool-tag">WAVE</span><span class="tool-tag">NVDA</span><br><br>
+      <strong>What to look for:</strong> One H1, sequential H2 and H3, two navs with distinct labels, a main landmark, and a working skip link.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 6: correct heading and landmark structure</div>
+      <div class="demo-inner" style="position:relative;">
+        <!-- correct skip link -->
+        <a href="#s6-main" style="position:absolute;top:-100%;left:0;background:var(--green);color:#000;padding:6px 14px;border-radius:0 0 6px 6px;font-size:0.85rem;font-weight:500;text-decoration:none;" onfocus="this.style.top='0'" onblur="this.style.top='-100%'">Skip to main content</a>
+        <header style="border-bottom:1px solid var(--border);padding-bottom:0.75rem;margin-bottom:1rem;">
+          <nav aria-label="Main navigation">
+            <ul style="list-style:none;display:flex;gap:1.5rem;padding:0;">
+              <li><a href="#" onclick="return false">Home</a></li>
+              <li><a href="#" onclick="return false">About</a></li>
+              <li><a href="#" onclick="return false">Contact</a></li>
+            </ul>
+          </nav>
+        </header>
+        <nav aria-label="Breadcrumb" style="margin-bottom:1rem;">
+          <ul style="list-style:none;display:flex;gap:0.75rem;padding:0;font-size:0.82rem;">
+            <li><a href="#" onclick="return false">Home</a></li>
+            <li style="color:var(--text-3)">› Blog</li>
+          </ul>
+        </nav>
+        <main id="s6-main">
+          <h1>Article title</h1>
+          <h2>Introduction</h2>
+          <p style="font-size:0.85rem;color:var(--text-2);">Opening section content.</p>
+          <h2>Key findings</h2>
+          <h3>Finding one</h3>
+          <p style="font-size:0.85rem;color:var(--text-2);">Detail about finding one.</p>
+          <h3>Finding two</h3>
+          <p style="font-size:0.85rem;color:var(--text-2);">Detail about finding two.</p>
+          <h2>Conclusion</h2>
+          <p style="font-size:0.85rem;color:var(--text-2);">Closing thoughts.</p>
+        </main>
+        <div class="result-row">
+          <span class="badge badge-pass">Pass</span>
+          <span class="badge badge-wcag">WCAG 1.3.1 · 2.4.1</span>
+          <span class="badge badge-wcag">One H1 · sequential levels · labelled navs · main landmark · working skip link</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; <a href="../12-Headings-Landmarks-Skip-Links.html">Back to Blog 12</a>
+    &nbsp;·&nbsp; <a href="12 12 A11y Headings Mobile Testing Guide.html">Mobile Testing Guide →</a>
+  </p>
+</footer>
+
+</body>
+</html>

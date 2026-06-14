@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>15 A11y Test Playground - Forms | The Quality Strategist</title>
+  <meta name="description" content="Practice testing form accessibility failures. Nine scenarios covering labels, errors, required fields, autocomplete and fieldset groups." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+      --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+      --green:#4ade80; --green-bg:rgba(74,222,128,0.07);
+      --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07);
+      --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07);
+      --red:#f87171; --red-bg:rgba(248,113,113,0.07);
+      --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.07);
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
+    .skip-link:focus { top:0; }
+    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
+    .nav-logo:focus-visible { outline:3px solid var(--green); outline-offset:3px; border-radius:3px; }
+    .nav-back { font-size:0.82rem; color:var(--text-3); text-decoration:none; }
+    .nav-back:hover { color:var(--text-2); }
+    .nav-back:focus-visible { outline:3px solid var(--green); outline-offset:3px; border-radius:3px; }
+    .page-header { max-width:860px; margin:0 auto; padding:3.5rem 2rem 2rem; border-bottom:1px solid var(--border); }
+    .pg-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--green); font-weight:500; margin-bottom:0.75rem; }
+    .page-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.6rem,3.5vw,2.2rem); color:var(--text); margin-bottom:0.75rem; }
+    .page-header p { color:var(--text-2); font-weight:300; max-width:640px; }
+    .how-to { display:flex; align-items:flex-start; gap:8px; background:var(--amber-bg); border:1px solid rgba(251,191,36,0.2); border-radius:8px; padding:0.7rem 1rem; margin-top:1.25rem; font-size:0.85rem; color:var(--amber); }
+    main { max-width:860px; margin:0 auto; padding:2.5rem 2rem 5rem; }
+    .scenario { margin-bottom:3rem; }
+    .scenario-header { display:flex; align-items:center; gap:12px; margin-bottom:1rem; }
+    .scenario-num { width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-family:'DM Serif Display',serif; font-size:1rem; font-weight:700; flex-shrink:0; }
+    .num-fail { background:var(--red-bg); color:var(--red); border:1px solid rgba(248,113,113,0.2); }
+    .num-warn { background:var(--amber-bg); color:var(--amber); border:1px solid rgba(251,191,36,0.2); }
+    .num-pass { background:var(--green-bg); color:var(--green); border:1px solid rgba(74,222,128,0.2); }
+    .scenario-title { font-size:1rem; font-weight:500; color:var(--text); }
+    .scenario-meta { font-size:0.75rem; color:var(--text-3); margin-top:2px; }
+    .scenario-instruction { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:0.85rem 1.1rem; margin-bottom:1rem; font-size:0.85rem; color:var(--text-2); line-height:1.6; }
+    .scenario-instruction strong { color:var(--text); }
+    .wcag-tag { display:inline-block; font-size:0.7rem; background:var(--bg3); border:1px solid var(--border); border-radius:99px; padding:1px 8px; color:var(--text-3); margin-left:8px; font-weight:500; }
+    .tool-tag { display:inline-block; font-size:0.7rem; background:var(--purple-bg); border:1px solid rgba(167,139,250,0.2); border-radius:99px; padding:1px 8px; color:var(--purple); margin-left:6px; font-weight:500; }
+    .demo { border-radius:10px; overflow:hidden; border:1px solid var(--border); margin-bottom:1rem; }
+    .demo-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-3); font-weight:500; padding:8px 14px; background:var(--bg3); border-bottom:1px solid var(--border); }
+    .demo-inner { padding:1.5rem; background:var(--bg2); }
+    .announced { background:var(--bg3); border-left:3px solid var(--amber); border-radius:0 6px 6px 0; padding:0.6rem 0.9rem; font-size:0.82rem; color:var(--text-2); margin-top:0.75rem; font-style:italic; }
+    .announced strong { color:var(--amber); font-style:normal; }
+    .result-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:1rem; }
+    .badge { font-size:0.72rem; padding:3px 10px; border-radius:99px; font-weight:600; }
+    .badge-fail { background:var(--red-bg); color:var(--red); border:1px solid rgba(248,113,113,0.25); }
+    .badge-warn { background:var(--amber-bg); color:var(--amber); border:1px solid rgba(251,191,36,0.25); }
+    .badge-pass { background:var(--green-bg); color:var(--green); border:1px solid rgba(74,222,128,0.25); }
+    .badge-wcag { background:var(--bg3); color:var(--text-3); border:1px solid var(--border); }
+    hr.divider { border:none; border-top:1px solid var(--border); margin:2.5rem 0; }
+    code { background:var(--bg3); padding:1px 6px; border-radius:3px; font-size:0.85em; color:var(--text-2); font-family:monospace; }
+    /* form element styles */
+    .f-group { display:flex; flex-direction:column; gap:6px; max-width:360px; }
+    .f-label { font-size:0.88rem; color:var(--text-2); font-weight:500; }
+    .f-input { background:var(--bg3); border:1px solid var(--border); border-radius:6px; padding:10px 14px; font-size:0.9rem; color:var(--text); font-family:'DM Sans',sans-serif; width:100%; }
+    .f-input:focus-visible { outline:3px solid var(--blue); outline-offset:2px; }
+    .f-input.error { border-color:var(--red); background:var(--red-bg); }
+    .f-input.error:focus-visible { outline:3px solid var(--red); outline-offset:2px; }
+    .f-error { font-size:0.82rem; color:var(--red); }
+    .f-hint { font-size:0.8rem; color:var(--text-3); }
+    .f-btn { background:var(--blue); color:#000; border:none; border-radius:6px; padding:10px 24px; font-size:0.9rem; font-family:'DM Sans',sans-serif; font-weight:500; cursor:pointer; align-self:flex-start; }
+    .f-btn:focus-visible { outline:3px solid var(--blue); outline-offset:3px; border-radius:6px; }
+    .f-btn.secondary { background:var(--bg3); color:var(--text-2); border:1px solid var(--border); }
+    .visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
+    footer a { color:var(--text-3); text-decoration:none; }
+    @media(max-width:620px) { nav.site-nav, main, .page-header { padding-left:1.25rem; padding-right:1.25rem; } }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <a href="../15-Forms-Labels-Errors.html" class="nav-back">← Back to Blog 15</a>
+</nav>
+
+<header class="page-header">
+  <div class="pg-label">A11y Test Playground</div>
+  <h1>Forms Playground</h1>
+  <p>Nine scenarios: seven failures, one warning, and one passing example. Test with <strong>NVDA</strong>, <strong>axe DevTools</strong>, and <strong>WAVE</strong>. Each scenario shows what NVDA announces so you know exactly what to listen for.</p>
+  <div class="how-to" role="note">
+    <span aria-hidden="true">&#127919;</span>
+    <span>Tab through each form with NVDA running. For error scenarios, submit the form and listen for what gets announced: and what doesn't.</span>
+  </div>
+</header>
+
+<main id="main-content">
+
+  <!-- S1: no label -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">1</div>
+      <div>
+        <div class="scenario-title">Input with no label</div>
+        <div class="scenario-meta">The most fundamental form failure.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Tab to the input below with NVDA running.
+      <span class="wcag-tag">WCAG 1.3.1</span><span class="tool-tag">axe DevTools</span><span class="tool-tag">WAVE</span><br><br>
+      <strong>What to look for:</strong> NVDA announces "edit text, blank": no label, no purpose, nothing.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 1: unlabelled input</div>
+      <div class="demo-inner">
+        <!-- intentionally no label -->
+        <input type="text" class="f-input" style="max-width:320px;" placeholder="Enter your full name" />
+        <div class="announced"><strong>NVDA announces:</strong> "edit text, blank": placeholder is not read as a label</div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 1.3.1</span>
+          <span class="badge badge-wcag">No &lt;label&gt;, no aria-label, no aria-labelledby</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S2: placeholder as label -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">2</div>
+      <div>
+        <div class="scenario-title">Placeholder used as only label</div>
+        <div class="scenario-meta">Disappears the moment the user starts typing.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Tab to the input. Type a character. Watch what happens to the placeholder.
+      <span class="wcag-tag">WCAG 1.3.1 / 3.3.2</span><br><br>
+      <strong>What to look for:</strong> Placeholder vanishes. NVDA never announces it as a label. The user cannot check what they are filling in while typing.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 2: placeholder-only labelling</div>
+      <div class="demo-inner">
+        <div class="f-group">
+          <!-- no label element — placeholder only -->
+          <input type="email" class="f-input" placeholder="Email address" />
+          <input type="tel" class="f-input" placeholder="Phone number" style="margin-top:8px;" />
+        </div>
+        <div class="announced"><strong>NVDA announces:</strong> "edit text, blank": then when you type, the placeholder disappears and context is gone</div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 1.3.1 / 3.3.2</span>
+          <span class="badge badge-wcag">Placeholder is not a substitute for a label</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S3: error by colour only -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">3</div>
+      <div>
+        <div class="scenario-title">Error indicated by colour only</div>
+        <div class="scenario-meta">Red border. No text. No announcement.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Click Submit below. Tab back to the input with NVDA.
+      <span class="wcag-tag">WCAG 1.4.1 / 3.3.1</span><span class="tool-tag">NVDA</span><br><br>
+      <strong>What to look for:</strong> Red border appears but NVDA announces nothing about an error. No <code>aria-invalid</code>, no error text, no announcement.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 3: colour-only error</div>
+      <div class="demo-inner">
+        <div class="f-group">
+          <label class="f-label" for="s3-email">Email address</label>
+          <input type="email" id="s3-email" class="f-input" id="s3input" />
+          <!-- no error message element, just CSS class added on submit -->
+          <button class="f-btn secondary" onclick="document.getElementById('s3-email').classList.add('error'); return false;">Submit</button>
+        </div>
+        <div class="announced"><strong>NVDA announces after submit:</strong> nothing new: only the red border changes, which NVDA cannot see</div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 1.4.1 / 3.3.1</span>
+          <span class="badge badge-wcag">No aria-invalid, no error text, no role="alert"</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S4: error not linked -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">4</div>
+      <div>
+        <div class="scenario-title">Error message exists but not linked to input</div>
+        <div class="scenario-meta">Error is visible. NVDA cannot connect it to the field.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Click Submit. Tab back to the email field. Listen to NVDA.
+      <span class="wcag-tag">WCAG 3.3.1</span><span class="tool-tag">NVDA</span><span class="tool-tag">axe DevTools</span><br><br>
+      <strong>What to look for:</strong> Error text appears visually but NVDA only announces "invalid, edit text": the error description is not connected via <code>aria-describedby</code>.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 4: error not linked with aria-describedby</div>
+      <div class="demo-inner">
+        <div class="f-group">
+          <label class="f-label" for="s4-email">Email address</label>
+          <!-- aria-invalid set but NO aria-describedby -->
+          <input type="email" id="s4-email" class="f-input" aria-invalid="false" />
+          <span id="s4-err" class="f-error" style="display:none;">Enter a valid email address.</span>
+          <button class="f-btn secondary" onclick="
+            var inp = document.getElementById('s4-email');
+            var err = document.getElementById('s4-err');
+            inp.setAttribute('aria-invalid','true');
+            inp.classList.add('error');
+            err.style.display='block';
+            inp.focus();
+            return false;">Submit</button>
+        </div>
+        <div class="announced"><strong>NVDA announces on refocus:</strong> "invalid, Email address, edit text": error state announced but the error description is NOT read because aria-describedby is missing</div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 3.3.1</span>
+          <span class="badge badge-wcag">aria-invalid set but no aria-describedby linking to error</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S5: vague error -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">5</div>
+      <div>
+        <div class="scenario-title">Error message too vague</div>
+        <div class="scenario-meta">Linked correctly. Useless content.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Click Submit. Listen to NVDA announce the error.
+      <span class="wcag-tag">WCAG 3.3.3</span><span class="tool-tag">NVDA</span><br><br>
+      <strong>What to look for:</strong> Error is announced correctly by NVDA but the message "Invalid" gives the user no information about what to fix.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 5: vague error message</div>
+      <div class="demo-inner">
+        <div class="f-group">
+          <label class="f-label" for="s5-email">Email address</label>
+          <input type="email" id="s5-email" class="f-input" aria-describedby="s5-err" aria-invalid="false" />
+          <span id="s5-err" class="f-error" role="alert" style="display:none;">Invalid</span>
+          <button class="f-btn secondary" onclick="
+            var inp = document.getElementById('s5-email');
+            var err = document.getElementById('s5-err');
+            inp.setAttribute('aria-invalid','true');
+            inp.classList.add('error');
+            err.style.display='block';
+            return false;">Submit</button>
+        </div>
+        <div class="announced"><strong>NVDA announces:</strong> "Invalid": the user knows there is an error but has no idea what to do</div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 3.3.3</span>
+          <span class="badge badge-wcag">Error linked correctly but message too vague</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S6: required by asterisk colour only -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">6</div>
+      <div>
+        <div class="scenario-title">Required field marked by asterisk only: no programmatic meaning</div>
+        <div class="scenario-meta">Visual asterisk. Nothing in the code says "required."</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Tab to the field below. Listen to NVDA.
+      <span class="wcag-tag">WCAG 1.4.1 / 3.3.2</span><span class="tool-tag">NVDA</span><br><br>
+      <strong>What to look for:</strong> NVDA announces "Full name, edit text": no mention of required. The asterisk is visual only, no <code>required</code> or <code>aria-required</code> attribute.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 6: visual asterisk with no code meaning</div>
+      <div class="demo-inner">
+        <div class="f-group">
+          <label class="f-label" for="s6-name">
+            Full name <span style="color:var(--red);">*</span>
+          </label>
+          <!-- no required, no aria-required -->
+          <input type="text" id="s6-name" class="f-input" />
+          <span class="f-hint">* denotes required field</span>
+        </div>
+        <div class="announced"><strong>NVDA announces:</strong> "Full name, edit text": required state not announced. User does not know this field is mandatory.</div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 1.4.1 / 3.3.2</span>
+          <span class="badge badge-wcag">No required or aria-required attribute</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S7: radio group no fieldset -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">7</div>
+      <div>
+        <div class="scenario-title">Radio button group with no fieldset or legend</div>
+        <div class="scenario-meta">Each option is announced. The question is not.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Tab to the radio buttons with NVDA.
+      <span class="wcag-tag">WCAG 1.3.1</span><span class="tool-tag">axe DevTools</span><span class="tool-tag">NVDA</span><br><br>
+      <strong>What to look for:</strong> NVDA announces each option label but never the group question. The user hears "Yes, radio button" with no context about what Yes means.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 7: radio group without fieldset/legend</div>
+      <div class="demo-inner">
+        <!-- no fieldset, no legend -->
+        <p class="f-label" style="margin-bottom:8px;">Do you want to receive marketing emails?</p>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;color:var(--text-2);">
+            <input type="radio" name="s7-marketing" value="yes" style="accent-color:var(--blue);" /> Yes
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;color:var(--text-2);">
+            <input type="radio" name="s7-marketing" value="no" style="accent-color:var(--blue);" /> No
+          </label>
+        </div>
+        <div class="announced"><strong>NVDA announces:</strong> "Yes, radio button, 1 of 2": the group question is never announced because there is no fieldset/legend</div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 1.3.1</span>
+          <span class="badge badge-wcag">Wrap in &lt;fieldset&gt; + &lt;legend&gt;</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S8: missing autocomplete -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-warn">8</div>
+      <div>
+        <div class="scenario-title">Personal data fields missing autocomplete attributes</div>
+        <div class="scenario-meta">Not caught by NVDA. Caught by axe DevTools.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Run axe DevTools on this page. Filter by <code>autocomplete-valid</code>.
+      <span class="wcag-tag">WCAG 1.3.5</span><span class="tool-tag">axe DevTools</span><br><br>
+      <strong>What to look for:</strong> Fields collecting name, email, and phone have no <code>autocomplete</code> attribute. axe flags this. Password managers and autofill cannot assist users.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 8: missing autocomplete attributes</div>
+      <div class="demo-inner">
+        <div class="f-group">
+          <label class="f-label" for="s8-name">Full name</label>
+          <!-- no autocomplete="name" -->
+          <input type="text" id="s8-name" class="f-input" />
+          <label class="f-label" for="s8-email" style="margin-top:12px;">Email address</label>
+          <!-- no autocomplete="email" -->
+          <input type="email" id="s8-email" class="f-input" />
+          <label class="f-label" for="s8-tel" style="margin-top:12px;">Phone number</label>
+          <!-- no autocomplete="tel" -->
+          <input type="tel" id="s8-tel" class="f-input" />
+        </div>
+        <div class="announced"><strong>axe flags:</strong> "autocomplete-valid" violation on each personal data field: autocomplete attribute absent</div>
+        <div class="result-row">
+          <span class="badge badge-warn">Moderate</span>
+          <span class="badge badge-wcag">WCAG 1.3.5</span>
+          <span class="badge badge-wcag">Add autocomplete="name", "email", "tel"</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S9: PASS -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-pass">9</div>
+      <div>
+        <div class="scenario-title">Correct form: the passing example</div>
+        <div class="scenario-meta">Labels, errors, required, fieldset, autocomplete: all correct.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Tab through the form with NVDA. Submit empty to trigger errors. Tab back to each field.
+      <span class="wcag-tag">WCAG 1.3.1 / 1.3.5 / 3.3.1 / 3.3.2 / 3.3.3</span><span class="tool-tag">NVDA</span><span class="tool-tag">axe DevTools</span><br><br>
+      <strong>What to look for:</strong> Each field announces label, type, and required state. On submit, errors are announced immediately. On refocus, error descriptions are re-announced.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 9: fully accessible form</div>
+      <div class="demo-inner">
+        <div role="alert" id="s9-summary" style="display:none;background:var(--red-bg);border:1px solid rgba(248,113,113,0.3);border-radius:8px;padding:0.85rem 1.1rem;margin-bottom:1.25rem;font-size:0.85rem;color:var(--red);">
+          Please fix the errors below before continuing.
+        </div>
+        <div class="f-group" style="max-width:420px;gap:14px;">
+          <!-- name with autocomplete and required -->
+          <div>
+            <label class="f-label" for="s9-name">
+              Full name
+              <span aria-hidden="true" style="color:var(--red);"> *</span>
+              <span class="visually-hidden">required</span>
+            </label>
+            <input type="text" id="s9-name" class="f-input" autocomplete="name" required aria-required="true" aria-describedby="s9-name-err" style="margin-top:4px;" />
+            <span id="s9-name-err" class="f-error" role="alert" style="display:none;margin-top:4px;">Enter your full name.</span>
+          </div>
+          <!-- email with autocomplete and required -->
+          <div>
+            <label class="f-label" for="s9-email">
+              Email address
+              <span aria-hidden="true" style="color:var(--red);"> *</span>
+              <span class="visually-hidden">required</span>
+            </label>
+            <input type="email" id="s9-email" class="f-input" autocomplete="email" required aria-required="true" aria-describedby="s9-email-err" style="margin-top:4px;" />
+            <span id="s9-email-err" class="f-error" role="alert" style="display:none;margin-top:4px;">Enter a valid email address, e.g. name@example.com</span>
+          </div>
+          <!-- radio group with fieldset/legend -->
+          <fieldset style="border:1px solid var(--border);border-radius:8px;padding:1rem;margin:0;">
+            <legend style="font-size:0.88rem;color:var(--text-2);font-weight:500;padding:0 6px;">Do you want to receive marketing emails?</legend>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
+              <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;color:var(--text-2);">
+                <input type="radio" name="s9-marketing" value="yes" style="accent-color:var(--blue);" /> Yes
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;color:var(--text-2);">
+                <input type="radio" name="s9-marketing" value="no" style="accent-color:var(--blue);" /> No
+              </label>
+            </div>
+          </fieldset>
+          <p style="font-size:0.8rem;color:var(--text-3);">Fields marked * are required</p>
+          <button class="f-btn" id="s9-submit">Submit</button>
+        </div>
+        <div class="announced" style="margin-top:1rem;"><strong>NVDA on tab to name field:</strong> "Full name, required, edit text"<br><strong>NVDA on submit with empty fields:</strong> "Please fix the errors below before continuing" (role="alert" fires immediately)<br><strong>NVDA on refocus of name field:</strong> "invalid, Full name, required, Enter your full name, edit text"</div>
+        <div class="result-row">
+          <span class="badge badge-pass">Pass</span>
+          <span class="badge badge-wcag">WCAG 1.3.1 / 1.3.5 / 3.3.1 / 3.3.2 / 3.3.3</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; <a href="../15-Forms-Labels-Errors.html">Back to Blog 15</a>
+    &nbsp;·&nbsp; <a href="../15 A11y Forms Mobile Testing Guide.html">Mobile Testing Guide →</a>
+  </p>
+</footer>
+
+<script>
+document.getElementById('s9-submit').addEventListener('click', function() {
+  var name = document.getElementById('s9-name');
+  var email = document.getElementById('s9-email');
+  var nameErr = document.getElementById('s9-name-err');
+  var emailErr = document.getElementById('s9-email-err');
+  var summary = document.getElementById('s9-summary');
+  var hasError = false;
+
+  if (!name.value.trim()) {
+    name.classList.add('error');
+    name.setAttribute('aria-invalid', 'true');
+    nameErr.style.display = 'block';
+    hasError = true;
+  } else {
+    name.classList.remove('error');
+    name.setAttribute('aria-invalid', 'false');
+    nameErr.style.display = 'none';
+  }
+
+  if (!email.value.includes('@')) {
+    email.classList.add('error');
+    email.setAttribute('aria-invalid', 'true');
+    emailErr.style.display = 'block';
+    hasError = true;
+  } else {
+    email.classList.remove('error');
+    email.setAttribute('aria-invalid', 'false');
+    emailErr.style.display = 'none';
+  }
+
+  if (hasError) {
+    summary.style.display = 'block';
+    name.focus();
+  } else {
+    summary.style.display = 'none';
+    summary.textContent = 'Form submitted successfully.';
+    summary.style.background = 'var(--green-bg)';
+    summary.style.borderColor = 'rgba(74,222,128,0.3)';
+    summary.style.color = 'var(--green)';
+    summary.style.display = 'block';
+  }
+});
+</script>
+
+</body>
+</html>
