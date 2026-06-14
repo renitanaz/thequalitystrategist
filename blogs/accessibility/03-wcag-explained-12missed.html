@@ -3,109 +3,373 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>12 Headings, Landmarks and Skip Links | The Quality Strategist</title>
-  <meta name="description" content="How to validate page structure for accessibility. Heading hierarchy, landmark regions, skip links: what to check, how to check it, and the tools that make it fast." />
+  <title>Blog 03: WCAG 2.1 AA: The 12 Requirements That Catch Teams Off Guard | The Quality Strategist</title>
+  <meta name="description" content="WCAG 2.1 AA has 78 criteria. These 12 are the ones that catch teams off guard: with visual pass and fail examples and the tool to catch each one." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root {
-      --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
-      --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
-      --green:#4ade80; --green-bg:rgba(74,222,128,0.07);
-      --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07);
-      --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07);
-      --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.07);
-      --red:#f87171; --red-bg:rgba(248,113,113,0.07);
+      --bg:        #0d0d0d;
+      --bg2:       #161616;
+      --bg3:       #1e1e1e;
+      --border:    #2e2e2e;
+      --text:      #f0f0f0;
+      --text-2:    #c8c8c8;
+      --text-3:    #8a8a8a;
+      --green:     #4ade80;
+      --green-bg:  rgba(74,222,128,0.07);
+      --blue:      #60a5fa;
+      --blue-bg:   rgba(96,165,250,0.07);
+      --amber:     #fbbf24;
+      --amber-bg:  rgba(251,191,36,0.07);
+      --purple:    #a78bfa;
+      --purple-bg: rgba(167,139,250,0.07);
+      --red:       #f87171;
+      --red-bg:    rgba(248,113,113,0.07);
     }
-    html { scroll-behavior:smooth; }
-    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
-    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
-    .skip-link:focus { top:0; }
-    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
-    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
-    .nav-links { display:flex; gap:2rem; list-style:none; }
-    .nav-links a { color:var(--text-3); text-decoration:none; font-size:0.85rem; transition:color 0.2s; }
-    .nav-links a:hover { color:var(--text); }
-    .blog-header { max-width:900px; margin:0 auto; padding:4rem 2rem 2.5rem; border-bottom:1px solid var(--border); }
-    .breadcrumb { font-size:0.78rem; color:var(--text-3); margin-bottom:1.5rem; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; }
-    .breadcrumb a { color:var(--text-3); text-decoration:none; }
-    .breadcrumb a:hover { color:var(--text-2); }
-    .blog-tags { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.25rem; }
-    .tag { font-size:0.7rem; padding:3px 10px; border-radius:99px; background:var(--bg3); color:var(--text-3); border:1px solid var(--border); letter-spacing:0.04em; text-transform:uppercase; font-weight:500; }
-    .tag.accent { background:var(--purple-bg); color:var(--purple); border-color:rgba(167,139,250,0.25); }
-    .blog-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.85rem,4vw,2.6rem); line-height:1.2; letter-spacing:-0.02em; color:var(--text); margin-bottom:0.75rem; }
-    .blog-header h1 em { font-style:italic; color:var(--purple); }
-    .blog-subtitle { font-family:'DM Serif Display',serif; font-size:1.1rem; font-style:italic; color:var(--text-3); margin-bottom:1.25rem; }
-    .blog-meta { display:flex; align-items:center; gap:1.25rem; font-size:0.82rem; color:var(--text-3); flex-wrap:wrap; }
-    .blog-meta .series { color:var(--text-2); font-weight:500; }
-    main.blog-body { display:block; max-width:900px; margin:0 auto; padding:3rem 2rem 5rem; }
-    .toc { display:block; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.5rem 1.75rem; margin:0 0 3rem 0; }
-    .toc-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.9rem; }
-    .toc ol { padding-left:1.25rem; }
-    .toc ol li { margin-bottom:0.45rem; }
-    .toc ol li a { font-size:0.88rem; color:var(--text-2); text-decoration:none; transition:color 0.2s; }
-    .toc ol li a:hover { color:var(--purple); }
-    .blog-body h2 { font-family:'DM Serif Display',serif; font-size:1.5rem; letter-spacing:-0.01em; color:var(--text); margin:3.5rem 0 1.1rem; padding-top:1rem; border-top:1px solid var(--border); }
-    .blog-body h3 { font-size:1rem; font-weight:500; color:var(--text); margin:1.75rem 0 0.5rem; }
-    .blog-body p { color:var(--text-2); margin-bottom:1.25rem; font-weight:300; }
-    .blog-body p strong { color:var(--text); font-weight:500; }
-    .blog-body ul, .blog-body ol { padding-left:1.5rem; margin-bottom:1.25rem; color:var(--text-2); font-weight:300; }
-    .blog-body li { margin-bottom:0.45rem; }
-    .blog-body li strong { color:var(--text); font-weight:500; }
-    code { background:var(--bg3); padding:1px 6px; border-radius:3px; font-size:0.85em; color:var(--text-2); font-family:monospace; }
-    .callout { display:block; background:var(--purple-bg); border-left:3px solid var(--purple); border-radius:0 10px 10px 0; padding:1.25rem 1.5rem; margin:1.75rem 0; font-size:0.95rem; color:var(--text); font-style:italic; line-height:1.6; }
-    .callout.green { background:var(--green-bg); border-color:var(--green); }
-    .callout.amber { background:var(--amber-bg); border-color:var(--amber); }
-    .takeaway { display:block; background:var(--green-bg); border:1px solid rgba(74,222,128,0.2); border-radius:10px; padding:1.25rem 1.5rem; margin:1.75rem 0; }
-    .takeaway .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--green); font-weight:500; margin-bottom:0.5rem; display:block; }
-    .takeaway p { color:var(--text-2); font-size:0.93rem; margin:0; }
-    .tool { display:inline; background:var(--purple-bg); color:var(--purple); border:1px solid rgba(167,139,250,0.2); border-radius:4px; padding:1px 7px; font-size:0.85em; font-weight:500; }
-    .blog-ref { display:inline-flex; align-items:center; gap:6px; background:var(--bg2); border:1px solid var(--border); border-radius:6px; padding:3px 10px; font-size:0.78rem; color:var(--text-2); text-decoration:none; transition:border-color 0.2s,color 0.2s; white-space:nowrap; }
-    .blog-ref:hover { border-color:var(--purple); color:var(--purple); }
-    .blog-ref::before { content:'↗'; font-size:0.7rem; color:var(--text-3); }
-    .key { display:inline-flex; align-items:center; justify-content:center; background:var(--bg3); border:1px solid #444; border-bottom:3px solid #444; border-radius:5px; padding:2px 8px; font-family:monospace; font-size:0.82em; color:var(--text); min-width:28px; white-space:nowrap; }
-    .code-pair { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:1.75rem 0; }
-    .code-box { border-radius:8px; padding:1rem 1.1rem; }
-    .code-fail { background:var(--red-bg); border:1px solid rgba(248,113,113,0.2); }
-    .code-pass { background:var(--green-bg); border:1px solid rgba(74,222,128,0.2); }
-    .code-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.07em; font-weight:500; margin-bottom:8px; }
-    .code-fail .code-label { color:var(--red); }
-    .code-pass .code-label { color:var(--green); }
-    .c-block { font-family:monospace; font-size:0.82rem; color:var(--text-2); line-height:1.7; white-space:pre; overflow-x:auto; }
-    .table-wrap { display:block; overflow-x:auto; margin:1.75rem 0; border-radius:10px; border:1px solid var(--border); }
-    table { width:100%; border-collapse:collapse; font-size:0.875rem; }
-    thead th { background:var(--bg2); padding:10px 14px; text-align:left; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-3); font-weight:500; border-bottom:1px solid var(--border); white-space:nowrap; }
-    tbody td { padding:10px 14px; border-bottom:1px solid var(--border); color:var(--text-2); vertical-align:top; line-height:1.55; }
-    tbody tr:last-child td { border-bottom:none; }
-    tbody td:first-child { color:var(--text); font-weight:500; font-family:monospace; font-size:0.85rem; }
-    tbody tr:hover td { background:var(--bg2); }
-    .blog-illustration { margin:1.75rem 0; border:none; padding:0; }
-    .series-nav { display:block; margin-top:4rem; padding-top:2rem; border-top:1px solid var(--border); }
-    .series-nav .label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.75rem; display:block; }
-    .nav-pair { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    .nav-blog { display:flex; align-items:center; gap:1rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.1rem 1.25rem; text-decoration:none; transition:border-color 0.2s,background 0.2s; }
-    .nav-blog:hover { border-color:#444; background:var(--bg3); }
-    .nav-blog-arrow { color:var(--text-3); font-size:1rem; flex-shrink:0; }
-    .nav-blog-title { font-size:0.88rem; font-weight:500; color:var(--text); }
-    .nav-blog-sub { font-size:0.75rem; color:var(--text-3); margin-top:2px; }
-    .references { display:block; margin-top:2.5rem; padding:1.5rem 1.75rem; background:var(--bg2); border:1px solid var(--border); border-radius:10px; }
-    .ref-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:1rem; }
-    .references ul { list-style:none; padding:0; }
-    .references ul li { margin-bottom:0.5rem; }
-    .references ul li a { font-size:0.85rem; color:var(--text-2); text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; transition:color 0.2s; }
-    .references ul li a:hover { color:var(--green); }
-    .references ul li a::before { content:'↗'; font-size:0.75rem; color:var(--text-3); }
-    footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
-    footer a { color:var(--text-3); text-decoration:none; }
-    .visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
-    @media (max-width:620px) {
-      nav.site-nav { padding:0 1.25rem; }
-      .nav-links { display:none; }
-      .blog-header, main.blog-body { padding-left:1.25rem; padding-right:1.25rem; }
-      .blog-header { padding-top:2.5rem; }
-      .code-pair, .nav-pair { grid-template-columns:1fr; }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      line-height: 1.8;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .skip-link {
+      position: absolute; top: -100%; left: 1rem;
+      background: var(--green); color: #000;
+      padding: 0.5rem 1rem; border-radius: 0 0 6px 6px;
+      font-size: 0.85rem; font-weight: 500;
+      text-decoration: none; z-index: 999;
+    }
+    .skip-link:focus { top: 0; }
+
+    nav.site-nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(13,13,13,0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 56px;
+    }
+    .nav-logo { font-family: 'DM Serif Display', serif; font-size: 1rem; color: var(--text); text-decoration: none; }
+    .nav-logo:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; border-radius: 3px; }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { color: var(--text-3); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; border-radius: 3px; }
+
+    .blog-header {
+      max-width: 900px; margin: 0 auto;
+      padding: 4rem 2rem 2.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .breadcrumb {
+      font-size: 0.78rem; color: var(--text-3);
+      margin-bottom: 1.5rem;
+      display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+    }
+    .breadcrumb a { color: var(--text-3); text-decoration: none; transition: color 0.2s; }
+    .breadcrumb a:hover { color: var(--text-2); }
+    .breadcrumb a:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; border-radius: 2px; }
+
+    .blog-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.25rem; }
+    .tag {
+      font-size: 0.7rem; padding: 3px 10px; border-radius: 99px;
+      background: var(--bg3); color: var(--text-3);
+      border: 1px solid var(--border);
+      letter-spacing: 0.04em; text-transform: uppercase; font-weight: 500;
+    }
+    .tag.accent { background: var(--blue-bg); color: var(--blue); border-color: rgba(96,165,250,0.25); }
+
+    .blog-header h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(1.85rem, 4vw, 2.6rem);
+      line-height: 1.2; letter-spacing: -0.02em;
+      color: var(--text); margin-bottom: 1.25rem;
+    }
+    .blog-header h1 em { font-style: italic; color: var(--blue); }
+
+    .blog-meta {
+      display: flex; align-items: center; gap: 1.25rem;
+      font-size: 0.82rem; color: var(--text-3); flex-wrap: wrap;
+    }
+    .blog-meta .series { color: var(--text-2); font-weight: 500; }
+
+    /* HERO SVG */
+    .hero-visual { max-width: 900px; margin: 0 auto; padding: 2.5rem 2rem 0; }
+    .hero-svg-wrap {
+      width: 100%; border-radius: 12px; overflow: hidden;
+      border: 1px solid var(--border); background: var(--bg2);
+    }
+
+    main.blog-body {
+      display: block; max-width: 900px;
+      margin: 0 auto; padding: 3rem 2rem 5rem;
+    }
+
+    .toc {
+      display: block; background: var(--bg2);
+      border: 1px solid var(--border); border-radius: 10px;
+      padding: 1.5rem 1.75rem; margin: 0 0 3rem 0;
+    }
+    .toc-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.09em; color: var(--text-3); font-weight: 500; margin-bottom: 0.9rem; }
+    .toc ol { padding-left: 1.25rem; }
+    .toc ol li { margin-bottom: 0.45rem; }
+    .toc ol li a { font-size: 0.88rem; color: var(--text-2); text-decoration: none; transition: color 0.2s; }
+    .toc ol li a:hover { color: var(--blue); }
+    .toc ol li a:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; border-radius: 2px; }
+
+    .blog-body h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.5rem; letter-spacing: -0.01em;
+      color: var(--text); margin: 3.5rem 0 1.1rem;
+      padding-top: 1rem; border-top: 1px solid var(--border);
+    }
+    .blog-body h3 { font-size: 1rem; font-weight: 500; color: var(--text); margin: 1.75rem 0 0.5rem; }
+    .blog-body p { color: var(--text-2); margin-bottom: 1.25rem; font-weight: 300; }
+    .blog-body p strong { color: var(--text); font-weight: 500; }
+    .blog-body ul, .blog-body ol { padding-left: 1.5rem; margin-bottom: 1.25rem; color: var(--text-2); font-weight: 300; }
+    .blog-body li { margin-bottom: 0.45rem; }
+    .blog-body li strong { color: var(--text); font-weight: 500; }
+
+    .callout {
+      display: block; background: var(--blue-bg);
+      border-left: 3px solid var(--blue);
+      border-radius: 0 10px 10px 0;
+      padding: 1.25rem 1.5rem; margin: 1.75rem 0;
+      font-size: 1rem; color: var(--text);
+      font-style: italic; line-height: 1.6;
+    }
+
+    .takeaway {
+      display: block; background: var(--green-bg);
+      border: 1px solid rgba(74,222,128,0.2);
+      border-radius: 10px; padding: 1.25rem 1.5rem; margin: 1.75rem 0;
+    }
+    .takeaway .label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.09em; color: var(--green); font-weight: 500; margin-bottom: 0.5rem; }
+    .takeaway p { color: var(--text-2); font-size: 0.93rem; margin: 0; }
+
+    /* POUR PRINCIPLE CARDS */
+    .pour-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px; margin: 1.75rem 0;
+    }
+    .pour-card {
+      border-radius: 10px; padding: 1.25rem 1.4rem;
+      border: 1px solid var(--border);
+    }
+    .pour-letter {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2.5rem; line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+    .pour-word { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; margin-bottom: 0.6rem; }
+    .pour-desc { font-size: 0.82rem; color: var(--text-2); line-height: 1.6; }
+    .pour-example { font-size: 0.78rem; color: var(--text-3); margin-top: 0.6rem; font-style: italic; }
+
+    /* LEVEL TABLE */
+    .table-wrap {
+      display: block; overflow-x: auto;
+      margin: 1.75rem 0; border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    thead th {
+      background: var(--bg2); padding: 10px 14px;
+      text-align: left; font-size: 0.68rem;
+      text-transform: uppercase; letter-spacing: 0.07em;
+      color: var(--text-3); font-weight: 500;
+      border-bottom: 1px solid var(--border); white-space: nowrap;
+    }
+    tbody td {
+      padding: 11px 14px; border-bottom: 1px solid var(--border);
+      color: var(--text-2); vertical-align: top; line-height: 1.55;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody td:first-child { color: var(--text); font-weight: 500; }
+    tbody tr:hover td { background: var(--bg2); }
+
+    /* QUICK REFERENCE CHECKLIST */
+    .qr-grid {
+      display: flex; flex-direction: column;
+      gap: 8px; margin: 1.75rem 0;
+    }
+    .qr-item {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1rem 1.25rem;
+      display: grid;
+      grid-template-columns: 32px 1fr auto;
+      gap: 12px; align-items: start;
+    }
+    .qr-num {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.1rem; color: var(--text-3); line-height: 1.2;
+    }
+    .qr-content {}
+    .qr-area {
+      font-size: 0.68rem; text-transform: uppercase;
+      letter-spacing: 0.07em; color: var(--text-3);
+      font-weight: 500; margin-bottom: 3px;
+    }
+    .qr-req {
+      font-size: 0.9rem; font-weight: 500;
+      color: var(--text); margin-bottom: 4px;
+    }
+    .qr-detail { font-size: 0.8rem; color: var(--text-2); line-height: 1.5; }
+    .qr-wcag {
+      font-size: 0.68rem; color: var(--text-3);
+      background: var(--bg3); border: 1px solid var(--border);
+      padding: 2px 8px; border-radius: 99px;
+      white-space: nowrap; align-self: flex-start;
+      font-weight: 500; letter-spacing: 0.04em;
+    }
+
+
+    /* REQ INTRO */
+    .req-intro { font-size: 0.88rem; color: var(--text-2); margin-bottom: 0.85rem; font-weight: 300; }
+
+    /* VISUAL EXAMPLE */
+    .visual-example { margin: 1rem 0 0.75rem; }
+
+    /* TOOL CALLOUT */
+    .tool-callout {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 0.75rem 1rem;
+      font-size: 0.82rem; color: var(--text-2);
+      margin: 0.75rem 0 1.75rem;
+    }
+    .tool-list {
+      list-style: none; padding: 0;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .tool-list li {
+      display: flex; align-items: center; gap: 8px;
+      padding-left: 0.25rem;
+    }
+    .tool-list li::before {
+      content: "·"; color: var(--text-3); font-size: 1rem; flex-shrink: 0;
+    }
+    .tool-label {
+      font-size: 0.68rem; text-transform: uppercase;
+      letter-spacing: 0.07em; color: var(--text-3);
+      font-weight: 500; margin-bottom: 6px; display: block;
+    }
+    .tool-item {
+      font-size: 0.72rem; font-weight: 500;
+      padding: 2px 8px; border-radius: 99px;
+      letter-spacing: 0.03em;
+    }
+    .tool-wave    { background: rgba(96,165,250,0.12); color: var(--blue); }
+    .tool-axe     { background: rgba(167,139,250,0.12); color: var(--purple); }
+    .tool-insights{ background: rgba(251,191,36,0.12); color: var(--amber); }
+    .tool-chrome  { background: rgba(74,222,128,0.12); color: var(--green); }
+    .tool-manual  { background: rgba(248,113,113,0.12); color: var(--red); }
+
+    /* PASS FAIL EXAMPLES */
+    .pass-fail {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px; margin: 1.5rem 0 0.5rem;
+    }
+    .pf-box { border-radius: 8px; padding: 0.9rem 1.1rem; }
+    .pf-pass { background: var(--green-bg); border: 1px solid rgba(74,222,128,0.2); }
+    .pf-fail { background: var(--red-bg); border: 1px solid rgba(248,113,113,0.2); }
+    .pf-label {
+      font-size: 0.68rem; text-transform: uppercase;
+      letter-spacing: 0.07em; font-weight: 500; margin-bottom: 5px;
+    }
+    .pf-pass .pf-label { color: var(--green); }
+    .pf-fail .pf-label { color: var(--red); }
+    .pf-text { font-size: 0.82rem; color: var(--text-2); line-height: 1.5; font-family: monospace; }
+
+    /* CONFORMANCE LEVELS */
+    .level-cards {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 10px; margin: 1.75rem 0;
+    }
+    .level-card {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1.1rem 1.25rem; text-align: center;
+    }
+    .level-badge {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.8rem; margin-bottom: 6px;
+    }
+    .level-name {
+      font-size: 0.78rem; font-weight: 500;
+      color: var(--text); margin-bottom: 6px;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .level-desc { font-size: 0.78rem; color: var(--text-2); line-height: 1.5; }
+    .level-legal {
+      font-size: 0.7rem; margin-top: 8px;
+      padding: 3px 8px; border-radius: 99px;
+      display: inline-block;
+    }
+
+    /* SERIES NAV */
+    .series-nav { display: block; margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+    .series-nav .label {
+      font-size: 0.7rem; text-transform: uppercase;
+      letter-spacing: 0.09em; color: var(--text-3);
+      font-weight: 500; margin-bottom: 0.75rem; display: block;
+    }
+    .nav-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .nav-blog {
+      display: flex; align-items: center; gap: 1rem;
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1.1rem 1.25rem;
+      text-decoration: none; transition: border-color 0.2s, background 0.2s;
+    }
+    .nav-blog:hover { border-color: #444; background: var(--bg3); }
+    .nav-blog:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; border-radius: 10px; }
+    .nav-blog-arrow { color: var(--text-3); font-size: 1rem; flex-shrink: 0; }
+    .nav-blog-title { font-size: 0.88rem; font-weight: 500; color: var(--text); }
+    .nav-blog-sub { font-size: 0.75rem; color: var(--text-3); margin-top: 2px; }
+
+    .references {
+      display: block; margin-top: 2.5rem;
+      padding: 1.5rem 1.75rem; background: var(--bg2);
+      border: 1px solid var(--border); border-radius: 10px;
+    }
+    .ref-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.09em; color: var(--text-3); font-weight: 500; margin-bottom: 1rem; }
+    .references ul { list-style: none; padding: 0; }
+    .references ul li { margin-bottom: 0.5rem; }
+    .references ul li a { font-size: 0.85rem; color: var(--text-2); text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem; transition: color 0.2s; }
+    .references ul li a:hover { color: var(--green); }
+    .references ul li a:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; border-radius: 2px; }
+    .references ul li a::before { content: '↗'; font-size: 0.75rem; color: var(--text-3); }
+
+    footer {
+      border-top: 1px solid var(--border); padding: 2rem;
+      text-align: center; font-size: 0.78rem; color: var(--text-3);
+    }
+    footer a { color: var(--text-3); text-decoration: none; }
+    footer a:hover { color: var(--text-2); }
+    footer a:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; border-radius: 2px; }
+
+    .visually-hidden {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+    }
+
+    @media (max-width: 620px) {
+      nav.site-nav { padding: 0 1.25rem; }
+      .nav-links { display: none; }
+      .blog-header, .hero-visual, main.blog-body { padding-left: 1.25rem; padding-right: 1.25rem; }
+      .blog-header { padding-top: 2.5rem; }
+      .pour-grid { grid-template-columns: 1fr; }
+      .level-cards { grid-template-columns: 1fr; }
+      .pass-fail { grid-template-columns: 1fr; }
+      .nav-pair { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -129,435 +393,897 @@
     <span aria-hidden="true">›</span>
     <span>Shift-Left Accessibility</span>
     <span aria-hidden="true">›</span>
-    <span aria-current="page">12 of 38</span>
+    <span aria-current="page">03 of 36</span>
   </nav>
   <div class="blog-tags" aria-label="Blog categories">
-    <span class="tag accent">Manual Testing</span>
-    <span class="tag">Structure</span>
-    <span class="tag">NVDA</span>
-    <span class="tag">WAVE</span>
+    <span class="tag accent">WCAG</span>
+    <span class="tag">Foundation</span>
+    <span class="tag">Standards</span>
+    <span class="tag">QA</span>
   </div>
-  <h1>12 Headings, Landmarks and Skip Links: <em>How to Validate Page Structure</em></h1>
-  <p class="blog-subtitle">The invisible architecture of a page. Screen reader users navigate by it. Most pages break it.</p>
+  <h1>03 WCAG 2.1 AA: The 12 Requirements That Catch Teams Off Guard</h1>
+  <p class="blog-subtitle"><em>With pass and fail examples for each</em></p>
   <div class="blog-meta">
     <span class="series">Series: Shift-Left Accessibility</span>
     <span aria-hidden="true">·</span>
-    <span>Blog 12 of 38</span>
+    <span>Blog 03 of 36</span>
     <span aria-hidden="true">·</span>
-    <span>8 min read</span>
+    <span>9 min read</span>
   </div>
 </header>
+
+<!-- HERO SVG -->
+<div class="hero-visual" aria-hidden="true">
+  <div class="hero-svg-wrap">
+    <svg viewBox="0 0 740 200" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;height:auto;">
+      <rect width="740" height="200" fill="#060d0f"/>
+      <g stroke="#0e2027" stroke-width="1">
+        <line x1="0" y1="50"  x2="740" y2="50"/>
+        <line x1="0" y1="100" x2="740" y2="100"/>
+        <line x1="0" y1="150" x2="740" y2="150"/>
+        <line x1="185" y1="0" x2="185" y2="200"/>
+        <line x1="370" y1="0" x2="370" y2="200"/>
+        <line x1="555" y1="0" x2="555" y2="200"/>
+      </g>
+      <!-- P -->
+      <text x="80"  y="130" text-anchor="middle" font-family="Georgia,serif" font-size="72" fill="#60a5fa" opacity="0.18" font-weight="700">P</text>
+      <text x="80"  y="130" text-anchor="middle" font-family="Georgia,serif" font-size="72" fill="#60a5fa" opacity="0.9" font-weight="700" clip-path="url(#cp1)">P</text>
+      <text x="80"  y="160" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#60a5fa" opacity="0.7" letter-spacing="2">PERCEIVABLE</text>
+      <!-- O -->
+      <text x="265" y="130" text-anchor="middle" font-family="Georgia,serif" font-size="72" fill="#4ade80" opacity="0.18" font-weight="700">O</text>
+      <text x="265" y="130" text-anchor="middle" font-family="Georgia,serif" font-size="72" fill="#4ade80" opacity="0.9" font-weight="700" clip-path="url(#cp2)">O</text>
+      <text x="265" y="160" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#4ade80" opacity="0.7" letter-spacing="2">OPERABLE</text>
+      <!-- U -->
+      <text x="450" y="130" text-anchor="middle" font-family="Georgia,serif" font-size="72" fill="#fbbf24" opacity="0.18" font-weight="700">U</text>
+      <text x="450" y="130" text-anchor="middle" font-family="Georgia,serif" font-size="72" fill="#fbbf24" opacity="0.9" font-weight="700" clip-path="url(#cp3)">U</text>
+      <text x="450" y="160" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#fbbf24" opacity="0.7" letter-spacing="2">UNDERSTANDABLE</text>
+      <!-- R -->
+      <text x="635" y="130" text-anchor="middle" font-family="Georgia,serif" font-size="72" fill="#a78bfa" opacity="0.18" font-weight="700">R</text>
+      <text x="635" y="130" text-anchor="middle" font-family="Georgia,serif" font-size="72" fill="#a78bfa" opacity="0.9" font-weight="700" clip-path="url(#cp4)">R</text>
+      <text x="635" y="160" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#a78bfa" opacity="0.7" letter-spacing="2">ROBUST</text>
+      <!-- clip paths for partial fill effect -->
+      <defs>
+        <clipPath id="cp1"><rect x="0"   y="100" width="185" height="100"/></clipPath>
+        <clipPath id="cp2"><rect x="185" y="60"  width="185" height="140"/></clipPath>
+        <clipPath id="cp3"><rect x="370" y="40"  width="185" height="160"/></clipPath>
+        <clipPath id="cp4"><rect x="555" y="20"  width="185" height="180"/></clipPath>
+      </defs>
+      <text x="370" y="26" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#f0f0f0" opacity="0.25" letter-spacing="4">WCAG 2.1 AA — THE FOUR PRINCIPLES</text>
+    </svg>
+  </div>
+</div>
 
 <main class="blog-body" id="main-content">
 
   <nav class="toc" aria-label="Table of contents">
     <div class="toc-title" id="toc-heading">In this blog</div>
     <ol aria-labelledby="toc-heading">
-      <li><a href="#why-structure">Why page structure matters</a></li>
-      <li><a href="#headings">Heading hierarchy: the rules and common failures</a></li>
-      <li><a href="#landmarks">Landmark regions: what they are and what to check</a></li>
-      <li><a href="#skip-links">Skip links: the first Tab stop rule</a></li>
-      <li><a href="#platform-testing">Testing headings and landmarks by platform</a></li>
-      <li><a href="#how-to-test">How to test: tools and manual checks</a></li>
-      <li><a href="#defects">Common defects and how to write them</a></li>
+      <li><a href="#what-is-wcag">What WCAG 2.1 actually is</a></li>
+      <li><a href="#levels">Level A, AA and AAA: what the difference means</a></li>
+      <li><a href="#pour">The four POUR principles</a></li>
+      <li><a href="#quick-reference">The 12 requirements that catch teams off guard</a></li>
+      <li><a href="#pass-fail">Pass and fail examples for each</a></li>
+      <li><a href="#full-checklist">Beyond the 12: the full checklist</a></li>
+      <li><a href="#how-to-test">How to test: tiers, platforms and practice</a></li>
+      <li><a href="#mobile-testing">Mobile testing</a></li>
     </ol>
   </nav>
 
   <!-- 1 -->
-  <h2 id="why-structure">1. Why Page Structure Matters</h2>
+  <h2 id="how-to-test">Testing the 12 Most Commonly Missed WCAG Criteria</h2>
+  <h3>Tier 1: Pipeline automation</h3>
+  <p>Automation covers a subset of the 12 criteria: 1.1.1 (alt text present), 1.3.1 (info and relationships), 1.4.3 (contrast), 2.4.2 (page title), 3.1.1 (language), 4.1.1 (parsing), 4.1.2 (name/role/value). Run <span class="tool">axe-core</span> with <code>withTags(['wcag2a','wcag2aa'])</code>. Use the <a href="A11y-Test-Playground/27 A11y Test Playground - Axe DevTools.html" style="color:var(--blue);">Axe DevTools Playground</a> to see these flagged in a real scan.</p>
+  <h3>Tier 2: Semi-automated tools</h3>
+  <p><span class="tool">Accessibility Insights Assessment</span> provides a guided walkthrough of every WCAG 2.1 AA criterion including the ones automation misses. It records pass/fail per criterion and exports an HTML report. Use it for the non-automatable criteria in this blog.</p>
+  <h3>Tier 3: Manual</h3>
+  <p>The 12 missed criteria that require manual verification: 1.3.3 (sensory characteristics), 1.4.1 (use of colour), 2.1.1 (keyboard), 2.4.3 (focus order), 2.4.4 (link purpose), 2.4.7 (focus visible), 3.2.1 (on focus), 3.3.1 (error identification), 3.3.2 (labels or instructions). Test with keyboard, NVDA + Firefox (Windows), VoiceOver + Safari (Mac and iOS), TalkBack on Android.</p>
 
-  <p>Sighted users scan a page visually: they see headings, sections, sidebars, and navigation areas at a glance. Screen reader users do the same thing: but using structure instead of visual layout. They press <span class="key">H</span> to jump between headings, <span class="key">R</span> to jump between landmark regions, and they expect a skip link at the top of every page to jump over repeated navigation.</p>
+  <h2 id="what-is-wcag">1. What WCAG 2.1 Actually Is</h2>
 
-  <p>When that structure is missing, broken, or inconsistent, navigating a page by screen reader is like reading a document where someone removed all the paragraph breaks and section titles. The content is there. Finding anything is exhausting.</p>
+  <p>The Web Content Accessibility Guidelines (WCAG) 2.1 is the W3C standard that defines what an accessible digital product looks like. It is published by the World Wide Web Consortium and is the basis for accessibility law in the US, EU, UK, Australia, and most other jurisdictions.</p>
 
-  <div class="callout" role="note">
-    Heading structure, landmark regions, and skip links are not primarily a visual concern. They are navigation infrastructure for non-visual users. They cannot be seen in a browser. They can only be tested with the right tools.
-  </div>
+  <p>WCAG 2.1 has <strong>78 success criteria</strong> across four principles. The version number matters: WCAG 2.1 added 17 new criteria on top of WCAG 2.0, primarily covering mobile, cognitive, and low-vision needs. WCAG 2.2 has since been published with further additions, but <strong>2.1 AA is still the legal baseline in most jurisdictions</strong>.</p>
 
   <!-- 2 -->
-  <h2 id="headings">2. Heading Hierarchy: The Rules and Common Failures</h2>
+  <h2 id="levels">2. Level A, AA and AAA: What the Difference Means</h2>
 
-  <p>The rules are covered in <a href="06-Content-Authoring-Accessibility-Rules.html" class="blog-ref">Blog 06</a>. This section focuses on how to detect violations in a built page.</p>
+  <p>Each WCAG success criterion is assigned one of three conformance levels:</p>
 
-  <p>What a correct heading structure looks like on a typical page:</p>
-
-  <div class="code-pair">
-    <div class="code-box code-fail">
-      <div class="code-label">Broken: what QA typically finds</div>
-      <div class="c-block">&lt;h1&gt;Homepage&lt;/h1&gt;
-&lt;h3&gt;Latest news&lt;/h3&gt;  &lt;!-- H2 skipped --&gt;
-&lt;h1&gt;About us&lt;/h1&gt;    &lt;!-- second H1 --&gt;
-&lt;div class="title"&gt;  &lt;!-- heading styled
-  Our story          with CSS, not markup --&gt;
-&lt;/div&gt;
-&lt;h4&gt;Founded 2010&lt;/h4&gt; &lt;!-- H2, H3 skipped --&gt;</div>
+  <div class="level-cards" role="list" aria-label="WCAG conformance levels">
+    <div class="level-card" role="listitem">
+      <div class="level-badge" style="color:var(--text-3)">A</div>
+      <div class="level-name">Minimum</div>
+      <div class="level-desc">The most critical requirements. Failing these makes content inaccessible to many users entirely.</div>
+      <span class="level-legal" style="background:var(--red-bg);color:var(--red)">Required baseline</span>
     </div>
-    <div class="code-box code-pass">
-      <div class="code-label">Correct structure</div>
-      <div class="c-block">&lt;h1&gt;Homepage&lt;/h1&gt;
-&lt;h2&gt;Latest news&lt;/h2&gt;
-  &lt;h3&gt;Article title&lt;/h3&gt;
-  &lt;h3&gt;Article title&lt;/h3&gt;
-&lt;h2&gt;About us&lt;/h2&gt;
-  &lt;h3&gt;Our story&lt;/h3&gt;
-    &lt;h4&gt;Founded 2010&lt;/h4&gt;</div>
+    <div class="level-card" role="listitem" style="border-color:rgba(96,165,250,0.3)">
+      <div class="level-badge" style="color:var(--blue)">AA</div>
+      <div class="level-name">Standard</div>
+      <div class="level-desc">The legal target in most jurisdictions. Covers the majority of real-world accessibility needs.</div>
+      <span class="level-legal" style="background:var(--blue-bg);color:var(--blue)">Legal requirement</span>
+    </div>
+    <div class="level-card" role="listitem">
+      <div class="level-badge" style="color:var(--green)">AAA</div>
+      <div class="level-name">Enhanced</div>
+      <div class="level-desc">The highest level. Not required by law: often not achievable for all content types.</div>
+      <span class="level-legal" style="background:var(--green-bg);color:var(--green)">Best practice</span>
     </div>
   </div>
 
-  <h3>Common failures</h3>
-  <ul>
-    <li><strong>Multiple H1s</strong>: one per page only. SPAs often add a second H1 when a route changes without updating the original.</li>
-    <li><strong>Skipped levels</strong>: H1 to H3, or H2 to H4. Often happens when developers choose heading levels for visual size, not structure.</li>
-    <li><strong>Missing headings entirely</strong>: large page sections with no heading. Screen reader users cannot jump to them.</li>
-    <li><strong>Visual headings not marked up</strong>: text styled to look like a heading with CSS but using a <code>&lt;div&gt;</code> or <code>&lt;p&gt;</code>. Invisible to screen readers.</li>
-    <li><strong>Heading levels that change across pages</strong>: a component that is H2 on one page and H3 on another. Common in reusable components without context-aware heading levels.</li>
-  </ul>
-
-  <!-- ILLUSTRATION: screen reader navigating headings -->
-  <figure class="blog-illustration" aria-label="Screen reader user navigating headings with H key versus sighted user scanning visually">
-    <svg viewBox="0 0 680 200" width="100%" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#161616;">
-      <title>Screen reader heading navigation vs visual scanning</title>
-      <desc>Left: sighted user sees visual layout of a page with sections. Right: screen reader user presses H key and gets a flat list of headings: broken structure revealed immediately.</desc>
-      <rect width="680" height="200" fill="#161616"/>
-      <!-- LEFT: visual page -->
-      <text x="14" y="20" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80" letter-spacing="1">SIGHTED USER SEES</text>
-      <rect x="14" y="28" width="296" height="158" rx="6" fill="#0d1a0d" stroke="#4ade80" stroke-width="0.5"/>
-      <!-- page mock -->
-      <rect x="26" y="40" width="272" height="14" rx="2" fill="#2e3a18"/>
-      <text x="162" y="51" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4ade80">Navigation bar</text>
-      <text x="162" y="72" text-anchor="middle" font-family="DM Serif Display,serif" font-size="14" fill="#f0f0f0">Homepage</text>
-      <rect x="26" y="80" width="272" height="2" fill="#2e2e2e"/>
-      <text x="162" y="96" text-anchor="middle" font-family="DM Serif Display,serif" font-size="11" fill="#c8c8c8">Latest news</text>
-      <text x="162" y="112" text-anchor="middle" font-family="DM Serif Display,serif" font-size="9" fill="#8a8a8a">Article one</text>
-      <text x="162" y="126" text-anchor="middle" font-family="DM Serif Display,serif" font-size="9" fill="#8a8a8a">Article two</text>
-      <rect x="26" y="132" width="272" height="2" fill="#2e2e2e"/>
-      <text x="162" y="148" text-anchor="middle" font-family="DM Serif Display,serif" font-size="11" fill="#c8c8c8">About us</text>
-      <text x="162" y="170" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#555">Visual layout looks fine.</text>
-      <text x="162" y="182" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#555">Structure may be broken underneath.</text>
-
-      <!-- RIGHT: SR heading list -->
-      <text x="370" y="20" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" letter-spacing="1">SCREEN READER HEADING LIST (H KEY)</text>
-      <rect x="370" y="28" width="296" height="158" rx="6" fill="#1a0808" stroke="#f87171" stroke-width="0.5"/>
-      <text x="382" y="46" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">Press H — screen reader announces:</text>
-      <!-- heading list with problems marked -->
-      <rect x="382" y="52" width="22" height="11" rx="2" fill="#f87171"/>
-      <text x="393" y="61" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#fff" font-weight="700">H1</text>
-      <text x="410" y="61" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">Homepage</text>
-
-      <rect x="382" y="68" width="22" height="11" rx="2" fill="#f87171" opacity="0.7"/>
-      <text x="393" y="77" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#fff" font-weight="700">H3</text>
-      <text x="410" y="77" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">Latest news</text>
-      <text x="588" y="77" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">H2 missing</text>
-
-      <rect x="382" y="84" width="22" height="11" rx="2" fill="#f87171"/>
-      <text x="393" y="93" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#fff" font-weight="700">H1</text>
-      <text x="410" y="93" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">About us</text>
-      <text x="570" y="93" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">2nd H1</text>
-
-      <rect x="382" y="100" width="22" height="11" rx="2" fill="#f87171" opacity="0.5"/>
-      <text x="393" y="109" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#fff" font-weight="700">H4</text>
-      <text x="410" y="109" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">Our story</text>
-      <text x="556" y="109" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">H2, H3 missing</text>
-
-      <text x="382" y="132" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171" font-style="italic">3 structure violations visible</text>
-      <text x="382" y="145" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171" font-style="italic">instantly from the heading list.</text>
-      <text x="382" y="162" font-family="DM Sans,sans-serif" font-size="8" fill="#8a8a8a">The page looked fine visually.</text>
-      <text x="382" y="175" font-family="DM Sans,sans-serif" font-size="8" fill="#8a8a8a">It was not.</text>
-    </svg>
-  </figure>
+  <p>When your project says "WCAG 2.1 AA compliant," it means every Level A and Level AA criterion is met. Level AAA criteria are aspirational: worth pursuing where possible, but not the legal threshold.</p>
 
   <!-- 3 -->
-  <h2 id="landmarks">3. Landmark Regions: What They Are and What to Check</h2>
+  <h2 id="pour">3. The Four POUR Principles</h2>
 
-  <p>Landmark regions are HTML sectioning elements that define the major areas of a page. Screen reader users press <span class="key">R</span> (in NVDA) or use the rotor to jump between them directly, the same way sighted users scan the visual layout.</p>
+  <p>All 78 criteria sit under four principles: POUR. Every accessibility requirement flows from one of these four. Understanding POUR gives you a mental model for why each criterion exists.</p>
 
-  <div class="table-wrap">
-    <table>
-      <caption class="visually-hidden">HTML landmark elements, their roles, and what to check</caption>
-      <thead>
-        <tr>
-          <th scope="col">Element</th>
-          <th scope="col">Landmark role</th>
-          <th scope="col">What to check</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>&lt;header&gt;</td><td>banner</td><td>Present once at the top of the page. Not nested inside other landmarks.</td></tr>
-        <tr><td>&lt;nav&gt;</td><td>navigation</td><td>Each nav has a unique <code>aria-label</code> if more than one exists. "Main navigation", "Breadcrumb", "Footer navigation": not just "navigation" twice.</td></tr>
-        <tr><td>&lt;main&gt;</td><td>main</td><td>Exactly one per page. Contains the primary content. Not nested inside another landmark.</td></tr>
-        <tr><td>&lt;footer&gt;</td><td>contentinfo</td><td>Present at the page level. Not confused with component-level footers inside articles.</td></tr>
-        <tr><td>&lt;aside&gt;</td><td>complementary</td><td>Used for genuinely supplementary content. Not used as a generic container.</td></tr>
-        <tr><td>&lt;section&gt;</td><td>region (only with aria-label)</td><td>Needs an <code>aria-labelledby</code> or <code>aria-label</code> to become a navigable landmark. Without it, it is not a landmark.</td></tr>
-        <tr><td>&lt;form&gt;</td><td>form (only with aria-label)</td><td>Needs an accessible name to become a landmark. Without it, a screen reader cannot jump to it directly.</td></tr>
-      </tbody>
-    </table>
+  <div class="pour-grid" role="list" aria-label="The four WCAG POUR principles">
+
+    <div class="pour-card" style="background:var(--blue-bg);border-color:rgba(96,165,250,0.2)" role="listitem">
+      <div class="pour-letter" style="color:var(--blue)">P</div>
+      <div class="pour-word" style="color:var(--blue)">Perceivable</div>
+      <div class="pour-desc">Content and UI components must be presentable in ways users can perceive. If someone cannot see the screen, they must be able to hear it or feel it. Information cannot be conveyed by sight alone.</div>
+      <div class="pour-example">Covers: alt text, captions, contrast, text resize, audio descriptions</div>
+    </div>
+
+    <div class="pour-card" style="background:var(--green-bg);border-color:rgba(74,222,128,0.2)" role="listitem">
+      <div class="pour-letter" style="color:var(--green)">O</div>
+      <div class="pour-word" style="color:var(--green)">Operable</div>
+      <div class="pour-desc">UI components and navigation must be operable. If someone cannot use a mouse, they must be able to use a keyboard. No interaction should require a physical action the user cannot perform.</div>
+      <div class="pour-example">Covers: keyboard access, no traps, skip links, focus visibility, timing</div>
+    </div>
+
+    <div class="pour-card" style="background:var(--amber-bg);border-color:rgba(251,191,36,0.2)" role="listitem">
+      <div class="pour-letter" style="color:var(--amber)">U</div>
+      <div class="pour-word" style="color:var(--amber)">Understandable</div>
+      <div class="pour-desc">Information and UI operation must be understandable. Content must be readable, UI must behave predictably, and users must be helped to avoid and correct mistakes.</div>
+      <div class="pour-example">Covers: page language, readable text, error messages, consistent navigation</div>
+    </div>
+
+    <div class="pour-card" style="background:var(--purple-bg);border-color:rgba(167,139,250,0.2)" role="listitem">
+      <div class="pour-letter" style="color:var(--purple)">R</div>
+      <div class="pour-word" style="color:var(--purple)">Robust</div>
+      <div class="pour-desc">Content must be robust enough to be interpreted by current and future assistive technologies. Code must be valid and semantic so screen readers, voice control, and other AT can parse it reliably.</div>
+      <div class="pour-example">Covers: valid HTML, ARIA roles, name/role/value for all UI components</div>
+    </div>
+
   </div>
-
-  <h3>Common landmark failures</h3>
-  <ul>
-    <li><strong>Missing main landmark</strong>: the entire page content is in divs with no <code>&lt;main&gt;</code>. Screen reader users cannot skip to the main content.</li>
-    <li><strong>Multiple unlabelled navs</strong>: two or more <code>&lt;nav&gt;</code> elements with no <code>aria-label</code>. Both announced as "navigation" with no way to distinguish them.</li>
-    <li><strong>Landmarks nested inside each other</strong>: a <code>&lt;header&gt;</code> inside <code>&lt;main&gt;</code> creates a confusing landmark tree.</li>
-    <li><strong>Overuse of section</strong>: every div replaced with <code>&lt;section&gt;</code> without <code>aria-label</code>. Creates phantom landmarks that add noise without navigation value.</li>
-  </ul>
 
   <!-- 4 -->
-  <h2 id="skip-links">4. Skip Links: The First Tab Stop Rule</h2>
+  <h2 id="quick-reference">4. The 12 Requirements That Catch Teams Off Guard</h2>
 
-  <p>A skip link is a visually hidden link at the very top of every page that becomes visible on focus and jumps the user directly to the main content area. It exists for one reason: keyboard users should not have to Tab through an entire navigation bar on every page load to reach the content they came for.</p>
+  <p>These are the requirements that appear most frequently as defects in real projects. Every item here maps to a real defect pattern seen in production. Use this as your rapid pre-release sanity check: regardless of role.</p>
 
-  <div class="callout green" role="note">
-    WCAG 2.4.1 requires a mechanism to bypass repeated navigation blocks. A skip link is the standard implementation. It must be the first focusable element on the page.
-  </div>
+  <div class="qr-grid" role="list" aria-label="12 most-missed WCAG 2.1 AA requirements">
 
-  <div class="code-pair">
-    <div class="code-box code-pass">
-      <div class="code-label">Correct skip link pattern</div>
-      <div class="c-block">&lt;!-- First element in body --&gt;
-&lt;a href="#main-content"
-   class="skip-link"&gt;
-  Skip to main content
-&lt;/a&gt;
-
-&lt;!-- CSS --&gt;
-.skip-link {
-  position: absolute;
-  top: -100%;
-  left: 1rem;
-}
-.skip-link:focus {
-  top: 0;
-}</div>
+    <div class="qr-item" role="listitem">
+      <div class="qr-num">01</div>
+      <div class="qr-content">
+        <div class="qr-area">Perceivable</div>
+        <div class="qr-req">Headings: one H1, no skipped levels</div>
+        <div class="qr-detail">Every page must have exactly one H1. Heading levels must be sequential (H1 → H2 → H3). Skipping from H1 to H3 breaks screen reader navigation and document structure.</div>
+      </div>
+      <div class="qr-wcag">1.3.1 · 2.4.6</div>
     </div>
-    <div class="code-box code-fail">
-      <div class="code-label">Common failures</div>
-      <div class="c-block">&lt;!-- Not first element:
-     nav comes before it --&gt;
-&lt;nav&gt;...&lt;/nav&gt;
-&lt;a href="#main"&gt;Skip&lt;/a&gt;
 
-&lt;!-- Hidden with display:none:
-     not reachable by keyboard --&gt;
-.skip-link {
-  display: none;
-}
-
-&lt;!-- href points to missing ID --&gt;
-&lt;a href="#main"&gt;Skip&lt;/a&gt;
-&lt;!-- &lt;main id="content"&gt; not "#main" --&gt;</div>
+    <div class="qr-item" role="listitem">
+      <div class="qr-num">02</div>
+      <div class="qr-content">
+        <div class="qr-area">Operable</div>
+        <div class="qr-req">Skip link: exists and is keyboard-focusable</div>
+        <div class="qr-detail">A "Skip to main content" link must be the first focusable element on every page. It allows keyboard users to bypass repeated navigation. It must be visible on focus: not permanently hidden.</div>
+      </div>
+      <div class="qr-wcag">2.4.1</div>
     </div>
-  </div>
 
-  <h3>How to test a skip link</h3>
-  <p>Load the page. Press <span class="key">Tab</span> once. The skip link must appear. Press <span class="key">Enter</span>. Focus must move to the main content area and the page must scroll to it. If Tab does nothing, or the skip link appears but Enter does nothing, or focus moves to the wrong element: each of those is a separate defect.</p>
+    <div class="qr-item" role="listitem">
+      <div class="qr-num">03</div>
+      <div class="qr-content">
+        <div class="qr-area">Perceivable</div>
+        <div class="qr-req">Landmarks: header, nav, main, footer present; one &lt;main&gt;</div>
+        <div class="qr-detail">HTML landmark elements structure the page for screen reader users. A page must have one &lt;main&gt; only. Multiple &lt;nav&gt; elements must have distinct aria-labels to distinguish them.</div>
+      </div>
+      <div class="qr-wcag">1.3.1</div>
+    </div>
+
+    <div class="qr-item" role="listitem">
+      <div class="qr-num">04</div>
+      <div class="qr-content">
+        <div class="qr-area">Operable</div>
+        <div class="qr-req">Keyboard: fully operable, no traps</div>
+        <div class="qr-detail">Every interactive element must be reachable and operable by keyboard alone. A keyboard trap: where focus enters a component and cannot leave: is a Critical defect. Disconnect your mouse and test every flow.</div>
+      </div>
+      <div class="qr-wcag">2.1.1 · 2.1.2</div>
+    </div>
+
+    <div class="qr-item" role="listitem">
+      <div class="qr-num">05</div>
+      <div class="qr-content">
+        <div class="qr-area">Operable</div>
+        <div class="qr-req">Focus: visible indicator, logical order</div>
+        <div class="qr-detail">Every focusable element must show a visible focus indicator when active. The focus order must match the visual reading order. CSS outline:0 or outline:none removes the focus indicator entirely and is a defect.</div>
+      </div>
+      <div class="qr-wcag">2.4.3 · 2.4.7</div>
+    </div>
+
+    <div class="qr-item" role="listitem">
+      <div class="qr-num">06</div>
+      <div class="qr-content">
+        <div class="qr-area">Perceivable</div>
+        <div class="qr-req">Images: alt text present, or decorative flag set</div>
+        <div class="qr-detail">Every informative image needs descriptive alt text. Decorative images must use alt="" (empty) so screen readers skip them. An image used as a link must have alt text describing the link destination, not the image.</div>
+      </div>
+      <div class="qr-wcag">1.1.1</div>
+    </div>
+
+    <div class="qr-item" role="listitem">
+      <div class="qr-num">07</div>
+      <div class="qr-content">
+        <div class="qr-area">Operable</div>
+        <div class="qr-req">Links: purpose clear, no "click here"</div>
+        <div class="qr-detail">Each link must describe its destination from the link text alone, or from its immediate context. "Click here," "Read more," and "Learn more" used without context are failures. Screen readers list all links out of context: the link text must make sense standalone.</div>
+      </div>
+      <div class="qr-wcag">2.4.4</div>
+    </div>
+
+    <div class="qr-item" role="listitem">
+      <div class="qr-num">08</div>
+      <div class="qr-content">
+        <div class="qr-area">Understandable</div>
+        <div class="qr-req">Forms: visible labels, descriptive error messages</div>
+        <div class="qr-detail">Every form input must have a visible, programmatically associated label. Placeholder text is not a label. Error messages must identify what is wrong and how to fix it, not just flag the field as invalid.</div>
+      </div>
+      <div class="qr-wcag">3.3.1 · 3.3.2</div>
+    </div>
+
+    <div class="qr-item" role="listitem">
+      <div class="qr-num">09</div>
+      <div class="qr-content">
+        <div class="qr-area">Robust</div>
+        <div class="qr-req">Dynamic messages: announced to assistive technology</div>
+        <div class="qr-detail">Status updates, error messages, and AJAX content changes must be announced to screen readers via ARIA live regions. A form submission result that appears visually but is not announced is a failure for screen reader users.</div>
+      </div>
+      <div class="qr-wcag">4.1.3</div>
+    </div>
+
+    <div class="qr-item" role="listitem">
+      <div class="qr-num">10</div>
+      <div class="qr-content">
+        <div class="qr-area">Perceivable</div>
+        <div class="qr-req">Media: captions and transcripts, no autoplay</div>
+        <div class="qr-detail">Prerecorded video must have synchronised captions. Auto-generated captions do not meet this requirement. Audio-only content requires a transcript. Any media that autoplays must have a mechanism to pause, stop, or mute it.</div>
+      </div>
+      <div class="qr-wcag">1.2.1 · 1.2.2 · 2.2.2</div>
+    </div>
+
+    <div class="qr-item" role="listitem">
+      <div class="qr-num">11</div>
+      <div class="qr-content">
+        <div class="qr-area">Understandable</div>
+        <div class="qr-req">Language: page language declared</div>
+        <div class="qr-detail">The HTML lang attribute must be set correctly on the &lt;html&gt; element (e.g. lang="en"). Screen readers use this to select the correct language engine and pronunciation rules. A missing or incorrect lang attribute causes mispronunciation for every user.</div>
+      </div>
+      <div class="qr-wcag">3.1.1</div>
+    </div>
+
+    <div class="qr-item" role="listitem">
+      <div class="qr-num">12</div>
+      <div class="qr-content">
+        <div class="qr-area">Robust</div>
+        <div class="qr-req">Embeds: iframe titles required</div>
+        <div class="qr-detail">Every &lt;iframe&gt; must have a meaningful title attribute describing its content. A YouTube embed without a title is announced as "frame" by screen readers: no information about what is inside. Hidden iframes must use aria-hidden="true".</div>
+      </div>
+      <div class="qr-wcag">4.1.2</div>
+    </div>
+
+  </div>
 
   <!-- 5 -->
+  <h2 id="pass-fail">5. Pass and Fail Examples for Each Requirement</h2>
 
-  <!-- PLATFORM TESTING -->
-  <h2 id="platform-testing">5. Testing Headings and Landmarks by Platform</h2>
+  <p>Each example below shows three things: what it looks like visually, what the HTML looks like, and which tool to use to catch it. Start with the visual: if you can spot it without touching the code, you already have the instinct. The HTML and tool confirm the defect.</p>
 
-  <p>The same structural failures present differently depending on the screen reader. Here is how to navigate headings and landmarks on each platform.</p>
+  <!-- REQ 01: HEADINGS -->
+  <h3>Requirement 01: Headings</h3>
+  <p class="req-intro">Open any page and check the heading structure. A page that uses H1 twice, or jumps from H1 to H3, breaks screen reader navigation.</p>
 
-  <h3>Windows: NVDA</h3>
-  <div class="table-wrap">
-    <table>
-      <caption class="visually-hidden">NVDA keyboard shortcuts for heading and landmark navigation</caption>
-      <thead><tr><th scope="col">Action</th><th scope="col">Key</th></tr></thead>
-      <tbody>
-        <tr><td>Next heading</td><td><span class="key">H</span></td></tr>
-        <tr><td>Previous heading</td><td><span class="key">Shift</span>+<span class="key">H</span></td></tr>
-        <tr><td>Heading by level (e.g. H2)</td><td><span class="key">2</span> (or 1–6)</td></tr>
-        <tr><td>Open headings list</td><td><span class="key">Insert</span>+<span class="key">F6</span></td></tr>
-        <tr><td>Next landmark</td><td><span class="key">D</span></td></tr>
-        <tr><td>Previous landmark</td><td><span class="key">Shift</span>+<span class="key">D</span></td></tr>
-        <tr><td>Open elements list</td><td><span class="key">Insert</span>+<span class="key">F7</span></td></tr>
-      </tbody>
-    </table>
+  <div class="visual-example">
+    <svg viewBox="0 0 660 180" width="100%" style="display:block;border-radius:8px;background:#161616;border:1px solid #2e2e2e;" aria-hidden="true">
+      <!-- FAIL side -->
+      <text x="14" y="22" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" letter-spacing="1" text-transform="uppercase">FAIL</text>
+      <rect x="14" y="30" width="290" height="130" rx="6" fill="#1a0808" stroke="#f87171" stroke-width="0.5" opacity="0.6"/>
+      <!-- H1 badge + text -->
+      <rect x="26" y="44" width="24" height="12" rx="2" fill="#f87171" opacity="0.9"/>
+      <text x="38" y="53" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#fff" font-weight="600">H1</text>
+      <text x="56" y="56" font-family="DM Serif Display,serif" font-size="16" fill="#f0f0f0">Homepage</text>
+      <!-- H3 badge + text (skipped H2) -->
+      <rect x="26" y="72" width="28" height="12" rx="2" fill="#f87171" opacity="0.9"/>
+      <text x="40" y="81" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#fff" font-weight="600">H3 ✗</text>
+      <text x="60" y="84" font-family="DM Serif Display,serif" font-size="11" fill="#f0f0f0">Latest news</text>
+      <!-- H1 again (duplicate) -->
+      <rect x="26" y="100" width="28" height="12" rx="2" fill="#f87171" opacity="0.9"/>
+      <text x="40" y="109" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#fff" font-weight="600">H1 ✗</text>
+      <text x="60" y="112" font-family="DM Serif Display,serif" font-size="16" fill="#f0f0f0">About us</text>
+      <text x="26" y="148" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" opacity="0.8">H2 skipped. Two H1s. Broken structure.</text>
+      <!-- PASS side -->
+      <text x="356" y="22" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80" letter-spacing="1">PASS</text>
+      <rect x="356" y="30" width="290" height="130" rx="6" fill="#0d1a0d" stroke="#4ade80" stroke-width="0.5" opacity="0.6"/>
+      <!-- H1 badge -->
+      <rect x="368" y="44" width="24" height="12" rx="2" fill="#4ade80" opacity="0.9"/>
+      <text x="380" y="53" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#000" font-weight="600">H1</text>
+      <text x="398" y="56" font-family="DM Serif Display,serif" font-size="16" fill="#f0f0f0">Homepage</text>
+      <!-- H2 badge -->
+      <rect x="368" y="72" width="28" height="12" rx="2" fill="#4ade80" opacity="0.9"/>
+      <text x="382" y="81" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#000" font-weight="600">H2 ✓</text>
+      <text x="402" y="84" font-family="DM Serif Display,serif" font-size="13" fill="#f0f0f0">Latest news</text>
+      <!-- H3 badge -->
+      <rect x="368" y="100" width="28" height="12" rx="2" fill="#4ade80" opacity="0.6"/>
+      <text x="382" y="109" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#000" font-weight="600">H3 ✓</text>
+      <text x="402" y="112" font-family="DM Serif Display,serif" font-size="10" fill="#c8c8c8">Article title</text>
+      <text x="368" y="148" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80" opacity="0.8">Sequential hierarchy. One H1. Correct.</text>
+    </svg>
   </div>
 
-  <h3>Mac: VoiceOver</h3>
-  <p>VO modifier key is <span class="key">Ctrl</span>+<span class="key">Option</span> (written as VO below). VoiceOver must be enabled first: <span class="key">Cmd</span>+<span class="key">F5</span>. Use Safari. VoiceOver and Chrome do not pair reliably for heading navigation.</p>
-  <div class="table-wrap">
-    <table>
-      <caption class="visually-hidden">VoiceOver on Mac shortcuts for heading and landmark navigation</caption>
-      <thead><tr><th scope="col">Action</th><th scope="col">Key</th></tr></thead>
-      <tbody>
-        <tr><td>Next heading</td><td><span class="key">VO</span>+<span class="key">Cmd</span>+<span class="key">H</span></td></tr>
-        <tr><td>Previous heading</td><td><span class="key">VO</span>+<span class="key">Cmd</span>+<span class="key">Shift</span>+<span class="key">H</span></td></tr>
-        <tr><td>Open rotor (elements list)</td><td><span class="key">VO</span>+<span class="key">U</span> then arrow keys to filter by Headings or Landmarks</td></tr>
-        <tr><td>Next landmark</td><td><span class="key">VO</span>+<span class="key">Cmd</span>+<span class="key">L</span></td></tr>
-        <tr><td>Read page title</td><td><span class="key">VO</span>+<span class="key">F2</span>+<span class="key">F2</span></td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <h3>iOS: VoiceOver</h3>
-  <p>Enable VoiceOver: Settings → Accessibility → VoiceOver → Toggle ON. Use Safari. The rotor is the primary navigation control: rotate two fingers on the screen to open it, then select Headings or Landmarks.</p>
-  <div class="table-wrap">
-    <table>
-      <caption class="visually-hidden">VoiceOver on iOS gestures for heading and landmark navigation</caption>
-      <thead><tr><th scope="col">Action</th><th scope="col">Gesture</th></tr></thead>
-      <tbody>
-        <tr><td>Navigate elements</td><td>Single-finger swipe right (next) or left (previous)</td></tr>
-        <tr><td>Open rotor</td><td>Rotate two fingers on screen</td></tr>
-        <tr><td>Set rotor to Headings</td><td>Open rotor, rotate to Headings</td></tr>
-        <tr><td>Navigate headings only</td><td>Rotor set to Headings, then swipe up or down</td></tr>
-        <tr><td>Set rotor to Landmarks</td><td>Open rotor, rotate to Landmarks</td></tr>
-        <tr><td>Activate element</td><td>Double-tap anywhere after element is focused</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <h3>Android: TalkBack</h3>
-  <p>Enable TalkBack: Settings → Accessibility → TalkBack → Toggle ON (or hold both volume keys for 3 seconds). Use Chrome.</p>
-  <div class="table-wrap">
-    <table>
-      <caption class="visually-hidden">TalkBack on Android gestures for heading and landmark navigation</caption>
-      <thead><tr><th scope="col">Action</th><th scope="col">Gesture</th></tr></thead>
-      <tbody>
-        <tr><td>Navigate elements</td><td>Single-finger swipe right (next) or left (previous)</td></tr>
-        <tr><td>Navigate headings only</td><td>Swipe up then right to open reading controls, select Headings, then swipe right/left</td></tr>
-        <tr><td>Activate element</td><td>Double-tap anywhere after element is focused and announced</td></tr>
-        <tr><td>Scroll</td><td>Two-finger swipe up or down</td></tr>
-        <tr><td>Open TalkBack menu</td><td>Swipe down then right</td></tr>
-        <tr><td>Go back</td><td>Swipe down then left</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="callout amber" role="note">
-    Mobile testing requires a physical device. Xcode Simulator and Android Emulator do not accurately simulate VoiceOver or TalkBack behaviour. A broken heading structure found on desktop produces an equally broken experience on mobile: the gestures just feel different.
-  </div>
-
-  <h2 id="how-to-test-tiers">How to Test: Tiers and Platform Coverage</h2>
-  <h3>Tier 1: Pipeline automation</h3>
-  <p>axe-core catches: missing landmark regions, skipped heading levels, missing skip links, and empty headings. Run with <code>withTags(['wcag2a','wcag2aa'])</code> in CI. These structural violations are among the most reliable automated checks: the DOM either has the correct structure or it does not.</p>
-  <h3>Tier 2: Semi-automated tools</h3>
-  <p><span class="tool">WAVE</span> Structure tab gives the fastest visual overview of heading hierarchy and landmark regions. <span class="tool">ANDI</span> Structure module lists all headings in document order: faster than tabbing through headings with a screen reader for a first structural check. <span class="tool">Accessibility Insights</span> FastPass catches landmark and heading violations with WCAG criterion references.</p>
-  <h3>Tier 3: Manual: platform coverage</h3>
-  <ul>
-    <li><strong>NVDA + Firefox (Windows):</strong> Press H to walk headings. Press D for landmarks. Press 1–6 for heading levels. Verify structure matches the visual hierarchy.</li>
-    <li><strong>VoiceOver + Safari (Mac):</strong> Open rotor (VO+U). Check Headings and Landmarks lists. Verify all landmark regions are named where multiple exist.</li>
-    <li><strong>VoiceOver on iOS (physical iPhone):</strong> Set rotor to Headings. Swipe up/down to navigate. Verify heading structure in mobile view.</li>
-    <li><strong>TalkBack on Android (physical device):</strong> Set reading controls to Headings. Swipe up to navigate. Verify structure.</li>
-  </ul>
-
-  <h2 id="how-to-test">6. How to Test: Tools and Manual Checks</h2>
-
-  <div style="background:var(--amber-bg);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:0 0 1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
-    <div style="font-size:1.1rem;line-height:1;padding-top:2px;" aria-hidden="true">&#127919;</div>
-    <div>
-      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--amber);font-weight:500;margin-bottom:4px;">Practice these yourself</div>
-      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">The heading and landmark failures described below are available as interactive demos in the <a href="A11y-Test-Playground/12 A11y Test Playground - Headings and Landmarks.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Headings and Landmarks Playground</a>. For mobile testing steps, see the <a href="A11y-Test-Playground/12 12 A11y Headings Mobile Testing Guide.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Mobile Testing Guide</a>.</div>
+  <div class="pass-fail">
+    <div class="pf-box pf-fail">
+      <div class="pf-label">Fail (HTML)</div>
+      <div class="pf-text">&lt;h1&gt;Homepage&lt;/h1&gt;<br>&lt;h3&gt;Latest news&lt;/h3&gt;<br>&lt;h1&gt;About us&lt;/h1&gt;</div>
+    </div>
+    <div class="pf-box pf-pass">
+      <div class="pf-label">Pass (HTML)</div>
+      <div class="pf-text">&lt;h1&gt;Homepage&lt;/h1&gt;<br>&lt;h2&gt;Latest news&lt;/h2&gt;<br>&lt;h3&gt;Article title&lt;/h3&gt;</div>
     </div>
   </div>
+    <div class="tool-callout">
+    <span class="tool-label">How to catch it</span>
+    <ul class="tool-list">
+    <li><span class="tool-item tool-wave">WAVE</span> Structure tab shows heading hierarchy visually.</li>
+    <li><span class="tool-item tool-axe">axe DevTools</span> Flags duplicate H1 and skipped levels.</li>
+    <li><span class="tool-item tool-insights">Accessibility Insights</span> Heading visualiser in FastPass.</li>
+    </ul>
+  </div>
 
-  <h3>What automation catches</h3>
-  <p><span class="tool">axe-core</span> (in <span class="tool">Playwright</span>, <span class="tool">Cypress</span>, or <span class="tool">axe DevTools</span>) and <span class="tool">Pa11y</span> will flag these automatically:</p>
-  <ul>
-    <li>Missing <code>&lt;main&gt;</code> landmark</li>
-    <li>Multiple elements with the same landmark role and no distinguishing label (e.g. two unlabelled <code>&lt;nav&gt;</code> elements)</li>
-    <li>Empty heading elements (<code>&lt;h2&gt;&lt;/h2&gt;</code>)</li>
-    <li>Page with no headings at all</li>
-    <li>Incorrect ARIA roles on landmark elements</li>
-  </ul>
-  <p>Run <span class="tool">axe-core</span> in your CI/CD pipeline to catch these on every pull request. They are structural issues: deterministic, no interpretation needed.</p>
 
-  <h3>What automation misses: manual check required</h3>
-  <p>Automation cannot evaluate meaning or logic. These require human judgement:</p>
-  <ul>
-    <li><strong>Skipped heading levels</strong>: axe-core flags some skipped levels but not all. A page with H1 then H3 sometimes passes automated checks. Always verify with <span class="tool">WAVE</span> Structure tab or <span class="tool">NVDA</span> Insert+F6.</li>
-    <li><strong>Visual headings not marked up as headings</strong>: automation sees a <code>&lt;div&gt;</code> styled to look like a heading. It has no way to know it should be a heading. Only a human reviewing the page visually against the DOM can catch this.</li>
-    <li><strong>Heading hierarchy that matches the DOM but not the visual layout</strong>: automation checks the code order, not whether the heading order makes logical sense to a reader.</li>
-    <li><strong>Skip link href pointing to a non-existent ID</strong>: some automated tools flag this; many do not. Always test manually: press Tab once, then Enter.</li>
-    <li><strong>Landmark labels that are technically present but meaningless</strong>: <code>aria-label="nav1"</code> passes automation. It fails a real user.</li>
-  </ul>
+  <!-- REQ 02: SKIP LINK -->
+  <h3>Requirement 02: Skip link</h3>
+  <p class="req-intro">Keyboard users must be able to skip past repeated navigation on every page. The skip link must be the first focusable element and must be visible when focused. Tab once on any page and see if it appears.</p>
 
-  <h3>WAVE Structure tab</h3>
-  <p>The fastest way to inspect heading hierarchy on a live page. Open <span class="tool">WAVE</span>, click the Structure tab. The heading tree is displayed with levels, text, and any skipped levels flagged in yellow. Landmark regions are also shown with their roles. Takes under 60 seconds per page. Catches what axe-core misses on heading structure.</p>
+  <div class="visual-example">
+    <svg viewBox="0 0 660 130" width="100%" style="display:block;border-radius:8px;background:#161616;border:1px solid #2e2e2e;" aria-hidden="true">
+      <text x="14" y="22" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" letter-spacing="1">FAIL — no skip link</text>
+      <rect x="14" y="30" width="290" height="90" rx="6" fill="#1a0808" stroke="#f87171" stroke-width="0.5" opacity="0.6"/>
+      <!-- nav items keyboard user must tab through -->
+      <text x="26" y="54" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">Keyboard user presses Tab repeatedly:</text>
+      <rect x="26" y="60" width="48" height="22" rx="3" fill="#2a2a2a" stroke="#555" stroke-width="1"/>
+      <text x="50" y="76" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">Home</text>
+      <rect x="80" y="60" width="48" height="22" rx="3" fill="#2a2a2a" stroke="#555" stroke-width="1"/>
+      <text x="104" y="76" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">About</text>
+      <rect x="134" y="60" width="60" height="22" rx="3" fill="#2a2a2a" stroke="#555" stroke-width="1"/>
+      <text x="164" y="76" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">Services</text>
+      <rect x="200" y="60" width="60" height="22" rx="3" fill="#2a2a2a" stroke="#555" stroke-width="1"/>
+      <text x="230" y="76" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">Contact</text>
+      <text x="26" y="108" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" opacity="0.8">Must tab through all nav links every page load.</text>
 
-  <h3>NVDA heading navigation</h3>
-  <p>With <span class="tool">NVDA</span> running, press <span class="key">H</span> to move to the next heading, <span class="key">Shift</span>+<span class="key">H</span> to move back. Press <span class="key">Insert</span>+<span class="key">F6</span> to open the headings list: all headings on the page displayed with their levels. This is the ground truth: it shows exactly what a screen reader user experiences, not just what the DOM contains.</p>
+      <text x="356" y="22" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80" letter-spacing="1">PASS — skip link appears on focus</text>
+      <rect x="356" y="30" width="290" height="90" rx="6" fill="#0d1a0d" stroke="#4ade80" stroke-width="0.5" opacity="0.6"/>
+      <rect x="368" y="42" width="168" height="26" rx="4" fill="#4ade80"/>
+      <text x="452" y="60" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#000" font-weight="500">Skip to main content</text>
+      <rect x="368" y="76" width="48" height="22" rx="3" fill="#2a2a2a" stroke="#555" stroke-width="1"/>
+      <text x="392" y="92" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">Home</text>
+      <rect x="422" y="76" width="48" height="22" rx="3" fill="#2a2a2a" stroke="#555" stroke-width="1"/>
+      <text x="446" y="92" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">About</text>
+      <text x="368" y="113" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80" opacity="0.8">First Tab = skip link. One press to reach content.</text>
+    </svg>
+  </div>
 
-  <h3>Accessibility Insights</h3>
-  <p><span class="tool">Accessibility Insights</span> FastPass runs automated axe-core checks and a tab stops visualisation. Assessment mode provides guided checks for landmark structure. Useful for combining automated and manual verification in one workflow.</p>
+  <div class="pass-fail">
+    <div class="pf-box pf-fail">
+      <div class="pf-label">Fail (HTML)</div>
+      <div class="pf-text">&lt;!-- No skip link --&gt;<br>&lt;nav&gt;...&lt;/nav&gt;<br>&lt;main&gt;...&lt;/main&gt;</div>
+    </div>
+    <div class="pf-box pf-pass">
+      <div class="pf-label">Pass (HTML)</div>
+      <div class="pf-text">&lt;a href="#main" class="skip"&gt;<br>  Skip to main content<br>&lt;/a&gt;<br>&lt;nav&gt;...&lt;/nav&gt;</div>
+    </div>
+  </div>
+    <div class="tool-callout">
+    <span class="tool-label">How to catch it</span>
+    <ul class="tool-list">
+    <li><span class="tool-item tool-manual">Manual</span> Press Tab once on page load. Skip link must appear.</li>
+    <li><span class="tool-item tool-insights">Accessibility Insights</span> FastPass checks for skip link presence.</li>
+    <li><span class="tool-item tool-axe">axe DevTools</span> Flags missing bypass block mechanism.</li>
+    </ul>
+  </div>
 
-  <h3>Chrome DevTools accessibility tree</h3>
-  <p>In <span class="tool">Chrome DevTools</span>, enable the full page accessibility tree from the Accessibility panel. Every heading, landmark, and ARIA role is visible in a tree view. Useful for checking whether a heading is marked up correctly or just visually styled: particularly helpful when WAVE flags something you cannot immediately locate in the DOM.</p>
+  <!-- REQ 03: LANDMARKS -->
+  <h3>Requirement 03: Landmarks</h3>
+  <p class="req-intro">Screen reader users navigate by landmarks the same way sighted users scan layout. A page without landmarks forces a screen reader user to read every word from the top to find the main content.</p>
 
-  <h3>Manual check: the three questions</h3>
-  <ul>
-    <li><strong>Skip link:</strong> Press Tab once on page load. Does it appear? Press Enter. Does focus move to main content?</li>
-    <li><strong>Headings:</strong> Does the page have exactly one H1? Do heading levels progress sequentially with no skips? Are all major sections reachable via <span class="tool">NVDA</span> heading navigation?</li>
-    <li><strong>Landmarks:</strong> Is there a <code>&lt;main&gt;</code>? Are multiple <code>&lt;nav&gt;</code> elements labelled distinctly? Test on VoiceOver (Mac/iOS) and TalkBack (Android) to confirm mobile landmark navigation works: automation does not cover this.</li>
-  </ul>
+  <div class="visual-example">
+    <svg viewBox="0 0 660 160" width="100%" style="display:block;border-radius:8px;background:#161616;border:1px solid #2e2e2e;" aria-hidden="true">
+      <text x="14" y="22" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" letter-spacing="1">FAIL — no landmark structure</text>
+      <rect x="14" y="30" width="290" height="120" rx="6" fill="#1a0808" stroke="#f87171" stroke-width="0.5" opacity="0.6"/>
+      <rect x="26" y="42" width="266" height="22" rx="3" fill="#2a1a1a"/>
+      <text x="159" y="57" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#888">&lt;div class="header"&gt;</text>
+      <rect x="26" y="70" width="266" height="22" rx="3" fill="#2a1a1a"/>
+      <text x="159" y="85" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#888">&lt;div class="nav"&gt;</text>
+      <rect x="26" y="98" width="266" height="22" rx="3" fill="#2a1a1a"/>
+      <text x="159" y="113" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#888">&lt;div class="content"&gt;</text>
+      <text x="26" y="140" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" opacity="0.8">SR cannot jump to sections. No landmarks detected.</text>
+
+      <text x="356" y="22" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80" letter-spacing="1">PASS — semantic landmark structure</text>
+      <rect x="356" y="30" width="290" height="120" rx="6" fill="#0d1a0d" stroke="#4ade80" stroke-width="0.5" opacity="0.6"/>
+      <rect x="368" y="42" width="266" height="22" rx="3" fill="#0d2a0d" stroke="#4ade80" stroke-width="0.5"/>
+      <text x="501" y="57" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80">&lt;header&gt; — banner landmark</text>
+      <rect x="368" y="70" width="266" height="22" rx="3" fill="#0d2a0d" stroke="#60a5fa" stroke-width="0.5"/>
+      <text x="501" y="85" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#60a5fa">&lt;nav&gt; — navigation landmark</text>
+      <rect x="368" y="98" width="266" height="22" rx="3" fill="#0d2a0d" stroke="#fbbf24" stroke-width="0.5"/>
+      <text x="501" y="113" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#fbbf24">&lt;main&gt; — main landmark</text>
+      <text x="368" y="140" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80" opacity="0.8">SR can jump directly to any section.</text>
+    </svg>
+  </div>
+
+  <div class="pass-fail">
+    <div class="pf-box pf-fail">
+      <div class="pf-label">Fail (HTML)</div>
+      <div class="pf-text">&lt;div class="header"&gt;<br>&lt;div class="nav"&gt;<br>&lt;div class="content"&gt;</div>
+    </div>
+    <div class="pf-box pf-pass">
+      <div class="pf-label">Pass (HTML)</div>
+      <div class="pf-text">&lt;header&gt;<br>&lt;nav aria-label="Main"&gt;<br>&lt;main&gt;<br>&lt;footer&gt;</div>
+    </div>
+  </div>
+    <div class="tool-callout">
+    <span class="tool-label">How to catch it</span>
+    <ul class="tool-list">
+    <li><span class="tool-item tool-wave">WAVE</span> Structure tab shows all landmarks on the page.</li>
+    <li><span class="tool-item tool-axe">axe DevTools</span> Flags missing landmark regions.</li>
+    <li><span class="tool-item tool-chrome">Chrome DevTools</span> Accessibility tree lists all landmark roles.</li>
+    </ul>
+  </div>
+
+  <!-- REQ 04: KEYBOARD -->
+  <h3>Requirement 04: Keyboard: fully operable, no traps</h3>
+  <p class="req-intro">Disconnect your mouse. Every action available to mouse users must be achievable by keyboard alone. If you Tab into a component and cannot Tab out, that is a Critical defect called a keyboard trap.</p>
+
+  <div class="visual-example">
+    <svg viewBox="0 0 660 170" width="100%" style="display:block;border-radius:8px;background:#161616;border:1px solid #2e2e2e;" aria-hidden="true">
+      <text x="14" y="22" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" letter-spacing="1">FAIL — keyboard trap in modal</text>
+      <rect x="14" y="30" width="290" height="110" rx="6" fill="#1a0808" stroke="#f87171" stroke-width="0.5" opacity="0.6"/>
+      <!-- modal -->
+      <rect x="50" y="46" width="220" height="84" rx="6" fill="#1e1010" stroke="#f87171" stroke-width="1"/>
+      <text x="160" y="64" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#f0f0f0" font-weight="500">Subscribe</text>
+      <rect x="70" y="72" width="160" height="22" rx="3" fill="#0d0d0d" stroke="#555" stroke-width="1"/>
+      <text x="150" y="87" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#888">email@example.com</text>
+      <rect x="100" y="100" width="80" height="22" rx="3" fill="#2a2a2a"/>
+      <text x="140" y="115" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">Submit</text>
+      <!-- trap indicator -->
+      <text x="20" y="148" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171">Tab loops inside modal forever. No Escape. Stuck.</text>
+
+      <text x="356" y="22" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80" letter-spacing="1">PASS — focus managed correctly</text>
+      <rect x="356" y="30" width="290" height="110" rx="6" fill="#0d1a0d" stroke="#4ade80" stroke-width="0.5" opacity="0.6"/>
+      <rect x="392" y="46" width="220" height="84" rx="6" fill="#0d1e0d" stroke="#4ade80" stroke-width="1"/>
+      <text x="502" y="64" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#f0f0f0" font-weight="500">Subscribe</text>
+      <rect x="412" y="72" width="160" height="22" rx="3" fill="#0d0d0d" stroke="#4ade80" stroke-width="1.5"/>
+      <text x="492" y="87" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#888">email@example.com</text>
+      <rect x="442" y="100" width="80" height="22" rx="3" fill="#2a2a2a"/>
+      <text x="482" y="115" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">Submit</text>
+      <!-- escape indicator -->
+      <rect x="590" y="46" width="48" height="22" rx="3" fill="#1a3a1a" stroke="#4ade80" stroke-width="1"/>
+      <text x="614" y="61" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80">Esc ✓</text>
+      <text x="362" y="148" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80">Focus trapped inside modal. Esc closes. Focus returns to trigger.</text>
+    </svg>
+  </div>
+
+  <div class="pass-fail">
+    <div class="pf-box pf-fail">
+      <div class="pf-label">Fail</div>
+      <div class="pf-text">Modal opens.<br>Tab loops inside forever.<br>Escape key does nothing.<br>No way out without mouse.</div>
+    </div>
+    <div class="pf-box pf-pass">
+      <div class="pf-label">Pass</div>
+      <div class="pf-text">Modal opens: focus moves in.<br>Tab cycles within modal only.<br>Escape closes and returns<br>focus to the trigger element.</div>
+    </div>
+  </div>
+    <div class="tool-callout">
+    <span class="tool-label">How to catch it</span>
+    <ul class="tool-list">
+    <li><span class="tool-item tool-manual">Manual</span> Disconnect mouse. Tab through every interactive element.</li>
+    <li><span class="tool-item tool-insights">Accessibility Insights</span> Tab stops visualiser shows focus path.</li>
+    <li><span class="tool-item tool-axe">axe DevTools</span> Flags some keyboard accessibility issues automatically.</li>
+    </ul>
+  </div>
+
+  <!-- REQ 05: FOCUS INDICATOR -->
+  <h3>Requirement 05: Focus indicator</h3>
+  <p class="req-intro">Press Tab through the page. Every focusable element must show a visible outline or highlight when focused. If focus disappears, that is a defect.</p>
+
+  <div class="visual-example">
+    <svg viewBox="0 0 660 130" width="100%" style="display:block;border-radius:8px;background:#161616;border:1px solid #2e2e2e;" aria-hidden="true">
+      <!-- FAIL -->
+      <text x="14" y="22" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" letter-spacing="1">FAIL</text>
+      <rect x="14" y="30" width="290" height="85" rx="6" fill="#1a0808" stroke="#f87171" stroke-width="0.5" opacity="0.6"/>
+      <!-- nav links, no outline -->
+      <rect x="30" y="50" width="60" height="28" rx="4" fill="#2a2a2a"/>
+      <text x="60" y="69" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#c8c8c8">Home</text>
+      <rect x="100" y="50" width="60" height="28" rx="4" fill="#1e3a1e"/>
+      <text x="130" y="69" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#c8c8c8">About</text>
+      <!-- no outline shown — just question marks -->
+      <text x="60" y="100" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171">no outline visible</text>
+      <text x="130" y="100" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171">where is focus?</text>
+      <!-- PASS -->
+      <text x="356" y="22" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80" letter-spacing="1">PASS</text>
+      <rect x="356" y="30" width="290" height="85" rx="6" fill="#0d1a0d" stroke="#4ade80" stroke-width="0.5" opacity="0.6"/>
+      <rect x="372" y="50" width="60" height="28" rx="4" fill="#2a2a2a"/>
+      <text x="402" y="69" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#c8c8c8">Home</text>
+      <rect x="442" y="48" width="64" height="32" rx="6" fill="#1e3a1e" stroke="#4ade80" stroke-width="2"/>
+      <text x="474" y="69" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#f0f0f0">About</text>
+      <text x="474" y="100" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80">clear focus ring visible</text>
+    </svg>
+  </div>
+
+  <div class="pass-fail">
+    <div class="pf-box pf-fail">
+      <div class="pf-label">Fail (CSS)</div>
+      <div class="pf-text">a:focus { outline: none; }<br>button:focus { outline: 0; }</div>
+    </div>
+    <div class="pf-box pf-pass">
+      <div class="pf-label">Pass (CSS)</div>
+      <div class="pf-text">a:focus-visible {<br>  outline: 2px solid #60a5fa;<br>  outline-offset: 3px;<br>}</div>
+    </div>
+  </div>
+    <div class="tool-callout">
+    <span class="tool-label">How to catch it</span>
+    <ul class="tool-list">
+    <li><span class="tool-item tool-manual">Manual</span> Press Tab: watch for disappearing focus.</li>
+    <li><span class="tool-item tool-insights">Accessibility Insights</span> Tab stops visualiser shows every focus stop.</li>
+    <li><span class="tool-item tool-axe">axe DevTools</span> Flags outline:none on focusable elements.</li>
+    </ul>
+  </div>
+
+  <!-- REQ 06: ALT TEXT -->
+  <h3>Requirement 06: Alt text</h3>
+  <p class="req-intro">Images that convey information need descriptive alt text. Decorative images need an empty alt attribute. A missing alt attribute means the screen reader reads the filename aloud.</p>
+
+  <div class="visual-example">
+    <svg viewBox="0 0 660 150" width="100%" style="display:block;border-radius:8px;background:#161616;border:1px solid #2e2e2e;" aria-hidden="true">
+      <!-- FAIL -->
+      <text x="14" y="22" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" letter-spacing="1">FAIL</text>
+      <rect x="14" y="30" width="290" height="110" rx="6" fill="#1a0808" stroke="#f87171" stroke-width="0.5" opacity="0.6"/>
+      <!-- image placeholder with broken icon -->
+      <rect x="30" y="46" width="80" height="60" rx="4" fill="#2a2a2a" stroke="#f87171" stroke-width="1"/>
+      <text x="70" y="82" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="20" fill="#f87171">⚠</text>
+      <!-- screen reader reads filename -->
+      <rect x="122" y="52" width="166" height="40" rx="4" fill="#1e1010" stroke="#f87171" stroke-width="0.5"/>
+      <text x="130" y="68" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171">Screen reader says:</text>
+      <text x="130" y="83" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">"hero-image-final-v3.jpg"</text>
+      <text x="30" y="125" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" opacity="0.8">No alt attribute. SR reads filename.</text>
+      <!-- PASS -->
+      <text x="356" y="22" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80" letter-spacing="1">PASS</text>
+      <rect x="356" y="30" width="290" height="110" rx="6" fill="#0d1a0d" stroke="#4ade80" stroke-width="0.5" opacity="0.6"/>
+      <rect x="372" y="46" width="80" height="60" rx="4" fill="#1a2a1a" stroke="#4ade80" stroke-width="1"/>
+      <text x="412" y="82" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="20" fill="#4ade80">🖼</text>
+      <rect x="464" y="52" width="166" height="40" rx="4" fill="#0d1e0d" stroke="#4ade80" stroke-width="0.5"/>
+      <text x="472" y="68" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80">Screen reader says:</text>
+      <text x="472" y="83" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8">"Download 2024 report"</text>
+      <text x="372" y="125" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80" opacity="0.8">Descriptive alt. SR reads purpose.</text>
+    </svg>
+  </div>
+
+  <div class="pass-fail">
+    <div class="pf-box pf-fail">
+      <div class="pf-label">Fail (HTML)</div>
+      <div class="pf-text">&lt;img src="cta.jpg"&gt;<br>&lt;img src="hero.jpg" alt="image"&gt;</div>
+    </div>
+    <div class="pf-box pf-pass">
+      <div class="pf-label">Pass (HTML)</div>
+      <div class="pf-text">&lt;img src="cta.jpg"<br>  alt="Download the 2024 report"&gt;<br>&lt;img src="divider.png" alt=""&gt;</div>
+    </div>
+  </div>
+    <div class="tool-callout">
+    <span class="tool-label">How to catch it</span>
+    <ul class="tool-list">
+    <li><span class="tool-item tool-wave">WAVE</span> Red icon on images with missing or empty alt.</li>
+    <li><span class="tool-item tool-axe">axe DevTools</span> Critical: "Image alternative text" rule.</li>
+    <li><span class="tool-item tool-chrome">Chrome DevTools</span> Accessibility tree shows alt value (or none).</li>
+    </ul>
+  </div>
+
+  <!-- REQ 07: LINK TEXT -->
+  <h3>Requirement 07: Link text</h3>
+  <p class="req-intro">Screen reader users navigate by links. When a list of links contains "Click here" five times, there is no way to distinguish them. Every link must describe its destination.</p>
+
+  <div class="visual-example">
+    <svg viewBox="0 0 660 140" width="100%" style="display:block;border-radius:8px;background:#161616;border:1px solid #2e2e2e;" aria-hidden="true">
+      <!-- FAIL: links list -->
+      <text x="14" y="22" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" letter-spacing="1">FAIL — links list as screen reader sees it</text>
+      <rect x="14" y="30" width="290" height="100" rx="6" fill="#1a0808" stroke="#f87171" stroke-width="0.5" opacity="0.6"/>
+      <text x="26" y="55"  font-family="DM Sans,sans-serif" font-size="11" fill="#60a5fa" text-decoration="underline">• Click here</text>
+      <text x="26" y="73"  font-family="DM Sans,sans-serif" font-size="11" fill="#60a5fa" text-decoration="underline">• Click here</text>
+      <text x="26" y="91"  font-family="DM Sans,sans-serif" font-size="11" fill="#60a5fa" text-decoration="underline">• Read more</text>
+      <text x="26" y="109" font-family="DM Sans,sans-serif" font-size="11" fill="#60a5fa" text-decoration="underline">• Read more</text>
+      <text x="26" y="122" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171" opacity="0.8">All identical. No context. Useless list.</text>
+      <!-- PASS -->
+      <text x="356" y="22" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80" letter-spacing="1">PASS — links list as screen reader sees it</text>
+      <rect x="356" y="30" width="290" height="100" rx="6" fill="#0d1a0d" stroke="#4ade80" stroke-width="0.5" opacity="0.6"/>
+      <text x="368" y="55"  font-family="DM Sans,sans-serif" font-size="11" fill="#60a5fa">• Download 2024 annual report</text>
+      <text x="368" y="73"  font-family="DM Sans,sans-serif" font-size="11" fill="#60a5fa">• Read accessibility news</text>
+      <text x="368" y="91"  font-family="DM Sans,sans-serif" font-size="11" fill="#60a5fa">• View WCAG 2.1 specification</text>
+      <text x="368" y="109" font-family="DM Sans,sans-serif" font-size="11" fill="#60a5fa">• Contact the QA team</text>
+      <text x="368" y="122" font-family="DM Sans,sans-serif" font-size="8" fill="#4ade80" opacity="0.8">Each link is self-descriptive. Clear list.</text>
+    </svg>
+  </div>
+
+  <div class="pass-fail">
+    <div class="pf-box pf-fail">
+      <div class="pf-label">Fail (HTML)</div>
+      <div class="pf-text">&lt;a href="/report"&gt;Click here&lt;/a&gt;<br>&lt;a href="/news"&gt;Read more&lt;/a&gt;</div>
+    </div>
+    <div class="pf-box pf-pass">
+      <div class="pf-label">Pass (HTML)</div>
+      <div class="pf-text">&lt;a href="/report"&gt;<br>  Download 2024 annual report&lt;/a&gt;<br>&lt;a href="/news"&gt;Read accessibility news&lt;/a&gt;</div>
+    </div>
+  </div>
+    <div class="tool-callout">
+    <span class="tool-label">How to catch it</span>
+    <ul class="tool-list">
+    <li><span class="tool-item tool-wave">WAVE</span> Alerts tab flags "Suspicious link text."</li>
+    <li><span class="tool-item tool-axe">axe DevTools</span> "Links must have discernible text" rule.</li>
+    <li><span class="tool-item tool-manual">Manual</span> NVDA Insert+F7 opens links list: scan for duplicates.</li>
+    </ul>
+  </div>
+
+  <!-- REQ 08: FORM LABELS -->
+  <h3>Requirement 08: Form labels</h3>
+  <p class="req-intro">Placeholder text disappears when you type. If the only label is the placeholder, the user loses all context mid-form. Every input needs a visible, persistent label above or beside it.</p>
+
+  <div class="visual-example">
+    <svg viewBox="0 0 660 150" width="100%" style="display:block;border-radius:8px;background:#161616;border:1px solid #2e2e2e;" aria-hidden="true">
+      <!-- FAIL: placeholder only -->
+      <text x="14" y="22" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" letter-spacing="1">FAIL — placeholder only</text>
+      <rect x="14" y="30" width="290" height="110" rx="6" fill="#1a0808" stroke="#f87171" stroke-width="0.5" opacity="0.6"/>
+      <!-- empty input (user typed, placeholder gone) -->
+      <rect x="30" y="50" width="200" height="34" rx="4" fill="#0d0d0d" stroke="#f87171" stroke-width="1"/>
+      <text x="42" y="72" font-family="DM Sans,sans-serif" font-size="12" fill="#888">user@example.com|</text>
+      <text x="30" y="103" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171">Label gone. What was this field again?</text>
+      <text x="30" y="116" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" opacity="0.7">SR announces: "edit text" — no label.</text>
+      <!-- PASS: label + input -->
+      <text x="356" y="22" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80" letter-spacing="1">PASS — visible label persists</text>
+      <rect x="356" y="30" width="290" height="110" rx="6" fill="#0d1a0d" stroke="#4ade80" stroke-width="0.5" opacity="0.6"/>
+      <text x="372" y="50" font-family="DM Sans,sans-serif" font-size="10" fill="#c8c8c8" font-weight="500">Email address</text>
+      <rect x="372" y="56" width="200" height="34" rx="4" fill="#0d0d0d" stroke="#4ade80" stroke-width="1"/>
+      <text x="384" y="78" font-family="DM Sans,sans-serif" font-size="12" fill="#888">user@example.com|</text>
+      <text x="372" y="103" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80">Label stays visible always.</text>
+      <text x="372" y="116" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80" opacity="0.7">SR announces: "Email address, edit text"</text>
+    </svg>
+  </div>
+
+  <div class="pass-fail">
+    <div class="pf-box pf-fail">
+      <div class="pf-label">Fail (HTML)</div>
+      <div class="pf-text">&lt;input type="text"<br>  placeholder="Enter email"&gt;</div>
+    </div>
+    <div class="pf-box pf-pass">
+      <div class="pf-label">Pass (HTML)</div>
+      <div class="pf-text">&lt;label for="email"&gt;Email&lt;/label&gt;<br>&lt;input id="email" type="email"<br>  placeholder="you@example.com"&gt;</div>
+    </div>
+  </div>
+    <div class="tool-callout">
+    <span class="tool-label">How to catch it</span>
+    <ul class="tool-list">
+    <li><span class="tool-item tool-axe">axe DevTools</span> "Form elements must have labels": Critical rule.</li>
+    <li><span class="tool-item tool-wave">WAVE</span> Red icon on unlabelled inputs.</li>
+    <li><span class="tool-item tool-manual">Manual</span> Tab to input. Listen for what NVDA announces.</li>
+    </ul>
+  </div>
+
+
+  <!-- REQ 09: DYNAMIC MESSAGES -->
+  <h3>Requirement 09: Dynamic messages</h3>
+  <p class="req-intro">When content updates dynamically: form submissions, error messages, loading states, AJAX results: screen readers are not automatically notified. Without ARIA live regions, the update is silent for screen reader users.</p>
+
+  <div class="visual-example">
+    <svg viewBox="0 0 660 150" width="100%" style="display:block;border-radius:8px;background:#161616;border:1px solid #2e2e2e;" aria-hidden="true">
+      <text x="14" y="22" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" letter-spacing="1">FAIL — message appears visually, SR hears nothing</text>
+      <rect x="14" y="30" width="290" height="110" rx="6" fill="#1a0808" stroke="#f87171" stroke-width="0.5" opacity="0.6"/>
+      <rect x="26" y="46" width="260" height="28" rx="4" fill="#0d0d0d" stroke="#555" stroke-width="1"/>
+      <text x="156" y="64" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#c8c8c8">your@email.com</text>
+      <rect x="26" y="80" width="100" height="24" rx="4" fill="#4ade80"/>
+      <text x="76" y="96" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#000" font-weight="500">Subscribe</text>
+      <rect x="136" y="80" width="150" height="24" rx="4" fill="#1e2a1e"/>
+      <text x="211" y="96" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#4ade80">✓ You're subscribed!</text>
+      <text x="26" y="128" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171">Sighted user sees success. SR user hears nothing.</text>
+
+      <text x="356" y="22" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80" letter-spacing="1">PASS — live region announces the update</text>
+      <rect x="356" y="30" width="290" height="110" rx="6" fill="#0d1a0d" stroke="#4ade80" stroke-width="0.5" opacity="0.6"/>
+      <rect x="368" y="46" width="260" height="28" rx="4" fill="#0d0d0d" stroke="#555" stroke-width="1"/>
+      <text x="498" y="64" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#c8c8c8">your@email.com</text>
+      <rect x="368" y="80" width="100" height="24" rx="4" fill="#4ade80"/>
+      <text x="418" y="96" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#000" font-weight="500">Subscribe</text>
+      <rect x="478" y="80" width="150" height="24" rx="4" fill="#1e2a1e" stroke="#4ade80" stroke-width="1"/>
+      <text x="553" y="96" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#4ade80">✓ You're subscribed!</text>
+      <!-- SR bubble -->
+      <rect x="368" y="112" width="270" height="20" rx="4" fill="#0d2a0d" stroke="#4ade80" stroke-width="0.5"/>
+      <text x="503" y="126" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80">SR announces: "You're subscribed!"</text>
+    </svg>
+  </div>
+
+  <div class="pass-fail">
+    <div class="pf-box pf-fail">
+      <div class="pf-label">Fail (HTML)</div>
+      <div class="pf-text">&lt;div id="msg"&gt;<br>  You're subscribed!<br>&lt;/div&gt;<br>&lt;!-- Silent to screen readers --&gt;</div>
+    </div>
+    <div class="pf-box pf-pass">
+      <div class="pf-label">Pass (HTML)</div>
+      <div class="pf-text">&lt;div role="status"<br>  aria-live="polite"&gt;<br>  You're subscribed!<br>&lt;/div&gt;</div>
+    </div>
+  </div>
+    <div class="tool-callout">
+    <span class="tool-label">How to catch it</span>
+    <ul class="tool-list">
+    <li><span class="tool-item tool-manual">Manual</span> NVDA open: trigger the update: listen for announcement.</li>
+    <li><span class="tool-item tool-chrome">Chrome DevTools</span> Accessibility tree: check for aria-live on message containers.</li>
+    <li><span class="tool-item tool-axe">axe DevTools</span> Some live region issues flagged automatically.</li>
+    </ul>
+  </div>
+
+  <!-- REQ 10: MEDIA -->
+  <h3>Requirement 10: Media: captions, transcripts, no autoplay</h3>
+  <p class="req-intro">Video must have synchronised captions: not auto-generated ones, which are frequently inaccurate. Audio-only content needs a full transcript. Any media that starts playing automatically must have a visible pause or stop control.</p>
+
+  <div class="visual-example">
+    <svg viewBox="0 0 660 175" width="100%" style="display:block;border-radius:8px;background:#161616;border:1px solid #2e2e2e;" aria-hidden="true">
+      <text x="14" y="22" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" letter-spacing="1">FAIL — no captions, autoplays</text>
+      <rect x="14" y="30" width="290" height="120" rx="6" fill="#1a0808" stroke="#f87171" stroke-width="0.5" opacity="0.6"/>
+      <!-- video player -->
+      <rect x="26" y="44" width="266" height="80" rx="4" fill="#0d0d0d" stroke="#f87171" stroke-width="0.5"/>
+      <text x="159" y="90" text-anchor="middle" font-family="DM Serif Display,serif" font-size="11" fill="#555">▶ Video playing automatically</text>
+      <!-- controls bar — no captions button -->
+      <rect x="26" y="124" width="266" height="18" rx="0" fill="#1a1a1a"/>
+      <text x="40" y="136" font-family="DM Sans,sans-serif" font-size="8" fill="#888">⏸  ────────────────  🔊</text>
+      <text x="26" y="162" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171">No CC button. Auto-generated captions only. Autoplays.</text>
+
+      <text x="356" y="22" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80" letter-spacing="1">PASS — captions, transcript, no autoplay</text>
+      <rect x="356" y="30" width="290" height="120" rx="6" fill="#0d1a0d" stroke="#4ade80" stroke-width="0.5" opacity="0.6"/>
+      <rect x="368" y="44" width="266" height="80" rx="4" fill="#0d0d0d" stroke="#4ade80" stroke-width="0.5"/>
+      <text x="501" y="82" text-anchor="middle" font-family="DM Serif Display,serif" font-size="11" fill="#555">▶ Video (paused on load)</text>
+      <!-- caption bar -->
+      <rect x="368" y="104" width="266" height="16" rx="0" fill="#1a1a1a" opacity="0.9"/>
+      <text x="501" y="115" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f0f0f0">"Welcome to The Quality Strategist..."</text>
+      <!-- controls with CC -->
+      <rect x="368" y="124" width="266" height="18" rx="0" fill="#1a1a1a"/>
+      <text x="382" y="136" font-family="DM Sans,sans-serif" font-size="8" fill="#888">⏸  ──────────────  🔊  CC ✓</text>
+      <text x="368" y="162" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80">Human captions. Transcript linked. Paused on load.</text>
+    </svg>
+  </div>
+
+  <div class="pass-fail">
+    <div class="pf-box pf-fail">
+      <div class="pf-label">Fail</div>
+      <div class="pf-text">Video autoplays on load.<br>Captions are auto-generated.<br>No transcript provided.<br>No pause control visible.</div>
+    </div>
+    <div class="pf-box pf-pass">
+      <div class="pf-label">Pass</div>
+      <div class="pf-text">Video paused on load.<br>Human-reviewed captions.<br>Full transcript below video.<br>Visible pause/stop control.</div>
+    </div>
+  </div>
+    <div class="tool-callout">
+    <span class="tool-label">How to catch it</span>
+    <ul class="tool-list">
+    <li><span class="tool-item tool-manual">Manual</span> Load page: check for autoplay. Play video: check CC quality.</li>
+    <li><span class="tool-item tool-wave">WAVE</span> Alerts for missing captions on embedded media.</li>
+    <li><span class="tool-item tool-axe">axe DevTools</span> Flags autoplay and missing media alternatives.</li>
+    </ul>
+  </div>
+
+  <!-- REQ 11: PAGE LANGUAGE -->
+  <h3>Requirement 11: Page language</h3>
+  <p class="req-intro">The lang attribute on the &lt;html&gt; element tells the screen reader which language engine to use. Without it, pronunciation is wrong for every user relying on speech output.</p>
+
+  <div class="visual-example">
+    <svg viewBox="0 0 660 130" width="100%" style="display:block;border-radius:8px;background:#161616;border:1px solid #2e2e2e;" aria-hidden="true">
+      <!-- FAIL -->
+      <text x="14" y="22" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" letter-spacing="1">FAIL</text>
+      <rect x="14" y="30" width="290" height="90" rx="6" fill="#1a0808" stroke="#f87171" stroke-width="0.5" opacity="0.6"/>
+      <text x="26" y="56" font-family="DM Sans,sans-serif" font-size="10" fill="#c8c8c8" font-weight="500">Screen reader tries to read:</text>
+      <text x="26" y="74" font-family="DM Sans,sans-serif" font-size="11" fill="#f0f0f0">"Welcome to our site"</text>
+      <text x="26" y="92" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" opacity="0.9">Reads with wrong accent / language engine.</text>
+      <text x="26" y="108" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" opacity="0.6">No lang="" on &lt;html&gt;.</text>
+      <!-- PASS -->
+      <text x="356" y="22" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80" letter-spacing="1">PASS</text>
+      <rect x="356" y="30" width="290" height="90" rx="6" fill="#0d1a0d" stroke="#4ade80" stroke-width="0.5" opacity="0.6"/>
+      <text x="368" y="56" font-family="DM Sans,sans-serif" font-size="10" fill="#c8c8c8" font-weight="500">Screen reader reads correctly:</text>
+      <text x="368" y="74" font-family="DM Sans,sans-serif" font-size="11" fill="#f0f0f0">"Welcome to our site"</text>
+      <text x="368" y="92" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80" opacity="0.9">Correct English engine selected.</text>
+      <text x="368" y="108" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80" opacity="0.6">lang="en" on &lt;html&gt;.</text>
+    </svg>
+  </div>
+
+  <div class="pass-fail">
+    <div class="pf-box pf-fail">
+      <div class="pf-label">Fail (HTML)</div>
+      <div class="pf-text">&lt;html&gt;<br>&lt;!-- No lang attribute --&gt;</div>
+    </div>
+    <div class="pf-box pf-pass">
+      <div class="pf-label">Pass (HTML)</div>
+      <div class="pf-text">&lt;html lang="en"&gt;<br>&lt;!-- Correct engine selected --&gt;</div>
+    </div>
+  </div>
+    <div class="tool-callout">
+    <span class="tool-label">How to catch it</span>
+    <ul class="tool-list">
+    <li><span class="tool-item tool-axe">axe DevTools</span> "HTML element must have a lang attribute": Critical.</li>
+    <li><span class="tool-item tool-wave">WAVE</span> Alerts section flags missing page language.</li>
+    <li><span class="tool-item tool-chrome">Chrome DevTools</span> Inspect &lt;html&gt; element, check lang attribute in DOM.</li>
+    </ul>
+  </div>
+
+  <!-- REQ 12: IFRAMES -->
+  <h3>Requirement 12: Embeds: iframe titles required</h3>
+  <p class="req-intro">Every iframe on a page must have a meaningful title attribute. Without it, a screen reader user hears "frame" with no indication of what is inside: a YouTube video, a map, a form, or a payment widget.</p>
+
+  <div class="visual-example">
+    <svg viewBox="0 0 660 150" width="100%" style="display:block;border-radius:8px;background:#161616;border:1px solid #2e2e2e;" aria-hidden="true">
+      <text x="14" y="22" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" letter-spacing="1">FAIL — no title on iframe</text>
+      <rect x="14" y="30" width="290" height="110" rx="6" fill="#1a0808" stroke="#f87171" stroke-width="0.5" opacity="0.6"/>
+      <!-- iframe box -->
+      <rect x="26" y="46" width="260" height="70" rx="4" fill="#0d0d0d" stroke="#f87171" stroke-width="0.5" stroke-dasharray="4,2"/>
+      <text x="156" y="76" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#555">YouTube embed</text>
+      <text x="156" y="92" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#444">&lt;iframe src="..."&gt;&lt;/iframe&gt;</text>
+      <!-- SR bubble -->
+      <rect x="26" y="122" width="260" height="14" rx="3" fill="#2a0808"/>
+      <text x="156" y="133" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">Screen reader announces: "frame"</text>
+
+      <text x="356" y="22" font-family="DM Sans,sans-serif" font-size="9" fill="#4ade80" letter-spacing="1">PASS — meaningful title on iframe</text>
+      <rect x="356" y="30" width="290" height="110" rx="6" fill="#0d1a0d" stroke="#4ade80" stroke-width="0.5" opacity="0.6"/>
+      <rect x="368" y="46" width="260" height="70" rx="4" fill="#0d0d0d" stroke="#4ade80" stroke-width="0.5" stroke-dasharray="4,2"/>
+      <text x="498" y="73" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#555">YouTube embed</text>
+      <text x="498" y="89" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#444">title="Accessibility testing demo video"</text>
+      <!-- SR bubble -->
+      <rect x="368" y="122" width="260" height="14" rx="3" fill="#0d2a0d"/>
+      <text x="498" y="133" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4ade80">Screen reader announces: "Accessibility testing demo video, frame"</text>
+    </svg>
+  </div>
+
+  <div class="pass-fail">
+    <div class="pf-box pf-fail">
+      <div class="pf-label">Fail (HTML)</div>
+      <div class="pf-text">&lt;iframe src="https://youtube.com/..."&gt;<br>&lt;/iframe&gt;<br>&lt;!-- No title. SR says "frame." --&gt;</div>
+    </div>
+    <div class="pf-box pf-pass">
+      <div class="pf-label">Pass (HTML)</div>
+      <div class="pf-text">&lt;iframe<br>  src="https://youtube.com/..."<br>  title="Accessibility testing demo"&gt;<br>&lt;/iframe&gt;</div>
+    </div>
+  </div>
+    <div class="tool-callout">
+    <span class="tool-label">How to catch it</span>
+    <ul class="tool-list">
+    <li><span class="tool-item tool-axe">axe DevTools</span> "Frames must have an accessible name": Critical rule.</li>
+    <li><span class="tool-item tool-wave">WAVE</span> Flags iframes with missing or empty title attributes.</li>
+    <li><span class="tool-item tool-chrome">Chrome DevTools</span> Inspect iframe element: check title attribute in DOM.</li>
+    </ul>
+  </div>
 
   <!-- 6 -->
-  <h2 id="defects">7. Common Defects and How to Write Them</h2>
+  <h2 id="full-checklist">6. Beyond the 12: The Full Checklist</h2>
 
-  <div class="table-wrap">
-    <table>
-      <caption class="visually-hidden">Common structure defects with WCAG reference, severity, and reproduction steps</caption>
-      <thead>
-        <tr>
-          <th scope="col">Defect</th>
-          <th scope="col">WCAG</th>
-          <th scope="col">Severity</th>
-          <th scope="col">Reproduction</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Skip link missing</td>
-          <td>2.4.1</td>
-          <td style="color:var(--red)">Major</td>
-          <td>Load page. Press Tab. No skip link appears as first focusable element.</td>
-        </tr>
-        <tr>
-          <td>Skip link present but broken</td>
-          <td>2.4.1</td>
-          <td style="color:var(--red)">Major</td>
-          <td>Press Tab, skip link appears, press Enter. Focus does not move to main content. Inspect: href ID does not match target element ID.</td>
-        </tr>
-        <tr>
-          <td>Multiple H1 elements</td>
-          <td>1.3.1</td>
-          <td style="color:var(--red)">Major</td>
-          <td>Open WAVE Structure tab or NVDA headings list (Insert+F6). Two or more H1 elements visible.</td>
-        </tr>
-        <tr>
-          <td>Skipped heading level</td>
-          <td>1.3.1</td>
-          <td style="color:var(--amber)">Moderate</td>
-          <td>Open WAVE Structure tab. Heading jumps from H1 to H3 or H2 to H4 with no intermediate level.</td>
-        </tr>
-        <tr>
-          <td>Missing main landmark</td>
-          <td>1.3.1</td>
-          <td style="color:var(--red)">Major</td>
-          <td>Open WAVE Structure tab or Chrome DevTools accessibility tree. No main landmark present.</td>
-        </tr>
-        <tr>
-          <td>Multiple navs without aria-label</td>
-          <td>1.3.1</td>
-          <td style="color:var(--amber)">Moderate</td>
-          <td>Open WAVE. Two or more nav elements both labelled "navigation" with no distinguishing label.</td>
-        </tr>
-        <tr>
-          <td>Section used as landmark without label</td>
-          <td>1.3.1</td>
-          <td style="color:var(--text-3)">Minor</td>
-          <td>Chrome DevTools accessibility tree shows section element with no accessible name. Not a navigable landmark.</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  <p>The 12 requirements above are the highest-frequency defects. WCAG 2.1 AA has 50 Level A and AA criteria in total. The full checklist is essential for:</p>
+
+  <ul>
+    <li>Formal accessibility audits</li>
+    <li>VPAT (Voluntary Product Accessibility Template) completion</li>
+    <li>Legal compliance sign-off</li>
+    <li>Procurement accessibility assessments</li>
+  </ul>
+
+  <p>The official source is the <a href="https://www.w3.org/TR/WCAG21/" target="_blank" rel="noopener noreferrer" style="color:var(--blue);text-decoration:underline;text-underline-offset:3px;">WCAG 2.1 specification at w3.org</a>. For a structured quick reference, the <a href="https://www.w3.org/WAI/WCAG21/quickref/" target="_blank" rel="noopener noreferrer" style="color:var(--blue);text-decoration:underline;text-underline-offset:3px;">How to Meet WCAG quick reference</a> lets you filter by principle, level, and technique. Blog 35 in this series covers the full sprint-ready checklist and the formal audit checklist side by side: when to use which, and how to structure your reporting.</p>
 
   <div class="takeaway" role="note">
-    <div class="label">The fast check</div>
-    <p>Open <span class="tool">WAVE</span>, click Structure, look for red and yellow flags. This catches 80% of heading and landmark defects in under a minute. Manual verification with <span class="tool">NVDA</span> confirms the rest.</p>
+    <div class="label">The starting point</div>
+    <p>Start with the 12. Get them right on every sprint. Then expand to the full set for formal sign-off. Do not try to learn all 78 criteria at once. The 12 above account for the majority of real-world defects found in production. Master these first.</p>
   </div>
 
+  <!-- SERIES NAV -->
 
   <h2 id="mobile-testing">Testing on Mobile Devices</h2>
   <p>The principles and checks in this blog apply equally to native mobile apps. Use these apps to practise on real implementations on iOS and Android:</p>
@@ -567,26 +1293,26 @@
     <tbody>
       <tr><td><a href="https://dequeuniversity.com/demo/mars/" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Deque University Mars Demo</a></td><td>iOS + Android (web)</td><td>Real accessibility failures across forms, images, headings and dynamic content</td></tr>
       <tr><td><a href="https://apps.apple.com/us/app/appt-app-accessibility/id1527923025" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Appt App</a></td><td>iOS</td><td>Native iOS correct and incorrect implementations</td></tr>
-      <tr><td><a href="https://play.google.com/store/apps/details?id=nl.appt" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Appt App</a></td><td>Android</td><td>Android equivalent: practise TalkBack on native accessibility failures</td></tr>
-      <tr><td><a href="https://play.google.com/store/apps/details?id=com.google.android.apps.accessibility.auditor" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Accessibility Scanner</a></td><td>Android</td><td>Automated scan of native Android screens for missing labels and contrast failures</td></tr>
-      <tr><td><a href="https://apps.apple.com/us/app/accessibility-checker-ai-eaa/id1095478187" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Accessibility Checker AI EAA</a></td><td>iOS</td><td>Scan iOS screens for missing accessibility labels on native UI elements</td></tr>
+      <tr><td><a href="https://play.google.com/store/apps/details?id=nl.appt" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Appt App</a></td><td>Android</td><td>Android equivalent</td></tr>
+      <tr><td><a href="https://play.google.com/store/apps/details?id=com.google.android.apps.accessibility.auditor" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Accessibility Scanner</a></td><td>Android</td><td>Automated scan of native Android screens</td></tr>
+      <tr><td><a href="https://apps.apple.com/us/app/accessibility-checker-ai-eaa/id1095478187" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Accessibility Checker AI EAA</a></td><td>iOS</td><td>Scan iOS screens for missing accessibility labels</td></tr>
     </tbody>
   </table></div>
 
   <div class="series-nav">
     <span class="label">Navigate the series</span>
     <div class="nav-pair">
-      <a href="11-Focus-Indicators.html" class="nav-blog">
+      <a href="02-cost-of-shift-right.html" class="nav-blog">
         <span class="nav-blog-arrow" aria-hidden="true">←</span>
         <div>
-          <div class="nav-blog-title">Blog 11: Focus Indicators</div>
-          <div class="nav-blog-sub">Visible, logical, never suppressed</div>
+          <div class="nav-blog-title">Blog 02: The True Cost of Accessibility Debt</div>
+          <div class="nav-blog-sub">Why finding it late costs 30–100×</div>
         </div>
       </a>
-      <a href="13-Colour-Contrast-Testing.html" class="nav-blog">
+      <a href="04-accessibility-ownership-matrix.html" class="nav-blog">
         <div>
-          <div class="nav-blog-title">Blog 13: Colour Contrast Testing</div>
-          <div class="nav-blog-sub">Web, Android, iOS and colour blindness simulation</div>
+          <div class="nav-blog-title">Blog 04: Who Owns Accessibility?</div>
+          <div class="nav-blog-sub">A responsibility matrix for every role</div>
         </div>
         <span class="nav-blog-arrow" aria-hidden="true">→</span>
       </a>
@@ -596,10 +1322,10 @@
   <aside class="references" aria-label="References">
     <div class="ref-title">References</div>
     <ul role="list">
-      <li><a href="https://www.w3.org/TR/WCAG21/#bypass-blocks" target="_blank" rel="noopener noreferrer">WCAG 2.4.1: Bypass Blocks</a></li>
-      <li><a href="https://www.w3.org/TR/WCAG21/#info-and-relationships" target="_blank" rel="noopener noreferrer">WCAG 1.3.1: Info and Relationships</a></li>
-      <li><a href="https://www.w3.org/WAI/ARIA/apg/patterns/landmarks/" target="_blank" rel="noopener noreferrer">ARIA Authoring Practices: Landmark regions</a></li>
-      <li><a href="https://webaim.org/techniques/skipnav/" target="_blank" rel="noopener noreferrer">WebAIM: Skip navigation links</a></li>
+      <li><a href="https://www.w3.org/TR/WCAG21/" target="_blank" rel="noopener noreferrer">WCAG 2.1: Official W3C specification</a></li>
+      <li><a href="https://www.w3.org/WAI/WCAG21/quickref/" target="_blank" rel="noopener noreferrer">WCAG 2.1 Quick Reference: How to Meet WCAG</a></li>
+      <li><a href="https://www.w3.org/TR/WCAG22/" target="_blank" rel="noopener noreferrer">WCAG 2.2: Future direction (published 2023)</a></li>
+      <li><a href="https://webaim.org/projects/million/" target="_blank" rel="noopener noreferrer">WebAIM Million: Annual analysis of the top 1M homepages</a></li>
     </ul>
   </aside>
 
