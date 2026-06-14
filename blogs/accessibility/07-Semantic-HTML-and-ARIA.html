@@ -177,10 +177,20 @@
       <li><a href="#common-aria">Common ARIA patterns and how to check them</a></li>
       <li><a href="#aria-misuse">ARIA misuse patterns found across every phase</a></li>
       <li><a href="#qa-checks">What QA checks in shift-left A11y</a></li>
+      <li><a href="#how-to-test">How to test: tiers, platforms and practice</a></li>
+      <li><a href="#mobile-testing">Mobile testing</a></li>
     </ol>
   </nav>
 
   <!-- 1 -->
+  <h2 id="how-to-test">Testing Semantic HTML and ARIA</h2>
+  <h3>Tier 1: Pipeline automation</h3>
+  <p><span class="tool">axe-core</span> in CI is the primary gate for ARIA and semantic HTML: invalid roles, missing required ARIA attributes, aria-required-children violations, role/name/value failures. Run with <code>withTags(['wcag2a','wcag2aa'])</code>. Use the <a href="A11y-Test-Playground/31 A11y Test Playground - Axe Core CI.html" style="color:var(--blue);">Axe-Core CI Playground</a> to test your pipeline against real violations.</p>
+  <h3>Tier 2: Semi-automated tools</h3>
+  <p><span class="tool">ANDI</span> Focusable Elements module is the most precise tool for inspecting accessible name computation: it shows exactly which attribute provides the name and flags conflicts between aria-label and visible text. <span class="tool">axe DevTools</span> element highlight locates ARIA violations in the rendered DOM faster than reading source code.</p>
+  <h3>Tier 3: Manual</h3>
+  <p>ARIA presence does not mean ARIA works. Test every custom widget with NVDA + Firefox on Windows and VoiceOver + Safari on Mac. Verify: role announced correctly, state changes announced (expanded/collapsed, selected, checked), accessible name matches what a sighted user sees. Mobile: VoiceOver on physical iPhone, TalkBack on physical Android device.</p>
+
   <h2 id="why-semantic">1. Why Semantic HTML Is the Foundation</h2>
 
   <p>Semantic HTML means using elements that carry meaning. <code>&lt;button&gt;</code> for buttons, <code>&lt;nav&gt;</code> for navigation, <code>&lt;main&gt;</code> for main content. The element tells the browser, the screen reader, and the accessibility tree what the thing is: not just what it looks like.</p>
@@ -326,7 +336,7 @@
   <!-- 3 -->
   <h2 id="semantic-elements">3. The Semantic Elements to Check</h2>
 
-  <p>These are the elements most commonly replaced with generic divs. Catch them early — in code review or a dev build — not after they have shipped.</p>
+  <p>These are the elements most commonly replaced with generic divs. Catch them early: in code review or a dev build: not after they have shipped.</p>
 
   <div class="table-wrap">
     <table>
@@ -564,7 +574,7 @@
   <!-- 7 -->
   <h2 id="aria-misuse">7. ARIA Misuse Patterns Found Across Every Phase</h2>
 
-  <p>These patterns show up at every stage — in code review, in staging, and yes, sometimes in production when the earlier gates are missed. Each one is a real defect pattern. The earlier it is caught, the cheaper the fix.</p>
+  <p>These patterns show up at every stage: in code review, in staging, and yes, sometimes in production when the earlier gates are missed. Each one is a real defect pattern. The earlier it is caught, the cheaper the fix.</p>
 
   <div class="table-wrap">
     <table>
@@ -666,6 +676,21 @@
   </div>
 
   <!-- SERIES NAV -->
+
+  <h2 id="mobile-testing">Testing on Mobile Devices</h2>
+  <p>The principles and checks in this blog apply equally to native mobile apps. Use these apps to practise on real implementations on iOS and Android:</p>
+  <div class="table-wrap"><table>
+    <caption style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Apps for mobile accessibility testing</caption>
+    <thead><tr><th scope="col">App</th><th scope="col">Platform</th><th scope="col">What to test</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://dequeuniversity.com/demo/mars/" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Deque University Mars Demo</a></td><td>iOS + Android (web)</td><td>Real accessibility failures across forms, images, headings and dynamic content</td></tr>
+      <tr><td><a href="https://apps.apple.com/us/app/appt-app-accessibility/id1527923025" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Appt App</a></td><td>iOS</td><td>Native iOS correct and incorrect implementations</td></tr>
+      <tr><td><a href="https://play.google.com/store/apps/details?id=nl.appt" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Appt App</a></td><td>Android</td><td>Android equivalent</td></tr>
+      <tr><td><a href="https://play.google.com/store/apps/details?id=com.google.android.apps.accessibility.auditor" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Accessibility Scanner</a></td><td>Android</td><td>Automated scan of native Android screens</td></tr>
+      <tr><td><a href="https://apps.apple.com/us/app/accessibility-checker-ai-eaa/id1095478187" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Accessibility Checker AI EAA</a></td><td>iOS</td><td>Scan iOS screens for missing accessibility labels</td></tr>
+    </tbody>
+  </table></div>
+
   <div class="series-nav">
     <span class="label">Navigate the series</span>
     <div class="nav-pair">
