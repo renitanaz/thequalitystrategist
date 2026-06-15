@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shift-Left Accessibility: A Complete Testing Series | The Quality Strategist</title>
+  <meta name="description" content="38 blogs. 8 modules. Everything a QA architect needs to build accessibility into every phase of delivery: from design review to live audit." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0d0d0d;--bg2:#161616;--bg3:#1e1e1e;--border:#2e2e2e;--text:#f0f0f0;--text-2:#c8c8c8;--text-3:#8a8a8a;--green:#4ade80;--green-bg:rgba(74,222,128,0.07);--blue:#60a5fa;--blue-bg:rgba(96,165,250,0.07);--amber:#fbbf24;--amber-bg:rgba(251,191,36,0.07);--purple:#a78bfa;--purple-bg:rgba(167,139,250,0.07);--red:#f87171;--red-bg:rgba(248,113,113,0.07);--teal:#2dd4bf;--teal-bg:rgba(45,212,191,0.07)}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;line-height:1.8;-webkit-font-smoothing:antialiased}
+    .skip-link{position:absolute;top:-100%;left:1rem;background:var(--green);color:#000;padding:.5rem 1rem;border-radius:0 0 6px 6px;font-size:.85rem;font-weight:500;text-decoration:none;z-index:999}.skip-link:focus{top:0}
+    nav.site-nav{position:sticky;top:0;z-index:100;background:rgba(13,13,13,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:56px}
+    .nav-logo{font-family:'DM Serif Display',serif;font-size:1rem;color:var(--text);text-decoration:none}
+    .nav-links{display:flex;gap:2rem;list-style:none}.nav-links a{color:var(--text-3);text-decoration:none;font-size:.85rem}.nav-links a:hover{color:var(--text)}
+    .blog-header{max-width:900px;margin:0 auto;padding:4rem 2rem 2.5rem;border-bottom:1px solid var(--border)}
+    .breadcrumb{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}.breadcrumb a{color:var(--text-3);text-decoration:none}
+    .blog-tags{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.25rem}
+    .tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+    .tag.accent{background:var(--green-bg);color:var(--green);border-color:rgba(74,222,128,.25)}
+    .blog-header h1{font-family:'DM Serif Display',serif;font-size:clamp(1.85rem,4vw,2.8rem);line-height:1.2;color:var(--text);margin-bottom:.75rem}
+    .blog-header h1 em{font-style:italic;color:var(--green)}
+    .blog-subtitle{font-family:'DM Serif Display',serif;font-size:1.1rem;font-style:italic;color:var(--text-3);margin-bottom:1.25rem}
+    .blog-meta{display:flex;align-items:center;gap:1.25rem;font-size:.82rem;color:var(--text-3);flex-wrap:wrap}.blog-meta .series{color:var(--text-2);font-weight:500}
+    main{max-width:900px;margin:0 auto;padding:3rem 2rem 5rem}
+    .blog-body p{color:var(--text-2);margin-bottom:1.25rem;font-weight:300}.blog-body p strong{color:var(--text);font-weight:500}
+    .blog-body h2{font-family:'DM Serif Display',serif;font-size:1.5rem;color:var(--text);margin:3.5rem 0 1.1rem;padding-top:1rem;border-top:1px solid var(--border)}
+    .blog-body ul{padding-left:1.5rem;margin-bottom:1.25rem;color:var(--text-2);font-weight:300}.blog-body li{margin-bottom:.45rem}
+
+    /* Module cards */
+    .modules{display:flex;flex-direction:column;gap:2rem;margin:2rem 0}
+    .module-card{border:1px solid var(--border);border-radius:12px;overflow:hidden}
+    .module-header{padding:1rem 1.4rem;display:flex;align-items:flex-start;gap:1rem}
+    .module-num{font-family:'DM Serif Display',serif;font-size:1.6rem;font-weight:700;flex-shrink:0;line-height:1}
+    .module-meta{flex:1}
+    .module-title{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--text);line-height:1.3}
+    .module-subtitle{font-size:.82rem;color:var(--text-3);margin-top:4px}
+    .module-range{font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;font-weight:500;margin-top:6px}
+    .blog-list{border-top:1px solid var(--border)}
+    .blog-row{display:flex;align-items:baseline;gap:.75rem;padding:.7rem 1.4rem;border-bottom:1px solid var(--border);text-decoration:none;transition:background .15s}
+    .blog-row:last-child{border-bottom:none}
+    .blog-row:hover{background:var(--bg2)}
+    .blog-row:hover .blog-row-title{color:var(--green)}
+    .blog-row-num{font-family:'DM Serif Display',serif;font-size:.88rem;color:var(--text-3);min-width:28px;flex-shrink:0;text-align:right}
+    .blog-row-title{font-size:.88rem;color:var(--text-2);line-height:1.5;font-weight:300}
+
+    /* Colour coding per module */
+    .m1 .module-header{background:rgba(248,113,113,.05)} .m1 .module-num{color:var(--red)} .m1 .module-range{color:var(--red)} .m1 .blog-row-num{color:var(--red)}
+    .m2 .module-header{background:rgba(251,191,36,.05)} .m2 .module-num{color:var(--amber)} .m2 .module-range{color:var(--amber)} .m2 .blog-row-num{color:var(--amber)}
+    .m3 .module-header{background:rgba(74,222,128,.05)} .m3 .module-num{color:var(--green)} .m3 .module-range{color:var(--green)} .m3 .blog-row-num{color:var(--green)}
+    .m4 .module-header{background:rgba(45,212,191,.05)} .m4 .module-num{color:var(--teal)} .m4 .module-range{color:var(--teal)} .m4 .blog-row-num{color:var(--teal)}
+    .m5 .module-header{background:rgba(96,165,250,.05)} .m5 .module-num{color:var(--blue)} .m5 .module-range{color:var(--blue)} .m5 .blog-row-num{color:var(--blue)}
+    .m6 .module-header{background:rgba(167,139,250,.05)} .m6 .module-num{color:var(--purple)} .m6 .module-range{color:var(--purple)} .m6 .blog-row-num{color:var(--purple)}
+    .m7 .module-header{background:rgba(45,212,191,.05)} .m7 .module-num{color:var(--teal)} .m7 .module-range{color:var(--teal)} .m7 .blog-row-num{color:var(--teal)}
+    .m8 .module-header{background:rgba(74,222,128,.05)} .m8 .module-num{color:var(--green)} .m8 .module-range{color:var(--green)} .m8 .blog-row-num{color:var(--green)}
+
+    .callout{display:block;background:var(--green-bg);border-left:3px solid var(--green);border-radius:0 10px 10px 0;padding:1.25rem 1.5rem;margin:1.75rem 0;font-size:.95rem;color:var(--text);font-style:italic;line-height:1.6}
+    .start-cta{display:inline-flex;align-items:center;gap:.6rem;background:var(--green);color:#000;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:500;padding:.75rem 1.5rem;border-radius:8px;text-decoration:none;margin-top:1rem;transition:opacity .2s}.start-cta:hover{opacity:.85}
+    footer{border-top:1px solid var(--border);padding:2rem;text-align:center;font-size:.78rem;color:var(--text-3)}footer a{color:var(--text-3);text-decoration:none}
+    @media(max-width:620px){nav.site-nav{padding:0 1.25rem}.nav-links{display:none}.blog-header,main{padding-left:1.25rem;padding-right:1.25rem}.module-header{flex-direction:column;gap:.5rem}}
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <ul class="nav-links" role="list">
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#playlist">Playlist</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#justlikereal">JustLikeReal</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#meetme">Meet Me</a></li>
+  </ul>
+</nav>
+
+<header class="blog-header">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a>
+    <span aria-hidden="true">›</span>
+    <span aria-current="page">Shift-Left Accessibility Series</span>
+  </nav>
+  <div class="blog-tags">
+    <span class="tag accent">Series Introduction</span>
+    <span class="tag">38 Blogs</span>
+    <span class="tag">8 Modules</span>
+    <span class="tag">Shift-Left</span>
+  </div>
+  <h1>Shift-Left Accessibility: <em>A Complete Testing Series</em></h1>
+  <p class="blog-subtitle">38 blogs. 8 modules. Everything a QA architect needs to build accessibility into every phase of delivery.</p>
+  <div class="blog-meta">
+    <span class="series">The Quality Strategist</span>
+    <span aria-hidden="true">·</span>
+    <span>Series overview</span>
+    <span aria-hidden="true">·</span>
+    <span>5 min read</span>
+  </div>
+</header>
+
+<main id="main-content" class="blog-body">
+
+  <p>I came to accessibility testing about six months ago, driven by my project commitments. What followed was a steep but rewarding learning curve — working through official documentation, hands-on practice, and AI-assisted learning that helped me connect concepts faster than I could have by working through specs alone.</p>
+  <p>This series is what I built from that process. The structure comes from a pattern I kept seeing: teams finding accessibility violations at release, raising defects against finished features, and calling that testing. The rework is expensive, the defects are demoralising, and the next sprint begins with the same structural problems untouched.</p>
+  <p>There is a better sequence. Accessibility belongs at every phase of delivery — owned by every role, verified by a testing stack that catches failures as early as the design review and as late as the live audit. Shift-left is not a slogan. It is the sequence these 38 blogs follow.</p>
+  <p>Read them end to end, or jump directly to the module that matches where your team currently is.</p>
+
+  <div class="callout" role="note">
+    Each blog includes a three-tier testing approach (pipeline automation, semi-automated tools, manual testing), platform coverage for Windows, Mac, iOS and Android, links to interactive test playgrounds with negative and positive cases, and verified native app links for mobile testing.
+  </div>
+
+  <h2 id="modules">The 8 Modules</h2>
+
+  <div class="modules" role="list">
+
+    <!-- Module 1 -->
+    <div class="module-card m1" role="listitem">
+      <div class="module-header">
+        <div class="module-num" aria-hidden="true">1</div>
+        <div class="module-meta">
+          <div class="module-title">Why Accessibility and the Cost of Getting It Wrong</div>
+          <div class="module-subtitle">The business, legal and human case for getting accessibility right from the start.</div>
+          <div class="module-range">Blogs 01 to 03</div>
+        </div>
+      </div>
+      <div class="blog-list" role="list">
+        <a href="01-Accessibility-Is-Not-Just-a-Disability-Issue.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">01</span>
+          <span class="blog-row-title">Accessibility Is Not Just a Disability Issue: It is a Design Problem</span>
+        </a>
+        <a href="02-cost-of-shift-right.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">02</span>
+          <span class="blog-row-title">The True Cost of Accessibility Debt: Why Finding It Late Costs 100 Times More</span>
+        </a>
+        <a href="03-wcag-explained-12missed.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">03</span>
+          <span class="blog-row-title">WCAG 2.1 AA: The 12 Requirements That Catch Teams Off Guard</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Module 2 -->
+    <div class="module-card m2" role="listitem">
+      <div class="module-header">
+        <div class="module-num" aria-hidden="true">2</div>
+        <div class="module-meta">
+          <div class="module-title">Shift-Left: Catching Issues Before They Reach QA</div>
+          <div class="module-subtitle">Ownership, design reviews, developer tooling and phase gates. The infrastructure that keeps defects out.</div>
+          <div class="module-range">Blogs 04 to 09</div>
+        </div>
+      </div>
+      <div class="blog-list" role="list">
+        <a href="04-Who-Owns-Accessibility.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">04</span>
+          <span class="blog-row-title">Who Owns Accessibility? A Responsibility Matrix for Every Role</span>
+        </a>
+        <a href="05-Design-Phase-Accessibility-Review.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">05</span>
+          <span class="blog-row-title">Accessibility at the Design Phase: What to Review Before a Line of Code Is Written</span>
+        </a>
+        <a href="06-Content-Authoring-Accessibility-Rules.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">06</span>
+          <span class="blog-row-title">Content Authoring Accessibility Rules: The Mistakes That Become QA Defects</span>
+        </a>
+        <a href="07-Semantic-HTML-and-ARIA.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">07</span>
+          <span class="blog-row-title">Semantic HTML and ARIA: What Developers Must Get Right Before QA Tests It</span>
+        </a>
+        <a href="08-ESLint-and-Axe-Core.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">08</span>
+          <span class="blog-row-title">ESLint-Plugin-JSX-A11y: Catching Accessibility Issues at Code Time</span>
+        </a>
+        <a href="09-Phase-Exit-Criteria.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">09</span>
+          <span class="blog-row-title">Phase Exit Criteria: What Must Be True Before Each Phase Closes</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Module 3 -->
+    <div class="module-card m3" role="listitem">
+      <div class="module-header">
+        <div class="module-num" aria-hidden="true">3</div>
+        <div class="module-meta">
+          <div class="module-title">Manual Testing Skills</div>
+          <div class="module-subtitle">Keyboard, focus, headings, contrast, alt text, forms, dynamic content and zoom. Skills no tool replaces.</div>
+          <div class="module-range">Blogs 10 to 17</div>
+        </div>
+      </div>
+      <div class="blog-list" role="list">
+        <a href="10-Keyboard-Testing.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">10</span>
+          <span class="blog-row-title">Keyboard-Only Testing: Disconnect Your Mouse and Start Here</span>
+        </a>
+        <a href="11-Focus-Indicators.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">11</span>
+          <span class="blog-row-title">Focus Indicators: Visible, Logical, Never Suppressed</span>
+        </a>
+        <a href="12-Headings-Landmarks-Skip-Links.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">12</span>
+          <span class="blog-row-title">Headings, Landmarks and Skip Links: How to Validate Page Structure</span>
+        </a>
+        <a href="13-Colour-Contrast-Testing.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">13</span>
+          <span class="blog-row-title">Colour Contrast Testing: Web, Android, iOS and Colour Blindness Simulation</span>
+        </a>
+        <a href="14-Alt-Text-Testing.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">14</span>
+          <span class="blog-row-title">Alt Text Testing: Meaningful vs Decorative vs Wrong</span>
+        </a>
+        <a href="15-Forms-Labels-Errors.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">15</span>
+          <span class="blog-row-title">Forms, Labels, Errors and Instructions: Manual Testing Guide</span>
+        </a>
+        <a href="16-Dynamic-Content-ARIA-Live-Regions.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">16</span>
+          <span class="blog-row-title">Dynamic Content and ARIA Live Regions: What Automated Tools Miss</span>
+        </a>
+        <a href="17-Zoom-Reflow-Reduced-Motion.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">17</span>
+          <span class="blog-row-title">Zoom, Reflow, Reduced Motion and Display Settings: The Full Responsive Accessibility Test</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Module 4 -->
+    <div class="module-card m4" role="listitem">
+      <div class="module-header">
+        <div class="module-num" aria-hidden="true">4</div>
+        <div class="module-meta">
+          <div class="module-title">Component Testing</div>
+          <div class="module-subtitle">Platform setup and gesture reference before picking up a screen reader.</div>
+          <div class="module-range">Blogs 18 to 19</div>
+        </div>
+      </div>
+      <div class="blog-list" role="list">
+        <a href="18-Enable-Accessibility-Features.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">18</span>
+          <span class="blog-row-title">How to Enable Accessibility Features on Windows, Mac, iOS and Android</span>
+        </a>
+        <a href="19-Screen-Reader-Gestures-Cheat-Sheet.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">19</span>
+          <span class="blog-row-title">Screen Reader Gestures: iOS and Android Cheat Sheet</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Module 5 -->
+    <div class="module-card m5" role="listitem">
+      <div class="module-header">
+        <div class="module-num" aria-hidden="true">5</div>
+        <div class="module-meta">
+          <div class="module-title">Screen Readers</div>
+          <div class="module-subtitle">NVDA, JAWS, VoiceOver and TalkBack. Setup, shortcuts and the checklist that works across all platforms.</div>
+          <div class="module-range">Blogs 20 to 25</div>
+        </div>
+      </div>
+      <div class="blog-list" role="list">
+        <a href="20-NVDA-on-Windows.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">20</span>
+          <span class="blog-row-title">NVDA on Windows: Setup, Core Shortcuts and Your First Test</span>
+        </a>
+        <a href="21-JAWS-on-Windows.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">21</span>
+          <span class="blog-row-title">JAWS on Windows: When It Matters and How It Differs from NVDA</span>
+        </a>
+        <a href="22-VoiceOver-on-Mac.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">22</span>
+          <span class="blog-row-title">VoiceOver on Mac: Enable, Navigate and Test With It</span>
+        </a>
+        <a href="23-VoiceOver-on-iOS.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">23</span>
+          <span class="blog-row-title">VoiceOver on iOS: Gestures, Rotor and Real Device Testing</span>
+        </a>
+        <a href="24-TalkBack-on-Android.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">24</span>
+          <span class="blog-row-title">TalkBack on Android: Swipe Navigation and Why Simulators Are Not Enough</span>
+        </a>
+        <a href="25-What-to-Check-With-a-Screen-Reader.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">25</span>
+          <span class="blog-row-title">What to Check With a Screen Reader: The Practical Checklist</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Module 6 -->
+    <div class="module-card m6" role="listitem">
+      <div class="module-header">
+        <div class="module-num" aria-hidden="true">6</div>
+        <div class="module-meta">
+          <div class="module-title">Browser and Automated Tools</div>
+          <div class="module-subtitle">WAVE, axe DevTools, Accessibility Insights, Lighthouse, ANDI and IBM Equal Access. What each catches and misses.</div>
+          <div class="module-range">Blogs 26 to 30</div>
+        </div>
+      </div>
+      <div class="blog-list" role="list">
+        <a href="26-WAVE.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">26</span>
+          <span class="blog-row-title">WAVE: Visual Scanning, Structure Tab and What It Misses</span>
+        </a>
+        <a href="27-Axe-DevTools.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">27</span>
+          <span class="blog-row-title">Axe DevTools: Scan, Read Results, Export, Repeat</span>
+        </a>
+        <a href="28-Accessibility-Insights.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">28</span>
+          <span class="blog-row-title">Accessibility Insights: FastPass, Tab Stops and Guided Checks</span>
+        </a>
+        <a href="29-Lighthouse.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">29</span>
+          <span class="blog-row-title">Lighthouse: What the Score Means and What It Does Not</span>
+        </a>
+        <a href="30-ANDI-and-IBM-Equal-Access.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">30</span>
+          <span class="blog-row-title">ANDI and IBM Equal Access: When to Use Each</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Module 7 -->
+    <div class="module-card m7" role="listitem">
+      <div class="module-header">
+        <div class="module-num" aria-hidden="true">7</div>
+        <div class="module-meta">
+          <div class="module-title">CI/CD Automation</div>
+          <div class="module-subtitle">Axe-core in Playwright and Cypress, Pa11y, and what automation cannot catch regardless of configuration.</div>
+          <div class="module-range">Blogs 31 to 33</div>
+        </div>
+      </div>
+      <div class="blog-list" role="list">
+        <a href="31-Axe-Core-Cypress-Playwright.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">31</span>
+          <span class="blog-row-title">Axe-Core in Cypress and Playwright: Automated Testing on Real Journeys</span>
+        </a>
+        <a href="32-Pa11y-in-CI-CD.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">32</span>
+          <span class="blog-row-title">Pa11y in CI/CD: Nightly Scans, HTML Reports, GitHub Actions</span>
+        </a>
+        <a href="33-Automated-Tools-Only-Catch-30-50-Percent.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">33</span>
+          <span class="blog-row-title">Automated Tools Only Catch 30 to 50%: What They Miss and Why Manual Testing Cannot Be Skipped</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Module 8 -->
+    <div class="module-card m8" role="listitem">
+      <div class="module-header">
+        <div class="module-num" aria-hidden="true">8</div>
+        <div class="module-meta">
+          <div class="module-title">Applied QA Practice</div>
+          <div class="module-subtitle">Defect writing, component testing, video, the sprint checklist and a live full-page audit. Theory meets product.</div>
+          <div class="module-range">Blogs 34 to 38</div>
+        </div>
+      </div>
+      <div class="blog-list" role="list">
+        <a href="34-How-to-Write-an-Accessibility-Defect.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">34</span>
+          <span class="blog-row-title">How to Write an Accessibility Defect: WCAG Reference, Severity, Reproduction Steps</span>
+        </a>
+        <a href="35-Testing-Modals-Accordions-Carousels.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">35</span>
+          <span class="blog-row-title">Testing Modals, Accordions and Carousels: The Component Checklist</span>
+        </a>
+        <a href="36-Testing-Video-and-Audio.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">36</span>
+          <span class="blog-row-title">Testing Video and Audio: Captions, Transcripts, Autoplay</span>
+        </a>
+        <a href="37-Sprint-Ready-Accessibility-Checklist.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">37</span>
+          <span class="blog-row-title">The Sprint-Ready Accessibility Checklist: 19 Checks Before Every Release</span>
+        </a>
+        <a href="38-Live-Audit-Full-Page-From-Scratch.html" class="blog-row" role="listitem">
+          <span class="blog-row-num" aria-hidden="true">38</span>
+          <span class="blog-row-title">Live Audit: Full Page From Scratch: WAVE, Keyboard, NVDA, Defect Log</span>
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <h2 id="how-to-use">How to Use This Series</h2>
+  <p>If you are new to accessibility testing, start at Blog 01 and read sequentially. Each module builds on the previous one: the tools in Module 6 make more sense after you have done the manual testing in Module 3, and the CI/CD automation in Module 7 is easier to configure when you understand what it is automating.</p>
+  <p>If you are already testing accessibility and need to close a specific gap, jump to the relevant module. Module 5 is self-contained if you need screen reader skills fast. Module 7 is self-contained if your task is setting up a pipeline gate.</p>
+  <p>If you are a QA architect reviewing your team's current practice, start with Blog 04 (ownership) and Blog 09 (phase exit criteria): these are the structural changes that make everything else in the series stick.</p>
+
+  <div style="margin-top:2rem">
+    <a href="01-Accessibility-Is-Not-Just-a-Disability-Issue.html" class="start-cta">
+      Start with Blog 01 <span aria-hidden="true">→</span>
+    </a>
+  </div>
+
+  <div style="margin-top:4rem;padding-top:2rem;border-top:1px solid var(--border)">
+    <p style="font-size:.82rem;color:var(--text-3);">Written by RN &nbsp;·&nbsp; The Quality Strategist &nbsp;·&nbsp; Shift-Left Accessibility Series, 38 blogs</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a> &nbsp;·&nbsp; Built with intention. Tested with care. &nbsp;·&nbsp; © 2025</p>
+</footer>
+</body>
+</html>
