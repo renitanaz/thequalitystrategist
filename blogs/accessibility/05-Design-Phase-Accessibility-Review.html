@@ -196,22 +196,11 @@
       <li><a href="#headings">Heading hierarchy: defined in templates, not left to content</a></li>
       <li><a href="#error-copy">Error message copy: written at design, not invented by devs</a></li>
       <li><a href="#touch-targets">Touch targets: 24x24px minimum, designed in</a></li>
-      <li><a href="#figma-tools">Figma tools: Stark and Zimmer</a></li>
-      <li><a href="#exit-checklist">The Phase 1 exit checklist</a></li>
       <li><a href="#how-to-test">How to test: tiers, platforms and practice</a></li>
+      <li><a href="#exit-checklist">The Phase 1 exit checklist</a></li>
       <li><a href="#mobile-testing">Mobile testing</a></li>
     </ol>
   </nav>
-
-  <!-- 1 -->
-  <h2 id="how-to-test">Testing in the Design Phase</h2>
-  <h3>Tier 1: Pipeline automation</h3>
-  <p>Automation does not exist at the design phase: the pipeline enters at development. The design phase gate is entirely manual. What prevents an inaccessible design from reaching development is the review checklist in this blog, applied before sign-off.</p>
-  <h3>Tier 2: Semi-automated tools</h3>
-  <p>Colour contrast in design files can be checked with the Stark or A11y Annotation Kit Figma plugin before any code is written. Export a clickable prototype to HTML and run <span class="tool">axe DevTools</span> against it: structural violations appear even at the prototype stage.</p>
-  <h3>Tier 3: Manual</h3>
-  <p><strong>Platform coverage:</strong> Test on Windows (Chrome + Firefox), Mac (Safari + Chrome), iOS (Safari on physical iPhone), and Android (Chrome on physical device). Platform differences in keyboard handling and screen reader behaviour mean a bug on one platform does not guarantee the same behaviour on another.</p>
-  <p>Design review is manual. Walk through the checklist in this blog against every design file before sign-off. Check: colour contrast ratios, touch target sizes (44x44px minimum), focus order in the prototype, heading structure, form label placement, and error state designs. On mobile: verify designs account for iOS Dynamic Type and Android font scaling up to 200%.</p>
 
   <h2 id="why-design">1. Why the Design Phase Is the Cheapest Place to Fix Anything</h2>
 
@@ -483,114 +472,109 @@
 
   <p>This must be specified in Figma. Post-development, adding padding to hit areas is straightforward, but only if the developer knows it is required. Without a design annotation specifying minimum target size, it will not happen.</p>
 
-  <!-- 9 -->
-  <h2 id="figma-tools">9. Figma Tools: Stark and Zimmer</h2>
+  <h2 id="how-to-test">Testing in the Design Phase</h2>
+  <h3>Tier 1: Pipeline automation</h3>
+  <p>Automation does not exist at the design phase: the pipeline enters at development.</p>
+  <h3>Tier 2: Semi-automated tools</h3>
+  <p>Colour contrast in design files can be checked with the Stark or A11y Annotation Kit Figma plugin before any code is written. Export a clickable prototype to HTML and run <span class="tool">axe DevTools</span> against it: structural violations appear even at the prototype stage.</p>
+  <h3>Tier 3: Manual</h3>
+  <p><strong>Platform coverage:</strong> Test on Windows (Chrome + Firefox), Mac (Safari + Chrome), iOS (Safari on physical iPhone), and Android (Chrome on physical device). Platform differences in keyboard handling and screen reader behaviour mean a bug on one platform does not guarantee the same behaviour on another.</p>
+  <p>Design review is manual. Walk through the checklist in this blog against every design file before sign-off. Check: colour contrast ratios, touch target sizes (44x44px minimum), focus order in the prototype, heading structure, form label placement, and error state designs. On mobile: verify designs account for iOS Dynamic Type and Android font scaling up to 200%.</p>
 
-  <p>Two plugins. Both free at base level. <strong>Running them is the designer's responsibility</strong>, as soon as designs are ready, not just before handoff and not as a check QA performs downstream.</p>
-
-  <div class="tool-cards" role="list" aria-label="Figma accessibility plugins">
-    <div class="tool-card" role="listitem">
-      <div class="tool-name">Stark</div>
-      <div class="tool-catches">
-        <div class="tool-catch-item">Contrast checker across text and UI components</div>
-        <div class="tool-catch-item">Colour blindness simulator (8 types)</div>
-        <div class="tool-catch-item">Focus order visualiser</div>
-        <div class="tool-catch-item">Touch target size checker</div>
-        <div class="tool-catch-item">WCAG pass/fail annotations exportable as a report</div>
-      </div>
-    </div>
-    <div class="tool-card" role="listitem">
-      <div class="tool-name">Zimmer</div>
-      <div class="tool-catches">
-        <div class="tool-catch-item">Text contrast with WCAG ratio displayed inline</div>
-        <div class="tool-catch-item">Text size validation</div>
-        <div class="tool-catch-item">Spacing and touch target size</div>
-        <div class="tool-catch-item">Runs across the entire frame in one scan</div>
-        <div class="tool-catch-item">Lightweight and fast for quick pre-handoff checks</div>
-      </div>
-    </div>
+  <h3>Design phase checklist: what to catch and with what tool</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>What to check</th>
+          <th>Tool that can detect it</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Visual / Perceivable</td>
+          <td>Colour contrast failures (text-to-background, icon-to-background)</td>
+          <td>Stark, Zimmer, Figma's native contrast checker</td>
+        </tr>
+        <tr>
+          <td>Visual / Perceivable</td>
+          <td>Colour used as the only signal (error states, required fields, status)</td>
+          <td>Manual review: no plugin reliably detects this</td>
+        </tr>
+        <tr>
+          <td>Visual / Perceivable</td>
+          <td>Text too small (below 12px)</td>
+          <td>Stark, Zimmer</td>
+        </tr>
+        <tr>
+          <td>Visual / Perceivable</td>
+          <td>Insufficient contrast on disabled/placeholder states</td>
+          <td>Stark, Zimmer</td>
+        </tr>
+        <tr>
+          <td>Structural</td>
+          <td>Missing or wrong heading hierarchy</td>
+          <td>Manual review: Stark's Headings panel can list detected levels, but correctness is a judgment call</td>
+        </tr>
+        <tr>
+          <td>Structural</td>
+          <td>No visible focus state designed</td>
+          <td>Manual review: no plugin detects an absent focus style</td>
+        </tr>
+        <tr>
+          <td>Structural</td>
+          <td>Inconsistent component states (hover/focus/active/disabled not all defined)</td>
+          <td>Manual review</td>
+        </tr>
+        <tr>
+          <td>Interaction / Target Size</td>
+          <td>Touch targets below 24x24px (WCAG 2.5.8)</td>
+          <td>Zimmer, Stark</td>
+        </tr>
+        <tr>
+          <td>Interaction / Target Size</td>
+          <td>Targets too close together (inadequate spacing)</td>
+          <td>Zimmer</td>
+        </tr>
+        <tr>
+          <td>Content</td>
+          <td>Vague or unhelpful error messages</td>
+          <td>Manual review: no plugin evaluates copy quality</td>
+        </tr>
+        <tr>
+          <td>Content</td>
+          <td>Placeholder text used as the only label</td>
+          <td>Manual review</td>
+        </tr>
+        <tr>
+          <td>Content</td>
+          <td>Icons with no text label or tooltip</td>
+          <td>Manual review: some plugins (e.g. Include, Accessibility Assistant) flag unlabelled icons if annotated</td>
+        </tr>
+        <tr>
+          <td>Annotation / Handoff</td>
+          <td>No alt text specified for images</td>
+          <td>Manual review: annotation plugins (Include, Accessibility Assistant) help document this, don't auto-generate it</td>
+        </tr>
+        <tr>
+          <td>Annotation / Handoff</td>
+          <td>No reading order specified for complex layouts</td>
+          <td>Manual review: Accessibility Assistant supports manual annotation of reading order</td>
+        </tr>
+        <tr>
+          <td>Annotation / Handoff</td>
+          <td>Missing ARIA/semantic role annotations</td>
+          <td>Manual review: Accessibility Assistant supports manual annotation of roles</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
-  <p>The workflow: run Zimmer for a fast full-frame scan as soon as a design is done. Fix what it flags. Run Stark before the formal handoff review for a more detailed check including colour blindness simulation and focus order. If Stark flags nothing, the design is ready for the Phase 1 exit criteria review.</p>
-
-  <div class="takeaway" role="note">
-    <div class="label">The rule</div>
-    <p>Running a Figma plugin takes five minutes. Discovering the same issue in QA takes a sprint. The plugin is always faster.</p>
-  </div>
-
-  <figure class="blog-illustration" aria-label="Annotated Figma canvas showing tab order numbers, contrast badge, heading levels and error copy labels on UI components">
-    <svg width="100%" viewBox="0 0 680 220" role="img" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#0d1117;">
-      <title>Annotated Figma canvas with accessibility annotations on components</title>
-      <desc>A Figma canvas showing a nav bar with tab order numbers in yellow circles, a form with an error copy annotation, a button with a contrast ratio badge, heading hierarchy with H1 H2 H3 labels, and a touch target measurement. Caption reads: Accessibility annotations belong in Figma, not in a QA defect.</desc>
-      <rect width="680" height="220" fill="#0d1117"/>
-      <g stroke="#161b22" stroke-width="1">
-        <line x1="0" y1="44" x2="680" y2="44"/>
-        <line x1="0" y1="88" x2="680" y2="88"/>
-        <line x1="0" y1="132" x2="680" y2="132"/>
-        <line x1="0" y1="176" x2="680" y2="176"/>
-        <line x1="136" y1="0" x2="136" y2="220"/>
-        <line x1="272" y1="0" x2="272" y2="220"/>
-        <line x1="408" y1="0" x2="408" y2="220"/>
-        <line x1="544" y1="0" x2="544" y2="220"/>
-      </g>
-      <!-- Nav bar component -->
-      <rect x="30" y="24" width="280" height="40" rx="4" fill="#161b22" stroke="#2e2e2e" stroke-width="0.5"/>
-      <text x="46" y="48" font-family="DM Sans,sans-serif" font-size="10" fill="#f0f0f0" font-weight="500">Logo</text>
-      <rect x="110" y="32" width="52" height="22" rx="3" fill="#1e2630" stroke="#60a5fa" stroke-width="1.5"/>
-      <text x="136" y="47" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#60a5fa">Home</text>
-      <text x="180" y="47" font-family="DM Sans,sans-serif" font-size="9" fill="#8a8a8a">About</text>
-      <text x="222" y="47" font-family="DM Sans,sans-serif" font-size="9" fill="#8a8a8a">Contact</text>
-      <!-- tab order numbers -->
-      <circle cx="110" cy="30" r="8" fill="#fbbf24"/>
-      <text x="110" y="34" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#000" font-weight="700">1</text>
-      <circle cx="172" cy="30" r="8" fill="#fbbf24" opacity="0.85"/>
-      <text x="172" y="34" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#000" font-weight="700">2</text>
-      <circle cx="214" cy="30" r="8" fill="#fbbf24" opacity="0.65"/>
-      <text x="214" y="34" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#000" font-weight="700">3</text>
-      <rect x="30" y="12" width="64" height="12" rx="3" fill="#fbbf24" opacity="0.15"/>
-      <text x="62" y="21" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#fbbf24">Tab order</text>
-      <!-- Form component -->
-      <rect x="330" y="20" width="220" height="108" rx="4" fill="#161b22" stroke="#2e2e2e" stroke-width="0.5"/>
-      <text x="346" y="40" font-family="DM Sans,sans-serif" font-size="9" fill="#c8c8c8" font-weight="500">Email address</text>
-      <rect x="346" y="46" width="188" height="26" rx="3" fill="#0d1117" stroke="#2e2e2e" stroke-width="1"/>
-      <text x="356" y="63" font-family="DM Sans,sans-serif" font-size="9" fill="#555">you@example.com</text>
-      <rect x="346" y="80" width="188" height="22" rx="3" fill="#1a0808" stroke="#f87171" stroke-width="1"/>
-      <text x="356" y="94" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">Enter a valid email address</text>
-      <rect x="330" y="10" width="116" height="12" rx="3" fill="#f87171" opacity="0.15"/>
-      <text x="388" y="19" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">Error copy defined</text>
-      <!-- Button with contrast badge -->
-      <rect x="560" y="56" width="100" height="34" rx="6" fill="#4ade80"/>
-      <text x="610" y="77" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#000" font-weight="600">Get started</text>
-      <rect x="558" y="42" width="104" height="14" rx="3" fill="#4ade80" opacity="0.15"/>
-      <text x="610" y="52" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4ade80">Contrast 8.2:1</text>
-      <!-- Heading hierarchy -->
-      <rect x="30" y="102" width="260" height="88" rx="4" fill="#161b22" stroke="#2e2e2e" stroke-width="0.5"/>
-      <rect x="30" y="110" width="22" height="11" rx="2" fill="#a78bfa" opacity="0.85"/>
-      <text x="41" y="119" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#fff" font-weight="700">H1</text>
-      <text x="58" y="120" font-family="DM Serif Display,serif" font-size="14" fill="#f0f0f0">Page title</text>
-      <rect x="30" y="126" width="22" height="11" rx="2" fill="#a78bfa" opacity="0.55"/>
-      <text x="41" y="135" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#fff" font-weight="700">H2</text>
-      <text x="58" y="136" font-family="DM Serif Display,serif" font-size="11" fill="#c8c8c8">Section title</text>
-      <rect x="30" y="142" width="22" height="11" rx="2" fill="#a78bfa" opacity="0.3"/>
-      <text x="41" y="151" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#fff" font-weight="700">H3</text>
-      <text x="58" y="152" font-family="DM Serif Display,serif" font-size="9" fill="#8a8a8a">Subsection</text>
-      <rect x="30" y="90" width="108" height="12" rx="3" fill="#a78bfa" opacity="0.15"/>
-      <text x="84" y="99" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#a78bfa">Heading hierarchy</text>
-      <!-- Touch target -->
-      <rect x="560" y="116" width="34" height="34" rx="4" fill="#161b22" stroke="#2e2e2e" stroke-width="0.5"/>
-      <text x="577" y="137" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="12" fill="#8a8a8a">x</text>
-      <rect x="556" y="112" width="42" height="42" rx="4" fill="none" stroke="#f87171" stroke-width="1" stroke-dasharray="3,2"/>
-      <text x="608" y="128" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">34x34px</text>
-      <text x="608" y="140" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">min 24x24</text>
-      <rect x="555" y="100" width="96" height="12" rx="3" fill="#f87171" opacity="0.1"/>
-      <text x="603" y="109" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#f87171">Touch target</text>
-      <!-- caption -->
-      <text x="340" y="205" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#3a3a3a">Accessibility annotations belong in Figma — not in a QA defect.</text>
-    </svg>
-  </figure>
+  <p>Stark and Zimmer reliably catch contrast and touch-target sizing because those are mathematical checks. Everything else on this list: structure, content quality, missing states, annotations: depends on human judgment or, at best, a plugin that helps you document the check rather than automatically detect the failure.</p>
 
   <!-- 10 -->
-  <h2 id="exit-checklist">10. The Phase 1 Exit Checklist</h2>
+  <h2 id="exit-checklist">9. The Phase 1 Exit Checklist</h2>
 
   <p>Nothing moves to development until every item below is confirmed. <strong>The design lead owns sign-off on this checklist</strong>, since this is the design phase and the design phase has a named owner. QA verifies the checklist is genuinely complete, not the other way around: holding the gate is design's job, checking that the gate was actually held is QA's.</p>
 
