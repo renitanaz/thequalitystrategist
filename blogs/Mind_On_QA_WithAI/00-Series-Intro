@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI-Augmented QA: A Hands-On Series | The Quality Strategist</title>
+<meta name="description" content="An 8-phase, full-stack QA learning series testing one real app four ways: manual, manual plus AI, Playwright automation, and an AI QA agent.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:       #6B7C3A;
+    --olive-dark:  #4A5828;
+    --olive-deep:  #2E3A18;
+    --cream:       #F5F7F0;
+    --warm-white:  #FAFCF5;
+    --ink:         #1A1F14;
+    --ink2:        #3D4235;
+    --ink3:        #6B7060;
+    --ink4:        #9A9E90;
+    --border:      rgba(26,31,20,0.1);
+    --border2:     rgba(26,31,20,0.06);
+    --purple:      #7A4A9A; --purple-l: #EDE0F5;
+    --gold:        #9A6E1A; --gold-l:   #F5EDD6;
+    --blue:        #2A5C9A; --blue-l:   #DDE8F5;
+    --rose:        #9A2A4A; --rose-l:   #F5DDE5;
+    --teal:        #1A6B54; --teal-l:   #D8EEE8;
+    --terra:       #8A4A2A; --terra-l:  #F5E4D8;
+    --green:       #1A7A3A; --green-l:  #D8F0E0;
+    --ff-serif: 'Lora', Georgia, serif;
+    --ff-sans:  'DM Sans', system-ui, sans-serif;
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: var(--ff-sans);
+    background: var(--warm-white);
+    color: var(--ink);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; }
+  header.site-header {
+    border-bottom: 1px solid var(--border);
+    padding: 1.1rem 1.5rem;
+    background: var(--warm-white);
+  }
+  .site-header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .site-name {
+    font-family: var(--ff-serif);
+    font-weight: 600;
+    font-size: 1.05rem;
+    text-decoration: none;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 3rem 1.5rem 5rem; }
+
+  .breadcrumb {
+    font-size: .82rem;
+    color: var(--ink3);
+    margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+
+  .series-tag {
+    display: inline-block;
+    font-size: .78rem;
+    font-weight: 600;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    color: var(--teal);
+    background: var(--teal-l);
+    padding: .3rem .7rem;
+    border-radius: 999px;
+    margin-bottom: 1.2rem;
+  }
+
+  h1 {
+    font-family: var(--ff-serif);
+    font-size: 2.3rem;
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--ink);
+    margin-bottom: .9rem;
+  }
+  .subtitle {
+    font-size: 1.15rem;
+    color: var(--ink2);
+    margin-bottom: 2.2rem;
+    max-width: 700px;
+  }
+  .meta-row {
+    display: flex;
+    gap: 1.2rem;
+    font-size: .85rem;
+    color: var(--ink3);
+    margin-bottom: 2.5rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1.5rem;
+  }
+
+  h2 {
+    font-family: var(--ff-serif);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-top: 2.8rem;
+    margin-bottom: 1rem;
+    color: var(--ink);
+  }
+  h3 {
+    font-family: var(--ff-serif);
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-top: 1.6rem;
+    margin-bottom: .6rem;
+  }
+  p { margin-bottom: 1.1rem; color: var(--ink2); font-size: 1rem; }
+  strong { color: var(--ink); font-weight: 600; }
+
+  .origin-box {
+    background: var(--cream);
+    border-left: 3px solid var(--olive);
+    border-radius: 0 10px 10px 0;
+    padding: 1.4rem 1.6rem;
+    margin: 1.6rem 0 2.2rem;
+  }
+  .origin-box p:last-child { margin-bottom: 0; }
+
+  /* Bug rows (single line) */
+  .bug-grid { margin: 1.2rem 0 1.8rem; }
+  .bug-row {
+    display: flex;
+    align-items: baseline;
+    gap: .7rem;
+    border-bottom: 1px solid var(--border2);
+    padding: .5rem 0;
+  }
+  .bug-row .bug-id {
+    font-size: .72rem;
+    font-weight: 700;
+    color: var(--terra);
+    letter-spacing: .02em;
+    white-space: nowrap;
+    width: 62px;
+    flex-shrink: 0;
+  }
+  .bug-row .bug-title {
+    font-size: .9rem;
+    color: var(--ink2);
+  }
+
+  /* Framework table */
+  .fw-table-wrap { overflow-x: auto; margin: 1.2rem 0 1.6rem; }
+  table.fw-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .82rem;
+    line-height: 1.45;
+  }
+  table.fw-table th, table.fw-table td {
+    border: 1px solid var(--border);
+    padding: .45rem .65rem;
+    text-align: left;
+    vertical-align: top;
+  }
+  table.fw-table th {
+    background: var(--cream);
+    font-weight: 600;
+    color: var(--ink);
+    font-size: .76rem;
+  }
+  table.fw-table td { color: var(--ink2); }
+
+  /* Phase rows (single line) */
+  .phase-row {
+    display: flex;
+    align-items: baseline;
+    gap: .6rem;
+    flex-wrap: wrap;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: .85rem 1.1rem;
+    margin-bottom: .6rem;
+  }
+  .phase-row .phase-label {
+    font-family: var(--ff-serif);
+    font-weight: 600;
+    font-size: .95rem;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  .phase-row .phase-desc {
+    color: var(--ink3);
+    font-size: .88rem;
+    flex: 1 1 280px;
+  }
+  .status-pill {
+    font-size: .72rem;
+    font-weight: 600;
+    padding: .22rem .6rem;
+    border-radius: 999px;
+    white-space: nowrap;
+    margin-left: auto;
+  }
+  .status-progress { background: var(--gold-l); color: var(--gold); }
+  .status-upcoming { background: var(--border2); color: var(--ink3); }
+
+  /* Approach legend */
+  .approach-legend {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: .8rem;
+    margin: 1.2rem 0 2rem;
+  }
+  .approach-pill {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: .9rem 1rem;
+  }
+  .approach-pill .a-label { font-weight: 600; font-size: .92rem; color: var(--ink); }
+  .approach-pill .a-desc { font-size: .82rem; color: var(--ink3); margin-top: .25rem; }
+  .approach-pill.manual { border-left: 3px solid var(--ink4); }
+  .approach-pill.ai { border-left: 3px solid var(--blue); }
+  .approach-pill.auto { border-left: 3px solid var(--teal); }
+  .approach-pill.agent { border-left: 3px solid var(--purple); }
+
+  .callout {
+    background: var(--green-l);
+    border-left: 3px solid var(--green);
+    border-radius: 0 10px 10px 0;
+    padding: 1.2rem 1.5rem;
+    margin: 1.6rem 0;
+    font-size: .95rem;
+  }
+  .callout p { color: var(--olive-deep); margin-bottom: 0; }
+
+  .start-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    background: var(--olive);
+    color: var(--warm-white);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: .95rem;
+    padding: .8rem 1.4rem;
+    border-radius: 8px;
+    transition: background .2s var(--ease);
+  }
+  .start-cta:hover { background: var(--olive-dark); }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    font-size: .85rem;
+    color: var(--ink3);
+  }
+  footer a { text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 600px) {
+    h1 { font-size: 1.7rem; }
+    .meta-row { flex-wrap: wrap; gap: .6rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+
+<main>
+
+  <p class="breadcrumb">
+    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    AI-Augmented QA Series
+  </p>
+
+  <span class="series-tag">Series introduction &middot; Blog 00</span>
+
+  <h1>AI-Augmented QA: Testing One App, Four Ways</h1>
+  <p class="subtitle">A hands-on series testing a real e-commerce app end to end, manually, with AI assistance, with Playwright automation, and with an AI QA agent, so the comparison is never theoretical.</p>
+
+  <!-- Hero illustration -->
+  <div style="margin-bottom:2.2rem;border-radius:14px;overflow:hidden;border:1px solid var(--border);background:var(--cream)">
+  <svg width="100%" viewBox="0 0 860 320" role="img" xmlns="http://www.w3.org/2000/svg">
+    <title>Four hands testing the same app four different ways</title>
+    <desc>An illustration of a single product screen being approached by four hands, representing manual testing, AI-assisted testing, automated testing, and an AI agent, all converging on the same app.</desc>
+
+    <rect x="0" y="0" width="860" height="320" fill="var(--cream)"/>
+
+    <!-- center app card -->
+    <rect x="350" y="95" width="160" height="130" rx="12" fill="var(--warm-white)" stroke="var(--ink)" stroke-opacity="0.15" stroke-width="1.5"/>
+    <rect x="368" y="115" width="124" height="14" rx="3" fill="var(--terra-l)"/>
+    <rect x="368" y="138" width="90" height="8" rx="2" fill="var(--border)"/>
+    <rect x="368" y="152" width="70" height="8" rx="2" fill="var(--border)"/>
+    <rect x="368" y="178" width="50" height="20" rx="5" fill="var(--olive)"/>
+    <text x="393" y="192" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" font-weight="600" fill="var(--warm-white)">$15</text>
+    <text x="430" y="183" font-family="DM Sans, sans-serif" font-size="8" fill="var(--terra)" font-weight="600">price is negative</text>
+    <text x="368" y="207" font-family="DM Sans, sans-serif" font-size="8" fill="var(--terra)" font-weight="600">name is empty</text>
+
+    <!-- Hand 1: Manual (top left, plain hand pointing) -->
+    <g>
+      <path d="M170 70 L350 130" stroke="var(--ink4)" stroke-width="4" stroke-linecap="round" fill="none"/>
+      <circle cx="165" cy="65" r="13" fill="var(--ink4)"/>
+      <text x="120" y="50" font-family="DM Sans, sans-serif" font-size="13" font-weight="600" fill="var(--ink2)">Manual</text>
+    </g>
+
+    <!-- Hand 2: Manual + AI (top right, hand with a small spark) -->
+    <g>
+      <path d="M690 70 L510 130" stroke="var(--blue)" stroke-width="4" stroke-linecap="round" fill="none"/>
+      <circle cx="695" cy="65" r="13" fill="var(--blue)"/>
+      <path d="M712 48 L716 56 L724 58 L716 60 L712 68 L708 60 L700 58 L708 56 Z" fill="var(--blue)"/>
+      <text x="650" y="50" font-family="DM Sans, sans-serif" font-size="13" font-weight="600" fill="var(--blue)">Manual + AI</text>
+    </g>
+
+    <!-- Gear: Automated (bottom left) -->
+    <g transform="translate(195,250)">
+      <circle cx="0" cy="0" r="22" fill="none" stroke="var(--teal)" stroke-width="4"/>
+      <circle cx="0" cy="0" r="7" fill="var(--teal)"/>
+      <g stroke="var(--teal)" stroke-width="4" stroke-linecap="round">
+        <line x1="0" y1="-22" x2="0" y2="-30"/>
+        <line x1="0" y1="22" x2="0" y2="30"/>
+        <line x1="-22" y1="0" x2="-30" y2="0"/>
+        <line x1="22" y1="0" x2="30" y2="0"/>
+        <line x1="-15.5" y1="-15.5" x2="-21" y2="-21"/>
+        <line x1="15.5" y1="15.5" x2="21" y2="21"/>
+        <line x1="-15.5" y1="15.5" x2="-21" y2="21"/>
+        <line x1="15.5" y1="-15.5" x2="21" y2="-21"/>
+      </g>
+      <text x="-30" y="55" font-family="DM Sans, sans-serif" font-size="13" font-weight="600" fill="var(--teal)">Playwright</text>
+    </g>
+
+    <!-- Bot: AI Agent (bottom right) -->
+    <g transform="translate(665,250)">
+      <rect x="-20" y="-18" width="40" height="34" rx="8" fill="var(--purple)"/>
+      <circle cx="-9" cy="-2" r="4" fill="var(--warm-white)"/>
+      <circle cx="9" cy="-2" r="4" fill="var(--warm-white)"/>
+      <rect x="-10" y="10" width="20" height="4" rx="2" fill="var(--warm-white)" opacity="0.8"/>
+      <line x1="0" y1="-18" x2="0" y2="-28" stroke="var(--purple)" stroke-width="3"/>
+      <circle cx="0" cy="-30" r="4" fill="var(--purple)"/>
+      <text x="-32" y="55" font-family="DM Sans, sans-serif" font-size="13" font-weight="600" fill="var(--purple)">AI QA agent</text>
+    </g>
+
+    <!-- connecting lines from gear/bot to card, drawn AFTER so they sit cleanly -->
+    <line x1="217" y1="240" x2="345" y2="200" stroke="var(--teal)" stroke-width="2" stroke-dasharray="5 4" opacity="0.5"/>
+    <line x1="645" y1="240" x2="515" y2="200" stroke="var(--purple)" stroke-width="2" stroke-dasharray="5 4" opacity="0.5"/>
+
+  </svg>
+  </div>
+
+  <div class="meta-row">
+    <span>By RN</span>
+    <span>8 phases</span>
+    <span>Series: AI-Augmented QA</span>
+  </div>
+
+  <p>I have spent years designing how quality gets built into a system, not just where it gets checked at the end. The question I kept running into this year was a narrower one: when AI shows up as a fourth option alongside manual testing and automation, how does a QA architect actually decide what to use, when, and why.</p>
+
+  <p>There is plenty written about AI and QA in the abstract. What I wanted was something narrower: the same app, the same bugs, tested the same four ways, with the differences actually written down.</p>
+
+  <div class="origin-box">
+    <p>So I built ShopDemo, a small e-commerce API and UI with 11 intentional bugs, and ran every phase of testing against it four times: once by hand, once with Claude assisting but not driving, once as a Playwright suite, and once through an AI QA agent with real browser control.</p>
+    <p>This series is the record of that work. Every post reflects something actually run.</p>
+  </div>
+
+  <h2>The framework: one project, three shapes</h2>
+  <p>Most QA advice assumes a project shape without saying so: UI-heavy, API-only, or both. The real question this series answers is: given a project that is one of those three shapes, how do you run each of the four approaches?</p>
+
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead>
+        <tr><th>Approach</th><th>UI only</th><th>API only</th><th>Both</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Manual</strong></td><td>Click through, verify by eye</td><td>Hit endpoints, check status and payload</td><td>Trace on screen, confirm the call behind it</td></tr>
+        <tr><td><strong>Manual + AI</strong></td><td>Share screenshots, ask Claude</td><td>Paste JSON, ask Claude to review</td><td>Share screenshot and payload together</td></tr>
+        <tr><td><strong>Automated</strong></td><td>Playwright actions, screenshots</td><td>Playwright request context, no browser</td><td>One spec, API plus UI assertion</td></tr>
+        <tr><td><strong>AI QA Agent</strong></td><td>Claude Code + Playwright MCP</td><td>Agent calls endpoints directly</td><td>Agent covers API, MCP covers UI</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>ShopDemo is the &ldquo;both&rdquo; column throughout this series, since it ships a real UI and a real API. Every phase post says explicitly which column applies, so the framework transfers to whatever shape your own project happens to be.</p>
+
+  <h2>The four approaches</h2>
+
+  <!-- Framework illustration -->
+  <div style="margin-bottom:1.4rem;border-radius:14px;overflow:hidden;border:1px solid var(--border);background:var(--warm-white)">
+  <svg width="100%" viewBox="0 0 860 200" role="img" xmlns="http://www.w3.org/2000/svg">
+    <title>Four icons representing manual, AI-assisted, automated, and agent-driven testing</title>
+    <desc>Four side-by-side panels, each with a simple icon: a hand for manual testing, a hand with a spark for AI-assisted testing, a gear for automated testing, and a small robot for an AI QA agent.</desc>
+
+    <rect x="0" y="0" width="860" height="200" fill="var(--warm-white)"/>
+
+    <!-- Panel 1: Manual -->
+    <g>
+      <rect x="20" y="20" width="190" height="160" rx="12" fill="var(--border2)"/>
+      <circle cx="115" cy="80" r="22" fill="var(--ink4)"/>
+      <path d="M95 100 Q115 130 135 100" stroke="var(--ink4)" stroke-width="6" stroke-linecap="round" fill="none"/>
+      <text x="115" y="150" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="13" font-weight="600" fill="var(--ink2)">Manual</text>
+      <text x="115" y="168" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="var(--ink3)">By hand</text>
+    </g>
+
+    <!-- Panel 2: Manual + AI -->
+    <g>
+      <rect x="230" y="20" width="190" height="160" rx="12" fill="var(--blue-l)"/>
+      <circle cx="320" cy="80" r="22" fill="var(--blue)"/>
+      <path d="M300 100 Q320 130 340 100" stroke="var(--blue)" stroke-width="6" stroke-linecap="round" fill="none"/>
+      <path d="M352 58 L356 67 L365 70 L356 73 L352 82 L348 73 L339 70 L348 67 Z" fill="var(--blue)"/>
+      <text x="325" y="150" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="13" font-weight="600" fill="var(--blue)">Manual + AI</text>
+      <text x="325" y="168" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="var(--blue)" opacity="0.75">Human reviews</text>
+    </g>
+
+    <!-- Panel 3: Automated -->
+    <g>
+      <rect x="440" y="20" width="190" height="160" rx="12" fill="var(--teal-l)"/>
+      <g transform="translate(535,80)">
+        <circle cx="0" cy="0" r="20" fill="none" stroke="var(--teal)" stroke-width="5"/>
+        <circle cx="0" cy="0" r="6" fill="var(--teal)"/>
+        <g stroke="var(--teal)" stroke-width="5" stroke-linecap="round">
+          <line x1="0" y1="-20" x2="0" y2="-27"/>
+          <line x1="0" y1="20" x2="0" y2="27"/>
+          <line x1="-20" y1="0" x2="-27" y2="0"/>
+          <line x1="20" y1="0" x2="27" y2="0"/>
+          <line x1="-14" y1="-14" x2="-19" y2="-19"/>
+          <line x1="14" y1="14" x2="19" y2="19"/>
+          <line x1="-14" y1="14" x2="-19" y2="19"/>
+          <line x1="14" y1="-14" x2="19" y2="-19"/>
+        </g>
+      </g>
+      <text x="535" y="150" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="13" font-weight="600" fill="var(--teal)">Automated</text>
+      <text x="535" y="168" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="var(--teal)" opacity="0.8">Playwright scripts</text>
+    </g>
+
+    <!-- Panel 4: AI QA Agent -->
+    <g>
+      <rect x="650" y="20" width="190" height="160" rx="12" fill="var(--purple-l)"/>
+      <g transform="translate(745,78)">
+        <rect x="-22" y="-20" width="44" height="38" rx="9" fill="var(--purple)"/>
+        <circle cx="-10" cy="-2" r="4.5" fill="var(--warm-white)"/>
+        <circle cx="10" cy="-2" r="4.5" fill="var(--warm-white)"/>
+        <rect x="-11" y="11" width="22" height="4" rx="2" fill="var(--warm-white)" opacity="0.85"/>
+        <line x1="0" y1="-20" x2="0" y2="-31" stroke="var(--purple)" stroke-width="3"/>
+        <circle cx="0" cy="-33" r="4.5" fill="var(--purple)"/>
+      </g>
+      <text x="745" y="150" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="13" font-weight="600" fill="var(--purple)">AI QA agent</text>
+      <text x="745" y="168" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="var(--purple)" opacity="0.8">Plans and executes</text>
+    </g>
+
+  </svg>
+  </div>
+
+  <div class="approach-legend">
+    <div class="approach-pill manual">
+      <div class="a-label">Manual, No AI</div>
+      <div class="a-desc">Testing by hand, no AI involved at any step</div>
+    </div>
+    <div class="approach-pill ai">
+      <div class="a-label">Manual + AI</div>
+      <div class="a-desc">Claude accelerates thinking; a human writes the final call</div>
+    </div>
+    <div class="approach-pill auto">
+      <div class="a-label">Automated, Playwright</div>
+      <div class="a-desc">Self-healing scripts: role-based locators, retries, visual diffs</div>
+    </div>
+    <div class="approach-pill agent">
+      <div class="a-label">AI QA Agent</div>
+      <div class="a-desc">An agent plans, executes, and reports with minimal input</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <p><strong>Human-in-the-loop, by design.</strong> Every Manual + AI and AI QA Agent post in this series involves a human reviewing, correcting, or approving the output before it counts as done. That review step is the actual value being demonstrated, not the AI output on its own.</p>
+  </div>
+
+  <h2>Harness and loop: what &ldquo;AI QA agent&rdquo; actually means</h2>
+  <p>The AI QA Agent column in this series isn&rsquo;t a single prompt that returns a bug list. It runs as a loop: plan, act, verify, and only then report. That loop is only as trustworthy as the harness around it, the tool access, the stop conditions, and the checks that catch the agent fooling itself.</p>
+
+  <p>This matters because the failure mode is real, not theoretical. Anthropic&rsquo;s own engineering team has documented it directly: out of the box, an AI QA agent will <a href="https://www.anthropic.com/engineering/harness-design-long-running-apps" target="_blank" rel="noopener">identify a legitimate issue, then talk itself into deciding it isn&rsquo;t a big deal, and approve the work anyway</a>. Left unchecked, it also tends to test the obvious path and skip the edge cases where the real bugs hide.</p>
+
+  <p>Two terms worth knowing going into this series:</p>
+
+  <div class="approach-legend" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+    <div class="approach-pill agent">
+      <div class="a-label">Agentic loop</div>
+      <div class="a-desc">The plan, act, verify cycle an agent runs on its own, deciding what to test and whether a result is a real failure, without a human in the loop for every step</div>
+    </div>
+    <div class="approach-pill auto">
+      <div class="a-label">Harness</div>
+      <div class="a-desc">The scaffolding around that loop: which tools it can touch, when it stops, and how its judgment gets checked against a human&rsquo;s</div>
+    </div>
+  </div>
+
+  <p>The Phase 7 bug-finding consistency check later in this series (running the agent repeatedly against the same unchanged API) is a small, practical test of exactly this: not whether the agent can find a bug once, but whether the harness around it makes that finding reliable.</p>
+
+  <h2>How the series is structured</h2>
+  <p>Phase 0 (app setup) and Phase 1 (requirements) are single posts, since there is no 4-way split when there is only one way to do the work. From Phase 2 onward, every phase publishes as a landing post plus one post per approach, so each post stays short and finishable, and the comparison still lives in one place for anyone going deeper.</p>
+
+  <div class="phase-row">
+    <span class="phase-label">Phase 0 &middot; App setup</span>
+    <span class="phase-desc">Deploy ShopDemo&rsquo;s API and UI, confirm everything is live.</span>
+    <span class="status-pill status-progress">In progress</span>
+  </div>
+
+  <div class="phase-row">
+    <span class="phase-label">Phase 1 &middot; Requirements document</span>
+    <span class="phase-desc">What ShopDemo is supposed to do, before anyone tests anything.</span>
+    <span class="status-pill status-upcoming">Upcoming</span>
+  </div>
+
+  <div class="phase-row">
+    <span class="phase-label">Phase 2 &middot; Test strategy</span>
+    <span class="phase-desc">The thinking behind the tests, including risk-based prioritisation of the 11 bugs.</span>
+    <span class="status-pill status-upcoming">Upcoming</span>
+  </div>
+
+  <div class="phase-row">
+    <span class="phase-label">Phase 3 &middot; Test case creation</span>
+    <span class="phase-desc">Happy path, negative, and edge case test cases across every feature area.</span>
+    <span class="status-pill status-upcoming">Upcoming</span>
+  </div>
+
+  <div class="phase-row">
+    <span class="phase-label">Phase 4 &middot; Visual UI regression</span>
+    <span class="phase-desc">Catching layout and rendering bugs on the real UI, not just inferred from data.</span>
+    <span class="status-pill status-upcoming">Upcoming</span>
+  </div>
+
+  <div class="phase-row">
+    <span class="phase-label">Phase 5 &middot; API contract testing</span>
+    <span class="phase-desc">Status codes, schemas, and error handling, verified against the spec.</span>
+    <span class="status-pill status-upcoming">Upcoming</span>
+  </div>
+
+  <div class="phase-row">
+    <span class="phase-label">Phase 6 &middot; Functional E2E flows</span>
+    <span class="phase-desc">Five full user journeys, walked through via the API and via the UI.</span>
+    <span class="status-pill status-upcoming">Upcoming</span>
+  </div>
+
+  <div class="phase-row">
+    <span class="phase-label">Phase 7 &middot; Bug detection</span>
+    <span class="phase-desc">Finding all 11 bugs systematically, including a consistency check across agent runs.</span>
+    <span class="status-pill status-upcoming">Upcoming</span>
+  </div>
+
+  <div class="phase-row">
+    <span class="phase-label">Phase 8 &middot; Reporting</span>
+    <span class="phase-desc">Consolidating everything found into a report built for a real audience.</span>
+    <span class="status-pill status-upcoming">Upcoming</span>
+  </div>
+
+  <h2>The app under test</h2>
+  <p>ShopDemo is a full-stack sample: a Node.js and SQLite API (products, cart, checkout, auth, orders) plus a small React UI. It ships with 11 bugs seeded on purpose, so every testing approach has the same real targets to find.</p>
+
+  <div class="bug-grid">
+    <div class="bug-row"><span class="bug-id">BUG-001</span><span class="bug-title">Negative price on a product</span></div>
+    <div class="bug-row"><span class="bug-id">BUG-002</span><span class="bug-title">Product with an empty name</span></div>
+    <div class="bug-row"><span class="bug-id">BUG-003</span><span class="bug-title">Price set at $9,999.99</span></div>
+    <div class="bug-row"><span class="bug-id">BUG-004</span><span class="bug-title">No price validation on the products endpoint</span></div>
+    <div class="bug-row"><span class="bug-id">BUG-005</span><span class="bug-title">No default sort, non-deterministic results</span></div>
+    <div class="bug-row"><span class="bug-id">BUG-006</span><span class="bug-title">Registration accepts an empty name field</span></div>
+    <div class="bug-row"><span class="bug-id">BUG-007</span><span class="bug-title">Cart total trusts client-side prices</span></div>
+    <div class="bug-row"><span class="bug-id">BUG-008</span><span class="bug-title">No stock check before order placement</span></div>
+    <div class="bug-row"><span class="bug-id">BUG-009</span><span class="bug-title">Discount code applies 100% off, not 10%</span></div>
+    <div class="bug-row"><span class="bug-id">BUG-010</span><span class="bug-title">Orders endpoint returns every user&rsquo;s orders</span></div>
+    <div class="bug-row"><span class="bug-id">BUG-011</span><span class="bug-title">Missing search query crashes the server</span></div>
+  </div>
+
+  <h2>Where to start</h2>
+  <p>Read the series end to end if you want the full comparison built up phase by phase. If you already know which approach you&rsquo;re curious about, every phase post from Phase 2 onward has a switcher at the top so you can jump straight to Manual, Manual + AI, Automated, or AI QA Agent without reading the others first.</p>
+
+  <div style="margin-top:2rem">
+    <a href="#" class="start-cta" aria-disabled="true">
+      Start with Phase 0 <span aria-hidden="true">&rarr;</span>
+    </a>
+  </div>
+
+  <div style="margin-top:4rem;padding-top:2rem;border-top:1px solid var(--border)">
+    <p style="font-size:.82rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; AI-Augmented QA Series</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+</body>
+</html>
