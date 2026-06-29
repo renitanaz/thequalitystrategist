@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Visual Regression, AI QA Agent | The Quality Strategist</title>
+<meta name="description" content="Phase 4, Approach D: the AI QA Agent finds data anomalies, then Claude Code with Playwright MCP confirms how they look.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+  :root {
+    --olive:       #6B7C3A;
+    --olive-dark:  #4A5828;
+    --olive-deep:  #2E3A18;
+    --cream:       #F5F7F0;
+    --warm-white:  #FAFCF5;
+    --ink:         #1A1F14;
+    --ink2:        #3D4235;
+    --ink3:        #6B7060;
+    --ink4:        #9A9E90;
+    --border:      rgba(26,31,20,0.1);
+    --border2:     rgba(26,31,20,0.06);
+    --purple:      #7A4A9A; --purple-l: #EDE0F5;
+    --gold:        #9A6E1A; --gold-l:   #F5EDD6;
+    --blue:        #2A5C9A; --blue-l:   #DDE8F5;
+    --rose:        #9A2A4A; --rose-l:   #F5DDE5;
+    --teal:        #1A6B54; --teal-l:   #D8EEE8;
+    --terra:       #8A4A2A; --terra-l:  #F5E4D8;
+    --green:       #1A7A3A; --green-l:  #D8F0E0;
+    --ff-serif: 'Lora', Georgia, serif;
+    --ff-sans:  'DM Sans', system-ui, sans-serif;
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: var(--ff-sans);
+    background: var(--warm-white);
+    color: var(--ink);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; }
+  header.site-header { border-bottom: 1px solid var(--border); padding: 1.1rem 1.5rem; background: var(--warm-white); }
+  .site-header-inner { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+  .site-name { font-family: var(--ff-serif); font-weight: 600; font-size: 1.05rem; text-decoration: none; }
+  main { max-width: 880px; margin: 0 auto; padding: 2.6rem 1.5rem 5rem; }
+
+  .breadcrumb { font-size: .82rem; color: var(--ink3); margin-bottom: 1.3rem; }
+  .breadcrumb a { text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+
+  .series-tag {
+    display: inline-block; font-size: .76rem; font-weight: 700; letter-spacing: .04em;
+    text-transform: uppercase; color: var(--teal); background: var(--teal-l);
+    padding: .3rem .7rem; border-radius: 999px; margin-bottom: 1.1rem;
+  }
+
+  h1 { font-family: var(--ff-serif); font-size: 2rem; font-weight: 700; line-height: 1.2; margin-bottom: .8rem; }
+  .subtitle { font-size: 1.08rem; color: var(--ink2); margin-bottom: 1.6rem; max-width: 680px; }
+  .meta-row {
+    display: flex; gap: 1.1rem; font-size: .82rem; color: var(--ink3);
+    margin-bottom: 1.6rem; border-bottom: 1px solid var(--border); padding-bottom: 1.3rem;
+  }
+
+  /* Approach switcher */
+  .switcher { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 2.2rem; }
+  .switch-btn {
+    flex: 1; min-width: 140px; text-align: center; padding: .65rem .5rem; border-radius: 8px;
+    font-size: .82rem; font-weight: 700; text-decoration: none; border: 1.5px solid var(--border);
+    color: var(--ink2); background: var(--warm-white); transition: all .15s var(--ease);
+  }
+  .switch-btn.active { color: var(--warm-white); border-color: transparent; }
+  .switch-btn.c-manual.active { background: var(--ink4); }
+  .switch-btn.c-ai.active { background: var(--blue); }
+  .switch-btn.c-auto.active { background: var(--teal); }
+  .switch-btn.c-agent.active { background: var(--purple); }
+  .switch-btn:not(.active):hover { border-color: var(--ink4); }
+
+  h2 { font-family: var(--ff-serif); font-size: 1.35rem; font-weight: 700; margin-top: 2.2rem; margin-bottom: .8rem; }
+  h3 { font-family: var(--ff-serif); font-size: 1.1rem; font-weight: 700; margin-top: 1.4rem; margin-bottom: .6rem; }
+  p { margin-bottom: .9rem; color: var(--ink2); font-size: .97rem; }
+  strong { color: var(--ink); font-weight: 700; }
+  ul, ol { margin: 0 0 1rem 1.3rem; color: var(--ink2); }
+  li { margin-bottom: .4rem; }
+  code { background: var(--cream); padding: .15rem .4rem; border-radius: 5px; font-size: .87em; color: var(--olive-deep); }
+  pre {
+    background: var(--ink); color: var(--cream); padding: 1rem 1.1rem; border-radius: 10px;
+    overflow-x: auto; font-size: .82rem; margin: 1rem 0; line-height: 1.55;
+  }
+  pre code { background: none; color: inherit; padding: 0; }
+
+  .stat-strip { display: flex; gap: 0; margin: 1.4rem 0 1.8rem; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
+  .stat-strip > div { flex: 1; padding: .9rem 1rem; text-align: center; }
+  .stat-strip .stat-num { font-family: var(--ff-serif); font-size: 1.5rem; font-weight: 700; display: block; }
+  .stat-strip .stat-label { font-size: .74rem; color: var(--ink3); margin-top: .2rem; }
+  .stat-strip .s1 { background: var(--terra-l); } .stat-strip .s1 .stat-num { color: var(--terra); }
+  .stat-strip .s2 { background: var(--blue-l); } .stat-strip .s2 .stat-num { color: var(--blue); }
+  .stat-strip .s3 { background: var(--green-l); } .stat-strip .s3 .stat-num { color: var(--green); }
+  .stat-strip .s4 { background: var(--purple-l); } .stat-strip .s4 .stat-num { color: var(--purple); }
+
+  .callout { border-radius: 0 10px 10px 0; padding: 1.05rem 1.3rem; margin: 1.3rem 0; font-size: .91rem; }
+  .callout p { margin-bottom: 0; }
+  .callout.green { background: var(--green-l); border-left: 3px solid var(--green); } .callout.green p { color: var(--olive-deep); }
+  .callout.warn { background: var(--terra-l); border-left: 3px solid var(--terra); } .callout.warn p { color: var(--terra); }
+  .callout.blue { background: var(--blue-l); border-left: 3px solid var(--blue); } .callout.blue p { color: var(--blue); }
+  .callout.gold { background: var(--gold-l); border-left: 3px solid var(--gold); } .callout.gold p { color: var(--gold); }
+  .callout.purple { background: var(--purple-l); border-left: 3px solid var(--purple); } .callout.purple p { color: var(--purple); }
+
+  .split-row { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; margin: 1.1rem 0 1.5rem; }
+  .split-card { border-radius: 10px; padding: 1rem 1.1rem; }
+  .split-card .sc-title { font-weight: 700; font-size: .92rem; margin-bottom: .3rem; }
+  .split-card .sc-body { font-size: .86rem; color: var(--ink2); }
+
+  .fw-table-wrap { overflow-x: auto; margin: 1rem 0 1.5rem; }
+  table.fw-table { width: 100%; border-collapse: collapse; font-size: .82rem; line-height: 1.45; }
+  table.fw-table th, table.fw-table td { border: 1px solid var(--border); padding: .5rem .7rem; text-align: left; vertical-align: top; }
+  table.fw-table th { background: var(--cream); font-weight: 700; font-size: .77rem; }
+  table.fw-table td { color: var(--ink2); }
+  table.fw-table tr:nth-child(odd) td { background: var(--warm-white); }
+  table.fw-table tr:nth-child(even) td { background: var(--cream); }
+
+  .checklist { list-style: none; margin-left: 0; }
+  .checklist li { display: flex; gap: .55rem; align-items: baseline; margin-bottom: .4rem; font-size: .92rem; color: var(--ink2); }
+  .checklist li::before { content: "\2713"; color: var(--green); font-weight: 700; flex-shrink: 0; }
+
+  .prompt-block { background: var(--ink); border-radius: 10px; padding: 1rem 1.2rem; margin: 1rem 0; }
+  .prompt-block p { color: var(--cream); font-size: .85rem; font-style: italic; margin-bottom: .5rem; }
+  .prompt-block p:last-child { margin-bottom: 0; }
+  .prompt-block p::before { content: '\201C'; opacity: .5; }
+  .prompt-block p::after { content: '\201D'; opacity: .5; }
+
+  .switcher-note { font-size: .8rem; color: var(--ink4); margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+
+  .nav-row { display: flex; justify-content: space-between; gap: .8rem; margin-top: 1.8rem; flex-wrap: wrap; }
+  .nav-cta {
+    display: inline-flex; align-items: center; gap: .5rem; text-decoration: none;
+    font-weight: 700; font-size: .9rem; padding: .7rem 1.2rem; border-radius: 8px;
+    transition: background .2s var(--ease);
+  }
+  .nav-cta.primary { background: var(--olive); color: var(--warm-white); }
+  .nav-cta.primary:hover { background: var(--olive-dark); }
+  .nav-cta.secondary { background: var(--cream); color: var(--ink2); border: 1px solid var(--border); }
+
+  footer { border-top: 1px solid var(--border); padding: 2rem 1.5rem; text-align: center; font-size: .85rem; color: var(--ink3); }
+  footer a { text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 600px) {
+    h1 { font-size: 1.55rem; }
+    .meta-row { flex-wrap: wrap; gap: .5rem; }
+    .stat-strip { flex-direction: column; }
+    .split-row { grid-template-columns: 1fr; }
+    .switcher { flex-direction: column; }
+  }
+
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+
+<main>
+
+  <p class="breadcrumb">
+    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    <a href="../../00-PeakAndPack-AI-Augmented-QA-Series-Introduction.html">AI-Augmented QA Series</a> &nbsp;/&nbsp;
+    Phase 4 &middot; AI QA Agent
+  </p>
+
+  <span class="series-tag">Phase 4 of 8 &middot; Visual Regression</span>
+
+  <h1>Visual Regression, From Data Bug to Screenshot</h1>
+  <p class="subtitle">The agent finds it in the data. Claude Code with Playwright MCP confirms what it actually looks like.</p>
+
+  <div class="meta-row">
+    <span>By RN</span>
+    <span>~4 min read</span>
+    <span>Series: AI-Augmented QA</span>
+  </div>
+
+  <div class="switcher">
+    <a href="phase4-manual.html" class="switch-btn c-manual">Manual, No AI</a>
+    <a href="phase4-manual-ai.html" class="switch-btn c-ai">Manual + AI</a>
+    <a href="phase4-automated.html" class="switch-btn c-auto">Automated, Playwright</a>
+    <span class="switch-btn c-agent active">AI QA Agent</span>
+  </div>
+
+
+  <p>This is the approach that finally closes the loop from data anomaly to visible symptom. The agent finds the bug in the data, then Claude Code with Playwright MCP goes and looks at the actual screen to confirm it.</p>
+
+  <div style="margin:1.3rem 0 1.8rem;border-radius:14px;overflow:hidden;border:1px solid var(--border);background:var(--purple-l)">
+  <svg width="100%" viewBox="0 0 860 220" role="img" xmlns="http://www.w3.org/2000/svg">
+    <title>An agent finding a data anomaly then a browser confirming how it looks</title>
+    <desc>An illustration showing two stages: a robot analysing API data and flagging an anomaly, then a browser icon navigating to the live UI and taking a screenshot to confirm the visible symptom, representing the two-step AI QA agent visual regression process.</desc>
+    <rect x="0" y="0" width="860" height="220" fill="var(--purple-l)"/>
+
+    <g transform="translate(130,100)">
+      <rect x="-32" y="-30" width="64" height="58" rx="13" fill="var(--purple)"/>
+      <circle cx="-13" cy="-10" r="4.5" fill="var(--warm-white)"/>
+      <circle cx="13" cy="-10" r="4.5" fill="var(--warm-white)"/>
+      <rect x="-11" y="9" width="22" height="4" rx="2" fill="var(--warm-white)" opacity="0.85"/>
+    </g>
+    <text x="130" y="160" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="var(--purple)">1. Scans API data</text>
+    <text x="130" y="175" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="var(--purple)" opacity="0.8">finds negative price</text>
+
+    <path d="M210 100 L330 100" stroke="var(--purple)" stroke-width="3" marker-end="url(#arrow4d)"/>
+    <defs><marker id="arrow4d" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="var(--purple)"/></marker></defs>
+
+    <rect x="350" y="65" width="160" height="80" rx="10" fill="var(--warm-white)" stroke="var(--teal)" stroke-width="2"/>
+    <circle cx="375" cy="80" r="5" fill="var(--terra)"/>
+    <circle cx="390" cy="80" r="5" fill="var(--gold)"/>
+    <circle cx="405" cy="80" r="5" fill="var(--green)"/>
+    <rect x="365" y="95" width="130" height="40" rx="5" fill="var(--border2)"/>
+    <text x="430" y="160" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="var(--teal)">2. Claude Code + MCP</text>
+    <text x="430" y="173" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="var(--teal)" opacity="0.8">opens the live UI</text>
+
+    <path d="M520 100 L650 100" stroke="var(--purple)" stroke-width="3" marker-end="url(#arrow4d)"/>
+
+    <rect x="670" y="60" width="150" height="100" rx="8" fill="var(--warm-white)" stroke="var(--terra)" stroke-width="2"/>
+    <rect x="685" y="75" width="120" height="60" rx="5" fill="var(--border2)"/>
+    <text x="745" y="130" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="var(--terra)">-$89.00</text>
+    <text x="745" y="175" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="var(--terra)">Confirmed visually</text>
+  </svg>
+  </div>
+
+  <h2>What the agent does, in two stages</h2>
+  <ol>
+    <li>Fetches product and order data from the API</li>
+    <li>Claude analyses the data for values that would create broken visual states (negative prices, empty names, overflow-prone values)</li>
+    <li>Separately, Claude Code with Playwright MCP navigates the live <code>frontend/</code> UI and screenshots each flagged value to confirm how it actually renders</li>
+  </ol>
+
+  <div class="callout purple">
+    <p><strong>Why two stages instead of one.</strong> The HTML agent (stage 1) can only see API data, it has no browser. Closing the gap to an actual rendered screenshot needs a tool that can drive a browser, which is exactly what Playwright MCP adds. Neither stage alone tells the full story, the data finding without a screenshot is unconfirmed; a screenshot without knowing what to look for is just noise.</p>
+  </div>
+
+  <h2>What the combined report looks like</h2>
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>Data finding</th><th>Visual confirmation</th></tr></thead>
+      <tbody>
+        <tr><td>Sleeping Bag price = -89.00</td><td>Screenshot shows "-$89.00" in red on the product card</td></tr>
+        <tr><td>One product has empty name</td><td>Screenshot shows a card with a blank title area</td></tr>
+        <tr><td>Water Bottle price = 9999.99</td><td>Screenshot shows the price slightly overflowing its container at narrow widths</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Your deliverable</h2>
+  <p>The visual regression section of the agent report, containing both the raw data findings and the matching live screenshots from Claude Code + Playwright MCP.</p>
+
+  <p><strong>Time:</strong> ~15 minutes. Slightly longer than a pure API-only agent pass, since the second stage actually has to load and screenshot a real page, but still far faster than a manual visual sweep.</p>
+
+
+  <div class="nav-row">
+    <a href="04-phase4-automated.html" class="nav-cta secondary">&larr; Automated, Playwright</a>
+    <a href="../phase5/05-phase5-landing.html" class="nav-cta primary">Phase 5: API Contract Testing &rarr;</a>
+  </div>
+
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; AI-Augmented QA Series</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+</body>
+</html>
