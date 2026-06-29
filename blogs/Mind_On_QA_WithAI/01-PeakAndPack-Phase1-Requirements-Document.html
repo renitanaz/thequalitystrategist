@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Requirements Phase: Write the Doc Nobody Asked For | The Quality Strategist</title>
+<meta name="description" content="Before you test PeakAndPack, you need to know what it's actually supposed to do. Phase 1 of the AI-Augmented QA series.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:       #6B7C3A;
+    --olive-dark:  #4A5828;
+    --olive-deep:  #2E3A18;
+    --cream:       #F5F7F0;
+    --warm-white:  #FAFCF5;
+    --ink:         #1A1F14;
+    --ink2:        #3D4235;
+    --ink3:        #6B7060;
+    --ink4:        #9A9E90;
+    --border:      rgba(26,31,20,0.1);
+    --border2:     rgba(26,31,20,0.06);
+    --purple:      #7A4A9A; --purple-l: #EDE0F5;
+    --gold:        #9A6E1A; --gold-l:   #F5EDD6;
+    --blue:        #2A5C9A; --blue-l:   #DDE8F5;
+    --rose:        #9A2A4A; --rose-l:   #F5DDE5;
+    --teal:        #1A6B54; --teal-l:   #D8EEE8;
+    --terra:       #8A4A2A; --terra-l:  #F5E4D8;
+    --green:       #1A7A3A; --green-l:  #D8F0E0;
+    --ff-serif: 'Lora', Georgia, serif;
+    --ff-sans:  'DM Sans', system-ui, sans-serif;
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: var(--ff-sans);
+    background: var(--warm-white);
+    color: var(--ink);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; }
+  header.site-header {
+    border-bottom: 1px solid var(--border);
+    padding: 1.1rem 1.5rem;
+    background: var(--warm-white);
+  }
+  .site-header-inner { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+  .site-name { font-family: var(--ff-serif); font-weight: 600; font-size: 1.05rem; text-decoration: none; }
+  main { max-width: 880px; margin: 0 auto; padding: 2.6rem 1.5rem 5rem; }
+
+  .breadcrumb { font-size: .82rem; color: var(--ink3); margin-bottom: 1.3rem; }
+  .breadcrumb a { text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+
+  .series-tag {
+    display: inline-block;
+    font-size: .76rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--teal);
+    background: var(--teal-l);
+    padding: .3rem .7rem;
+    border-radius: 999px;
+    margin-bottom: 1.1rem;
+  }
+
+  h1 {
+    font-family: var(--ff-serif);
+    font-size: 2.1rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: .8rem;
+  }
+  .subtitle { font-size: 1.1rem; color: var(--ink2); margin-bottom: 1.8rem; max-width: 680px; }
+  .meta-row {
+    display: flex; gap: 1.1rem; font-size: .82rem; color: var(--ink3);
+    margin-bottom: 2.2rem; border-bottom: 1px solid var(--border); padding-bottom: 1.3rem;
+  }
+
+  h2 {
+    font-family: var(--ff-serif);
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-top: 2.4rem;
+    margin-bottom: .8rem;
+  }
+  p { margin-bottom: .9rem; color: var(--ink2); font-size: .98rem; }
+  strong { color: var(--ink); font-weight: 700; }
+  code { background: var(--cream); padding: .15rem .4rem; border-radius: 5px; font-size: .87em; color: var(--olive-deep); }
+
+  /* Punchy stat strip */
+  .stat-strip {
+    display: flex; gap: 0; margin: 1.6rem 0 2rem;
+    border-radius: 12px; overflow: hidden; border: 1px solid var(--border);
+  }
+  .stat-strip > div { flex: 1; padding: 1rem 1.1rem; text-align: center; }
+  .stat-strip .stat-num { font-family: var(--ff-serif); font-size: 1.6rem; font-weight: 700; display: block; }
+  .stat-strip .stat-label { font-size: .76rem; color: var(--ink3); margin-top: .2rem; }
+  .stat-strip .s1 { background: var(--terra-l); }
+  .stat-strip .s1 .stat-num { color: var(--terra); }
+  .stat-strip .s2 { background: var(--blue-l); }
+  .stat-strip .s2 .stat-num { color: var(--blue); }
+  .stat-strip .s3 { background: var(--green-l); }
+  .stat-strip .s3 .stat-num { color: var(--green); }
+
+  .origin-box {
+    background: var(--cream);
+    border-left: 3px solid var(--olive);
+    border-radius: 0 10px 10px 0;
+    padding: 1.2rem 1.4rem;
+    margin: 1.4rem 0 1.8rem;
+  }
+  .origin-box p:last-child { margin-bottom: 0; }
+
+  .callout { border-radius: 0 10px 10px 0; padding: 1.1rem 1.4rem; margin: 1.4rem 0; font-size: .92rem; }
+  .callout p { margin-bottom: 0; }
+  .callout.green { background: var(--green-l); border-left: 3px solid var(--green); }
+  .callout.green p { color: var(--olive-deep); }
+  .callout.warn { background: var(--terra-l); border-left: 3px solid var(--terra); }
+  .callout.warn p { color: var(--terra); }
+  .callout.blue { background: var(--blue-l); border-left: 3px solid var(--blue); }
+  .callout.blue p { color: var(--blue); }
+
+  /* Two-column quick split */
+  .split-row { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; margin: 1.2rem 0 1.6rem; }
+  .split-card { border-radius: 10px; padding: 1rem 1.1rem; }
+  .split-card.func { background: var(--blue-l); }
+  .split-card.nonfunc { background: var(--gold-l); }
+  .split-card .sc-title { font-weight: 700; font-size: .95rem; margin-bottom: .3rem; }
+  .split-card.func .sc-title { color: var(--blue); }
+  .split-card.nonfunc .sc-title { color: var(--gold); }
+  .split-card .sc-body { font-size: .87rem; color: var(--ink2); }
+
+  .ac-block {
+    background: var(--warm-white); border: 1px solid var(--border); border-radius: 10px;
+    padding: .9rem 1.1rem; margin: .9rem 0; font-size: .88rem;
+  }
+  .ac-block p { margin-bottom: .25rem; }
+  .ac-given { color: var(--blue); font-weight: 700; }
+  .ac-when { color: var(--gold); font-weight: 700; }
+  .ac-then { color: var(--teal); font-weight: 700; }
+
+  .fw-table-wrap { overflow-x: auto; margin: 1rem 0 1.5rem; }
+  table.fw-table { width: 100%; border-collapse: collapse; font-size: .82rem; line-height: 1.45; }
+  table.fw-table th, table.fw-table td { border: 1px solid var(--border); padding: .5rem .7rem; text-align: left; vertical-align: top; }
+  table.fw-table th { background: var(--cream); font-weight: 700; font-size: .77rem; }
+  table.fw-table td { color: var(--ink2); }
+  table.fw-table tr:nth-child(odd) td { background: var(--warm-white); }
+  table.fw-table tr:nth-child(even) td { background: var(--cream); }
+
+  .checklist { list-style: none; margin-left: 0; }
+  .checklist li { display: flex; gap: .55rem; align-items: baseline; margin-bottom: .4rem; font-size: .92rem; color: var(--ink2); }
+  .checklist li::before { content: "\2713"; color: var(--green); font-weight: 700; flex-shrink: 0; }
+
+  .switcher-note {
+    font-size: .8rem; color: var(--ink4); margin-top: 2.2rem; padding-top: 1.1rem; border-top: 1px solid var(--border);
+  }
+
+  .nav-cta {
+    display: inline-flex; align-items: center; gap: .5rem;
+    background: var(--olive); color: var(--warm-white); text-decoration: none;
+    font-weight: 700; font-size: .92rem; padding: .75rem 1.3rem; border-radius: 8px;
+    transition: background .2s var(--ease);
+  }
+  .nav-cta:hover { background: var(--olive-dark); }
+
+  footer { border-top: 1px solid var(--border); padding: 2rem 1.5rem; text-align: center; font-size: .85rem; color: var(--ink3); }
+  footer a { text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 600px) {
+    h1 { font-size: 1.6rem; }
+    .meta-row { flex-wrap: wrap; gap: .5rem; }
+    .stat-strip { flex-direction: column; }
+    .split-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+
+<main>
+
+  <p class="breadcrumb">
+    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    <a href="../00-ShopDemo-AI-Augmented-QA-Series-Introduction.html">AI-Augmented QA Series</a> &nbsp;/&nbsp;
+    Phase 1
+  </p>
+
+  <span class="series-tag">Phase 1 of 8 &middot; Requirements</span>
+
+  <h1>Requirements Phase: Write the Doc Nobody Asked For</h1>
+  <p class="subtitle">Before you test a single trekking pole listing, you need to know what PeakAndPack is actually supposed to do. Skip this and you're not testing the app, you're testing your own assumptions about it.</p>
+
+  <div class="meta-row">
+    <span>By RN</span>
+    <span>~5 min read</span>
+    <span>Series: AI-Augmented QA</span>
+  </div>
+
+  <p>A confession heard on every team: <em>&ldquo;I'll just start testing and figure out requirements as I go.&rdquo;</em></p>
+
+  <p>Here's how that ends. You find a bug. You report it. The developer says, &ldquo;that's not a bug, that's intended.&rdquo; You have no document to point to. You just lost the argument, and ten minutes of everyone's time.</p>
+
+  <div class="stat-strip">
+    <div class="s1"><span class="stat-num">11</span><span class="stat-label">bugs hiding in PeakAndPack</span></div>
+    <div class="s2"><span class="stat-num">0</span><span class="stat-label">arguments you'll win without this doc</span></div>
+    <div class="s3"><span class="stat-num">1</span><span class="stat-label">file that ends every dispute</span></div>
+  </div>
+
+  <p>A requirements document is the thing you point to instead of your memory. That's the whole pitch.</p>
+
+  <h2>Functional vs. non-functional, fast</h2>
+  <p>Skip the textbook fog. Here's the version that sticks:</p>
+
+  <div class="split-row">
+    <div class="split-card func">
+      <div class="sc-title">Functional: what it does</div>
+      <div class="sc-body">A trekker can add a tent to their cart. A trekker can apply a discount code at checkout.</div>
+    </div>
+    <div class="split-card nonfunc">
+      <div class="sc-title">Non-functional: how well it does it</div>
+      <div class="sc-body">The cart updates in under a second. The discount field doesn't accept SQL.</div>
+    </div>
+  </div>
+
+  <p><strong>Quick test:</strong> if a broken version of the app could still technically satisfy the requirement, it's non-functional. &ldquo;Secure&rdquo; can be satisfied badly. &ldquo;Can register an account&rdquo; either happens or it doesn't.</p>
+
+  <h2>Acceptance criteria: the argument-ender</h2>
+  <p>Given, When, Then forces a condition you can actually check, instead of a vague feeling.</p>
+
+  <div class="ac-block">
+    <p><strong>Applying a discount at checkout</strong></p>
+    <p><span class="ac-given">Given</span> a cart with a $100 total</p>
+    <p><span class="ac-when">When</span> the trekker applies <code>SAVE10</code></p>
+    <p><span class="ac-then">Then</span> the total becomes $90, not $0</p>
+  </div>
+
+  <p>That example isn't random. BUG-009 in PeakAndPack is exactly this: <code>SAVE10</code> currently takes 100% off instead of 10%. Without a written criterion, that's just &ldquo;a discount happened.&rdquo; With it, it's a provable spec violation.</p>
+
+  <div class="callout warn">
+    <p><strong>This is the whole point.</strong> Acceptance criteria turn &ldquo;that feels wrong&rdquo; into &ldquo;that fails this specific condition.&rdquo; One gets fixed. The other gets debated in a meeting.</p>
+  </div>
+
+  <h2>Constraints and assumptions</h2>
+  <p>Constraints are things you can't change: PeakAndPack runs on Render's free tier, so it sleeps after 15 minutes idle, so the first request after a nap is slow on purpose, not because something broke. Assumptions are things you're choosing to believe until told otherwise: all prices in USD, one currency, English only.</p>
+
+  <div class="callout blue">
+    <p>Writing these down protects you from looking like you don't understand the product, and protects the product from someone &ldquo;fixing&rdquo; something that was never broken.</p>
+  </div>
+
+  <h2>What PeakAndPack's doc should cover</h2>
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>Feature area</th><th>What to capture</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Products</strong></td><td>Listing, sorting, pricing rules, what counts as a valid trekking item</td></tr>
+        <tr><td><strong>Cart</strong></td><td>Total calculation, quantity changes, source of truth for price</td></tr>
+        <tr><td><strong>Checkout</strong></td><td>Discount rules, stock checks, what blocks an order</td></tr>
+        <tr><td><strong>Auth</strong></td><td>Required fields, login rules, what counts as a valid session</td></tr>
+        <tr><td><strong>Orders</strong></td><td>Who sees which orders, what an order record must contain</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Your deliverable</h2>
+  <p>One file: <code>peakandpack-requirements.md</code>.</p>
+  <ul class="checklist">
+    <li>Functional requirements per feature area</li>
+    <li>Non-functional requirements (performance, security, usability)</li>
+    <li>Acceptance criteria in Given, When, Then for the riskiest flows</li>
+    <li>Known constraints (free-tier hosting, single currency)</li>
+    <li>Stated assumptions, until told otherwise</li>
+  </ul>
+
+  <div class="callout blue">
+    <p><strong>Want to see one filled out?</strong> Here's the actual <a href="../../downloads/peakandpack-requirements.md" target="_blank">peakandpack-requirements.md</a> used for the rest of this series, covering all 5 feature areas with real acceptance criteria.</p>
+  </div>
+
+  <p><strong>Time:</strong> 1 to 2 hours. No AI vs. manual vs. automation split here, there's nothing to automate yet. You're deciding what &ldquo;correct&rdquo; even means. Everything from Phase 2 on checks the app against this document.</p>
+
+  <div class="switcher-note">
+    <p>Phase 0 (setup) and Phase 1 (this post) are the only single posts in the series. From Phase 2 on, every phase splits into a landing post plus one post per approach: Manual, Manual + AI, Automated, AI QA Agent.</p>
+  </div>
+
+  <div style="margin-top:1.8rem">
+    <a href="#" class="nav-cta" aria-disabled="true">Next: Phase 2, Test Strategy <span aria-hidden="true">&rarr;</span></a>
+  </div>
+
+  <div style="margin-top:2.6rem;padding-top:1.6rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; AI-Augmented QA Series</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+</body>
+</html>
