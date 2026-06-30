@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>All Posts &mdash; The Quality Strategist</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --olive:#6B7C3A;--olive-dark:#4A5828;--olive-deep:#2E3A18;
+  --cream:#F5F7F0;--warm-white:#FAFCF5;
+  --ink:#1A1F14;--ink2:#3D4235;--ink3:#6B7060;--ink4:#9A9E90;
+  --border:rgba(26,31,20,0.1);--border2:rgba(26,31,20,0.06);
+  --purple:#7A4A9A;--purple-l:#EDE0F5;
+  --gold:#9A6E1A;--gold-l:#F5EDD6;
+  --blue:#2A5C9A;--blue-l:#DDE8F5;
+  --rose:#9A2A4A;--rose-l:#F5DDE5;
+  --teal:#1A6B54;--teal-l:#D8EEE8;
+  --green:#1A7A3A;--green-l:#D8F0E0;
+  --heading-accent:#751e21;
+  --ff-serif:'Lora',Georgia,serif;--ff-sans:'DM Sans',system-ui,sans-serif;
+  --ease:cubic-bezier(0.22,1,0.36,1)
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:var(--ff-sans);background:var(--cream);color:var(--ink);line-height:1.6;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--cream)}::-webkit-scrollbar-thumb{background:var(--olive);border-radius:4px}
+nav{position:sticky;top:0;z-index:100;background:rgba(245,247,240,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2.5vw}
+.nav-inner{max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:62px}
+.nav-logo{font-family:var(--ff-serif);font-size:17px;color:var(--ink);letter-spacing:-0.3px;display:flex;align-items:center;gap:8px}
+.nav-logo-dot{width:8px;height:8px;border-radius:50%;background:var(--olive);flex-shrink:0}
+.nav-back{font-size:12px;font-weight:500;letter-spacing:0.8px;text-transform:uppercase;color:var(--ink3);transition:color 0.2s;display:flex;align-items:center;gap:6px}
+.nav-back:hover{color:var(--olive)}
+.page-hero{max-width:1280px;margin:0 auto;padding:64px 2.5vw 48px;border-bottom:1px solid var(--border2)}
+.page-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--olive);margin-bottom:16px}
+.page-eyebrow-line{width:24px;height:1.5px;background:var(--olive)}
+.page-title{font-family:var(--ff-serif);font-size:clamp(32px,5vw,52px);line-height:1.1;color:var(--ink);letter-spacing:-0.8px;margin-bottom:12px}
+.page-title em{font-style:italic;color:var(--olive)}
+.page-sub{font-size:15px;color:var(--ink3);line-height:1.75;max-width:520px}
+.page-content{max-width:1280px;margin:0 auto;padding:48px 2.5vw 96px}
+.tag{font-size:10px;font-weight:500;letter-spacing:0.8px;text-transform:uppercase;padding:3px 10px;border-radius:10px;display:inline-block;margin-bottom:12px;cursor:pointer;transition:opacity 0.2s}
+.tag-olive{background:#DDE5C8;color:var(--olive-dark)}.tag-teal{background:var(--teal-l);color:var(--teal)}.tag-green{background:var(--green-l);color:var(--green)}.tag-blue{background:var(--blue-l);color:var(--blue)}.tag-purple{background:var(--purple-l);color:var(--purple)}.tag-gold{background:var(--gold-l);color:var(--gold)}.tag-rose{background:var(--rose-l);color:var(--rose)}
+.tag.inactive{opacity:0.35}
+.filter-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:36px}
+.filter-btn{font-size:11px;font-weight:500;letter-spacing:0.8px;text-transform:uppercase;padding:6px 16px;border-radius:20px;border:1px solid var(--border);background:var(--warm-white);color:var(--ink3);cursor:pointer;transition:all 0.2s;font-family:var(--ff-sans)}
+.filter-btn:hover,.filter-btn.active{background:#DDE5C8;color:var(--olive-dark);border-color:transparent}
+.card-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.blog-card{background:var(--warm-white);border:1px solid var(--border);border-radius:16px;padding:22px;transition:transform 0.25s var(--ease),box-shadow 0.25s var(--ease);display:flex;flex-direction:column;height:100%}
+.blog-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(26,31,20,0.08)}
+.blog-card h3{font-family:var(--ff-serif);font-size:16px;line-height:1.4;color:var(--ink);margin-bottom:10px;flex:1}
+.blog-card h3 .h-prefix{color:var(--heading-accent);font-weight:600}
+.blog-card p{font-size:12.5px;color:var(--ink4);line-height:1.65}
+.blog-meta{display:flex;align-items:center;justify-content:space-between;margin-top:18px;font-size:11px;color:var(--ink4);padding-top:14px;border-top:1px solid var(--border2)}
+.blog-arrow{font-size:14px;color:var(--olive);transition:transform 0.2s;display:inline-block}
+.blog-card:hover .blog-arrow{transform:translateX(4px)}
+.coming-soon{text-align:center;padding:64px 24px;color:var(--ink4)}
+.coming-soon-icon{font-size:40px;margin-bottom:16px}
+.coming-soon h3{font-family:var(--ff-serif);font-size:22px;color:var(--ink3);margin-bottom:8px}
+.coming-soon p{font-size:14px;line-height:1.7}
+footer{background:var(--olive-deep);padding:36px 2.5vw}
+.footer-inner{max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.footer-logo{font-family:var(--ff-serif);font-size:15px;color:#E8EDD8;display:flex;align-items:center;gap:8px}
+.footer-logo-dot{width:7px;height:7px;border-radius:50%;background:var(--olive);flex-shrink:0}
+.footer-copy{font-size:12px;color:rgba(232,237,216,0.5)}
+.fade-up{opacity:0;transform:translateY(24px);transition:opacity 0.6s var(--ease),transform 0.6s var(--ease)}
+.fade-up.visible{opacity:1;transform:none}
+
+/* Section-specific styles for the new sectioned overview page */
+.section-block{margin-bottom:56px}
+.section-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.section-title{font-family:var(--ff-serif);font-size:24px;color:var(--ink);letter-spacing:-0.4px}
+.section-see-more{font-size:11px;font-weight:600;letter-spacing:0.6px;text-transform:uppercase;color:var(--olive);display:inline-flex;align-items:center;gap:6px;transition:gap 0.2s}
+.section-see-more:hover{gap:10px}
+.section-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;overflow:hidden}
+.section-grid.rows-2{max-height:none}
+.section-grid.rows-1{max-height:none}
+.section-grid > a:nth-child(n+9).rows-cap-2{display:none}
+
+@media (max-width:1100px){
+  .card-grid,.section-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:640px){
+  .card-grid,.section-grid{grid-template-columns:1fr}
+  .page-hero,.page-content{padding-left:5vw;padding-right:5vw}
+  nav{padding:0 5vw}
+  footer{padding:36px 5vw}
+}
+
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo"><div class="nav-logo-dot"></div>The Quality Strategist</a>
+    <a href="blogs.html" class="nav-back">&larr; Blogs</a>
+  </div>
+</nav>
+<div class="page-hero">
+  <div class="page-eyebrow"><div class="page-eyebrow-line"></div>Blogs &amp; Insights</div>
+  <h1 class="page-title">Thoughts on quality,<br><em>AI &amp; craft.</em></h1>
+  <p class="page-sub">Everything I'm learning, questioning, and building at the edge of QA and AI.</p>
+</div>
+<div class="page-content">
+  <div class="filter-bar">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="career">Career</button>
+    <button class="filter-btn" data-filter="ai-qa">AI + QA</button>
+    <button class="filter-btn" data-filter="accessibility">Accessibility</button>
+  </div>
+  <div class="card-grid">
+<a href="blog-where-you-work-shapes-your-growth.html" style="text-decoration:none;color:inherit" data-tags="career">
+      <div class="blog-card fade-up" style="border-color:var(--olive)">
+        <span class ="tag tag-olive">Career</span>
+        <h3>Where you work shapes your growth as a QA 🧪</h3>
+        <p>Your company type quietly decides what you test, how deep you dig, and how fast you level up. Two QAs, same years — wildly different engineers.</p>
+        <div class="blog-meta"><span>6 min read</span><span class="blog-arrow">→</span></div>
+      </div>
+    </a>
+<a href="blog-qa-skills-ai.html" style="text-decoration:none;color:inherit" data-tags="ai-qa">
+      <div class="blog-card fade-up" style="border-color:var(--teal);transition-delay:0.08s">
+        <span class="tag tag-teal">AI + QA</span>
+        <h3>The QA skills that become MORE valuable as AI takes over</h3>
+        <p>AI is coming for the mechanical parts. The rest — gut feeling, missing requirements, questioning the definition — that's still yours.</p>
+        <div class="blog-meta"><span>5 min read</span><span class="blog-arrow">→</span></div>
+      </div>
+    </a>
+<a href="blogs/Mind_On_QA_WithAI/00-ShopDemo-AI-Augmented-QA-Series-Introduction.html" style="text-decoration:none;color:inherit" data-tags="ai-qa">
+      <div class="blog-card fade-up" style="border-color:var(--teal)">
+        <span class="tag tag-teal">AI + QA</span>
+        <h3><span class="h-prefix">AI-Augmented QA</span>: Testing One App, Four Ways</h3>
+        <p>A hands-on series testing a real e-commerce app end to end: manual, manual + AI, Playwright automation, and an AI QA agent, so the comparison is never theoretical.</p>
+        <div class="blog-meta"><span>Series introduction</span><span class="blog-arrow">&rarr;</span></div>
+      </div>
+    </a>
+<a href="blogs/Mind_On_QA_WithAI/phase1/01-PeakAndPack-Phase1-Requirements-Document.html" style="text-decoration:none;color:inherit" data-tags="ai-qa">
+      <div class="blog-card fade-up" style="border-color:var(--teal)">
+        <span class="tag tag-teal">AI + QA</span>
+        <h3><span class="h-prefix">Phase 1 > Requirements Phase</span>: Write the Doc Nobody Asked For</h3>
+        <p>Before you test a single trekking pole listing, you need to know what PeakAndPack is actually supposed to do.</p>
+        <div class="blog-meta"><span>Phase 1 of 8 &middot; Requirements &middot; Single post</span><span class="blog-arrow">&rarr;</span></div>
+      </div>
+    </a>
+<a href="blogs/Mind_On_QA_WithAI/phase2/02-phase2-landing.html" style="text-decoration:none;color:inherit" data-tags="ai-qa">
+      <div class="blog-card fade-up" style="border-color:var(--teal)">
+        <span class="tag tag-teal">AI + QA</span>
+        <h3><span class="h-prefix">Phase 2 > Test Strategy</span>: Four Ways to Decide What Matters</h3>
+        <p>Before any test case gets written, someone has to decide what's worth testing. Here's that decision made four different ways.</p>
+        <div class="blog-meta"><span>Phase 2 of 8 &middot; Test Strategy &middot; 4 approaches</span><span class="blog-arrow">&rarr;</span></div>
+      </div>
+    </a>
+<a href="blogs/Mind_On_QA_WithAI/phase3/03-phase3-landing.html" style="text-decoration:none;color:inherit" data-tags="ai-qa">
+      <div class="blog-card fade-up" style="border-color:var(--teal)">
+        <span class="tag tag-teal">AI + QA</span>
+        <h3><span class="h-prefix">Phase 3 > Test Case Creation</span>: Turning Strategy Into Steps</h3>
+        <p>The strategy said what matters. Now it becomes specific steps anyone could follow and check.</p>
+        <div class="blog-meta"><span>Phase 3 of 8 &middot; Test Cases &middot; 4 approaches</span><span class="blog-arrow">&rarr;</span></div>
+      </div>
+    </a>
+<a href="blogs/Mind_On_QA_WithAI/phase4/04-phase4-landing.html" style="text-decoration:none;color:inherit" data-tags="ai-qa">
+      <div class="blog-card fade-up" style="border-color:var(--teal)">
+        <span class="tag tag-teal">AI + QA</span>
+        <h3><span class="h-prefix">Phase 4 > Visual Regression</span>: When the Bug Finally Has a Face</h3>
+        <p>A negative price was a data finding until now. With a real UI, it's also a red number on an actual screen.</p>
+        <div class="blog-meta"><span>Phase 4 of 8 &middot; Visual Regression &middot; 4 approaches</span><span class="blog-arrow">&rarr;</span></div>
+      </div>
+    </a>
+<a href="blogs/Mind_On_QA_WithAI/phase5/05-phase5-landing.html" style="text-decoration:none;color:inherit" data-tags="ai-qa">
+      <div class="blog-card fade-up" style="border-color:var(--teal)">
+        <span class="tag tag-teal">AI + QA</span>
+        <h3><span class="h-prefix">Phase 5 > API Contract</span>: Does It Behave Like It Promises To?</h3>
+        <p>Status codes, response shapes, and errors that actually tell the truth about what went wrong.</p>
+        <div class="blog-meta"><span>Phase 5 of 8 &middot; API Contract &middot; 4 approaches</span><span class="blog-arrow">&rarr;</span></div>
+      </div>
+    </a>
+<a href="blogs/Mind_On_QA_WithAI/phase6/06-phase6-landing.html" style="text-decoration:none;color:inherit" data-tags="ai-qa">
+      <div class="blog-card fade-up" style="border-color:var(--teal)">
+        <span class="tag tag-teal">AI + QA</span>
+        <h3><span class="h-prefix">Phase 6 > E2E Flows</span>: Walking the Whole Journey, Not Just the Steps</h3>
+        <p>Browse, register, cart, checkout, orders. Five flows, tested at the API layer and the UI layer, checked for agreement.</p>
+        <div class="blog-meta"><span>Phase 6 of 8 &middot; E2E Flows &middot; 4 approaches</span><span class="blog-arrow">&rarr;</span></div>
+      </div>
+    </a>
+<a href="blogs/accessibility/00-Shift-Left-Accessibility-Series-Introduction.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">Shift-Left Accessibility</span>: A Complete Testing Series</h3>
+        <p>38 blogs. 8 modules. Everything a QA architect needs to build accessibility into every phase of delivery — from design review to live audit.</p>
+        <div class="blog-meta"><span>5 min read</span>          <span class="blog-arrow">→</span>
+        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/01-Accessibility-Is-Not-Just-a-Disability-Issue.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green);transition-delay:0.16s">
+        <span class="tag tag-green">Accessibility</span>
+        <h3>01 Accessibility Is Not Just a Disability Issue — It's a Design Problem</h3>
+        <p>What accessibility actually means, why it affects everyone, and why QA is the last line of defence — not the only one.</p>
+        <div class="blog-meta"><span>8 min read</span><span class="blog-arrow">→</span></div>
+      </div>
+    </a>
+<a href="blogs/accessibility/02-cost-of-shift-right.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green);transition-delay:0.16s">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">02 The True Cost of Accessibility Debt</span>: Why Finding It Late Costs 100×</h3>
+        <p>Every phase you skip multiplies the cost of fixing it. A defect at discovery costs 1×. The same defect in production costs 30–100×.</p>
+        <div class="blog-meta"><span>7 min read</span><span class="blog-arrow">→</span></div>
+      </div>
+    </a>
+<a href="blogs/accessibility/03-wcag-explained-12missed.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">03 WCAG 2.1 AA</span>: The 12 Requirements That Catch Teams Off Guard</h3>
+        <p>The requirements that appear most frequently as defects in real projects — with visual pass and fail examples and the tool to catch each one.</p>
+        <div class="blog-meta"><span>9 min read</span><span class="blog-arrow">→</span></div>
+      </div>
+    </a>
+<a href="blogs/accessibility/04-Who-Owns-Accessibility.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3>04 Who Owns Accessibility? A Responsibility Matrix for Every Role</h3>
+        <p>Accessibility fails when everyone assumes someone else owns it. Six roles, six phases, and what breaks when each lane is dropped.</p>
+        <div class="blog-meta"><span>8 min read</span><span class="blog-arrow">→</span></div>
+      </div>
+    </a>
+<a href="blogs/accessibility/05-Design-Phase-Accessibility-Review.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">05 Accessibility at the Design Phase</span>: What to Review Before a Line of Code Is Written</h3>
+        <p>Contrast, tab order, focus states, heading hierarchy, error copy, touch targets — and the Figma tools that catch issues before they become defects.</p>
+        <div class="blog-meta">          <span>9 min read</span>          <span class="blog-arrow">→</span>        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/06-Content-Authoring-Accessibility-Rules.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3>06 Content Authoring Accessibility Rules</h3>
+        <p>Alt text, headings, link text, error messages, captions — the authoring mistakes that show up in QA, and the CMS rules that prevent them.</p>
+        <div class="blog-meta">          <span>8 min read</span>          <span class="blog-arrow">→</span>        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/07-Semantic-HTML-and-ARIA.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">07 Semantic HTML and ARIA</span>: What Developers Must Get Right Before QA Tests It</h3>
+        <p>Div soup, ARIA misuse, and the structural issues QA cannot fix — only verify. With the checklist for Phase 3.</p>
+        <div class="blog-meta">          <span>9 min read</span>          <span class="blog-arrow">→</span>        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/08-ESLint-and-Axe-Core.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">08 ESLint and Axe-Core</span>: Catching Accessibility Issues Before They Reach QA</h3>
+        <p>The two tools that sit between a developer's keyboard and a QA defect — with setup, code examples, and what they still miss.</p>
+        <div class="blog-meta">          <span>8 min read</span>          <span class="blog-arrow">→</span>        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/09-Phase-Exit-Criteria.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">09 Phase Exit Criteria</span>: What Must Be True Before Each Phase Closes</h3>
+        <p>The gate that stops an accessibility defect from becoming the next phase's problem.</p>
+        <div class="blog-meta">          <span>8 min read</span>          <span class="blog-arrow">→</span>        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/10-Keyboard-Testing.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">10 Keyboard-Only Testing</span>: Disconnect Your Mouse and Start Here</h3>
+        <p>If you get stuck, that is a defect. No interpretation needed.</p>
+        <div class="blog-meta">          <span>8 min read</span>          <span class="blog-arrow">→</span>        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/11-Focus-Indicators.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">11 Focus Indicators</span>: Visible, Logical, Never Suppressed</h3>
+        <p>The one CSS line that breaks keyboard accessibility for millions, and what to do about it.</p>
+        <div class="blog-meta">          <span>8 min read</span>          <span class="blog-arrow">→</span>        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/12-Headings-Landmarks-Skip-Links.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">12 Headings, Landmarks and Skip Links</span>: How to Validate Page Structure</h3>
+        <p>The invisible architecture of a page. Screen reader users navigate by it. Most pages get it wrong.</p>
+        <div class="blog-meta">          <span>8 min read</span>          <span class="blog-arrow">→</span>        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/13-Colour-Contrast-Testing.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">13 Colour Contrast Testing</span>: Web, Android, iOS and Colour Blindness Simulation</h3>
+        <p>The numbers are exact. The tools are free. There is no excuse for a contrast failure.</p>
+        <div class="blog-meta">          <span>8 min read</span>          <span class="blog-arrow">→</span>        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/14-Alt-Text-Testing.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">14 Alt Text Testing</span>: Meaningful vs Decorative vs Wrong</h3>
+        <p>The screen reader does not see the image. It reads what you wrote. Write it wrong and the image disappears entirely.</p>
+        <div class="blog-meta">          <span>8 min read</span>          <span class="blog-arrow">→</span>        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/15-Forms-Labels-Errors.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">15 Forms, Labels, Errors and Instructions</span>: How to Test Form Accessibility</h3>
+        <p>A form without a label is a locked box. An error message without a description is a locked box with a red light.</p>
+        <div class="blog-meta">          <span>8 min read</span>          <span class="blog-arrow">→</span>        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/16-Dynamic-Content-ARIA-Live-Regions.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">16 Dynamic Content and ARIA Live Regions</span>: Testing Announcements Without a Page Reload</h3>
+        <p>A toast notification that nobody hears. A spinner that never announces completion. A filter that updates silently.</p>
+        <div class="blog-meta">          <span>8 min read</span>          <span class="blog-arrow">→</span>        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/17-Zoom-Reflow-Reduced-Motion.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">17 Zoom, Reflow and Reduced Motion</span>: Testing What Happens When the Page Scales</h3>
+        <p>Browser zoom to 400%. Viewport at 320px. Reduce Motion enabled. Three checks that reveal failures no automated tool can find.</p>
+        <div class="blog-meta">          <span>8 min read</span>          <span class="blog-arrow">→</span>        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/18-Enable-Accessibility-Features.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">18 Enable Accessibility Features</span>: Windows, Mac, iOS and Android Setup Guide</h3>
+        <p>The setup guide for every platform. Enable it once, test everything.</p>
+        <div class="blog-meta">          <span>8 min read</span>          <span class="blog-arrow">→</span>        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/19-Screen-Reader-Gestures-Cheat-Sheet.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">19 Screen Reader Gestures</span>: Cheat Sheet for NVDA, VoiceOver and TalkBack</h3>
+        <p>The commands you need before you start testing. One page, all platforms.</p>
+        <div class="blog-meta">          <span>8 min read</span>          <span class="blog-arrow">→</span>        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/20-NVDA-on-Windows.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">20 NVDA on Windows</span>: Screen Reader Testing From First Tab to Last Heading</h3>
+        <p>The eight-step structural audit. The Elements List shortcut. The most common failures NVDA surfaces.</p>
+        <div class="blog-meta">          <span>8 min read</span>          <span class="blog-arrow">→</span>        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/21-JAWS-on-Windows.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">21 JAWS on Windows</span>: Enterprise Screen Reader Testing</h3>
+        <p>JAWS is on the machines of 40 percent of screen reader users. Test there.</p>
+        <div class="blog-meta">          <span>8 min read</span>          <span class="blog-arrow">→</span>        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/22-VoiceOver-on-Mac.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">22 VoiceOver on Mac</span>: In-Depth Testing With VoiceOver and Safari</h3>
+        <p>The rotor. Form controls. Dynamic content. VoiceOver on Mac behaves differently from VoiceOver on iOS.</p>
+        <div class="blog-meta">
+          <span>8 min read</span>
+          <span class="blog-arrow">→</span>
+        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/23-VoiceOver-on-iOS.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">23 VoiceOver on iOS</span>: Screen Reader Testing on iPhone and iPad</h3>
+        <p>Swipe right to move forward. Double-tap to activate. The gesture set that every mobile tester needs.</p>
+        <div class="blog-meta">
+          <span>8 min read</span>
+          <span class="blog-arrow">→</span>
+        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/24-TalkBack-on-Android.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">24 TalkBack on Android</span>: Screen Reader Testing on Android</h3>
+        <p>Reading controls. Explore by touch. Linear navigation. TalkBack on a physical device.</p>
+        <div class="blog-meta">
+          <span>8 min read</span>
+          <span class="blog-arrow">→</span>
+        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/25-What-to-Check-With-a-Screen-Reader.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">25 What to Check With a Screen Reader</span>: The Operational Checklist</h3>
+        <p>Eight categories. Every session. Works with NVDA, VoiceOver and TalkBack.</p>
+        <div class="blog-meta">
+          <span>8 min read</span>
+          <span class="blog-arrow">→</span>
+        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/26-WAVE.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">26 WAVE</span>: Visual Accessibility Testing in the Browser</h3>
+        <p>Errors in red. Alerts in yellow. Structure in blue. WAVE makes the invisible visible.</p>
+        <div class="blog-meta">
+          <span>8 min read</span>
+          <span class="blog-arrow">→</span>
+        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/27-Axe-DevTools.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">27 Axe DevTools</span>: Rule-Based Accessibility Testing in the Browser and Pipeline</h3>
+        <p>Same engine in the browser and in CI. That consistency is the point.</p>
+        <div class="blog-meta">
+          <span>8 min read</span>
+          <span class="blog-arrow">→</span>
+        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/28-Accessibility-Insights.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">28 Accessibility Insights</span>: FastPass, Assessment and Tab Stops in One Tool</h3>
+        <p>The only free tool that walks you through WCAG manual checks step by step.</p>
+        <div class="blog-meta">
+          <span>8 min read</span>
+          <span class="blog-arrow">→</span>
+        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/29-Lighthouse.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">29 Lighthouse</span>: Accessibility Scores and What They Actually Mean</h3>
+        <p>A score of 100 is the floor for accessibility, not the ceiling.</p>
+        <div class="blog-meta">
+          <span>8 min read</span>
+          <span class="blog-arrow">→</span>
+        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/30-ANDI-and-IBM-Equal-Access.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">30 ANDI and IBM Equal Access</span>: Specialist Tools for Accessible Names and Deep Scanning</h3>
+        <p>ANDI inspects accessible names element by element. IBM Equal Access scans entire sites and exports to spreadsheet.</p>
+        <div class="blog-meta">
+          <span>8 min read</span>
+          <span class="blog-arrow">→</span>
+        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/31-Axe-Core-Cypress-Playwright.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">31 Axe-Core in Cypress and Playwright</span>: Accessibility Testing Built Into Every Test Run</h3>
+        <p>Same engine in the browser and in CI. No separate testing pass needed.</p>
+        <div class="blog-meta">
+          <span>8 min read</span>
+          <span class="blog-arrow">→</span>
+        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/32-Pa11y-in-CI-CD.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">32 Pa11y in CI/CD</span>: Command-Line Accessibility Testing for Pipelines</h3>
+        <p>Runs from the command line. Outputs JSON. Fails the build. No GUI needed.</p>
+        <div class="blog-meta">
+          <span>8 min read</span>
+          <span class="blog-arrow">→</span>
+        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/33-Automated-Tools-Only-Catch-30-50-Percent.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">33 Automated Tools Only Catch 30 to 50 Percent</span>: Why Automation Is the Floor, Not the Ceiling</h3>
+        <p>A score of zero violations. The page still fails WCAG. Here is why.</p>
+        <div class="blog-meta">
+          <span>8 min read</span>
+          <span class="blog-arrow">→</span>
+        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/34-How-to-Write-an-Accessibility-Defect.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">34 How to Write an Accessibility Defect</span>: Defect Reports That Can Be Actually Acted On</h3>
+        <p>Most accessibility defect reports say screen reader does not read this. That is not a defect. This is how to write one.</p>
+        <div class="blog-meta">
+          <span>8 min read</span>
+          <span class="blog-arrow">→</span>
+        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/35-Testing-Modals-Accordions-Carousels.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">35 Testing Modals, Accordions and Carousels</span>: How to Test the Components That Break Most Often</h3>
+        <p>Modals, Accordions, Carousels auto-advance with no pause. These three components fail accessibility more often than any others.</p>
+        <div class="blog-meta">
+          <span>8 min read</span>
+          <span class="blog-arrow">→</span>
+        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/36-Testing-Video-and-Audio.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">36 Testing Video and Audio</span>: Captions, Transcripts and Audio Descriptions</h3>
+        <p>A video without captions excludes deaf users. A video without an audio description excludes blind users.</p>
+        <div class="blog-meta">
+          <span>8 min read</span>
+          <span class="blog-arrow">→</span>
+        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/37-Sprint-Ready-Accessibility-Checklist.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">37 The Sprint-Ready Accessibility Checklist</span>: What to Check Before Every Sprint Closes</h3>
+        <p>Not an audit. Not a 200-point deep dive. A checklist sized for a sprint.</p>
+        <div class="blog-meta">
+          <span>8 min read</span>
+          <span class="blog-arrow">→</span>
+        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/38-Live-Audit-Full-Page-From-Scratch.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3><span class="h-prefix">38 Live Audit</span>: Full Page From Scratch: The Complete Accessibility Testing Methodology</h3>
+        <p>One page. Every tier. Every tool. Every check. Start here when you need to audit a page you have never seen before.</p>
+        <div class="blog-meta">
+          <span>8 min read</span>
+          <span class="blog-arrow">→</span>
+        </div>
+      </div>
+    </a>
+<a href="blogs/accessibility/how-to-test-guide.html" style="text-decoration:none;color:inherit" data-tags="accessibility">
+      <div class="blog-card fade-up" style="border-color:var(--green)">
+        <span class="tag tag-green">Accessibility</span>
+        <h3>A11y Practical Test Guide</h3>
+        <p>38 how-to-test references in one place. Every topic from keyboard testing to CI/CD pipelines, organised by tier and platform.</p>
+        <div class="blog-meta">
+          <span>Reference</span>
+          <span class="blog-arrow">→</span>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo"><div class="footer-logo-dot"></div>The Quality Strategist</div>
+    <div class="footer-copy">Built with intention. Tested with care. &copy; 2026</div>
+  </div>
+</footer>
+<script>
+const btns = document.querySelectorAll('.filter-btn');
+const cards = document.querySelectorAll('.card-grid > a');
+
+function applyFilter(f) {
+  btns.forEach(b => b.classList.toggle('active', b.dataset.filter === f));
+  cards.forEach(card => {
+    const tags = card.dataset.tags || '';
+    card.style.display = (f === 'all' || tags.includes(f)) ? '' : 'none';
+  });
+}
+
+btns.forEach(btn => {
+  btn.addEventListener('click', () => applyFilter(btn.dataset.filter));
+});
+
+// Pre-select filter from URL, e.g. blogs_all.html?filter=ai-qa
+const params = new URLSearchParams(window.location.search);
+const initialFilter = params.get('filter');
+if (initialFilter) {
+  applyFilter(initialFilter);
+}
+
+const observer = new IntersectionObserver(e => e.forEach(i => { if(i.isIntersecting) i.target.classList.add('visible'); }), {threshold:0.08});
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+</script>
+</body></html>
