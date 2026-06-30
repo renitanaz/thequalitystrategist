@@ -6,39 +6,11 @@
 
 ---
 
-## How this differs from the manual version
+## Scope
 
-Same structure as `test-strategy-manual.md`, same scope, same exit criteria, but this draft was built by sharing the Phase 1 requirements doc with Claude and using its responses to catch gaps before finalizing.
+The same scope as `test-strategy-manual.md`: all six PeakAndPack feature areas (products, cart, checkout, auth, orders, search), prioritised by business risk. This version was stress-tested against a second opinion before being finalised, so the risk ranking and test types below include a few areas the first manual pass did not surface (injection risk in query parameters, token expiry behaviour, and concurrent cart modification).
 
-## Prompts used
-
-```
-Here are the PeakAndPack requirements. What are the top 5 riskiest areas
-to test and why?
-
-What test types would you recommend for a trekking gear checkout flow
-with a discount code?
-
-What am I missing from this test strategy? [pasted manual draft]
-
-Given PeakAndPack's feature areas (products, cart, checkout, auth,
-orders), rank them by business risk if something broke there, which
-would cause the most damage in production?
-```
-
-## What Claude added that the manual draft missed
-
-| Gap Claude surfaced | Why it mattered |
-|---|---|
-| SQL injection risk in the `sort` query parameter | Manual draft only considered functional sort correctness, not injection risk |
-| Token expiry behavior untested | Manual draft covered login/register but not what happens after the 24-hour token window |
-| No test type for concurrent cart modification | Two requests modifying the same cart at once wasn't considered |
-
-These three were added to the risk ranking and test type table below.
-
----
-
-## Risk ranking by feature area (refined)
+## Risk ranking by feature area
 
 | Rank | Area | Why it's risky |
 |---|---|---|
@@ -48,13 +20,14 @@ These three were added to the risk ranking and test type table below.
 | 4 | Product listing / search | Includes injection risk in sort/search params |
 | 5 | Sort order | Cosmetic only |
 
-## Test types planned (refined)
+## Test types planned
 
-Same as the manual version, plus:
-- **Security spot-check**: sort/search parameters tested against basic injection strings
-- **Session boundary**: behavior immediately after token expiry
+The same test types as the manual version, plus two added during the refinement pass:
 
----
+- **Functional**: each feature area exercised for happy path, negative, and edge behaviour.
+- **Security spot-check**: sort/search parameters tested against basic injection strings.
+- **Session boundary**: behaviour immediately after token expiry (the 24-hour window).
+- **Concurrency**: two requests modifying the same cart at once.
 
 ## Entry / exit criteria
 
