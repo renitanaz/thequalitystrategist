@@ -263,14 +263,14 @@
   </div>
 
   <h2>Pick a form</h2>
-  <p>Each agent ships in three forms. They all do the same job and produce the same kind of output. Pick the one that matches how you like to work.</p>
+  <p>Each agent ships in three forms. They all do the same job and produce the same kind of output. They're listed easiest-first: start with prompt-only if you just want the result, and move down only if you want something reusable.</p>
   <div class="fw-table-wrap">
     <table class="fw-table">
       <thead><tr><th>Form</th><th>What it is</th><th>Best if you</th><th>Files</th></tr></thead>
       <tbody>
-        <tr><td><strong>Browser</strong></td><td>One HTML file, opens in any browser, no install</td><td>want zero setup</td><td><a href="ui-testcase-agent.html" target="_blank"><code>ui-testcase-agent.html</code></a> &middot; <a href="api-testcase-agent.html" target="_blank"><code>api-testcase-agent.html</code></a></td></tr>
-        <tr><td><strong>Node.js</strong></td><td>A terminal script you run on your computer</td><td>already use a terminal</td><td><a href="ui-testcase-agent.js" target="_blank"><code>ui-testcase-agent.js</code></a> &middot; <a href="api-testcase-agent.js" target="_blank"><code>api-testcase-agent.js</code></a></td></tr>
         <tr><td><strong>Prompt only</strong></td><td>Plain text you paste into any Claude chat</td><td>have no API key and just want the output</td><td><a href="ui-testcase-agent-prompt.md" target="_blank"><code>ui-testcase-agent-prompt.md</code></a> &middot; <a href="api-testcase-agent-prompt.md" target="_blank"><code>api-testcase-agent-prompt.md</code></a></td></tr>
+        <tr><td><strong>Browser</strong></td><td>One HTML file, opens in any browser, no install</td><td>want a reusable tool with zero setup</td><td><a href="ui-testcase-agent.html" target="_blank"><code>ui-testcase-agent.html</code></a> &middot; <a href="api-testcase-agent.html" target="_blank"><code>api-testcase-agent.html</code></a></td></tr>
+        <tr><td><strong>Node.js</strong></td><td>A terminal script you run on your computer</td><td>already use a terminal and want saved output files</td><td><a href="ui-testcase-agent.js" target="_blank"><code>ui-testcase-agent.js</code></a> &middot; <a href="api-testcase-agent.js" target="_blank"><code>api-testcase-agent.js</code></a></td></tr>
       </tbody>
     </table>
   </div>
@@ -317,29 +317,51 @@ sake. Return only the table, no preamble.</code></pre>
   <p>Below are the three forms of this agent. They are alternatives, not steps. Use one.</p>
 
   <div class="form-opt">
-    <div class="form-opt-head"><span class="form-opt-num">1</span><span class="form-opt-title">Browser form, no install</span></div>
+    <div class="form-opt-head"><span class="form-opt-num">1</span><span class="form-opt-title">Prompt only, no key, no code</span></div>
     <hr class="form-opt-divider">
-    <p>The simplest way to run it. Nothing to install.</p>
+    <p>The fastest way to see what the agent does. No API key, no terminal, no file to run. You just need any Claude chat window.</p>
     <ol>
-      <li>Download <a href="ui-testcase-agent.html" target="_blank"><code>ui-testcase-agent.html</code></a>.</li>
-      <li>Double-click the file. It opens in your default browser.</li>
+      <li>Open <a href="ui-testcase-agent-prompt.md" target="_blank"><code>ui-testcase-agent-prompt.md</code></a> and copy everything in it.</li>
+      <li>Open a new chat with Claude and paste it as your first message.</li>
+      <li>Open <a href="../phase1/peakandpack-requirements.md" target="_blank">peakandpack-requirements.md</a>, copy all of its text, and paste that in as your second message (or attach the file).</li>
+      <li>Claude replies with the test case table. Copy it into your deliverable file.</li>
+    </ol>
+    <p>The trade-off: nothing is saved or reusable, you copy-paste by hand each time. If you'll run this repeatedly, use one of the two forms below.</p>
+  </div>
+
+  <div class="form-opt">
+    <div class="form-opt-head"><span class="form-opt-num">2</span><span class="form-opt-title">Browser form, a reusable tool, no install</span></div>
+    <hr class="form-opt-divider">
+    <p>A small web page you keep and reuse. It runs entirely on your own machine, there is no server and nothing to install.</p>
+
+    <p><strong>How to open it.</strong> The file is plain HTML, so your browser can open it directly from your computer, no internet host needed.</p>
+    <ol>
+      <li>Download <a href="ui-testcase-agent.html" target="_blank"><code>ui-testcase-agent.html</code></a> to somewhere easy to find, like your Desktop.</li>
+      <li>Double-click it. It opens as a normal page in your default browser. If double-clicking does something unexpected, right-click the file, choose <strong>Open with</strong>, and pick your browser. The address bar will read something like <code>file:///Users/you/Desktop/ui-testcase-agent.html</code>, the <code>file://</code> part just means it is running from your own disk.</li>
+    </ol>
+
+    <p><strong>How to use it.</strong></p>
+    <ol>
       <li>Get an Anthropic API key: go to <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>, sign in, open the <strong>API Keys</strong> section, click <strong>Create Key</strong>, and copy the key it shows you (it starts with <code>sk-ant-</code>).</li>
-      <li>Paste that key into the box on the page. It stays in your browser and is sent straight to Anthropic, nowhere else.</li>
+      <li>Paste that key into the box on the page.</li>
       <li>Open <a href="../phase1/peakandpack-requirements.md" target="_blank">peakandpack-requirements.md</a>, select all the text, copy it, and paste it into the big text area.</li>
       <li>Click <strong>Generate UI test cases</strong>. The table appears below in a minute or so.</li>
     </ol>
+
+    <p><strong>How it works under the hood.</strong> When you click the button, a few lines of JavaScript in the page take the requirements text you pasted, attach the system prompt, and make a single web request straight to Anthropic's API with your key. Claude's reply comes back and is written into the results area. Nothing is uploaded to any other server, the page talks only to Anthropic, and your key never leaves your browser tab. Close the tab and the key is gone; there is no storage and no account.</p>
+
     <div class="callout gold">
-      <p><strong>Why the key box says "dangerous".</strong> The browser sends your key directly to Anthropic using a header named <code>anthropic-dangerous-direct-browser-access</code>. The scary name is a warning against shipping <em>your own</em> key inside a public website. Here the key is yours, on your own machine, so it is fine. Nobody else sees it.</p>
+      <p><strong>Why the key box mentions "dangerous".</strong> The browser sends your key directly to Anthropic using a header named <code>anthropic-dangerous-direct-browser-access</code>. The scary name is a warning against shipping <em>your own</em> key inside a public website that strangers use. Here the key is yours, on your own machine, used only by you, so it is fine. Nobody else sees it.</p>
     </div>
   </div>
 
   <div class="form-opt">
-    <div class="form-opt-head"><span class="form-opt-num">2</span><span class="form-opt-title">Node.js form, in a terminal</span></div>
+    <div class="form-opt-head"><span class="form-opt-num">3</span><span class="form-opt-title">Node.js form, in a terminal</span></div>
     <hr class="form-opt-divider">
-    <p>If a browser tab is not your style, run it from a terminal. Here is every single step, nothing assumed.</p>
+    <p>Run it as a script from a terminal. This form saves the output to a file automatically, handy if you run it often. The only thing it needs installed is <strong>Node.js</strong>, the program that runs JavaScript files outside a browser. It does not need Claude Code or any other tool; the script talks to Anthropic's API on its own. Here is every step, nothing assumed.</p>
     <ol>
-      <li><strong>Check Node is installed.</strong> Open a terminal (on Mac: press Cmd+Space, type "Terminal", Enter. On Windows: press the Start key, type "PowerShell", Enter). Type <code>node --version</code> and press Enter. If you see a number like <code>v20.x.x</code>, you are set. If it says "command not found" or similar, install Node from <a href="https://nodejs.org" target="_blank">nodejs.org</a> (the "LTS" button), then reopen the terminal.</li>
-      <li><strong>Get an API key</strong> the same way as in the browser steps above: <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> &rarr; API Keys &rarr; Create Key &rarr; copy the <code>sk-ant-</code> value.</li>
+      <li><strong>Check Node.js is installed.</strong> Open a terminal (on Mac: press Cmd+Space, type "Terminal", Enter. On Windows: press the Start key, type "PowerShell", Enter). Type <code>node --version</code> and press Enter. If you see a number like <code>v20.x.x</code> (anything 18 or higher), you are set, skip to step 2. If it says "command not found" or similar, Node is not installed: get it from <a href="https://nodejs.org" target="_blank">nodejs.org</a> (click the <strong>LTS</strong> button), run the installer, then close and reopen the terminal and check again.</li>
+      <li><strong>Get an API key</strong> the same way as in the browser form: <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> &rarr; API Keys &rarr; Create Key &rarr; copy the <code>sk-ant-</code> value.</li>
       <li><strong>Download two files into the same folder:</strong> <a href="ui-testcase-agent.js" target="_blank"><code>ui-testcase-agent.js</code></a> and <a href="../phase1/peakandpack-requirements.md" target="_blank"><code>peakandpack-requirements.md</code></a>. Put both in, say, a new folder on your Desktop called <code>qa-agent</code>.</li>
       <li><strong>Point the terminal at that folder.</strong> Type <code>cd </code> (with a space after it), then drag the <code>qa-agent</code> folder onto the terminal window (this pastes its path), then press Enter.</li>
       <li><strong>Give the script your key.</strong> This keeps the key out of the file.<br>
@@ -348,20 +370,8 @@ sake. Return only the table, no preamble.</code></pre>
       <li><strong>Run it.</strong> Type <code>node ui-testcase-agent.js</code> and press Enter. The script reads the requirements file next to it, calls Claude, and writes the result to <code>test-cases-ui-agent.md</code> in the same folder.</li>
     </ol>
     <div class="callout warn">
-      <p><strong>If it fails:</strong> "command not found: node" means Node is not installed (step 1). An authentication error means the key in step 5 was wrong or had a typo, redo step 5. "Cannot find module" usually means the terminal is not in the right folder, redo step 4. "ENOENT ... requirements" means the .md file is not sitting next to the script, redo step 3.</p>
+      <p><strong>If it fails:</strong> "command not found: node" means Node.js is not installed, redo step 1. An authentication error means the key in step 5 was wrong or had a typo, redo step 5. "Cannot find module" usually means the terminal is not in the right folder, redo step 4. "ENOENT ... requirements" means the .md file is not sitting next to the script, redo step 3.</p>
     </div>
-  </div>
-
-  <div class="form-opt">
-    <div class="form-opt-head"><span class="form-opt-num">3</span><span class="form-opt-title">Prompt only, no key, no code</span></div>
-    <hr class="form-opt-divider">
-    <p>No API key and no terminal needed. You just need any Claude chat window.</p>
-    <ol>
-      <li>Open <a href="ui-testcase-agent-prompt.md" target="_blank"><code>ui-testcase-agent-prompt.md</code></a> and copy everything in it.</li>
-      <li>Open a new chat with Claude and paste it as your first message.</li>
-      <li>Open <a href="../phase1/peakandpack-requirements.md" target="_blank">peakandpack-requirements.md</a>, copy all of its text, and paste that in as your second message (or attach the file).</li>
-      <li>Claude replies with the test case table. Copy it into your deliverable file.</li>
-    </ol>
   </div>
 
   <h2>API Test Case Generator: what it does</h2>
@@ -437,6 +447,20 @@ Cover every endpoint thoroughly. Return only the table, no preamble.</code></pre
     </table>
   </div>
   <p>TC-A01 is the one to look for. Its Expected says "$90.00", a number that only exists because the requirements say SAVE10 is 10%. If the running app later charges $0.00 (the planted BUG-009), this written test catches it. A generic template would never have known the right number to expect.</p>
+
+  <h2>What changes when the app already exists</h2>
+  <p>Everything above assumes the realistic Phase 2 and 3 situation: nothing is built yet, so the agent reasons from the requirements doc alone. But you won't always start that early. Sometimes you join a project where the site is already live, or you're asked to write tests for an app that shipped long ago. The premise flips, and an architect's approach flips with it.</p>
+  <div class="callout purple">
+    <p><strong>The doc is no longer the only source of truth, but it's still the first one.</strong> A live app tells you what the system <em>does</em>. The requirements tell you what it's <em>supposed to do</em>. The gap between those two is where the most valuable bugs live, so an architect uses the live system to <em>confirm and extend</em> the requirements reasoning, never to replace it.</p>
+  </div>
+  <p>Concretely, what an architect does differently when the app is live:</p>
+  <ol>
+    <li><strong>Start from the same risk ranking, not from the UI.</strong> It's tempting to open the site and start clicking. Resist it. Rank risk from the requirements first (as above), so your exploration is aimed at what matters instead of wherever the mouse wanders.</li>
+    <li><strong>Explore to verify, then to surprise.</strong> First confirm each requirement actually behaves as written (does SAVE10 really take 10%?). Then probe the spaces the requirements never mention: what the live app reveals that no document did, like an undocumented endpoint, a hidden admin route, or an error page that leaks a stack trace.</li>
+    <li><strong>Treat observed behaviour as evidence, not as the spec.</strong> If the live app does something the requirements don't mention, that's a question ("is this intended?"), not a confirmed feature to lock a test around. An app's current behaviour can itself be the bug.</li>
+    <li><strong>Let the agent read both.</strong> The same agents work, you just give them more to reason about: the requirements doc plus a captured API response, a page's HTML, or a list of real endpoints. The discipline stays identical, confirm app-specific rules made it into the Expected column, flag assumptions, delete the generic.</li>
+  </ol>
+  <p>The throughline: a live system is a richer input, not a shortcut. The architect's job is the same in both worlds, decide where risk lives and aim testing there. Having the running app just gives you one more source to cross-check against, and one more place to find the gap between built and intended.</p>
 
   <h2>Your deliverable</h2>
   <p>Whichever agents apply to your project, reviewed by you before they count as final:</p>

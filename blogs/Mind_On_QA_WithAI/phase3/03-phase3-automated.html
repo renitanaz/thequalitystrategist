@@ -225,6 +225,11 @@
     <li>Organize by feature: <code>tests/products.spec.ts</code>, <code>tests/auth.spec.ts</code>, etc.</li>
   </ul>
 
+  <h2>What "self-healing" means and why it matters</h2>
+  <p>A test has to find an element on the page before it can click or check it. How it finds that element decides how fragile the test is. If a test locates the checkout button by its CSS class, <code>.btn-checkout-submit</code>, then the day a developer renames that class during a restyle, the test can no longer find the button and fails, even though checkout still works perfectly. That's a false alarm: the test broke, not the app. A suite full of these wastes your time chasing failures that aren't real bugs.</p>
+  <p>A self-healing locator avoids this by finding elements the way a user does: by the visible text or role ("the button that says Place order"), or by a stable <code>data-testid</code> that the team agrees not to change. A redesign can move that button, recolor it, or rewrite its surrounding HTML, and the test still finds it, because "the button labelled Place order" is still true. The test heals through the change instead of breaking on it.</p>
+  <p>They're called self-healing because the test keeps passing through cosmetic changes on its own, with no edit from you. It only fails when something that actually matters changes, the button's text, its test id, or the behaviour behind it. That's exactly when you want a failure. Nothing literally repairs itself; the name describes locators chosen so that surface churn doesn't count as breakage.</p>
+
   <h2>Self-healing locators, side by side</h2>
   <pre><code>// Fragile: breaks the moment the class name changes
 page.locator('.btn-checkout-submit')
@@ -249,6 +254,30 @@ page.getByTestId('checkout-submit-btn')</code></pre>
 
   <div class="callout green">
     <p><strong>This test is supposed to fail right now.</strong> That's not a mistake, it's a bug-detection test (more on this pattern in Phase 7). When BUG-009 gets fixed, this test turns green automatically.</p>
+  </div>
+
+  <h2>Two that pass</h2>
+  <p>Most of your suite should be green against correct behaviour. Here are two that pass today, so the deliverable isn't only made of failing cases.</p>
+  <pre><code>test('TC-105: checkout happy path @critical', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Add to cart' }).first().click();
+  await page.getByRole('link', { name: 'Cart' }).click();
+  await page.getByRole('button', { name: 'Proceed to checkout' }).click();
+  await page.getByRole('button', { name: 'Place order' }).click();
+
+  // A normal order with no discount code goes through and is confirmed.
+  await expect(page.getByText(/order confirmed/i)).toBeVisible();
+});</code></pre>
+  <pre><code>test('TC-102: checkout with empty cart @high', async ({ page }) => {
+  await page.goto('/cart');
+  await page.getByRole('button', { name: 'Proceed to checkout' }).click();
+
+  // No items: the app correctly refuses to create an order.
+  await expect(page.getByText(/cart is empty/i)).toBeVisible();
+  await expect(page.getByText(/order confirmed/i)).toHaveCount(0);
+});</code></pre>
+  <div class="callout blue">
+    <p><strong>A healthy suite is mostly green.</strong> Passing tests are not wasted: they're the safety net that tells you a future change didn't break something that used to work. The failing ones (TC-101, TC-104) are the exception, written ahead of a known fix, not the norm.</p>
   </div>
 
   <h2>Your deliverable</h2>
