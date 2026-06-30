@@ -80,6 +80,18 @@
 
   h2 { font-family: var(--ff-serif); font-size: 1.35rem; font-weight: 700; margin-top: 2.2rem; margin-bottom: .8rem; }
   h3 { font-family: var(--ff-serif); font-size: 1.1rem; font-weight: 700; margin-top: 1.4rem; margin-bottom: .6rem; }
+  .form-option {
+    display: flex; align-items: center; gap: .6rem;
+    margin-top: 1.8rem; margin-bottom: .6rem;
+    padding-top: 1.4rem; border-top: 2px solid var(--purple-l);
+  }
+  .form-option .form-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+    background: var(--purple); color: var(--warm-white);
+    font-family: var(--ff-sans); font-size: .85rem; font-weight: 700;
+  }
+  .form-option h3 { margin: 0; color: var(--purple); }
   p { margin-bottom: .9rem; color: var(--ink2); font-size: .97rem; }
   strong { color: var(--ink); font-weight: 700; }
   ul, ol { margin: 0 0 1rem 1.3rem; color: var(--ink2); }
@@ -193,17 +205,19 @@
   </div>
 
 
-  <p>This is where the AI QA Agent (built later in this series, see the harness and loop framing in the series intro) takes the live API and generates a risk-based strategy with no manual drafting at all.</p>
+  <p>At Phase 2, all you have is the requirements doc, nothing else exists yet. The agent works the same way: it reasons from <a href="../phase1/peakandpack-requirements.md" target="_blank"><code>peakandpack-requirements.md</code></a> alone, no live API calls, no screenshots, the same starting point you'd have on day one of a real project.</p>
 
   <div style="margin:1.3rem 0 1.8rem;border-radius:14px;overflow:hidden;border:1px solid var(--border);background:var(--purple-l)">
   <svg width="100%" viewBox="0 0 860 220" role="img" xmlns="http://www.w3.org/2000/svg">
-    <title>An AI agent reading live API data and producing a strategy document</title>
-    <desc>An illustration of a small robot connected to a live API endpoint, with a generated strategy document appearing as output, representing the AI QA Agent approach.</desc>
+    <title>An AI agent reading a requirements document and producing a strategy document</title>
+    <desc>An illustration of a small robot reading a requirements document, with a generated strategy document appearing as output, representing the AI QA Agent approach working from planning documents alone, not live data.</desc>
     <rect x="0" y="0" width="860" height="220" fill="var(--purple-l)"/>
-    <rect x="60" y="70" width="140" height="80" rx="8" fill="var(--warm-white)" stroke="var(--ink4)" stroke-width="1.5"/>
-    <text x="130" y="105" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="var(--ink3)">/api/products</text>
-    <text x="130" y="120" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="var(--ink3)">/api/orders</text>
-    <text x="130" y="135" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="var(--ink3)">live data</text>
+    <rect x="60" y="65" width="140" height="95" rx="8" fill="var(--warm-white)" stroke="var(--ink4)" stroke-width="1.5"/>
+    <rect x="76" y="80" width="108" height="9" rx="2" fill="var(--ink4)" opacity="0.5"/>
+    <rect x="76" y="96" width="90" height="7" rx="2" fill="var(--border)"/>
+    <rect x="76" y="110" width="100" height="7" rx="2" fill="var(--border)"/>
+    <rect x="76" y="124" width="70" height="7" rx="2" fill="var(--border)"/>
+    <text x="130" y="150" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="var(--ink3)">requirements.md</text>
 
     <line x1="210" y1="110" x2="330" y2="110" stroke="var(--purple)" stroke-width="3" marker-end="url(#arrowp)"/>
     <defs><marker id="arrowp" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="var(--purple)"/></marker></defs>
@@ -226,14 +240,135 @@
   </svg>
   </div>
 
-  <h2>What the agent does</h2>
+  <h2>Two agents, same idea</h2>
+  <p>One question, asked twice, from two different angles: what's risky here, before anything is built? The UI agent answers it from a screens-and-flows angle. The API agent answers it from a data-and-contract angle. Same mechanics, same input, different lens.</p>
+
+  <h2>Pick a form</h2>
+  <p>Each agent comes in three forms. Same prompt, same output, different way of running it. Use whichever fits how you work, then read on below for exactly how each one works.</p>
+
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>Form</th><th>UI Strategy Agent</th><th>API Strategy Agent</th></tr></thead>
+      <tbody>
+        <tr><td>Browser, no install</td><td><a href="ui-strategy-agent.html" target="_blank">Open &rarr;</a></td><td><a href="api-strategy-agent.html" target="_blank">Open &rarr;</a></td></tr>
+        <tr><td>Node.js script</td><td><a href="ui-strategy-agent.js" target="_blank">Download &rarr;</a></td><td><a href="api-strategy-agent.js" target="_blank">Download &rarr;</a></td></tr>
+        <tr><td>Prompt only, no code</td><td><a href="ui-strategy-agent-prompt.md" target="_blank">View prompt &rarr;</a></td><td><a href="api-strategy-agent-prompt.md" target="_blank">View prompt &rarr;</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>UI Strategy Agent: what it does</h2>
   <ol>
-    <li>Fetches your app's API data directly (products, orders, endpoints)</li>
-    <li>Claude analyses the data for risk signals: pricing anomalies, missing validation, auth gaps</li>
-    <li>Generates a risk-ranked test strategy document automatically</li>
+    <li>You give it your Anthropic API key (stays local, never sent anywhere but Anthropic)</li>
+    <li>You give it the text of <a href="../phase1/peakandpack-requirements.md" target="_blank"><code>peakandpack-requirements.md</code></a></li>
+    <li>Claude reads it and ranks UI risk areas, the way a strategist would before any screen exists</li>
   </ol>
 
-  <p>You then review, refine, and save the output. The agent drafts; you're still the one who signs off.</p>
+  <p>The actual system prompt, in full, this is what's doing the thinking. All three forms below send this exact text to Claude, they just differ in how you get it there:</p>
+  <pre><code>You are a UI test strategist working on PeakAndPack, a trekking and
+travel gear e-commerce app. Nothing has been built yet. You only have
+the requirements document the user gives you. There is no live UI and
+no live API to inspect.
+
+Your job: reason about UI risk the way a strategist would BEFORE any
+screen exists. Identify which planned user-facing flows (e.g. product
+browsing, cart, checkout, auth, order history) carry the most risk if
+the UI for them is built wrong, and explain why in terms of user impact
+and business impact, not technical bug-finding (that happens later, in
+Phase 4).
+
+Do not invent screenshots, visual descriptions, or specific bugs you
+could not know about from a requirements doc alone. If you don't have
+enough information about a given area, say so plainly rather than
+guessing.</code></pre>
+
+  <div class="form-option"><span class="form-num">1</span><h3>Browser, no install</h3></div>
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>Piece</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td>A textarea</td><td>Where you paste the requirements doc text</td></tr>
+        <tr><td>A password field</td><td>Where you paste your own Anthropic API key, kept local to your browser tab</td></tr>
+        <tr><td>One <code>fetch()</code> call</td><td>Sends your pasted text plus the system prompt straight to Anthropic's API, no server needed</td></tr>
+        <tr><td>A results panel</td><td>Displays whatever Claude sends back, right there on the page</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Open the file, paste your key, paste the doc, click the button. Nothing to install, nothing to run in a terminal.</p>
+
+  <div class="form-option"><span class="form-num">2</span><h3>Node.js script</h3></div>
+  <p>Same system prompt as the browser version, just run from a terminal instead of clicked in a browser tab. If you've never used a terminal before, here's every step, nothing skipped.</p>
+
+  <p><strong>Step 1: Check if Node.js is installed.</strong> Open a terminal (on Mac: search for "Terminal" in Spotlight; on Windows: search for "Command Prompt" or "PowerShell"). Type this and press enter:</p>
+  <pre><code>node --version</code></pre>
+  <p>If you see something like <code>v20.11.0</code>, you have it, skip to Step 2. If you see an error like "command not found," install Node.js from <a href="https://nodejs.org" target="_blank">nodejs.org</a> first (download the version marked "LTS"), then come back and try the command again.</p>
+
+  <p><strong>Step 2: Get an Anthropic API key.</strong> Go to <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>, sign up or log in, and create an API key. Copy it somewhere safe, you'll need it in Step 4.</p>
+
+  <p><strong>Step 3: Download the script and the requirements doc.</strong> Download <a href="ui-strategy-agent.js" target="_blank"><code>ui-strategy-agent.js</code></a> and <a href="../phase1/peakandpack-requirements.md" target="_blank"><code>peakandpack-requirements.md</code></a>, and put both files in the same folder, for example a new folder on your desktop called <code>strategy-agent</code>.</p>
+
+  <p><strong>Step 4: Open a terminal in that folder.</strong> On Mac, right-click the folder and look for "New Terminal at Folder" (or open Terminal and type <code>cd </code> followed by dragging the folder into the window, then press enter). On Windows, open the folder in File Explorer, click the address bar, type <code>cmd</code>, and press enter.</p>
+
+  <p><strong>Step 5: Set your API key.</strong> In that terminal, paste this, replacing the placeholder with the real key from Step 2, then press enter:</p>
+  <pre><code>export ANTHROPIC_API_KEY=sk-ant-your-real-key-here</code></pre>
+  <p>On Windows, use this instead:</p>
+  <pre><code>set ANTHROPIC_API_KEY=sk-ant-your-real-key-here</code></pre>
+  <p>This only lasts for the current terminal session, you'll need to do this again if you close and reopen the terminal.</p>
+
+  <p><strong>Step 6: Run the script.</strong> Type this and press enter:</p>
+  <pre><code>node ui-strategy-agent.js peakandpack-requirements.md</code></pre>
+
+  <p><strong>What happens next:</strong> the script reads the requirements file, sends it to Claude, and after a few seconds prints the UI risk strategy directly in your terminal. It also saves a copy to a new file called <code>ui-strategy-output.md</code> in the same folder, which you can open in any text editor.</p>
+
+  <div class="callout warn">
+    <p><strong>If you see an error:</strong> "Missing ANTHROPIC_API_KEY" means Step 5 didn't take, try it again in the same terminal window before running the script. "File not found" means the script and the requirements doc aren't in the same folder, or you typed the filename slightly wrong. "command not found: node" means Step 1's install didn't finish, or you need to close and reopen your terminal after installing.</p>
+  </div>
+
+  <div class="form-option"><span class="form-num">3</span><h3>Prompt only, no code</h3></div>
+  <p>No file to open at all. Copy the system prompt, paste your own copy of the requirements doc where the prompt says to, and paste the whole thing into any Claude chat window. Same reasoning, same output shape, zero setup. The trade-off: no saved output file, and you're copy-pasting by hand every time instead of reusing a tool.</p>
+
+  <h2>API Strategy Agent: what it does</h2>
+  <ol>
+    <li>You give it your Anthropic API key (same as above, stays local)</li>
+    <li>You give it the text of <a href="../phase1/peakandpack-requirements.md" target="_blank"><code>peakandpack-requirements.md</code></a></li>
+    <li>Claude reads it and ranks API risk areas, the way a strategist would before any endpoint exists</li>
+  </ol>
+
+  <p>Same skeleton as the UI agent, browser version with a textarea and password field, Node script run from a terminal, or a prompt you paste by hand, only the system prompt's content changes:</p>
+
+  <pre><code>You are an API test strategist working on PeakAndPack, a trekking and
+travel gear e-commerce app. Nothing has been built yet. You only have
+the requirements document the user gives you. There is no live API and
+no live UI to inspect.
+
+Your job: reason about API risk the way a strategist would BEFORE any
+endpoint exists. Identify which planned API areas (e.g. products, cart,
+checkout, auth, orders, search) carry the most risk if the contract or
+logic for them is built wrong, and explain why in terms of data
+integrity, business impact, and security, not specific bug-finding
+(that happens later, in Phase 5).
+
+Do not invent endpoint names, response shapes, or specific bugs you
+could not know about from a requirements doc alone. If you don't have
+enough information about a given area, say so plainly rather than
+guessing.</code></pre>
+
+  <div class="form-option"><span class="form-num">1</span><h3>Browser, no install</h3></div>
+  <p>Same as the UI agent's browser form, textarea, password field, one <code>fetch()</code> call, results panel, just pointed at the API system prompt above instead.</p>
+
+  <div class="form-option"><span class="form-num">2</span><h3>Node.js script</h3></div>
+  <p>Same setup as the UI agent's script above, Node.js installed, an API key from <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>, the key set in your terminal. If you haven't done that yet, the full step-by-step is in the UI agent's Node.js section earlier on this page. Once that's done, the only difference is which files you download and which command you run.</p>
+
+  <p>Download <a href="api-strategy-agent.js" target="_blank"><code>api-strategy-agent.js</code></a> and <a href="../phase1/peakandpack-requirements.md" target="_blank"><code>peakandpack-requirements.md</code></a> into the same folder, open a terminal there, set your key, then run:</p>
+  <pre><code>node api-strategy-agent.js peakandpack-requirements.md</code></pre>
+  <p>Output prints to your terminal and saves to <code>api-strategy-output.md</code> in the same folder.</p>
+
+  <div class="form-option"><span class="form-num">3</span><h3>Prompt only, no code</h3></div>
+  <p>Same as the UI agent's prompt-only form, copy the API system prompt above, paste your requirements doc where it says to, paste into any Claude chat.</p>
+
+  <div class="callout blue">
+    <p><strong>This is the actual lesson.</strong> Same skeleton, same input, same constraints, but the system prompt decides what the agent looks for and how it frames risk. Change the prompt, you change the agent. That's most of what building one of these "agents" actually is, the code that calls Claude is a few lines; the system prompt is where the real design work happens.</p>
+  </div>
 
   <div class="callout purple">
     <p><strong>Harness matters here.</strong> An agent can write a strategy that sounds convincing but is wrong, especially if it's allowed to guess instead of being forced to check real data. That's why the setup around the agent matters as much as the agent itself, see the harness and loop section in the series intro for more on this.</p>
@@ -253,9 +388,9 @@
   </div>
 
   <h2>Your deliverable</h2>
-  <p>One file: <a href="test-strategy-agent.md" target="_blank"><code>test-strategy-agent.md</code></a>, the agent's output after your review pass. Same structural elements as the other three approaches, scope, priorities, entry/exit criteria, generated from data instead of from reading a requirements doc.</p>
+  <p>One file: <a href="test-strategy-agent.md" target="_blank"><code>test-strategy-agent.md</code></a>, the agent's output after your review pass. Same structural elements as the other three approaches, scope, priorities, entry/exit criteria, generated from the requirements doc, the same starting point a human strategist would have at this stage.</p>
 
-  <p><strong>Time:</strong> ~10 minutes. The fastest of the four, by a wide margin, but the value of that speed depends entirely on whether you actually read and correct what comes out.</p>
+  <p><strong>Time:</strong> ~10 minutes, including the time to paste your key and the doc in. The fastest of the four, by a wide margin, but the value of that speed depends entirely on whether you actually read and correct what comes out.</p>
 
 
   <div class="nav-row">

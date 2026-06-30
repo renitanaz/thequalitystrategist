@@ -262,15 +262,28 @@ export default defineConfig({
 
   <h2>Tagging by risk, in practice</h2>
   <pre><code>test('checkout applies discount correctly @critical', async ({ page }) => {
-  // ...
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Add to cart' }).first().click();
+  await page.getByRole('link', { name: 'Cart' }).click();
+  await page.getByRole('button', { name: 'Proceed to checkout' }).click();
+  await page.getByPlaceholder('e.g. SAVE10').fill('SAVE10');
+  await page.getByRole('button', { name: 'Place order' }).click();
+  const total = await page.getByText(/Total charged/).textContent();
+  expect(total).not.toContain('$0.00'); // currently fails, BUG-009
 });
 
 test('product listing shows correct stock @high', async ({ page }) => {
-  // ...
+  await page.goto('/');
+  const stockLabel = page.getByText(/Stock:/).first();
+  await expect(stockLabel).toBeVisible();
 });
 
 test('sort order is stable on repeat load @regression', async ({ page }) => {
-  // ...
+  await page.goto('/?sort=price_asc');
+  const firstLoad = await page.locator('h3').allTextContents();
+  await page.reload();
+  const secondLoad = await page.locator('h3').allTextContents();
+  expect(firstLoad).toEqual(secondLoad);
 });</code></pre>
 
   <p>Now you can run just the critical suite before a release: <code>npx playwright test --grep @critical</code>.</p>
