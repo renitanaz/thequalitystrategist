@@ -6,9 +6,6 @@
 
 ---
 
-## How this was generated
-
-The QA Strategy Agent read the Phase 1 requirements doc and ranked test risk across two disciplines, web/functional and API, in a single pass. Nothing was built at this point, so the agent reasoned from the requirements alone, the same starting point a human strategist has on day one. This document is the agent's output after a human review pass, not the raw, unreviewed output.
 
 ## Agent-generated risk ranking
 

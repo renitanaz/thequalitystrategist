@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Visual Review Agent | PeakAndPack</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:#6B7C3A; --olive-dark:#4A5828; --cream:#F5F7F0; --warm-white:#FAFCF5;
+    --ink:#1A1F14; --ink2:#3D4235; --ink3:#6B7060; --border:rgba(26,31,20,0.12);
+    --purple:#7A4A9A; --purple-l:#EDE0F5; --terra:#8A4A2A; --terra-l:#F5E4D8;
+    --green:#1A7A3A; --green-l:#D8F0E0; --gold:#9A6E1A; --gold-l:#F5EDD6;
+    --ff-serif:'Lora',Georgia,serif; --ff-sans:'DM Sans',system-ui,sans-serif;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:var(--ff-sans); background:var(--warm-white); color:var(--ink); line-height:1.6; padding:2rem 1.2rem 4rem; }
+  .wrap { max-width:780px; margin:0 auto; }
+  .tag { display:inline-block; font-size:.72rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--purple); background:var(--purple-l); padding:.3rem .7rem; border-radius:999px; margin-bottom:1rem; }
+  h1 { font-family:var(--ff-serif); font-size:1.7rem; margin-bottom:.5rem; }
+  p.sub { color:var(--ink2); margin-bottom:1.6rem; }
+  label { display:block; font-weight:700; font-size:.85rem; margin:1.2rem 0 .4rem; }
+  input[type=password], textarea { width:100%; border:1.5px solid var(--border); border-radius:8px; padding:.7rem .8rem; font-family:var(--ff-sans); font-size:.92rem; background:var(--warm-white); color:var(--ink); }
+  textarea { min-height:140px; resize:vertical; font-family:ui-monospace,Menlo,monospace; font-size:.82rem; }
+  input:focus, textarea:focus { outline:none; border-color:var(--purple); }
+  input[type=file] { font-size:.88rem; margin-top:.3rem; }
+  .hint { font-size:.78rem; color:var(--ink3); margin-top:.3rem; }
+  .hint a { color:var(--purple); }
+  #preview { max-width:100%; margin-top:.7rem; border:1px solid var(--border); border-radius:8px; display:none; }
+  button { margin-top:1.4rem; background:var(--purple); color:var(--warm-white); border:0; border-radius:8px; font-family:var(--ff-sans); font-weight:700; font-size:.95rem; padding:.8rem 1.6rem; cursor:pointer; }
+  button:disabled { opacity:.55; cursor:default; }
+  .copy-btn { background:var(--olive); margin-top:.8rem; padding:.5rem 1rem; font-size:.82rem; display:none; }
+  .note { background:var(--purple-l); border-left:3px solid var(--purple); border-radius:0 8px 8px 0; padding:.9rem 1.1rem; font-size:.85rem; color:var(--purple); margin:1.2rem 0; }
+  .status { margin-top:1.2rem; font-size:.88rem; color:var(--ink3); min-height:1.2rem; }
+  .err { color:var(--terra); background:var(--terra-l); border-left:3px solid var(--terra); padding:.8rem 1rem; border-radius:0 8px 8px 0; font-size:.85rem; }
+  #out { margin-top:1.4rem; white-space:pre-wrap; word-wrap:break-word; background:var(--cream); border:1px solid var(--border); border-radius:10px; padding:1rem 1.1rem; font-family:ui-monospace,Menlo,monospace; font-size:.8rem; display:none; }
+  footer { max-width:780px; margin:2.5rem auto 0; font-size:.78rem; color:var(--ink3); border-top:1px solid var(--border); padding-top:1rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="tag">Phase 4 &middot; Visual Review Agent</span>
+  <h1>Visual Review Agent</h1>
+  <p class="sub">Upload a screenshot of a PeakAndPack page. The agent reviews it for visual and UI issues and returns a short bug report. It reads only the image you give it; it cannot click, hover, or browse the live site.</p>
+
+  <div class="note">Your API key stays in this browser tab and is sent directly to Anthropic, nowhere else. The screenshot is sent to Anthropic for analysis and is not stored anywhere.</div>
+
+  <label for="key">Anthropic API key</label>
+  <input id="key" type="password" placeholder="sk-ant-..." autocomplete="off">
+  <div class="hint">Get one at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> &rarr; API Keys &rarr; Create Key.</div>
+
+  <label for="shot">Screenshot (PNG or JPEG)</label>
+  <input id="shot" type="file" accept="image/png,image/jpeg,image/webp">
+  <div class="hint">Capture a page from <a href="https://peakandpack-ui.onrender.com/" target="_blank">peakandpack-ui.onrender.com</a>. For mobile checks, narrow the window first, then screenshot.</div>
+  <img id="preview" alt="screenshot preview">
+
+  <label for="req">Requirements (optional)</label>
+  <textarea id="req" placeholder="Optional: paste the relevant requirements so the agent can judge what the page SHOULD show. Leave blank to review the screenshot on its own."></textarea>
+
+  <button id="go">Review screenshot</button>
+  <button id="copy" class="copy-btn">Copy report</button>
+
+  <div id="status" class="status"></div>
+  <div id="out"></div>
+</div>
+
+<footer>The Quality Strategist &middot; AI-Augmented QA Series &middot; Built with intention. Tested with care. &copy; 2026</footer>
+
+<script>
+const SYSTEM_PROMPT = `You are a visual QA reviewer for PeakAndPack, a trekking and travel gear e-commerce app. You will be given a screenshot of one of its pages, and optionally the requirements doc describing what that page should show. Your job is to review the screenshot for visual and UI issues, the way a careful tester would on a fresh look.
+
+Look for, and report only what you can actually see in the image:
+- Broken data display: empty or missing text where a value should be, negative or nonsensical values, placeholder text left in.
+- Layout problems: overflow or clipping, misalignment, overlapping elements, inconsistent spacing, content escaping its container.
+- Responsive issues: anything cut off or horizontally scrolling, if the screenshot is a narrow/mobile width.
+- Readability: text that is too low-contrast to read, or a price or label that is hard to parse.
+- Missing affordances you can see are absent: no visible focus outline on a focused control, a button with no label.
+
+Rules:
+- Report only what is visible in the screenshot. Do not invent issues you cannot see, and do not assume behaviour you cannot observe in a still image (you cannot click, hover, or check what updates).
+- If you are given the requirements doc, use it to judge whether what you see matches what was intended, and say which requirement a problem relates to.
+- For each issue, give: a short title, where on the page it is, the visible symptom, and the severity (Critical, High, Medium, Low) based on user and business impact.
+- If something looks fine, do not pad the report with it. A short, accurate report beats a long, padded one.
+- If you are unsure whether something is a bug or intentional, say so plainly and mark it to confirm, rather than asserting it.
+
+Output a short Markdown report: a one-line summary, then one section per issue with Title, Location, Symptom, Severity, and (if known) the related requirement. End with one line naming anything you could not assess from a still image alone.`;
+
+const goBtn = document.getElementById('go');
+const copyBtn = document.getElementById('copy');
+const statusEl = document.getElementById('status');
+const outEl = document.getElementById('out');
+const shotInput = document.getElementById('shot');
+const preview = document.getElementById('preview');
+
+let imageData = null;   // base64 without prefix
+let imageMedia = null;  // media type
+
+shotInput.addEventListener('change', () => {
+  const file = shotInput.files[0];
+  if (!file) { imageData = null; preview.style.display = 'none'; return; }
+  imageMedia = file.type || 'image/png';
+  const reader = new FileReader();
+  reader.onload = () => {
+    const result = reader.result;            // data:image/png;base64,XXXX
+    imageData = result.split(',')[1];        // strip the data URL prefix
+    preview.src = result;
+    preview.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+});
+
+goBtn.addEventListener('click', async () => {
+  const key = document.getElementById('key').value.trim();
+  const req = document.getElementById('req').value.trim();
+  statusEl.className = 'status'; statusEl.textContent = '';
+  if (!key) { statusEl.innerHTML = '<div class="err">Paste your Anthropic API key first.</div>'; return; }
+  if (!imageData) { statusEl.innerHTML = '<div class="err">Choose a screenshot first.</div>'; return; }
+
+  goBtn.disabled = true; copyBtn.style.display = 'none'; outEl.style.display = 'none';
+  statusEl.textContent = 'Reviewing the screenshot, this takes a minute...';
+
+  const userContent = [
+    { type: 'image', source: { type: 'base64', media_type: imageMedia, data: imageData } },
+    { type: 'text', text: req
+        ? 'Review this PeakAndPack screenshot. Here are the relevant requirements:\n\n' + req
+        : 'Review this PeakAndPack screenshot for visual and UI issues.' }
+  ];
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1500,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: 'user', content: userContent }]
+      })
+    });
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      throw new Error((e.error && e.error.message) || ('HTTP ' + res.status));
+    }
+    const data = await res.json();
+    const text = data.content.filter(b => b.type === 'text').map(b => b.text).join('\n');
+    outEl.textContent = text;
+    outEl.style.display = 'block';
+    copyBtn.style.display = 'inline-block';
+    statusEl.textContent = 'Done. Confirm each finding on the live UI before treating it as final.';
+  } catch (err) {
+    statusEl.innerHTML = '<div class="err">Failed: ' + err.message + '. A 401 usually means the key is wrong. A 400 may mean the image is too large; try a smaller screenshot.</div>';
+  } finally {
+    goBtn.disabled = false;
+  }
+});
+
+copyBtn.addEventListener('click', () => {
+  navigator.clipboard.writeText(outEl.textContent).then(() => {
+    copyBtn.textContent = 'Copied';
+    setTimeout(() => { copyBtn.textContent = 'Copy report'; }, 1500);
+  });
+});
+</script>
+</body>
+</html>

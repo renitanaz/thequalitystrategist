@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Visual Regression, AI QA Agent | The Quality Strategist</title>
-<meta name="description" content="Phase 4, Approach D: the AI QA Agent finds data anomalies, then Claude Code with Playwright MCP confirms how they look.">
+<meta name="description" content="Phase 4, Approach D: a Visual Review Agent reviews PeakAndPack screenshots for UI issues and writes a bug report.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -133,6 +133,12 @@
 
   .switcher-note { font-size: .8rem; color: var(--ink4); margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border); }
 
+  .form-opt { margin: 1.6rem 0; }
+  .form-opt-head { display: flex; align-items: center; gap: .6rem; margin-bottom: .5rem; }
+  .form-opt-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--purple); color: var(--warm-white); font-family: var(--ff-serif); font-weight: 700; font-size: .92rem; display: flex; align-items: center; justify-content: center; }
+  .form-opt-title { font-family: var(--ff-serif); font-size: 1.1rem; font-weight: 700; color: var(--purple); }
+  .form-opt-divider { height: 1px; background: var(--purple-l); border: 0; margin: .2rem 0 .8rem; }
+
   .nav-row { display: flex; justify-content: space-between; gap: .8rem; margin-top: 1.8rem; flex-wrap: wrap; }
   .nav-cta {
     display: inline-flex; align-items: center; gap: .5rem; text-decoration: none;
@@ -170,14 +176,14 @@
   <p class="breadcrumb">
     <a href="../../index.html">Home</a> &nbsp;/&nbsp;
     <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
-    <a href="../../00-PeakAndPack-AI-Augmented-QA-Series-Introduction.html">AI-Augmented QA Series</a> &nbsp;/&nbsp;
+    <a href="../00-ShopDemo-AI-Augmented-QA-Series-Introduction.html">AI-Augmented QA Series</a> &nbsp;/&nbsp;
     Phase 4 &middot; AI QA Agent
   </p>
 
   <span class="series-tag">Phase 4 of 8 &middot; Visual Regression</span>
 
-  <h1>Visual Regression, From Data Bug to Screenshot</h1>
-  <p class="subtitle">The agent finds it in the data. Claude Code with Playwright MCP confirms what it actually looks like.</p>
+  <h1>Visual Regression, by an Agent That Reads Screenshots</h1>
+  <p class="subtitle">Hand it a screenshot, get a visual bug report. It reviews the image; you confirm each finding on the live UI.</p>
 
   <div class="meta-row">
     <span>By RN</span>
@@ -186,77 +192,131 @@
   </div>
 
   <div class="switcher">
-    <a href="phase4-manual.html" class="switch-btn c-manual">Manual, No AI</a>
-    <a href="phase4-manual-ai.html" class="switch-btn c-ai">Manual + AI</a>
-    <a href="phase4-automated.html" class="switch-btn c-auto">Automated, Playwright</a>
+    <a href="04-phase4-manual.html" class="switch-btn c-manual">Manual, No AI</a>
+    <a href="04-phase4-manual-ai.html" class="switch-btn c-ai">Manual + AI</a>
+    <a href="04-phase4-automated.html" class="switch-btn c-auto">Automated, Playwright</a>
     <span class="switch-btn c-agent active">AI QA Agent</span>
   </div>
 
 
-  <p>This is the approach that finally closes the loop from data anomaly to visible symptom. The agent finds the bug in the data, then Claude Code with Playwright MCP goes and looks at the actual screen to confirm it.</p>
+  <p>Phase 4 is about how the UI actually looks. So this agent does the visual job: you hand it a screenshot of a PeakAndPack page, and it reviews the image for visual and UI problems, then writes them up as a short bug report. It reasons only from the picture you give it; it does not click, hover, or browse the live site, the same limit a tester has when handed a still screenshot to review.</p>
 
   <div style="margin:1.3rem 0 1.8rem;border-radius:14px;overflow:hidden;border:1px solid var(--border);background:var(--purple-l)">
-  <svg width="100%" viewBox="0 0 860 220" role="img" xmlns="http://www.w3.org/2000/svg">
-    <title>An agent finding a data anomaly then a browser confirming how it looks</title>
-    <desc>An illustration showing two stages: a robot analysing API data and flagging an anomaly, then a browser icon navigating to the live UI and taking a screenshot to confirm the visible symptom, representing the two-step AI QA agent visual regression process.</desc>
-    <rect x="0" y="0" width="860" height="220" fill="var(--purple-l)"/>
-
-    <g transform="translate(130,100)">
-      <rect x="-32" y="-30" width="64" height="58" rx="13" fill="var(--purple)"/>
-      <circle cx="-13" cy="-10" r="4.5" fill="var(--warm-white)"/>
-      <circle cx="13" cy="-10" r="4.5" fill="var(--warm-white)"/>
-      <rect x="-11" y="9" width="22" height="4" rx="2" fill="var(--warm-white)" opacity="0.85"/>
+  <svg width="100%" viewBox="0 0 860 200" role="img" xmlns="http://www.w3.org/2000/svg">
+    <title>A screenshot going into an agent and a bug report coming out</title>
+    <desc>An illustration showing a screenshot of a product card on the left feeding into a robot in the middle, which produces a written bug report on the right.</desc>
+    <rect x="0" y="0" width="860" height="200" fill="var(--purple-l)"/>
+    <rect x="55" y="55" width="130" height="90" rx="8" fill="var(--warm-white)" stroke="var(--purple)" stroke-width="1.5"/>
+    <rect x="70" y="70" width="100" height="44" rx="5" fill="var(--border2)"/>
+    <text x="120" y="132" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="var(--terra)">-$89.00</text>
+    <text x="120" y="160" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="var(--purple)">screenshot.png</text>
+    <line x1="195" y1="100" x2="285" y2="100" stroke="var(--purple)" stroke-width="2" stroke-dasharray="4 3"/>
+    <g transform="translate(345,100)">
+      <rect x="-35" y="-32" width="70" height="64" rx="14" fill="var(--purple)"/>
+      <circle cx="-15" cy="-10" r="5" fill="var(--warm-white)"/>
+      <circle cx="15" cy="-10" r="5" fill="var(--warm-white)"/>
+      <rect x="-13" y="8" width="26" height="5" rx="2" fill="var(--warm-white)" opacity="0.85"/>
     </g>
-    <text x="130" y="160" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="var(--purple)">1. Scans API data</text>
-    <text x="130" y="175" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="var(--purple)" opacity="0.8">finds negative price</text>
-
-    <path d="M210 100 L330 100" stroke="var(--purple)" stroke-width="3" marker-end="url(#arrow4d)"/>
+    <line x1="390" y1="100" x2="565" y2="100" stroke="var(--purple)" stroke-width="3" marker-end="url(#arrow4d)"/>
     <defs><marker id="arrow4d" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="var(--purple)"/></marker></defs>
-
-    <rect x="350" y="65" width="160" height="80" rx="10" fill="var(--warm-white)" stroke="var(--teal)" stroke-width="2"/>
-    <circle cx="375" cy="80" r="5" fill="var(--terra)"/>
-    <circle cx="390" cy="80" r="5" fill="var(--gold)"/>
-    <circle cx="405" cy="80" r="5" fill="var(--green)"/>
-    <rect x="365" y="95" width="130" height="40" rx="5" fill="var(--border2)"/>
-    <text x="430" y="160" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="var(--teal)">2. Claude Code + MCP</text>
-    <text x="430" y="173" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="var(--teal)" opacity="0.8">opens the live UI</text>
-
-    <path d="M520 100 L650 100" stroke="var(--purple)" stroke-width="3" marker-end="url(#arrow4d)"/>
-
-    <rect x="670" y="60" width="150" height="100" rx="8" fill="var(--warm-white)" stroke="var(--terra)" stroke-width="2"/>
-    <rect x="685" y="75" width="120" height="60" rx="5" fill="var(--border2)"/>
-    <text x="745" y="130" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="var(--terra)">-$89.00</text>
-    <text x="745" y="175" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="var(--terra)">Confirmed visually</text>
+    <rect x="585" y="55" width="220" height="90" rx="8" fill="var(--warm-white)" stroke="var(--purple)" stroke-width="1.5"/>
+    <rect x="601" y="70" width="150" height="9" rx="2" fill="var(--purple-l)"/>
+    <rect x="601" y="86" width="188" height="7" rx="2" fill="var(--border)"/>
+    <rect x="601" y="100" width="170" height="7" rx="2" fill="var(--border)"/>
+    <rect x="601" y="114" width="140" height="7" rx="2" fill="var(--border)"/>
+    <text x="695" y="162" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="var(--purple)">Visual bug report</text>
   </svg>
   </div>
 
-  <h2>What the agent does, in two stages</h2>
+  <h2>What it does</h2>
   <ol>
-    <li>Fetches product and order data from the API</li>
-    <li>Claude analyses the data for values that would create broken visual states (negative prices, empty names, overflow-prone values)</li>
-    <li>Separately, Claude Code with Playwright MCP navigates the live <code>frontend/</code> UI and screenshots each flagged value to confirm how it actually renders</li>
+    <li>You give it a screenshot of a PeakAndPack page (and, optionally, the requirements for that page).</li>
+    <li>Claude reviews the image for visual problems: broken data display, layout breaks, overflow, responsive issues, low contrast, missing focus states.</li>
+    <li>It returns a short bug report: one finding per issue, each with a title, location, the visible symptom, and a severity.</li>
   </ol>
 
+  <h2>How it works</h2>
+  <p>The mechanism is the same as the earlier agents, with one addition: the screenshot is sent to Claude as an image. The browser and Node forms read the image file, encode it, and attach it to the API request ahead of the text instruction; Claude's vision then reads the picture the way it would read pasted text. The system prompt is still where the real work happens, it tells Claude to report only what is visible and never to invent behaviour it cannot observe in a still image.</p>
+
   <div class="callout purple">
-    <p><strong>Why two stages instead of one.</strong> The HTML agent (stage 1) can only see API data, it has no browser. Closing the gap to an actual rendered screenshot needs a tool that can drive a browser, which is exactly what Playwright MCP adds. Neither stage alone tells the full story, the data finding without a screenshot is unconfirmed; a screenshot without knowing what to look for is just noise.</p>
+    <p><strong>The system prompt is the design work, the code just carries an image.</strong> What stops this agent from hallucinating problems is the prompt's instruction to report only what is actually in the picture, and to mark anything uncertain "to confirm" rather than asserting it. A still screenshot can't show you whether the cart total updates on click, so the agent is told to say so rather than guess.</p>
   </div>
 
-  <h2>What the combined report looks like</h2>
+  <h2>How to build it: three forms</h2>
+  <p>Like the earlier phases, the agent ships in three forms, listed easiest-first. Same prompt, same kind of report; they differ only in how you hand over the screenshot.</p>
   <div class="fw-table-wrap">
     <table class="fw-table">
-      <thead><tr><th>Data finding</th><th>Visual confirmation</th></tr></thead>
+      <thead><tr><th>Form</th><th>What it is</th><th>Get it</th></tr></thead>
       <tbody>
-        <tr><td>Sleeping Bag price = -89.00</td><td>Screenshot shows "-$89.00" in red on the product card</td></tr>
-        <tr><td>One product has empty name</td><td>Screenshot shows a card with a blank title area</td></tr>
-        <tr><td>Water Bottle price = 9999.99</td><td>Screenshot shows the price slightly overflowing its container at narrow widths</td></tr>
+        <tr><td><strong>Prompt only</strong></td><td>Paste into any chat that accepts image attachments, attach the screenshot</td><td><a href="visual-review-agent-prompt.md" target="_blank"><code>visual-review-agent-prompt.md</code></a></td></tr>
+        <tr><td><strong>Browser</strong></td><td>One HTML file with a file picker, no install</td><td><a href="visual-review-agent.html" target="_blank"><code>visual-review-agent.html</code></a></td></tr>
+        <tr><td><strong>Node.js</strong></td><td>A terminal script that reads an image file</td><td><a href="visual-review-agent.js" target="_blank"><code>visual-review-agent.js</code></a></td></tr>
       </tbody>
     </table>
   </div>
 
-  <h2>Your deliverable</h2>
-  <p>The visual regression section of the agent report, containing both the raw data findings and the matching live screenshots from Claude Code + Playwright MCP.</p>
+  <div class="form-opt">
+    <div class="form-opt-head"><span class="form-opt-num">1</span><span class="form-opt-title">Prompt only, no key, no code</span></div>
+    <hr class="form-opt-divider">
+    <p>The fastest path. Open <a href="visual-review-agent-prompt.md" target="_blank"><code>visual-review-agent-prompt.md</code></a>, copy the prompt into a Claude chat, and attach your screenshot to the same message. If you have the requirements for that page, paste them too. Claude replies with the report.</p>
+  </div>
 
-  <p><strong>Time:</strong> ~15 minutes. Slightly longer than a pure API-only agent pass, since the second stage actually has to load and screenshot a real page, but still far faster than a manual visual sweep.</p>
+  <div class="form-opt">
+    <div class="form-opt-head"><span class="form-opt-num">2</span><span class="form-opt-title">Browser form, a reusable tool</span></div>
+    <hr class="form-opt-divider">
+    <p>A small web page that runs on your own machine.</p>
+    <ol>
+      <li>Download <a href="visual-review-agent.html" target="_blank"><code>visual-review-agent.html</code></a> and double-click it to open in your browser (it runs from <code>file://</code> on your disk, no host needed).</li>
+      <li>Paste your Anthropic API key (<a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> &rarr; API Keys &rarr; Create Key).</li>
+      <li>Choose a screenshot file. Capture one from <a href="https://peakandpack-ui.onrender.com/" target="_blank">peakandpack-ui.onrender.com</a>; for mobile checks, narrow the window before you screenshot.</li>
+      <li>Optionally paste the page's requirements, then click <strong>Review screenshot</strong>.</li>
+    </ol>
+    <p><strong>Under the hood:</strong> when you pick a file, the page reads it, converts it to base64, and sends it as an image block straight to Anthropic with your key, nothing is uploaded anywhere else and the key never leaves the tab.</p>
+  </div>
+
+  <div class="form-opt">
+    <div class="form-opt-head"><span class="form-opt-num">3</span><span class="form-opt-title">Node.js form, in a terminal</span></div>
+    <hr class="form-opt-divider">
+    <p>A script that reads an image file and writes the report to disk. It needs <strong>Node.js</strong> installed, nothing else; it is not Claude Code, the script calls the API itself.</p>
+    <ol>
+      <li><strong>Check Node.js.</strong> In a terminal, run <code>node --version</code>. If it errors, install the LTS build from <a href="https://nodejs.org" target="_blank">nodejs.org</a> and reopen the terminal.</li>
+      <li><strong>Get an API key</strong> from <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>.</li>
+      <li><strong>Put three things in one folder:</strong> <a href="visual-review-agent.js" target="_blank"><code>visual-review-agent.js</code></a>, your screenshot, and (optionally) a requirements <code>.md</code>.</li>
+      <li><strong>Set your key</strong> in that terminal: <code>export ANTHROPIC_API_KEY=sk-ant-your-key</code> (Mac) or <code>set ANTHROPIC_API_KEY=sk-ant-your-key</code> (Windows).</li>
+      <li><strong>Run it:</strong> <code>node visual-review-agent.js screenshot.png</code>, or add the requirements file as a second argument: <code>node visual-review-agent.js screenshot.png requirements.md</code>. It prints the report and saves <code>visual-review-output.md</code>.</li>
+    </ol>
+  </div>
+
+  <h2>How to tell if the agent actually looked at the image</h2>
+  <p>A visual report can sound confident whether or not it read your specific screenshot. Here is how to check.</p>
+  <div class="split-row">
+    <div class="split-card" style="background:var(--green-l)">
+      <div class="sc-title" style="color:var(--green)">Trustworthy</div>
+      <div class="sc-body">It names something that is genuinely in your image, the actual product name on the card, the exact "-$89.00" text, a specific element that is clipped. It could only know that by reading the picture.</div>
+    </div>
+    <div class="split-card" style="background:var(--terra-l)">
+      <div class="sc-title" style="color:var(--terra)">Warning sign</div>
+      <div class="sc-body">Generic advice that fits any web page (&ldquo;ensure good contrast,&rdquo; &ldquo;test on mobile&rdquo;) with nothing tied to what is actually on screen. If it never points at a concrete element in your screenshot, it may not have used the image at all.</div>
+    </div>
+  </div>
+
+  <h2>The Figma approach: comparing against the design, not just the screenshot</h2>
+  <p>A screenshot review tells you whether the page looks broken. It cannot tell you whether the page matches what the designer intended, because the agent has never seen the design. That is what a Figma review adds: instead of judging a screenshot on its own, you compare the built UI against the design file it was supposed to match, and flag the drift.</p>
+  <p>PeakAndPack has no Figma file, so this series does not ship a Figma agent. But the approach is worth knowing, because in a real product it is where a lot of visual QA value lives. Here is how it is done in practice:</p>
+  <ol>
+    <li><strong>Get the design out of Figma.</strong> Either export the relevant frames as PNGs, or pull them programmatically through Figma's API (each frame has a node id you can request an image for). Newer setups use Figma's own MCP server so an agent can read frames directly.</li>
+    <li><strong>Capture the same view from the built UI.</strong> A screenshot of the live page at the same viewport width as the design frame.</li>
+    <li><strong>Give the agent both images.</strong> The same image-in, report-out mechanism as this agent, except now it receives two pictures: "here is the design, here is the build, list the differences that matter."</li>
+    <li><strong>Ask for drift, not pixels.</strong> The useful output is not "these pixels differ" (a diff tool does that), it is judgement: spacing that is off, a font weight that does not match, a colour that drifted, a component that was simplified in the build. That judgement is exactly what a vision model adds over a pixel-diff.</li>
+  </ol>
+  <div class="callout gold">
+    <p><strong>Why it stays an "approach" here, not a tool.</strong> A Figma agent is only as honest as the design files behind it. Building one for a project that has no designs would mean inventing an artifact that does not exist. When you do have a design system, this is the natural next step beyond screenshot review, same agent shape, two images instead of one.</p>
+  </div>
+
+  <h2>Your deliverable</h2>
+  <p>One file: <a href="visual-review-output.md" target="_blank"><code>visual-review-output.md</code></a>, the agent's report after you confirm each finding on the live UI. The review pass is the same as every AI approach in this series: keep what is real, drop anything generic, and confirm anything the agent marked "to confirm" before it counts as a bug.</p>
+
+  <p><strong>Time:</strong> ~10 minutes to generate per screenshot. Confirming each finding on the live UI is the real work, and the reason a human stays in the loop.</p>
 
 
   <div class="nav-row">

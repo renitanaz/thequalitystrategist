@@ -170,7 +170,7 @@
   <p class="breadcrumb">
     <a href="../../index.html">Home</a> &nbsp;/&nbsp;
     <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
-    <a href="../../00-PeakAndPack-AI-Augmented-QA-Series-Introduction.html">AI-Augmented QA Series</a> &nbsp;/&nbsp;
+    <a href="../00-ShopDemo-AI-Augmented-QA-Series-Introduction.html">AI-Augmented QA Series</a> &nbsp;/&nbsp;
     Phase 4 &middot; Automated
   </p>
 
@@ -186,10 +186,10 @@
   </div>
 
   <div class="switcher">
-    <a href="phase4-manual.html" class="switch-btn c-manual">Manual, No AI</a>
-    <a href="phase4-manual-ai.html" class="switch-btn c-ai">Manual + AI</a>
+    <a href="04-phase4-manual.html" class="switch-btn c-manual">Manual, No AI</a>
+    <a href="04-phase4-manual-ai.html" class="switch-btn c-ai">Manual + AI</a>
     <span class="switch-btn c-auto active">Automated, Playwright</span>
-    <a href="phase4-ai-agent.html" class="switch-btn c-agent">AI QA Agent</a>
+    <a href="04-phase4-ai-agent.html" class="switch-btn c-agent">AI QA Agent</a>
   </div>
 
 
@@ -234,7 +234,7 @@ test('sleeping bag card shows negative price visually', async ({ page }) => {
   const card = page.getByText('Sleeping Bag').locator('..');
   await expect(card).toHaveScreenshot('sleeping-bag-card.png');
   // This baseline was captured WITH the bug present.
-  // Once BUG-001 is fixed, this test will correctly fail,
+  // Once BUG-011 is fixed, this test will correctly fail,
   // because the screenshot will no longer match.
 });</code></pre>
 
@@ -242,8 +242,26 @@ test('sleeping bag card shows negative price visually', async ({ page }) => {
     <p><strong>Self-healing means tolerance, not blindness.</strong> A 2% pixel tolerance lets font-rendering differences between machines pass without manual re-baselining every time. It does not mean the test ignores real layout breaks, a misaligned button or missing image still exceeds that tolerance and fails correctly.</p>
   </div>
 
+  <h2>Setting it up, step by step</h2>
+  <p>If you have never run Playwright before, here is the whole path from nothing to a passing visual run. It assumes Node.js is installed (check with <code>node --version</code>; if it errors, get the LTS build from <a href="https://nodejs.org" target="_blank">nodejs.org</a> first).</p>
+  <ol>
+    <li><strong>Make a folder and go into it.</strong> In a terminal: <code>mkdir peakandpack-visual</code> then <code>cd peakandpack-visual</code>.</li>
+    <li><strong>Install Playwright.</strong> Run <code>npm init playwright@latest</code>. It asks a couple of questions (TypeScript: yes; tests folder: <code>tests</code>); accept the defaults. This downloads Playwright and the browsers it drives.</li>
+    <li><strong>Point it at the live site.</strong> Open the generated <code>playwright.config.ts</code> and set the base URL so <code>page.goto('/')</code> resolves to PeakAndPack:
+      <pre><code>use: {
+  baseURL: 'https://peakandpack-ui.onrender.com/',
+},</code></pre>
+    </li>
+    <li><strong>Add the spec.</strong> Download <a href="visual.spec.ts" target="_blank"><code>visual.spec.ts</code></a> and put it in the <code>tests/</code> folder.</li>
+    <li><strong>Capture the baselines (first run).</strong> Run <code>npx playwright test --update-snapshots</code>. The first run has nothing to compare against, so this captures the baseline images into a <code>snapshots/</code> folder. Open them and confirm they look right; a baseline captured with a bug visible will treat that bug as "correct" until you re-baseline.</li>
+    <li><strong>Run normally afterwards.</strong> From now on, <code>npx playwright test</code> compares each fresh screenshot against its baseline and fails on any diff beyond the tolerance. Open the HTML report it generates to see exactly which pixels changed.</li>
+  </ol>
+  <div class="callout warn">
+    <p><strong>If it fails unexpectedly:</strong> a diff on the very first compare usually means the page wasn't fully loaded before the screenshot, add an explicit wait for a known element. A diff that appears only in CI but not locally is almost always font rendering, which is what <code>maxDiffPixelRatio</code> absorbs; nudge the tolerance up slightly rather than re-baselining per machine.</p>
+  </div>
+
   <h2>Your deliverable</h2>
-  <p>A <a href="../downloads/visual.spec.ts" target="_blank"><code>tests/visual.spec.ts</code></a> file plus a <code>snapshots/</code> folder containing the baseline images every future run gets compared against.</p>
+  <p>A <a href="visual.spec.ts" target="_blank"><code>tests/visual.spec.ts</code></a> file plus a <code>snapshots/</code> folder containing the baseline images every future run gets compared against.</p>
 
   <p><strong>Time:</strong> ~2 hours. Most of that is deciding which pages and components are worth a baseline, not writing the comparison code itself, which is just a few lines per test.</p>
 
