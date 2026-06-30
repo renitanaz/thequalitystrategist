@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UI Strategy Agent | PeakAndPack</title>
+<title>QA Strategy Agent | PeakAndPack</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -121,14 +121,14 @@
 
 <header class="site-header">
   <div class="site-header-inner">
-    <span class="site-name">PeakAndPack &middot; UI Strategy Agent</span>
+    <span class="site-name">PeakAndPack &middot; QA Strategy Agent</span>
   </div>
 </header>
 
 <main>
-  <span class="tool-tag">Phase 2 &middot; AI QA Agent &middot; UI</span>
-  <h1>UI Strategy Agent</h1>
-  <p class="subtitle">This runs entirely in your browser. Nothing here has been built yet, this works from the requirements doc alone, the same way you'd think through UI risk before a single screen exists.</p>
+  <span class="tool-tag">Phase 2 &middot; AI QA Agent</span>
+  <h1>QA Strategy Agent</h1>
+  <p class="subtitle">This runs entirely in your browser. Nothing here has been built yet, this works from the requirements doc alone, the same way you'd think through web and API risk before a single screen or endpoint exists.</p>
 
   <div class="step">
     <span class="step-num">1</span><span class="step-title">Paste your Anthropic API key</span>
@@ -142,15 +142,15 @@
     <textarea id="requirementsInput" placeholder="Paste the full text of peakandpack-requirements.md here..."></textarea>
   </div>
 
-  <button class="run-btn" id="runBtn">Generate UI risk strategy</button>
-  <div class="status" id="statusMsg">Thinking through UI risk areas...</div>
+  <button class="run-btn" id="runBtn">Generate QA risk strategy</button>
+  <div class="status" id="statusMsg">Thinking through web and API risk areas...</div>
   <div class="error-box" id="errorBox"></div>
 
   <div id="output">
-    <h2>UI Risk Strategy</h2>
+    <h2>QA Risk Strategy</h2>
     <div id="output-content"></div>
     <div class="harness-note">
-      <strong>Why this agent doesn't call a live API or take screenshots:</strong> at the strategy stage, nothing is built yet, no live UI, no live API. This agent reasons from the requirements doc only, the same constraint a human strategist works under at this point in a real project. That's a deliberate scope limit, not a missing feature. Treat its output the same way you'd treat the Manual + AI approach's output: a draft to review, not a final answer. If it names something vague that could apply to any e-commerce app rather than something specific to PeakAndPack's actual planned flows, that's a sign to push back on it before trusting it.
+      <strong>Why this agent doesn't call a live API or take screenshots:</strong> at the strategy stage, nothing is built yet, no live UI, no live API. This agent reasons from the requirements doc only, the same constraint a human strategist works under at this point in a real project. It covers both web/functional risk and API risk in one pass; if your project has only one of those, ignore the section that doesn't apply. That's a deliberate scope limit, not a missing feature. Treat its output the same way you'd treat the Manual + AI approach's output: a draft to review, not a final answer. If it names something vague that could apply to any e-commerce app rather than something specific to PeakAndPack's actual planned flows, that's a sign to push back on it before trusting it.
     </div>
   </div>
 </main>
@@ -166,18 +166,23 @@ const errorBox = document.getElementById('errorBox');
 const output = document.getElementById('output');
 const outputContent = document.getElementById('output-content');
 
-const SYSTEM_PROMPT = `You are a UI test strategist working on PeakAndPack, a trekking and travel gear e-commerce app. Nothing has been built yet. You only have the requirements document the user gives you. There is no live UI and no live API to inspect.
+const SYSTEM_PROMPT = `You are a QA test strategist working on PeakAndPack, a trekking and travel gear e-commerce app. Nothing has been built yet. You only have the requirements document the user gives you. There is no live UI and no live API to inspect.
 
-Your job: reason about UI risk the way a strategist would BEFORE any screen exists. Identify which planned user-facing flows (e.g. product browsing, cart, checkout, auth, order history) carry the most risk if the UI for them is built wrong, and explain why in terms of user impact and business impact, not technical bug-finding (that happens later, in Phase 4).
+Your job: reason about test risk the way a strategist would BEFORE anything is built. Cover two kinds of testing:
 
-Do not invent screenshots, visual descriptions, or specific bugs you could not know about from a requirements doc alone. If you don't have enough information about a given area, say so plainly rather than guessing.
+Web and functional testing: which planned user-facing flows (e.g. product browsing, cart, checkout, auth, order history) carry the most risk if the UI or its behaviour is built wrong, in terms of user impact and business impact.
+
+API testing: which planned API areas (e.g. products, cart, checkout, auth, orders, search) carry the most risk if the contract or logic for them is built wrong, in terms of data integrity, business impact, and security.
+
+Do not invent screenshots, visual descriptions, endpoint names, response shapes, or specific bugs you could not know about from a requirements doc alone. If a project clearly has no UI or no API, say so and skip that section. If you don't have enough information about a given area, say so plainly rather than guessing.
 
 Structure your output as:
-1. A ranked list of UI risk areas (most risky first), each with a one-line reason
-2. For the single highest-risk area, a short paragraph on what could go wrong in the UI specifically (not the backend) if this area is built carelessly
-3. One thing you cannot assess yet because no UI exists, named explicitly
+1. Web and functional risk: a ranked list of UI risk areas (most risky first), each with a one-line reason
+2. API risk: a ranked list of API risk areas (most risky first), each with a one-line reason
+3. For the single highest-risk area across both lists, a short paragraph on what could go wrong if it is built carelessly
+4. One thing you cannot assess yet because nothing is built, named explicitly
 
-Keep the whole response under 400 words. Plain prose, no markdown headers, no bullet symbols, just short paragraphs and a simple numbered list where structure is needed.`;
+Keep the whole response under 500 words. Plain prose, no markdown headers, no bullet symbols, just short paragraphs and simple numbered lists where structure is needed.`;
 
 runBtn.addEventListener('click', async () => {
   const apiKey = document.getElementById('apiKey').value.trim();
@@ -211,7 +216,7 @@ runBtn.addEventListener('click', async () => {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 1000,
+        max_tokens: 1500,
         system: SYSTEM_PROMPT,
         messages: [
           { role: 'user', content: `Here is the requirements document:\n\n${requirements}` }
