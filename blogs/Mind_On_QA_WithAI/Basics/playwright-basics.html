@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>API Contract Testing, Automated with Playwright | The Quality Strategist</title>
-<meta name="description" content="Phase 5, Approach C: schema-based API contract testing for PeakAndPack using Playwright's request context.">
+<title>Playwright Basics for Beginners | The Quality Strategist</title>
+<meta name="description" content="Phase 5, Approach A: manually verifying PeakAndPack's API contract with Postman or a browser.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -157,6 +157,7 @@
 
 </style>
 </head>
+
 <body>
 
 <header class="site-header">
@@ -171,106 +172,81 @@
     <a href="../../index.html">Home</a> &nbsp;/&nbsp;
     <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
     <a href="../00-ShopDemo-AI-Augmented-QA-Series-Introduction.html">AI-Augmented QA Series</a> &nbsp;/&nbsp;
-    Phase 5 &middot; Automated
+    Playwright Basics
   </p>
 
-  <span class="series-tag">Phase 5 of 8 &middot; API Contract</span>
+  <span class="series-tag">Shared primer &middot; Start here</span>
 
-  <h1>API Contract, Checked by Type, Not by Value</h1>
-  <p class="subtitle">No browser needed. Just requests, responses, and schema checks that survive tomorrow's data.</p>
+  <h1>Playwright Basics for Beginners</h1>
+  <p class="subtitle">The automated approaches in Phase 3 and Phase 4 use Playwright. This is the whole foundation in one page: what it is, how to install it, how to write and run your first test, and how to read the result. Already use Playwright? Skip straight back to the phase you came from.</p>
 
   <div class="meta-row">
     <span>By RN</span>
-    <span>~4 min read</span>
+    <span>~6 min read</span>
     <span>Series: AI-Augmented QA</span>
   </div>
 
-  <div class="switcher">
-    <a href="05-phase5-manual.html" class="switch-btn c-manual">Manual, No AI</a>
-    <a href="05-phase5-manual-ai.html" class="switch-btn c-ai">Manual + AI</a>
-    <span class="switch-btn c-auto active">Automated, Playwright</span>
-    <a href="05-phase5-ai-agent.html" class="switch-btn c-agent">AI QA Agent</a>
+  <h2>What Playwright is, in one paragraph</h2>
+  <p>Playwright is a free tool that drives a real browser for you: it opens pages, clicks buttons, fills forms, and checks what appears, all from code you write. Instead of clicking through the site by hand every time you want to test it, you describe the checks once and Playwright runs them in seconds, the same way every time. It can also call an API directly without a browser, which is how the Phase 5 API tests work.</p>
+
+  <div class="callout blue">
+    <p><strong>Plain-English glossary.</strong> <strong>Test</strong>: one named check, written as a block of code. <strong>Spec file</strong>: a file ending in <code>.spec.ts</code> that holds one or more tests. <strong>Assertion</strong>: the line that says what should be true, for example "this text should be visible"; if it isn't, the test fails. <strong>Locator</strong>: how a test finds an element on the page (by its visible text, its role, or a test id). <strong>Baseline</strong>: a saved reference screenshot that later runs get compared against (used in Phase 4). <strong>Headless</strong>: running the browser invisibly in the background, the default; add <code>--headed</code> to watch it happen.</p>
   </div>
 
+  <h2>Step 1: check Node.js is installed</h2>
+  <p>Playwright runs on Node.js, the same runtime the agent scripts use. Open a terminal (Mac: search "Terminal"; Windows: search "PowerShell") and type:</p>
+  <pre><code>node --version</code></pre>
+  <p>If you see a number like <code>v20.x.x</code> (anything 18 or higher), you're set. If it errors, install the <strong>LTS</strong> build from <a href="https://nodejs.org" target="_blank">nodejs.org</a>, then close and reopen the terminal.</p>
 
-  <p>Playwright's <code>request</code> context tests the API directly, no browser needed. Schema checks verify structure and type, not exact values, so tests survive normal data changes.</p>
+  <h2>Step 2: install Playwright</h2>
+  <p>Make a folder for your tests, go into it, and let Playwright set itself up:</p>
+  <pre><code>mkdir peakandpack-tests
+cd peakandpack-tests
+npm init playwright@latest</code></pre>
+  <p>It asks a couple of questions. Accept the defaults: TypeScript <strong>yes</strong>, tests folder <strong>tests</strong>. This downloads Playwright and the browsers it drives (that download is a few hundred MB the first time, so give it a minute).</p>
 
-  <div style="margin:1.3rem 0 1.8rem;border-radius:14px;overflow:hidden;border:1px solid var(--border);background:var(--teal-l)">
-  <svg width="100%" viewBox="0 0 860 200" role="img" xmlns="http://www.w3.org/2000/svg">
-    <title>A schema validator checking types instead of exact values</title>
-    <desc>An illustration of a response object being checked against a type schema, number, string, boolean, rather than specific values, representing self-healing schema validation.</desc>
-    <rect x="0" y="0" width="860" height="200" fill="var(--teal-l)"/>
-    <rect x="80" y="50" width="180" height="110" rx="8" fill="var(--warm-white)" stroke="var(--ink4)" stroke-width="1.5"/>
-    <text x="96" y="75" font-family="DM Sans, sans-serif" font-size="9" fill="var(--ink3)">id: 7</text>
-    <text x="96" y="93" font-family="DM Sans, sans-serif" font-size="9" fill="var(--ink3)">name: "Tent"</text>
-    <text x="96" y="111" font-family="DM Sans, sans-serif" font-size="9" fill="var(--ink3)">price: 320.00</text>
-    <text x="170" y="140" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="var(--ink3)">actual response</text>
-
-    <path d="M270 105 L390 105" stroke="var(--teal)" stroke-width="3" marker-end="url(#arrow5c)"/>
-    <defs><marker id="arrow5c" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="var(--teal)"/></marker></defs>
-
-    <rect x="410" y="50" width="180" height="110" rx="8" fill="var(--warm-white)" stroke="var(--teal)" stroke-width="2"/>
-    <text x="426" y="75" font-family="DM Sans, sans-serif" font-size="9" fill="var(--teal)">id: number &#10003;</text>
-    <text x="426" y="93" font-family="DM Sans, sans-serif" font-size="9" fill="var(--teal)">name: string &#10003;</text>
-    <text x="426" y="111" font-family="DM Sans, sans-serif" font-size="9" fill="var(--teal)">price: number, &gt;= 0 &#10003;</text>
-    <text x="500" y="140" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="var(--teal)">checked against schema</text>
-
-    <text x="700" y="80" font-family="DM Sans, sans-serif" font-size="10" fill="var(--ink3)">Tomorrow's data</text>
-    <text x="700" y="96" font-family="DM Sans, sans-serif" font-size="10" fill="var(--ink3)">can change, the</text>
-    <text x="700" y="112" font-family="DM Sans, sans-serif" font-size="10" fill="var(--ink3)">types shouldn't</text>
-  </svg>
-  </div>
-
-  <h2>What you actually do</h2>
-  <ul>
-    <li>Use Playwright's <code>request</code> API context to test every endpoint, no browser launch needed</li>
-    <li>Write schema validation as simple type checks</li>
-    <li>Self-healing by design: checking <code>typeof p.price === 'number'</code> survives the actual price changing, checking <code>p.price === 19.99</code> doesn't</li>
-  </ul>
-
-  <h2>Point it at the API</h2>
-  <p>Playwright's <code>request.get('/api/products')</code> only works if it knows the base URL. Set it once in <code>playwright.config.ts</code> so every relative path resolves against the live API:</p>
+  <h2>Step 3: point it at the site</h2>
+  <p>Open the <code>playwright.config.ts</code> file it created and set the base URL, so every test can use short paths like <code>/</code> or <code>/api/products</code> instead of the full address:</p>
   <pre><code>use: {
-  baseURL: 'https://peakandpackshopdemo.onrender.com',
+  baseURL: 'https://peakandpack-ui.onrender.com/',
 },</code></pre>
-  <p>With that in place, <code>request.get('/api/products')</code> hits <code>https://peakandpackshopdemo.onrender.com/api/products</code>. If you'd rather not touch the config, pass the full URL in each call instead.</p>
+  <p>With that set, <code>page.goto('/')</code> opens the PeakAndPack home page. (For the API tests in Phase 5, the base URL is the API host instead.)</p>
 
-  <h2>The pattern</h2>
-  <pre><code>test('GET /api/products returns valid product array', async ({ request }) => {
-  const response = await request.get('/api/products');
-  expect(response.status()).toBe(200);
+  <h2>Step 4: write your first test</h2>
+  <p>Create a file called <code>tests/first.spec.ts</code> and put this in it. Every test follows the same shape: go somewhere, then assert something is true.</p>
+  <pre><code>import { test, expect } from '@playwright/test';
 
-  const body = await response.json();
-  expect(body.products).toBeInstanceOf(Array);
-
-  // Schema check: types, not specific values
-  body.products.forEach(p => {
-    expect(typeof p.id).toBe('number');
-    expect(typeof p.name).toBe('string');
-    expect(typeof p.price).toBe('number');
-    expect(p.price).toBeGreaterThanOrEqual(0); // catches the negative price bug
-  });
-});
-
-test('GET /api/search without q returns 400, not 500', async ({ request }) => {
-  const response = await request.get('/api/search');
-  // This currently fails: actual status is 500
-  expect(response.status()).toBe(400);
+test('home page shows the product list', async ({ page }) =&gt; {
+  await page.goto('/');
+  // Assertion: a heading with this text should be visible.
+  await expect(page.getByRole('heading', { name: /products/i })).toBeVisible();
 });</code></pre>
+  <p>Reading it in plain English: open the home page, then check that a heading containing the word "products" is visible. If it is, the test passes; if not, it fails and tells you why.</p>
 
-  <div class="callout green">
-    <p><strong>Why "self-healing" matters more here than anywhere else.</strong> Product prices, names, and stock levels will change as the catalog grows. A test asserting exact values breaks on the first legitimate catalog update. A test asserting types and ranges keeps working, and still catches the actual bug (negative price) regardless of which product triggers it.</p>
+  <div class="callout gold">
+    <p><strong>Why locators use text and roles, not CSS classes.</strong> Notice <code>getByRole('heading', { name: /products/i })</code> instead of something like <code>.product-header</code>. Finding elements by what the user sees (a heading that says "products") means the test keeps working when a developer restyles the page and changes class names. This is the "self-healing" idea the automated phases talk about, and it starts right here in how you write the locator.</p>
   </div>
 
-  <h2>Your deliverable</h2>
-  <p>A <a href="api.spec.ts" target="_blank"><code>api.spec.ts</code></a> file covering all 11 endpoints with schema and status code assertions. Drop it in your Playwright <code>tests/</code> folder.</p>
+  <h2>Step 5: run it</h2>
+  <p>Back in the terminal, run:</p>
+  <pre><code>npx playwright test</code></pre>
+  <p>Playwright runs every test in the <code>tests/</code> folder and prints a pass/fail summary. To watch it happen in a visible browser instead of silently, add <code>--headed</code>. To run just one file, name it: <code>npx playwright test tests/first.spec.ts</code>.</p>
 
-  <p><strong>Time:</strong> ~3 hours. Faster than the manual sweep per-endpoint, and unlike the manual or AI-assisted docs, this one runs itself on every future change without anyone re-checking by hand.</p>
+  <h2>Step 6: read the result</h2>
+  <p>A passing run prints green. A failing run prints red and, crucially, tells you what it expected versus what it found. Playwright also writes an HTML report you can open in a browser:</p>
+  <pre><code>npx playwright show-report</code></pre>
+  <p>The report shows each test, its status, and for failures a trace, screenshots, and the exact line that failed. That report is what you attach or screenshot when filing a bug.</p>
 
+  <div class="callout warn">
+    <p><strong>Common beginner snags.</strong> "command not found: npx" means Node.js isn't installed (Step 1). A test that fails instantly on a fresh page usually means it checked before the page finished loading, add a wait for a known element. A first-ever visual test that "fails" with no baseline is normal: the first run captures the baseline, later runs compare against it (Phase 4 covers this). And if a test can't find an element, check the locator matches the visible text or role, not a CSS class.</p>
+  </div>
+
+  <h2>You're ready</h2>
+  <p>That's the whole loop: install Playwright, point it at the site, write a test (go somewhere, assert something), run it, read the report. Every automated test in this series is a variation on that shape, whether it's clicking through checkout in Phase 3, diffing screenshots in Phase 4, or calling endpoints in Phase 5.</p>
 
   <div class="nav-row">
-    <a href="05-phase5-manual-ai.html" class="nav-cta secondary">&larr; Manual + AI</a>
-    <a href="05-phase5-ai-agent.html" class="nav-cta primary">AI QA Agent &rarr;</a>
+    <a href="../phase3/03-phase3-automated.html" class="nav-cta secondary">&larr; Phase 3: Automated</a>
+    <a href="../phase4/04-phase4-automated.html" class="nav-cta primary">Phase 4: Automated &rarr;</a>
   </div>
 
   <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">

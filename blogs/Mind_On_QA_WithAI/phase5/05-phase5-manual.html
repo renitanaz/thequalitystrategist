@@ -170,7 +170,7 @@
   <p class="breadcrumb">
     <a href="../../index.html">Home</a> &nbsp;/&nbsp;
     <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
-    <a href="../../00-PeakAndPack-AI-Augmented-QA-Series-Introduction.html">AI-Augmented QA Series</a> &nbsp;/&nbsp;
+    <a href="../00-ShopDemo-AI-Augmented-QA-Series-Introduction.html">AI-Augmented QA Series</a> &nbsp;/&nbsp;
     Phase 5 &middot; Manual
   </p>
 
@@ -187,13 +187,17 @@
 
   <div class="switcher">
     <span class="switch-btn c-manual active">Manual, No AI</span>
-    <a href="phase5-manual-ai.html" class="switch-btn c-ai">Manual + AI</a>
-    <a href="phase5-automated.html" class="switch-btn c-auto">Automated, Playwright</a>
-    <a href="phase5-ai-agent.html" class="switch-btn c-agent">AI QA Agent</a>
+    <a href="05-phase5-manual-ai.html" class="switch-btn c-ai">Manual + AI</a>
+    <a href="05-phase5-automated.html" class="switch-btn c-auto">Automated, Playwright</a>
+    <a href="05-phase5-ai-agent.html" class="switch-btn c-agent">AI QA Agent</a>
   </div>
 
 
   <p>No tooling beyond Postman or a browser. Hit every endpoint, four scenarios each, and write down what actually came back versus what should have.</p>
+
+  <div class="callout blue">
+    <p><strong>New to APIs?</strong> Start with <a href="05-phase5-api-basics.html">API Testing for Beginners</a> first. It covers what a request is, how to send one with curl or Postman, how to get a token, and how to read a response, everything this page assumes you already know.</p>
+  </div>
 
   <div style="margin:1.3rem 0 1.8rem;border-radius:14px;overflow:hidden;border:1px solid var(--border);background:var(--cream)">
   <svg width="100%" viewBox="0 0 860 200" role="img" xmlns="http://www.w3.org/2000/svg">
@@ -233,7 +237,10 @@
   <p>For every endpoint, test happy path, wrong input, unauthorized access, and not-found, then record: endpoint, input, expected status, actual status, pass/fail.</p>
 
   <h2>Endpoints to test</h2>
-  <pre><code>GET  /health                     &rarr; 200
+  <p>All paths below are relative to the API base URL: <a href="https://peakandpackshopdemo.onrender.com" target="_blank"><code>https://peakandpackshopdemo.onrender.com</code></a>. So <code>GET /api/products</code> means <code>GET https://peakandpackshopdemo.onrender.com/api/products</code>.</p>
+  <pre><code>Base URL: https://peakandpackshopdemo.onrender.com
+
+GET  /health                     &rarr; 200
 GET  /api/products               &rarr; 200, array of products
 GET  /api/products/:id           &rarr; 200 (valid id), 404 (invalid id)
 GET  /api/search?q=tent          &rarr; 200
@@ -246,11 +253,40 @@ POST /api/orders/checkout        &rarr; 201, check total with SAVE10 code
 GET  /api/orders                 &rarr; should return only your orders</code></pre>
 
   <div class="callout warn">
-    <p><strong>Two of these are pre-flagged for a reason.</strong> The search endpoint and the orders endpoint are both expected to fail this check, BUG-011 and BUG-010 respectively. Writing the expected behavior down before testing means the failure is a confirmed contract violation, not a surprise discovered after the fact.</p>
+    <p><strong>Two of these are pre-flagged for a reason.</strong> The search endpoint and the orders endpoint are both expected to fail this check, BUG-014 and BUG-013 respectively. Writing the expected behavior down before testing means the failure is a confirmed contract violation, not a surprise discovered after the fact.</p>
+  </div>
+
+  <h2>One endpoint, worked start to finish</h2>
+  <p>Before you run all eleven, here is one complete trace you can copy the shape of. We'll test <code>GET /api/search</code> with no query parameter, which is expected to fail (BUG-014).</p>
+
+  <p><strong>Step 1, know the expected behavior first.</strong> The requirements say a search with a missing query is bad input, so it should return <code>400</code> (a client error). Write that down before you call it, so the result is a verdict, not a guess.</p>
+
+  <p><strong>Step 2, send the request.</strong> In a terminal:</p>
+  <pre><code>curl -i https://peakandpackshopdemo.onrender.com/api/search</code></pre>
+
+  <p><strong>Step 3, read what comes back.</strong> The first line is the status; the rest is the body:</p>
+  <pre><code>HTTP/1.1 500 Internal Server Error
+Content-Type: text/html
+
+&lt;pre&gt;TypeError: Cannot read properties of undefined (reading 'toLowerCase')
+    at /app/routes/search.js:12 ...&lt;/pre&gt;</code></pre>
+
+  <p><strong>Step 4, compare and record.</strong> Expected <code>400</code>, got <code>500</code>. That's a fail, and a confirmed contract violation. The row in your results file:</p>
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>Endpoint</th><th>Scenario</th><th>Expected</th><th>Actual</th><th>Pass</th></tr></thead>
+      <tbody>
+        <tr><td>GET /api/search</td><td>missing q param</td><td>400</td><td>500</td><td>FAIL (BUG-014)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout gold">
+    <p><strong>Two things this one example teaches.</strong> First, a <code>500</code> is never the right answer to bad input; a missing parameter is the client's mistake, so it must be a <code>4xx</code>. Second, notice the body leaks an internal stack trace with a file path and line number, which should never reach a user. You found a second, smaller issue just by reading the body instead of stopping at the status. Now repeat this same four-step trace for the other ten endpoints.</p>
   </div>
 
   <h2>Your deliverable</h2>
-  <p>One file: <a href="../downloads/api-contract-manual.md" target="_blank"><code>api-contract-manual.md</code></a>, a results table covering all 11 endpoints across all 4 scenarios where applicable.</p>
+  <p>One file: <a href="api-contract-manual.md" target="_blank"><code>api-contract-manual.md</code></a>, a results table covering all 11 endpoints across all 4 scenarios where applicable.</p>
 
   <p><strong>Time:</strong> ~2 to 3 hours. The slowest manual phase so far, but also the one that produces the cleanest evidence, a results table anyone can scan in thirty seconds.</p>
 
