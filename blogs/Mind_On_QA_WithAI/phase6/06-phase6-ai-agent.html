@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>E2E Flows, AI QA Agent | The Quality Strategist</title>
-<meta name="description" content="Phase 6, Approach D: the AI QA Agent traces PeakAndPack flows via API, then Claude Code with Playwright MCP confirms via the live UI.">
+<meta name="description" content="Phase 6, Approach D: an E2E Flow Trace Agent analyses a user journey step by step and flags where the flow breaks down.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -133,6 +133,12 @@
 
   .switcher-note { font-size: .8rem; color: var(--ink4); margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border); }
 
+  .form-opt { margin: 1.6rem 0; }
+  .form-opt-head { display: flex; align-items: center; gap: .6rem; margin-bottom: .5rem; }
+  .form-opt-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--purple); color: var(--warm-white); font-family: var(--ff-serif); font-weight: 700; font-size: .92rem; display: flex; align-items: center; justify-content: center; }
+  .form-opt-title { font-family: var(--ff-serif); font-size: 1.1rem; font-weight: 700; color: var(--purple); }
+  .form-opt-divider { height: 1px; background: var(--purple-l); border: 0; margin: .2rem 0 .8rem; }
+
   .nav-row { display: flex; justify-content: space-between; gap: .8rem; margin-top: 1.8rem; flex-wrap: wrap; }
   .nav-cta {
     display: inline-flex; align-items: center; gap: .5rem; text-decoration: none;
@@ -170,14 +176,14 @@
   <p class="breadcrumb">
     <a href="../../index.html">Home</a> &nbsp;/&nbsp;
     <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
-    <a href="../../00-PeakAndPack-AI-Augmented-QA-Series-Introduction.html">AI-Augmented QA Series</a> &nbsp;/&nbsp;
+    <a href="../00-ShopDemo-AI-Augmented-QA-Series-Introduction.html">AI-Augmented QA Series</a> &nbsp;/&nbsp;
     Phase 6 &middot; AI QA Agent
   </p>
 
   <span class="series-tag">Phase 6 of 8 &middot; E2E Flows</span>
 
-  <h1>E2E Flows, Traced Twice and Compared</h1>
-  <p class="subtitle">The API trace says one thing. The UI walkthrough confirms, or contradicts, it. Either result is useful.</p>
+  <h1>E2E Flows, Analysed as a Whole Journey</h1>
+  <p class="subtitle">Give it one journey's results. It verdicts every step and finds where the flow breaks, including the breaks no single step reveals.</p>
 
   <div class="meta-row">
     <span>By RN</span>
@@ -186,65 +192,121 @@
   </div>
 
   <div class="switcher">
-    <a href="phase6-manual.html" class="switch-btn c-manual">Manual, No AI</a>
-    <a href="phase6-manual-ai.html" class="switch-btn c-ai">Manual + AI</a>
-    <a href="phase6-automated.html" class="switch-btn c-auto">Automated, Playwright</a>
+    <a href="06-phase6-manual.html" class="switch-btn c-manual">Manual, No AI</a>
+    <a href="06-phase6-manual-ai.html" class="switch-btn c-ai">Manual + AI</a>
+    <a href="06-phase6-automated.html" class="switch-btn c-auto">Automated, Playwright</a>
     <span class="switch-btn c-agent active">AI QA Agent</span>
   </div>
 
 
-  <p>This is where the two-stage pattern from Phase 4 shows up again, the HTML agent traces all 5 flows via API calls, then Claude Code with Playwright MCP separately walks the same flows by actually clicking through the live UI.</p>
+  <p>Phase 6 is about whole journeys, so this agent judges a whole journey. You give it the step-by-step results of one flow, what you did at each step and what actually happened, and it analyses the journey as a connected whole: where it first breaks, how that break ripples forward, and what a real customer would experience walking that exact path. It reasons from the results you give it; it does not run the flow itself.</p>
 
   <div style="margin:1.3rem 0 1.8rem;border-radius:14px;overflow:hidden;border:1px solid var(--border);background:var(--purple-l)">
-  <svg width="100%" viewBox="0 0 860 220" role="img" xmlns="http://www.w3.org/2000/svg">
-    <title>Two parallel traces of the same flow, API and UI, compared for agreement</title>
-    <desc>An illustration of the same five-step flow traced twice in parallel, once via direct API calls and once via a browser clicking through the UI, with a comparison checkmark showing they agree.</desc>
-    <rect x="0" y="0" width="860" height="220" fill="var(--purple-l)"/>
-
-    <text x="160" y="40" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="var(--purple)">API trace</text>
-    <rect x="60" y="55" width="200" height="24" rx="12" fill="var(--purple)"/>
-    <text x="160" y="71" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="var(--warm-white)">Login &rarr; Cart &rarr; Checkout</text>
-    <text x="160" y="100" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="var(--purple)">HTML agent, direct calls</text>
-
-    <text x="700" y="40" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="var(--teal)">UI walkthrough</text>
-    <rect x="600" y="55" width="200" height="24" rx="12" fill="var(--teal)"/>
-    <text x="700" y="71" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="var(--warm-white)">Login &rarr; Cart &rarr; Checkout</text>
-    <text x="700" y="100" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="var(--teal)">Claude Code + Playwright MCP</text>
-
-    <line x1="260" y1="67" x2="600" y2="67" stroke="var(--ink4)" stroke-width="1.5" stroke-dasharray="4 3"/>
-    <circle cx="430" cy="67" r="22" fill="var(--green)"/>
-    <text x="430" y="73" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="14" fill="var(--warm-white)">=</text>
-    <text x="430" y="115" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="var(--green)">Results compared</text>
+  <svg width="100%" viewBox="0 0 860 200" role="img" xmlns="http://www.w3.org/2000/svg">
+    <title>Flow results going into an agent and a per-step verdict report coming out</title>
+    <desc>An illustration showing a list of journey steps on the left feeding into a robot, which outputs a report with a verdict against each step and one cross-step issue highlighted.</desc>
+    <rect x="0" y="0" width="860" height="200" fill="var(--purple-l)"/>
+    <rect x="55" y="45" width="150" height="110" rx="8" fill="var(--warm-white)" stroke="var(--purple)" stroke-width="1.5"/>
+    <text x="130" y="64" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" font-weight="700" fill="var(--purple)">flow results</text>
+    <rect x="70" y="74" width="120" height="8" rx="2" fill="var(--green-l)"/>
+    <rect x="70" y="88" width="120" height="8" rx="2" fill="var(--green-l)"/>
+    <rect x="70" y="102" width="120" height="8" rx="2" fill="var(--terra-l)"/>
+    <rect x="70" y="116" width="120" height="8" rx="2" fill="var(--border)"/>
+    <rect x="70" y="130" width="120" height="8" rx="2" fill="var(--border)"/>
+    <line x1="205" y1="100" x2="285" y2="100" stroke="var(--purple)" stroke-width="2" stroke-dasharray="4 3"/>
+    <g transform="translate(345,100)">
+      <rect x="-35" y="-32" width="70" height="64" rx="14" fill="var(--purple)"/>
+      <circle cx="-15" cy="-10" r="5" fill="var(--warm-white)"/>
+      <circle cx="15" cy="-10" r="5" fill="var(--warm-white)"/>
+      <rect x="-13" y="8" width="26" height="5" rx="2" fill="var(--warm-white)" opacity="0.85"/>
+    </g>
+    <line x1="390" y1="100" x2="565" y2="100" stroke="var(--purple)" stroke-width="3" marker-end="url(#arrow6d)"/>
+    <defs><marker id="arrow6d" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="var(--purple)"/></marker></defs>
+    <rect x="585" y="45" width="220" height="110" rx="8" fill="var(--warm-white)" stroke="var(--purple)" stroke-width="1.5"/>
+    <text x="695" y="64" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" font-weight="700" fill="var(--purple)">flow verdict</text>
+    <rect x="601" y="74" width="140" height="7" rx="2" fill="var(--green-l)"/>
+    <rect x="601" y="87" width="188" height="7" rx="2" fill="var(--green-l)"/>
+    <rect x="601" y="100" width="170" height="7" rx="2" fill="var(--terra-l)"/>
+    <rect x="601" y="113" width="150" height="7" rx="2" fill="var(--border)"/>
+    <text x="695" y="140" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="8" fill="var(--terra)">cross-step issue flagged</text>
   </svg>
   </div>
 
-  <h2>What the agent does, in two parts</h2>
+  <h2>What it does</h2>
   <ol>
-    <li>The HTML agent traces all 5 flows automatically via direct API calls, analyzing each step's response for correctness</li>
-    <li>Separately, Claude Code with Playwright MCP walks the same 5 flows by actually clicking through the live <code>frontend/</code> UI, login, add to cart, checkout, view orders</li>
-    <li>The two traces are compared against each other</li>
+    <li>You give it one journey's results: each step, what you did, and what happened (a status code, a response body, or what appeared on screen). Optionally, the requirements too.</li>
+    <li>It walks the steps in order and gives a verdict on each: pass, or fail with the reason.</li>
+    <li>It names the first step where things diverge and traces how that ripples through the rest of the flow, then calls out the single most important cross-step issue and its customer impact.</li>
   </ol>
 
+  <h2>How it works</h2>
+  <p>Same mechanism as the earlier agents: your pasted flow results plus the system prompt go to Claude, and the analysis comes back. The design work is in the prompt, which tells the agent to judge the journey as a connected whole rather than step by step, and never to trust a status code alone.</p>
+
   <div class="callout purple">
-    <p><strong>Disagreement between the two traces is itself a finding.</strong> If the API trace shows a correct discount calculation but the UI trace shows the wrong total displayed, that's not a contradiction to ignore, it's a UI rendering bug sitting on top of correct backend logic. Neither trace alone would have caught it.</p>
+    <p><strong>Why "judge the whole journey" is the point.</strong> Every step in a flow can return 200 and the flow can still be broken, because the failure lives in how the steps connect. A discount that is right in the cart but wrong at checkout, an order history that returns 200 while showing another user's purchases: no single-step check catches these, but a flow-level read does. That instruction is the whole reason this agent exists.</p>
   </div>
 
-  <h2>What agreement and disagreement look like</h2>
+  <h2>How to build it: three forms</h2>
+  <p>The agent ships in three forms, listed easiest-first. Same prompt, same kind of report; they differ only in how you hand over the flow results.</p>
   <div class="fw-table-wrap">
     <table class="fw-table">
-      <thead><tr><th>Flow</th><th>API trace</th><th>UI walkthrough</th><th>Agreement?</th></tr></thead>
+      <thead><tr><th>Form</th><th>What it is</th><th>Get it</th></tr></thead>
       <tbody>
-        <tr><td>Browse and search</td><td>Filters return correct subset</td><td>Same products shown after filter</td><td>Agree</td></tr>
-        <tr><td>Checkout with SAVE10</td><td>Total returned as $0 (bug)</td><td>UI displays $0 total (matches)</td><td>Agree, both show the bug</td></tr>
-        <tr><td>Order history</td><td>Returns all users' orders (bug)</td><td>UI lists orders not belonging to current user</td><td>Agree, confirms the bug is visible to a real user, not just in raw API data</td></tr>
+        <tr><td><strong>Prompt only</strong></td><td>Paste into any Claude chat, then paste your flow results</td><td><a href="e2e-trace-agent-prompt.md" target="_blank"><code>e2e-trace-agent-prompt.md</code></a></td></tr>
+        <tr><td><strong>Browser</strong></td><td>One HTML file with a text box, no install</td><td><a href="e2e-trace-agent.html" target="_blank"><code>e2e-trace-agent.html</code></a></td></tr>
+        <tr><td><strong>Node.js</strong></td><td>A terminal script that reads a results file</td><td><a href="e2e-trace-agent.js" target="_blank"><code>e2e-trace-agent.js</code></a></td></tr>
       </tbody>
     </table>
   </div>
 
-  <h2>Your deliverable</h2>
-  <p>The E2E flow section of the agent report, containing both the API trace and the UI walkthrough side by side, with agreement or disagreement noted for each flow.</p>
+  <div class="form-opt">
+    <div class="form-opt-head"><span class="form-opt-num">1</span><span class="form-opt-title">Prompt only, no key, no code</span></div>
+    <hr class="form-opt-divider">
+    <p>The fastest path. Open <a href="e2e-trace-agent-prompt.md" target="_blank"><code>e2e-trace-agent-prompt.md</code></a>, paste the prompt into a Claude chat, then paste one journey's step-by-step results. Include the requirements if you have them. Claude replies with the flow analysis.</p>
+  </div>
 
-  <p><strong>Time:</strong> ~15 minutes. Slightly more than Phase 4's equivalent, since walking 5 full flows through a browser takes longer than checking individual screenshots, but still dramatically faster than the 2-3 hour manual walkthrough.</p>
+  <div class="form-opt">
+    <div class="form-opt-head"><span class="form-opt-num">2</span><span class="form-opt-title">Browser form, a reusable tool</span></div>
+    <hr class="form-opt-divider">
+    <p>A small web page that runs on your own machine.</p>
+    <ol>
+      <li>Download <a href="e2e-trace-agent.html" target="_blank"><code>e2e-trace-agent.html</code></a> and double-click it to open in your browser (it runs from <code>file://</code>, no host needed).</li>
+      <li>Paste your Anthropic API key (<a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> &rarr; API Keys &rarr; Create Key).</li>
+      <li>Paste your flow results into the text box (and the requirements, optionally), then click <strong>Analyse this flow</strong>.</li>
+    </ol>
+    <p><strong>Under the hood:</strong> the page sends your pasted text plus the system prompt straight to Anthropic with your key. Nothing is uploaded elsewhere and the key never leaves the tab.</p>
+  </div>
+
+  <div class="form-opt">
+    <div class="form-opt-head"><span class="form-opt-num">3</span><span class="form-opt-title">Node.js form, in a terminal</span></div>
+    <hr class="form-opt-divider">
+    <p>A script that reads a results file and writes the analysis to disk. It needs <strong>Node.js</strong> installed, nothing else; it is not Claude Code, the script calls the API itself. New to Node or Playwright? The <a href="../basics/playwright-basics.html">Playwright Basics</a> primer covers installing Node.</p>
+    <ol>
+      <li><strong>Check Node.js:</strong> run <code>node --version</code>; if it errors, install the LTS build from <a href="https://nodejs.org" target="_blank">nodejs.org</a>.</li>
+      <li><strong>Get an API key</strong> from <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>.</li>
+      <li><strong>Put two files in one folder:</strong> <a href="e2e-trace-agent.js" target="_blank"><code>e2e-trace-agent.js</code></a> and your saved results as <code>flow-results.md</code>.</li>
+      <li><strong>Set your key:</strong> <code>export ANTHROPIC_API_KEY=sk-ant-your-key</code> (Mac) or <code>set ANTHROPIC_API_KEY=sk-ant-your-key</code> (Windows).</li>
+      <li><strong>Run it:</strong> <code>node e2e-trace-agent.js</code>. It reads <code>flow-results.md</code> and writes <code>e2e-trace-output.md</code>.</li>
+    </ol>
+  </div>
+
+  <h2>How to tell if the agent actually read your flow</h2>
+  <p>A flow analysis can sound convincing whether or not it used your specific results. Here is the check.</p>
+  <div class="split-row">
+    <div class="split-card" style="background:var(--green-l)">
+      <div class="sc-title" style="color:var(--green)">Trustworthy</div>
+      <div class="sc-body">It points at a concrete cross-step link in your data, "the cart showed $90 but the checkout charged $0," using the actual numbers you pasted. It could only say that by reading your results.</div>
+    </div>
+    <div class="split-card" style="background:var(--terra-l)">
+      <div class="sc-title" style="color:var(--terra)">Warning sign</div>
+      <div class="sc-body">Generic flow advice that fits any shop ("test the full checkout path," "verify auth works") with nothing tied to the steps you gave it. If it never references a specific step or value from your results, it may not have used them.</div>
+    </div>
+  </div>
+
+  <h2>Your deliverable</h2>
+  <p>One file: <a href="e2e-trace-output.md" target="_blank"><code>e2e-trace-output.md</code></a>, the agent's flow analysis after you confirm each verdict against the real journey. Same review discipline as every AI approach in this series: keep what is real, drop the generic, and confirm anything the agent marked uncertain before it counts.</p>
+
+  <p><strong>Time:</strong> ~10 minutes per flow to analyse. Confirming the verdicts against the real journey is the work that keeps a human in the loop.</p>
 
 
   <div class="nav-row">

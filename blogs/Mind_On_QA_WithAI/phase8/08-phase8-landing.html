@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 8: Reporting | The Quality Strategist</title>
+<meta name="description" content="Phase 8 — the final phase of the AI-Augmented QA series. Four ways to write the QA summary report that closes the programme.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:#6B7C3A; --olive-dark:#4A5828; --cream:#F5F7F0; --warm-white:#FAFCF5;
+    --ink:#1A1F14; --ink2:#3D4235; --ink3:#6B7060; --ink4:#9A9F8E;
+    --border:rgba(26,31,20,0.12); --border2:rgba(26,31,20,0.06);
+    --purple:#7A4A9A; --purple-l:#EDE0F5;
+    --terra:#8A4A2A; --terra-l:#F5E4D8;
+    --green:#1A7A3A; --green-l:#D8F0E0;
+    --gold:#9A6E1A; --gold-l:#F5EDD6;
+    --teal:#1A6B54; --teal-l:#D8EEE8;
+    --ff-serif:'Lora',Georgia,serif; --ff-sans:'DM Sans',system-ui,sans-serif;
+    --ease:cubic-bezier(.4,0,.2,1);
+  }
+  *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:var(--ff-sans); background:var(--warm-white); color:var(--ink); line-height:1.65; }
+  .site-header { background:var(--warm-white); border-bottom:1px solid var(--border); padding:1rem 1.5rem; position:sticky; top:0; z-index:50; }
+  .site-header-inner { max-width:860px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; }
+  .site-name { font-family:var(--ff-serif); font-weight:700; color:var(--olive); text-decoration:none; font-size:1.1rem; }
+  main { max-width:860px; margin:0 auto; padding:2.5rem 1.5rem 5rem; }
+  .breadcrumb { font-size:.8rem; color:var(--ink3); margin-bottom:1.5rem; }
+  .breadcrumb a { color:var(--ink3); text-decoration:none; }
+  .breadcrumb a:hover { color:var(--olive); }
+  .series-tag { display:inline-block; font-size:.72rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; background:var(--olive); color:var(--warm-white); padding:.3rem .8rem; border-radius:999px; margin-bottom:1.2rem; }
+  h1 { font-family:var(--ff-serif); font-size:2.2rem; line-height:1.22; margin-bottom:.6rem; color:var(--ink); }
+  .subtitle { font-size:1.08rem; color:var(--ink2); margin-bottom:1.6rem; max-width:680px; }
+  .meta-row { display:flex; gap:1.2rem; font-size:.82rem; color:var(--ink3); margin-bottom:2.2rem; flex-wrap:wrap; }
+  h2 { font-family:var(--ff-serif); font-size:1.35rem; margin:2rem 0 .7rem; color:var(--ink); }
+  p { color:var(--ink2); margin-bottom:.9rem; }
+  .callout { border-radius:10px; padding:1rem 1.2rem; margin:1.4rem 0; font-size:.92rem; }
+  .callout.green { background:var(--green-l); border-left:3px solid var(--green); }
+  .callout.gold { background:var(--gold-l); border-left:3px solid var(--gold); }
+  .callout.blue { background:var(--teal-l); border-left:3px solid var(--teal); }
+  .fw-table-wrap { overflow-x:auto; margin:1rem 0 1.5rem; }
+  table.fw-table { width:100%; border-collapse:collapse; font-size:.82rem; line-height:1.45; }
+  table.fw-table th, table.fw-table td { border:1px solid var(--border); padding:.5rem .7rem; text-align:left; vertical-align:top; }
+  table.fw-table th { background:var(--cream); font-weight:700; font-size:.77rem; }
+  table.fw-table td { color:var(--ink2); }
+  table.fw-table tr:nth-child(odd) td { background:var(--warm-white); }
+  table.fw-table tr:nth-child(even) td { background:var(--cream); }
+  .approach-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin:1.4rem 0; }
+  .approach-card { border:1px solid var(--border); border-radius:12px; padding:1.1rem 1.2rem; background:var(--warm-white); }
+  .approach-card .ac-label { font-size:.72rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--olive); margin-bottom:.4rem; }
+  .approach-card .ac-title { font-family:var(--ff-serif); font-size:1rem; font-weight:700; margin-bottom:.4rem; }
+  .approach-card .ac-body { font-size:.87rem; color:var(--ink2); }
+  .approach-card a { color:var(--olive); text-decoration:none; font-weight:600; font-size:.85rem; display:inline-block; margin-top:.6rem; }
+  .approach-card a:hover { text-decoration:underline; }
+  .series-complete { background:var(--green-l); border:1px solid var(--green); border-radius:14px; padding:1.5rem 1.6rem; margin:2rem 0; }
+  .series-complete h3 { font-family:var(--ff-serif); color:var(--green); margin-bottom:.6rem; }
+  .nav-row { display:flex; justify-content:space-between; align-items:center; margin-top:3rem; padding-top:1.5rem; border-top:1px solid var(--border); flex-wrap:wrap; gap:1rem; }
+  .nav-cta { display:inline-flex; align-items:center; gap:.5rem; padding:.7rem 1.3rem; border-radius:8px; font-weight:600; font-size:.92rem; text-decoration:none; transition:all .2s var(--ease); }
+  .nav-cta.primary { background:var(--olive); color:var(--warm-white); }
+  .nav-cta.primary:hover { background:var(--olive-dark); }
+  .nav-cta.secondary { background:var(--cream); color:var(--ink2); border:1px solid var(--border); }
+  .nav-cta.secondary:hover { border-color:var(--olive); color:var(--olive); }
+  footer { border-top:1px solid var(--border); padding:2rem 1.5rem; text-align:center; font-size:.85rem; color:var(--ink3); }
+  @media (max-width:600px) { h1 { font-size:1.6rem; } .approach-grid { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+<main>
+  <p class="breadcrumb">
+    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    <a href="../00-ShopDemo-AI-Augmented-QA-Series-Introduction.html">AI-Augmented QA Series</a> &nbsp;/&nbsp;
+    Phase 8
+  </p>
+
+  <span class="series-tag">Phase 8 of 8 &middot; Reporting &middot; Final</span>
+  <h1>Reporting</h1>
+  <p class="subtitle">The final phase. Eight phases of testing, seven bugs found, four approaches compared. Now write the report that closes the programme.</p>
+
+  <div class="meta-row">
+    <span>By RN</span>
+    <span>AI-Augmented QA Series</span>
+    <span>Final phase</span>
+  </div>
+
+  <div class="series-complete">
+    <h3>What you built across this series</h3>
+    <p>Eight phases, four approaches each, one application. The series started with a requirements document and ends with seven confirmed bugs, a full test suite, and a release recommendation. Here is what exists now that did not exist in Phase 0:</p>
+  </div>
+
+  <div class="fw-table-wrap"><table class="fw-table">
+    <thead><tr><th>Phase</th><th>Topic</th><th>What was built</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Requirements</td><td>peakandpack-requirements.md — the spec everything else was tested against</td></tr>
+      <tr><td>2</td><td>Test Strategy</td><td>Four test strategies: manual, AI-assisted, Playwright config, agent-generated</td></tr>
+      <tr><td>3</td><td>Test Cases</td><td>46 manual test cases + AI-assisted set + automated Playwright spec + agent-generated cases</td></tr>
+      <tr><td>4</td><td>Visual Regression</td><td>Baseline screenshots + visual.spec.ts + visual review agent</td></tr>
+      <tr><td>5</td><td>API Contract Testing</td><td>api.spec.ts covering 11 endpoints + API basics primer</td></tr>
+      <tr><td>6</td><td>E2E Flows</td><td>e2e-flows.spec.ts covering 5 user journeys + E2E trace agent</td></tr>
+      <tr><td>7</td><td>Bug Detection</td><td>7 formal bug reports + bug-detection-report.md + bug analysis agent</td></tr>
+      <tr><td>8</td><td>Reporting</td><td>QA programme summary + approach comparison + release recommendation</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>The seven bugs, resolved</h2>
+  <div class="fw-table-wrap"><table class="fw-table">
+    <thead><tr><th>ID</th><th>Bug</th><th>Severity</th><th>First caught</th><th>Recommendation</th></tr></thead>
+    <tbody>
+      <tr><td>BUG-009</td><td>SAVE10 applies 100% off</td><td>Critical</td><td>Phase 3</td><td>Fix before release</td></tr>
+      <tr><td>BUG-013</td><td>Orders leak across users</td><td>Critical</td><td>Phase 5</td><td>Fix before release</td></tr>
+      <tr><td>BUG-008</td><td>No stock check at checkout</td><td>High</td><td>Phase 3</td><td>Fix in same release cycle</td></tr>
+      <tr><td>BUG-014</td><td>Search 500 + stack trace leak</td><td>High</td><td>Phase 5</td><td>Fix in same release cycle</td></tr>
+      <tr><td>BUG-011</td><td>Negative price on product card</td><td>High</td><td>Phase 4</td><td>Fix in same release cycle</td></tr>
+      <tr><td>BUG-010</td><td>Blank product card title</td><td>Medium</td><td>Phase 4</td><td>Fix in next release</td></tr>
+      <tr><td>BUG-012</td><td>Price overflow at mobile width</td><td>Low</td><td>Phase 4</td><td>Fix when convenient</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Pick a reporting approach</h2>
+  <div class="approach-grid">
+    <div class="approach-card">
+      <div class="ac-label">Approach A</div>
+      <div class="ac-title">Manual, No AI</div>
+      <div class="ac-body">Write the QA summary report by hand. Scope, approach, results, risk, recommendation. The slowest and most considered version.</div>
+      <a href="08-phase8-manual.html">Manual approach &rarr;</a>
+    </div>
+    <div class="approach-card">
+      <div class="ac-label">Approach B</div>
+      <div class="ac-title">Manual + AI</div>
+      <div class="ac-body">Feed the phase deliverables to Claude. Get a draft back. Strengthen the recommendation, fix the tone, confirm the scope.</div>
+      <a href="08-phase8-manual-ai.html">Manual + AI approach &rarr;</a>
+    </div>
+    <div class="approach-card">
+      <div class="ac-label">Approach C</div>
+      <div class="ac-title">Automated, Playwright</div>
+      <div class="ac-body">The Playwright HTML report is the automated deliverable. One command generates it. Every test, every failure, every trace.</div>
+      <a href="08-phase8-automated.html">Automated approach &rarr;</a>
+    </div>
+    <div class="approach-card">
+      <div class="ac-label">Approach D</div>
+      <div class="ac-title">AI QA Agent</div>
+      <div class="ac-body">A reporting agent reads all eight phases of deliverables and produces a complete QA programme summary with a release recommendation.</div>
+      <a href="08-phase8-ai-agent.html">AI Agent approach &rarr;</a>
+    </div>
+  </div>
+
+  <div class="callout green">
+    <p><strong>Series 1 is complete.</strong> You now have a full AI-augmented QA programme for PeakAndPack: requirements, strategy, test cases, visual regression, API contract testing, E2E flows, bug detection, and reporting. Every phase done four ways. Every bug found and documented. A release recommendation backed by evidence.</p>
+  </div>
+
+  <div class="nav-row">
+    <a href="../phase7/07-phase7-landing.html" class="nav-cta secondary">&larr; Phase 7: Bug Detection</a>
+    <a href="../00-ShopDemo-AI-Augmented-QA-Series-Introduction.html" class="nav-cta primary">Back to Series Overview &rarr;</a>
+  </div>
+</main>
+<footer>
+  <p>The Quality Strategist &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reporting Agent | The Quality Strategist</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:#6B7C3A; --olive-dark:#4A5828; --cream:#F5F7F0; --warm-white:#FAFCF5;
+    --ink:#1A1F14; --ink2:#3D4235; --ink3:#6B7060; --border:rgba(26,31,20,0.12);
+    --purple:#7A4A9A; --purple-l:#EDE0F5; --terra:#8A4A2A; --terra-l:#F5E4D8;
+    --green:#1A7A3A; --green-l:#D8F0E0;
+    --ff-serif:'Lora',Georgia,serif; --ff-sans:'DM Sans',system-ui,sans-serif;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:var(--ff-sans); background:var(--warm-white); color:var(--ink); line-height:1.6; padding:2rem 1.2rem 4rem; }
+  .wrap { max-width:780px; margin:0 auto; }
+  .tag { display:inline-block; font-size:.72rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--purple); background:var(--purple-l); padding:.3rem .7rem; border-radius:999px; margin-bottom:1rem; }
+  h1 { font-family:var(--ff-serif); font-size:1.7rem; margin-bottom:.5rem; }
+  p.sub { color:var(--ink2); margin-bottom:1.6rem; }
+  label { display:block; font-weight:700; font-size:.85rem; margin:1.2rem 0 .4rem; }
+  input[type=password], textarea {
+    width:100%; border:1.5px solid var(--border); border-radius:8px; padding:.7rem .8rem;
+    font-family:var(--ff-sans); font-size:.92rem; background:var(--warm-white); color:var(--ink);
+  }
+  textarea { min-height:220px; resize:vertical; font-family:ui-monospace,Menlo,monospace; font-size:.82rem; }
+  input:focus, textarea:focus { outline:none; border-color:var(--purple); }
+  .hint { font-size:.78rem; color:var(--ink3); margin-top:.3rem; }
+  .hint a { color:var(--purple); }
+  button {
+    margin-top:1.4rem; background:var(--purple); color:var(--warm-white); border:0; border-radius:8px;
+    font-family:var(--ff-sans); font-weight:700; font-size:.95rem; padding:.8rem 1.6rem; cursor:pointer;
+  }
+  button:disabled { opacity:.55; cursor:default; }
+  .note { background:var(--purple-l); border-left:3px solid var(--purple); border-radius:0 8px 8px 0; padding:.9rem 1.1rem; font-size:.85rem; color:var(--purple); margin:1.2rem 0; }
+  .status { margin-top:1.2rem; font-size:.88rem; color:var(--ink3); min-height:1.2rem; }
+  .err { color:var(--terra); background:var(--terra-l); border-left:3px solid var(--terra); padding:.8rem 1rem; border-radius:0 8px 8px 0; font-size:.85rem; }
+  #out { margin-top:1.4rem; white-space:pre-wrap; word-wrap:break-word; background:var(--cream); border:1px solid var(--border); border-radius:10px; padding:1rem 1.1rem; font-family:ui-monospace,Menlo,monospace; font-size:.8rem; display:none; }
+  .copy-btn { background:var(--olive); margin-top:.8rem; padding:.5rem 1rem; font-size:.82rem; display:none; }
+  footer { max-width:780px; margin:2.5rem auto 0; font-size:.78rem; color:var(--ink3); border-top:1px solid var(--border); padding-top:1rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="tag">Reporting Agent &middot; Phase 8</span>
+  <h1>Reporting Agent</h1>
+  <p class="sub">Paste the deliverables from all eight phases. The agent produces a complete QA programme summary with scope, results, risk assessment, and a release recommendation.</p>
+
+  <div class="note">Your API key stays in this browser tab and is sent directly to Anthropic, nowhere else. The key belongs to you, on your own machine.</div>
+
+  <label for="key">Anthropic API key</label>
+  <input id="key" type="password" placeholder="sk-ant-..." autocomplete="off">
+  <div class="hint">Get one at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> &rarr; API Keys &rarr; Create Key.</div>
+
+  <label for="req">Phase deliverables (paste all key content here)</label>
+  <textarea id="req" placeholder="Paste the content from key deliverables across all phases: test strategy, bug detection report, and any other phase outputs. The more you include, the more complete the summary."></textarea>
+  <div class="hint">Paste deliverable content from Phases 1 through 7.</div>
+
+  <button id="go">Generate QA programme summary</button>
+  <button id="copy" class="copy-btn">Copy table</button>
+
+  <div id="status" class="status"></div>
+  <div id="out"></div>
+</div>
+
+<footer>The Quality Strategist &middot; AI-Augmented QA Series &middot; Built with intention. Tested with care. &copy; 2026</footer>
+
+<script>
+const SYSTEM_PROMPT = `You are a QA programme analyst. You will be given the deliverables from an eight-phase QA programme for PeakAndPack, a trekking and travel gear e-commerce app.
+
+Produce a complete QA programme summary report containing:
+
+1. Programme scope: what was and was not tested.
+2. Approach summary: the four approaches used and what each contributed.
+3. Full bug list: all bugs found, with ID, title, severity, and the phase that first surfaced each.
+4. Risk assessment: which findings block release and why, in business language a non-technical stakeholder can act on.
+5. Release recommendation: a clear verdict (release / release with conditions / do not release) with the specific conditions if any.
+6. Approach comparison: which approach caught what, what each approach costs in time, and what each contributes that the others cannot.
+
+Rules:
+- Base every finding on the deliverables provided. Do not invent bugs or findings not in the input.
+- Use business language in the risk assessment and recommendation. Translate technical issues into user and business impact.
+- The recommendation must be a clear verdict. Do not hedge.
+- If a finding has a severity, use it. Do not reassign severities without explaining why.
+- Return only the report. No preamble.`;
+
+const goBtn = document.getElementById('go');
+const copyBtn = document.getElementById('copy');
+const statusEl = document.getElementById('status');
+const outEl = document.getElementById('out');
+
+goBtn.addEventListener('click', async () => {
+  const key = document.getElementById('key').value.trim();
+  const req = document.getElementById('req').value.trim();
+  statusEl.className = 'status'; statusEl.textContent = '';
+  if (!key) { statusEl.innerHTML = '<div class="err">Paste your Anthropic API key first.</div>'; return; }
+  if (!req) { statusEl.innerHTML = '<div class="err">Paste the requirements document first.</div>'; return; }
+
+  goBtn.disabled = true; copyBtn.style.display = 'none'; outEl.style.display = 'none';
+  statusEl.textContent = 'Synthesising the QA programme summary, this takes a minute...';
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 4000,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: 'user', content: 'Here are the QA programme deliverables:\n\n' + req }]
+      })
+    });
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      throw new Error((e.error && e.error.message) || ('HTTP ' + res.status));
+    }
+    const data = await res.json();
+    const text = data.content.filter(b => b.type === 'text').map(b => b.text).join('\n');
+    outEl.textContent = text;
+    outEl.style.display = 'block';
+    copyBtn.style.display = 'inline-block';
+    statusEl.textContent = 'Done. Review the recommendation and risk assessment before sharing with a stakeholder.';
+  } catch (err) {
+    statusEl.innerHTML = '<div class="err">Failed: ' + err.message + '. A 401 usually means the key is wrong. A 400 may mean the requirements text is empty or too long.</div>';
+  } finally {
+    goBtn.disabled = false;
+  }
+});
+
+copyBtn.addEventListener('click', () => {
+  navigator.clipboard.writeText(outEl.textContent).then(() => {
+    copyBtn.textContent = 'Copied';
+    setTimeout(() => { copyBtn.textContent = 'Copy table'; }, 1500);
+  });
+});
+</script>
+</body>
+</html>
