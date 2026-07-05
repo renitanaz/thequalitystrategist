@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 0: Intro & Setup | Playwright: Zero to Architect</title>
+<meta name="description" content="Phase 0 of Playwright: Zero to Architect. What this series covers, how to install Playwright, and your first real test against PeakAndPack.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:#6B7C3A; --olive-dark:#4A5828; --olive-deep:#2E3A18;
+    --cream:#F5F7F0; --warm-white:#FAFCF5;
+    --ink:#1A1F14; --ink2:#3D4235; --ink3:#6B7060; --ink4:#9A9E90;
+    --border:rgba(26,31,20,0.1); --border2:rgba(26,31,20,0.06);
+    --purple:#7A4A9A; --purple-l:#EDE0F5;
+    --gold:#9A6E1A; --gold-l:#F5EDD6;
+    --blue:#2A5C9A; --blue-l:#DDE8F5;
+    --teal:#1A6B54; --teal-l:#D8EEE8;
+    --terra:#8A4A2A; --terra-l:#F5E4D8;
+    --green:#1A7A3A; --green-l:#D8F0E0;
+    --ff-serif:'Lora',Georgia,serif;
+    --ff-sans:'DM Sans',system-ui,sans-serif;
+    --ease:cubic-bezier(0.22,1,0.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--ff-sans);background:var(--warm-white);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  header.site-header{border-bottom:1px solid var(--border);padding:1.1rem 1.5rem;background:var(--warm-white);}
+  .site-header-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+  .site-name{font-family:var(--ff-serif);font-weight:600;font-size:1.05rem;text-decoration:none;}
+  main{max-width:880px;margin:0 auto;padding:2.6rem 1.5rem 5rem;}
+  .breadcrumb{font-size:.82rem;color:var(--ink3);margin-bottom:1.3rem;}
+  .breadcrumb a{text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+  .series-tag{display:inline-block;font-size:.76rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--blue);background:var(--blue-l);padding:.3rem .7rem;border-radius:999px;margin-bottom:1.1rem;}
+  h1{font-family:var(--ff-serif);font-size:2rem;font-weight:700;line-height:1.2;margin-bottom:.8rem;}
+  .subtitle{font-size:1.08rem;color:var(--ink2);margin-bottom:1.6rem;max-width:680px;}
+  .meta-row{display:flex;gap:1.1rem;font-size:.82rem;color:var(--ink3);margin-bottom:1.6rem;border-bottom:1px solid var(--border);padding-bottom:1.3rem;flex-wrap:wrap;}
+  h2{font-family:var(--ff-serif);font-size:1.35rem;font-weight:700;margin-top:2.2rem;margin-bottom:.8rem;}
+  h3{font-family:var(--ff-serif);font-size:1.1rem;font-weight:700;margin-top:1.6rem;margin-bottom:.6rem;}
+  p{margin-bottom:.9rem;color:var(--ink2);font-size:.97rem;}
+  strong{color:var(--ink);font-weight:700;}
+  ul,ol{margin:0 0 1rem 1.3rem;color:var(--ink2);}
+  li{margin-bottom:.4rem;font-size:.97rem;}
+  code{background:var(--cream);padding:.15rem .4rem;border-radius:5px;font-size:.87em;color:var(--olive-deep);}
+  pre{background:var(--ink);color:var(--cream);padding:1rem 1.1rem;border-radius:10px;overflow-x:auto;font-size:.82rem;margin:1rem 0;line-height:1.55;}
+  pre code{background:none;color:inherit;padding:0;}
+  .callout{border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.91rem;}
+  .callout p{margin-bottom:0;}
+  .callout.green{background:var(--green-l);border-left:3px solid var(--green);}.callout.green p{color:var(--olive-deep);}
+  .callout.warn{background:var(--terra-l);border-left:3px solid var(--terra);}.callout.warn p{color:var(--terra);}
+  .callout.blue{background:var(--blue-l);border-left:3px solid var(--blue);}.callout.blue p{color:var(--blue);}
+  .callout.gold{background:var(--gold-l);border-left:3px solid var(--gold);}.callout.gold p{color:var(--gold);}
+  .callout.purple{background:var(--purple-l);border-left:3px solid var(--purple);}.callout.purple p{color:var(--purple);}
+  .fw-table-wrap{overflow-x:auto;margin:1rem 0 1.5rem;}
+  table.fw-table{width:100%;border-collapse:collapse;font-size:.82rem;line-height:1.45;}
+  table.fw-table th,table.fw-table td{border:1px solid var(--border);padding:.5rem .7rem;text-align:left;vertical-align:top;}
+  table.fw-table th{background:var(--cream);font-weight:700;font-size:.77rem;}
+  table.fw-table td{color:var(--ink2);}
+  table.fw-table tr:nth-child(odd) td{background:var(--warm-white);}
+  table.fw-table tr:nth-child(even) td{background:var(--cream);}
+  table.fw-table.compact th,table.fw-table.compact td{padding:.28rem .55rem;font-size:.8rem;}
+  /* Phase progress strip */
+  .phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem;}
+  .phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--ink4);background:var(--warm-white);text-decoration:none;}
+  .phase-pip.active{background:var(--blue);color:var(--warm-white);border-color:transparent;}
+  .phase-pip.done{background:var(--green-l);color:var(--green);border-color:var(--green);}
+  /* Before/After blocks */
+  .ba-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0;}
+  .ba-block{border-radius:10px;overflow:hidden;}
+  .ba-label{padding:.4rem .8rem;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;}
+  .ba-block.before .ba-label{background:var(--terra-l);color:var(--terra);}
+  .ba-block.after .ba-label{background:var(--green-l);color:var(--green);}
+  .ba-block pre{margin:0;border-radius:0 0 10px 10px;}
+  /* Assignment block */
+  .assignment{background:var(--blue-l);border:1px solid var(--blue);border-radius:12px;padding:1.2rem 1.4rem;margin:2rem 0 1rem;}
+  .assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem;}
+  .assignment h3{font-family:var(--ff-serif);color:var(--ink);margin-top:.2rem;margin-bottom:.5rem;}
+  .bonus{background:var(--purple-l);border:1px solid var(--purple);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem;}
+  .bonus .b-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--purple);margin-bottom:.4rem;}
+  /* Collapsible solution */
+  details.solution{margin:1rem 0 2rem;border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+  details.solution summary{padding:.9rem 1.2rem;cursor:pointer;font-weight:700;font-size:.92rem;background:var(--cream);list-style:none;display:flex;align-items:center;gap:.5rem;}
+  details.solution summary::before{content:"&#9654;";font-size:.7rem;color:var(--ink3);transition:transform .2s;}
+  details.solution[open] summary::before{transform:rotate(90deg);}
+  details.solution summary::-webkit-details-marker{display:none;}
+  .solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border);}
+  .solution-body p{font-size:.92rem;}
+  /* Nav */
+  .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:1.8rem;flex-wrap:wrap;}
+  .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:700;font-size:.9rem;padding:.7rem 1.2rem;border-radius:8px;transition:background .2s var(--ease);}
+  .nav-cta.primary{background:var(--olive);color:var(--warm-white);}
+  .nav-cta.primary:hover{background:var(--olive-dark);}
+  .nav-cta.secondary{background:var(--cream);color:var(--ink2);border:1px solid var(--border);}
+  footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.85rem;color:var(--ink3);}
+  footer a{text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+  @media(max-width:600px){
+    h1{font-size:1.55rem;}
+    .ba-wrap{grid-template-columns:1fr;}
+    .meta-row{flex-wrap:wrap;gap:.5rem;}
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+
+<main>
+
+  <p class="breadcrumb">
+    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    <a href="../00-playwrightseries-landing.html">Playwright: Zero to Architect</a> &nbsp;/&nbsp;
+    Phase 0
+  </p>
+
+  <span class="series-tag">Phase 0 of 15 &middot; Intro &amp; Setup</span>
+
+  <h1>Intro to the Series &amp; Your First Test</h1>
+  <p class="subtitle">What this series covers, who it is for, and how to go from zero to a running Playwright test against a real app in one session.</p>
+
+  <div class="meta-row">
+    <span>By RN</span>
+    <span>~45 min</span>
+    <span>Series: Playwright: Zero to Architect</span>
+    <span>Demo: PeakAndPack</span>
+  </div>
+
+  <div class="phase-strip" aria-label="Series progress">
+    <span class="phase-pip active" title="Phase 0: Intro &amp; Setup">0</span>
+    <a href="../phase1/01-playwrightseries-test-design.html" class="phase-pip" title="Phase 1: Test Design Thinking">1</a>
+    <a href="../phase2/02-playwrightseries-locators.html" class="phase-pip" title="Phase 2: Locators">2</a>
+    <a href="../phase3/03-playwrightseries-assertions-waits.html" class="phase-pip" title="Phase 3: Assertions &amp; Waits">3</a>
+    <a href="../phase4/04-playwrightseries-debugging-flakiness.html" class="phase-pip" title="Phase 4: Debugging &amp; Flakiness">4</a>
+    <a href="../phase5/05-playwrightseries-test-data-state.html" class="phase-pip" title="Phase 5: Test Data &amp; State">5</a>
+    <a href="../phase6/06-playwrightseries-auth-sessions.html" class="phase-pip" title="Phase 6: Auth &amp; Sessions">6</a>
+    <a href="../phase7/07-playwrightseries-api-testing.html" class="phase-pip" title="Phase 7: API Testing">7</a>
+    <a href="../phase8/08-playwrightseries-advanced-scenarios.html" class="phase-pip" title="Phase 8: Advanced Scenarios">8</a>
+    <a href="../phase9/09-playwrightseries-page-objects.html" class="phase-pip" title="Phase 9: Page Object Model">9</a>
+    <a href="../phase10/10-playwrightseries-fixtures-config.html" class="phase-pip" title="Phase 10: Fixtures &amp; Config">10</a>
+    <a href="../phase11/11-playwrightseries-visual-regression.html" class="phase-pip" title="Phase 11: Visual Regression">11</a>
+    <a href="../phase12/12-playwrightseries-cicd-flaky-tests.html" class="phase-pip" title="Phase 12: CI/CD &amp; Flaky Tests">12</a>
+    <a href="../phase13/13-playwrightseries-ai-assisted.html" class="phase-pip" title="Phase 13: AI-Assisted Automation">13</a>
+    <a href="../phase14/14-playwrightseries-automation-leadership.html" class="phase-pip" title="Phase 14: Automation Leadership">14</a>
+    <a href="../phase15/15-playwrightseries-capstone-projects.html" class="phase-pip" title="Phase 15: Capstone Projects">15</a>
+  </div>
+
+  <h2>What this series is</h2>
+  <p>A complete Playwright series for anyone starting from zero. No prior automation experience needed. By Phase 15 you will have the skills to design, build, and lead a Playwright test suite at an architect level.</p>
+  <p>Each phase teaches one concept, applies it to a real app (PeakAndPack), and leaves you with a working file. The series is designed to be read in order, though each phase also stands on its own if you need to jump to a specific topic.</p>
+
+  <div class="fw-table-wrap">
+    <table class="fw-table compact" style="table-layout:fixed;width:100%;">
+      <colgroup>
+        <col style="width:22%">
+        <col style="width:28%">
+        <col style="width:8%">
+        <col style="width:42%">
+      </colgroup>
+      <thead><tr><th>Movement</th><th>What you learn</th><th>Phase</th><th>Phase name</th></tr></thead>
+      <tbody>
+        <tr><td rowspan="5"><strong>1: Test Design Thinking</strong></td><td rowspan="5" style="font-size:.8rem;line-height:1.4;">What to test, how to find elements, assert outcomes, wait correctly, and debug failures.</td><td>0</td><td><a href="00-playwrightseries-intro-setup.html">Intro &amp; Setup</a></td></tr>
+        <tr><td>1</td><td><a href="../phase1/01-playwrightseries-test-design.html">Test Design Thinking</a></td></tr>
+        <tr><td>2</td><td><a href="../phase2/02-playwrightseries-locators.html">Locators</a></td></tr>
+        <tr><td>3</td><td><a href="../phase3/03-playwrightseries-assertions-waits.html">Assertions &amp; Waits</a></td></tr>
+        <tr><td>4</td><td><a href="../phase4/04-playwrightseries-debugging-flakiness.html">Debugging &amp; Flakiness</a></td></tr>
+        <tr><td rowspan="4"><strong>2: Production-Quality Tests</strong></td><td rowspan="4" style="font-size:.8rem;line-height:1.4;">Tests that work in CI, across parallel workers, and against real authenticated sessions.</td><td>5</td><td><a href="../phase5/05-playwrightseries-test-data-state.html">Test Data &amp; State</a></td></tr>
+        <tr><td>6</td><td><a href="../phase6/06-playwrightseries-auth-sessions.html">Authentication &amp; Sessions</a></td></tr>
+        <tr><td>7</td><td><a href="../phase7/07-playwrightseries-api-testing.html">API Testing</a></td></tr>
+        <tr><td>8</td><td><a href="../phase8/08-playwrightseries-advanced-scenarios.html">Advanced Scenarios</a></td></tr>
+        <tr><td rowspan="4"><strong>3: Expert Automation Design</strong></td><td rowspan="4" style="font-size:.8rem;line-height:1.4;">Architect a suite that scales: page objects, fixtures, visual regression, CI, flaky test management.</td><td>9</td><td><a href="../phase9/09-playwrightseries-page-objects.html">Page Object Model</a></td></tr>
+        <tr><td>10</td><td><a href="../phase10/10-playwrightseries-fixtures-config.html">Fixtures &amp; Config</a></td></tr>
+        <tr><td>11</td><td><a href="../phase11/11-playwrightseries-visual-regression.html">Visual Regression</a></td></tr>
+        <tr><td>12</td><td><a href="../phase12/12-playwrightseries-cicd-flaky-tests.html">CI/CD &amp; Flaky Tests</a></td></tr>
+        <tr><td rowspan="3"><strong>4: Mastery Through Practice</strong></td><td rowspan="3" style="font-size:.8rem;line-height:1.4;">AI as a reviewer, team-level automation leadership, six capstone projects.</td><td>13</td><td><a href="../phase13/13-playwrightseries-ai-assisted.html">AI-Assisted Automation</a></td></tr>
+        <tr><td>14</td><td><a href="../phase14/14-playwrightseries-automation-leadership.html">Automation Leadership</a></td></tr>
+        <tr><td>15</td><td><a href="../phase15/15-playwrightseries-capstone-projects.html">Capstone Projects</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>The demo app: PeakAndPack</h2>
+  <p>Every phase is applied to PeakAndPack, a lightweight e-commerce app with login, a product listing, a cart, and a checkout flow. It is purpose-built for this series: enough complexity to teach every concept without a domain that gets in the way of the learning.</p>
+  <p>PeakAndPack is live at <a href="https://peakandpack-demo.onrender.com" target="_blank"><code>peakandpack-demo.onrender.com</code></a>. You do not need to run it locally. It stays the same across all phases so the tests you write in Phase 0 are still valid in Phase 15.</p>
+
+  <h2>Goal for this phase</h2>
+  <p>Install Playwright, write two tests against PeakAndPack, run them, and understand every line of what you wrote. By the end of this phase the setup is done and the loop (write a test, run it, read the result) is familiar. Every later phase assumes this loop.</p>
+
+  <h2>Before: what most people do first</h2>
+  <p>Before learning the right way to set up a Playwright project, here is the most common wrong start: copying a test from the internet and running it against a hardcoded URL:</p>
+
+  <div class="ba-wrap">
+    <div class="ba-block before">
+      <div class="ba-label">Before: the common wrong start</div>
+<pre><code>// Copied from a tutorial. Problems: hardcoded URL,
+// CSS selector that breaks on restyle, no config file.
+const { chromium } = require('playwright');
+
+(async () => {
+  const browser = await chromium.launch();
+  const page = await browser.newPage();
+  await page.goto('https://peakandpack-demo.onrender.com');
+  await page.click('.product-list-header');
+  console.log('clicked');
+  await browser.close();
+})();
+</code></pre>
+    </div>
+    <div class="ba-block after">
+      <div class="ba-label">After: the right starting point</div>
+<pre><code>// Proper Playwright test: uses the test runner,
+// config-driven baseURL, role-based locator.
+import { test, expect } from '@playwright/test';
+
+test('product list loads', async ({ page }) => {
+  await page.goto('https://peakandpack-ui.onrender.com/');
+  await expect(
+    page.getByRole('heading', { name: /products/i })
+  ).toBeVisible();
+});
+</code></pre>
+    </div>
+  </div>
+
+  <p>The "before" version works once. The "after" version works in CI, survives a restyle, and gives you a proper pass/fail report. The rest of this phase explains exactly why, and builds it step by step.</p>
+
+  <h2>Step 1: check Node.js is installed</h2>
+  <p>Playwright runs on Node.js. Open a terminal and run:</p>
+  <pre><code>node --version</code></pre>
+  <p>You need version 18 or higher. If you get "command not found", install the LTS build from <a href="https://nodejs.org" target="_blank">nodejs.org</a>, then close and reopen the terminal.</p>
+  <p>Already done this? The <a href="../../Mind_On_QA_WithAI/basics/playwright-basics.html">Playwright Basics primer</a> has a more detailed walkthrough if you get stuck at this step.</p>
+
+  <h2>Step 2: create your project and install Playwright</h2>
+  <pre><code>mkdir peakandpack-tests
+cd peakandpack-tests
+npm init playwright@latest</code></pre>
+  <p>When it asks questions, choose: TypeScript <strong>yes</strong>, tests folder <strong>tests</strong>, add GitHub Actions <strong>no</strong> (Phase 12 covers that). Accept everything else. This installs Playwright and downloads the browsers it drives : give it a minute the first time.</p>
+
+  <h2>Step 3: understand the config file</h2>
+  <p>Open <code>playwright.config.ts</code>. It was generated for you. Here is what the key settings mean:</p>
+  <pre><code>import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './tests',        // where Playwright looks for spec files
+  fullyParallel: true,       // run tests at the same time (faster)
+  retries: 1,                // retry a failing test once before marking it failed
+  use: {
+    baseURL: 'https://peakandpack-demo.onrender.com', // prepended to every page.goto('https://peakandpack-ui.onrender.com/')
+    trace: 'on-first-retry', // record a trace when a test fails and is retried
+  },
+});
+</code></pre>
+  <p><strong>The most important line is <code>baseURL</code>.</strong> Once it is set, every test can use <code>page.goto('https://peakandpack-ui.onrender.com/')</code> instead of the full URL. If PeakAndPack ever moves to a different host, you change one line in the config and every test updates automatically.</p>
+
+  <h2>Step 4: write your first two tests</h2>
+  <p>Delete <code>tests/example.spec.ts</code> (it was generated as a demo). Create <code>tests/first.spec.ts</code>:</p>
+  <pre><code>import { test, expect } from '@playwright/test';
+
+// Test 1: the product list loads
+test('product list heading is visible', async ({ page }) => {
+  await page.goto('https://peakandpack-ui.onrender.com/');
+  await expect(
+    page.getByRole('heading', { name: /products/i })
+  ).toBeVisible();
+});
+
+// Test 2: the cart starts empty
+test('cart count starts at zero', async ({ page }) => {
+  await page.goto('https://peakandpack-ui.onrender.com/');
+  await expect(
+    page.getByRole('status', { name: /cart/i })
+  ).toHaveText('0');
+});
+</code></pre>
+
+  <div class="callout gold">
+    <p><strong>Anatomy of a Playwright test.</strong> <code>test('name', async ({ page }) =&gt; { ... })</code> : the name is what appears in the report. <code>page</code> is the browser tab Playwright gives you. <code>await</code> is required because everything in Playwright is asynchronous (the browser takes time to respond). <code>expect(...).toBeVisible()</code> is the assertion : it waits up to 5 seconds for the condition to be true before failing. If you removed the <code>await</code>, the assertion would run before the browser has finished loading and fail every time.</p>
+  </div>
+
+  <h2>Step 5: run the tests</h2>
+  <pre><code>npx playwright test</code></pre>
+  <p>Playwright opens the browser invisibly (headless), loads PeakAndPack, runs both tests, and prints the result. To watch it happen in a visible browser:</p>
+  <pre><code>npx playwright test --headed</code></pre>
+  <p>To run just one file:</p>
+  <pre><code>npx playwright test tests/first.spec.ts</code></pre>
+
+  <h2>Step 6: read the HTML report</h2>
+  <pre><code>npx playwright show-report</code></pre>
+  <p>This opens a browser tab with the full report. Learn to read it now; you will use it constantly. The key sections:</p>
+  <ul>
+    <li><strong>Summary bar at the top</strong>: total passed, failed, skipped, and total run time at a glance.</li>
+    <li><strong>Test list</strong>: every test with its file, duration, and status. Click any test to expand it.</li>
+    <li><strong>Failure detail</strong>: on a failing test, you see the exact assertion that failed, the expected value, the actual value, and the line number. This is where you start debugging, not the terminal.</li>
+    <li><strong>Trace viewer</strong>: if a test was retried (and you set <code>trace: 'on-first-retry'</code> in the config), a trace link appears. Click it to open a full recording of every action the test took, with screenshots at each step and the network requests alongside them. This is Playwright's superpower for debugging failing tests.</li>
+  </ul>
+
+  <h2>After: what you have now versus the wrong start</h2>
+  <div class="callout green">
+    <p><strong>The right setup gives you four things the wrong start does not.</strong> A config file so the URL is set once. A test runner so every test in the folder runs together. Role-based locators so the tests survive a restyle. An HTML report with traces so failures are diagnosable without adding <code>console.log</code> everywhere. The rest of the series builds on all four.</p>
+  </div>
+
+  <h2>JavaScript vs Python: choosing your language</h2>
+  <p>This series uses JavaScript/TypeScript. Playwright also has official Python bindings with identical capability. Here is when each is the right choice:</p>
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th></th><th>JavaScript / TypeScript</th><th>Python</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Best for</strong></td><td>Teams already in the JS ecosystem. Pure UI and API automation. This series.</td><td>Teams doing AI/ML work alongside QA. Combining Playwright with eval tools (DeepEval, RAGAs). The AI &amp; LLM Testing series.</td></tr>
+        <tr><td><strong>Playwright support</strong></td><td>Primary language. All features, best documentation, most community examples.</td><td>Full feature parity. Official bindings maintained by Microsoft.</td></tr>
+        <tr><td><strong>Ecosystem</strong></td><td>npm, Node.js, TypeScript types, GitHub Actions.</td><td>pip, pytest, Pydantic, pandas : the AI tooling world.</td></tr>
+        <tr><td><strong>Verdict</strong></td><td>If automation is your main goal, use TypeScript. The tooling is richer and the examples are everywhere.</td><td>If you are combining automation with AI evaluation in one pipeline, use Python. One runtime, no bridge.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>The same two tests in Python, for reference:</p>
+  <pre><code>from playwright.sync_api import Page, expect
+
+def test_product_list_heading_is_visible(page: Page):
+    page.goto("/")
+    expect(page.get_by_role("heading", name="products")).to_be_visible()
+
+def test_cart_count_starts_at_zero(page: Page):
+    page.goto("/")
+    expect(page.get_by_role("status", name="cart")).to_have_text("0")
+</code></pre>
+
+  <div class="callout warn">
+    <p><strong>Common mistakes in Phase 0.</strong></p>
+    <ul style="margin:.5rem 0 0 1.2rem;">
+      <li><strong>Forgetting <code>await</code>.</strong> Every Playwright call is async. Skip <code>await</code> and the test races ahead before the browser responds. The error message is confusing; the fix is always adding the missing <code>await</code>.</li>
+      <li><strong>Using the wrong locator from the start.</strong> The generated example test uses <code>page.locator('.some-class')</code>. Copying that pattern means every test is fragile from day one. Phase 2 covers this in depth : for now, use <code>getByRole</code> and <code>getByText</code>.</li>
+      <li><strong>Not setting <code>baseURL</code>.</strong> Pasting the full URL into <code>page.goto()</code> works but means you have to update every test if the URL ever changes. Set it once in the config.</li>
+      <li><strong>Running tests before the install finishes.</strong> <code>npm init playwright@latest</code> downloads browsers in the background. If you run <code>npx playwright test</code> before it completes, you get a confusing error about missing browsers.</li>
+    </ul>
+  </div>
+
+  <h2>Deliverables</h2>
+  <ul>
+    <li><code>playwright.config.ts</code> : configured with PeakAndPack baseURL, retries, and trace on first retry</li>
+    <li><code>tests/first.spec.ts</code> : two passing tests against PeakAndPack</li>
+  </ul>
+
+  <div class="assignment">
+    <div class="a-label">Assignment</div>
+    <h3>Write a third test: the page title</h3>
+    <p>Add a third test to <code>tests/first.spec.ts</code> that asserts the PeakAndPack page has the correct <code>&lt;title&gt;</code>. Use the <code>toHaveTitle()</code> assertion. Run the full file and confirm all three tests pass.</p>
+    <p>Hint: <code>expect(page).toHaveTitle(/peakandpack/i)</code> checks the title contains "peakandpack" (case-insensitive). You do not need to know the exact title in advance : a regex that matches part of it is enough.</p>
+  </div>
+
+  <div class="bonus">
+    <div class="b-label">Bonus challenge</div>
+    <p><strong>Run the tests in headed mode and open the trace viewer.</strong> Intentionally break one test (change the expected text so it cannot match), run with <code>--headed</code>, let it retry, then open the trace. Find the step where the assertion failed, and read the screenshot Playwright captured at that moment. Fix the test and confirm it passes again. The goal is to get comfortable with the trace viewer before you need it for a real failure.</p>
+  </div>
+
+  <details class="solution">
+    <summary>Show solution &mdash; try it yourself first</summary>
+    <div class="solution-body">
+      <h3>Assignment solution</h3>
+      <pre><code>test('page has the PeakAndPack title', async ({ page }) => {
+  await page.goto('https://peakandpack-ui.onrender.com/');
+  await expect(page).toHaveTitle(/peakandpack/i);
+});
+</code></pre>
+      <p><strong>Why this works.</strong> <code>toHaveTitle()</code> checks the document <code>&lt;title&gt;</code> element. Passing a regex (<code>/peakandpack/i</code>) means the test passes as long as the title contains "peakandpack" anywhere, case-insensitively. This is more resilient than <code>'PeakAndPack - Buy Outdoor Gear'</code> : if the subtitle changes, the test still passes.</p>
+      <p><strong>What to watch out for.</strong> <code>toHaveTitle()</code> does not need a locator : it acts on the page directly. A common mistake is writing <code>expect(page.getByRole('heading')).toHaveTitle()</code>, which fails because <code>toHaveTitle</code> is a page-level assertion, not a locator assertion.</p>
+    </div>
+  </details>
+
+  <div class="nav-row">
+    <a href="../00-playwrightseries-landing.html" class="nav-cta secondary">&larr; Series overview</a>
+    <a href="../phase1/01-playwrightseries-test-design.html" class="nav-cta primary">Phase 1: Test Design Thinking &rarr;</a>
+  </div>
+
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; Playwright: Zero to Architect</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+</body>
+</html>

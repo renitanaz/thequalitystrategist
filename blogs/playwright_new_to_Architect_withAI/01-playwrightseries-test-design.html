@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 1: Test Design Thinking | Playwright: Zero to Architect</title>
+<meta name="description" content="Phase 1 of Playwright: Zero to Architect. Decide what belongs in each test layer before writing a line of code. Test pyramid, BVA, decision tables.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:#6B7C3A; --olive-dark:#4A5828; --olive-deep:#2E3A18;
+    --cream:#F5F7F0; --warm-white:#FAFCF5;
+    --ink:#1A1F14; --ink2:#3D4235; --ink3:#6B7060; --ink4:#9A9E90;
+    --border:rgba(26,31,20,0.1); --border2:rgba(26,31,20,0.06);
+    --purple:#7A4A9A; --purple-l:#EDE0F5;
+    --gold:#9A6E1A; --gold-l:#F5EDD6;
+    --blue:#2A5C9A; --blue-l:#DDE8F5;
+    --teal:#1A6B54; --teal-l:#D8EEE8;
+    --terra:#8A4A2A; --terra-l:#F5E4D8;
+    --green:#1A7A3A; --green-l:#D8F0E0;
+    --ff-serif:'Lora',Georgia,serif;
+    --ff-sans:'DM Sans',system-ui,sans-serif;
+    --ease:cubic-bezier(0.22,1,0.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--ff-sans);background:var(--warm-white);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  header.site-header{border-bottom:1px solid var(--border);padding:1.1rem 1.5rem;background:var(--warm-white);}
+  .site-header-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+  .site-name{font-family:var(--ff-serif);font-weight:600;font-size:1.05rem;text-decoration:none;}
+  main{max-width:880px;margin:0 auto;padding:2.6rem 1.5rem 5rem;}
+  .breadcrumb{font-size:.82rem;color:var(--ink3);margin-bottom:1.3rem;}
+  .breadcrumb a{text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+  .series-tag{display:inline-block;font-size:.76rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--blue);background:var(--blue-l);padding:.3rem .7rem;border-radius:999px;margin-bottom:1.1rem;}
+  h1{font-family:var(--ff-serif);font-size:2rem;font-weight:700;line-height:1.2;margin-bottom:.8rem;}
+  .subtitle{font-size:1.08rem;color:var(--ink2);margin-bottom:1.6rem;max-width:680px;}
+  .meta-row{display:flex;gap:1.1rem;font-size:.82rem;color:var(--ink3);margin-bottom:1.6rem;border-bottom:1px solid var(--border);padding-bottom:1.3rem;flex-wrap:wrap;}
+  h2{font-family:var(--ff-serif);font-size:1.35rem;font-weight:700;margin-top:2.2rem;margin-bottom:.8rem;}
+  h3{font-family:var(--ff-serif);font-size:1.1rem;font-weight:700;margin-top:1.6rem;margin-bottom:.6rem;}
+  p{margin-bottom:.9rem;color:var(--ink2);font-size:.97rem;}
+  strong{color:var(--ink);font-weight:700;}
+  ul,ol{margin:0 0 1rem 1.3rem;color:var(--ink2);}
+  li{margin-bottom:.4rem;font-size:.97rem;}
+  code{background:var(--cream);padding:.15rem .4rem;border-radius:5px;font-size:.87em;color:var(--olive-deep);}
+  pre{background:var(--ink);color:var(--cream);padding:1rem 1.1rem;border-radius:10px;overflow-x:auto;font-size:.82rem;margin:1rem 0;line-height:1.55;}
+  pre code{background:none;color:inherit;padding:0;}
+  .callout{border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.91rem;}
+  .callout p{margin-bottom:0;}
+  .callout.green{background:var(--green-l);border-left:3px solid var(--green);}.callout.green p{color:var(--olive-deep);}
+  .callout.warn{background:var(--terra-l);border-left:3px solid var(--terra);}.callout.warn p{color:var(--terra);}
+  .callout.blue{background:var(--blue-l);border-left:3px solid var(--blue);}.callout.blue p{color:var(--blue);}
+  .callout.gold{background:var(--gold-l);border-left:3px solid var(--gold);}.callout.gold p{color:var(--gold);}
+  .callout.purple{background:var(--purple-l);border-left:3px solid var(--purple);}.callout.purple p{color:var(--purple);}
+  .fw-table-wrap{overflow-x:auto;margin:1rem 0 1.5rem;}
+  table.fw-table{width:100%;border-collapse:collapse;font-size:.82rem;line-height:1.45;}
+  table.fw-table th,table.fw-table td{border:1px solid var(--border);padding:.5rem .7rem;text-align:left;vertical-align:top;}
+  table.fw-table th{background:var(--cream);font-weight:700;font-size:.77rem;}
+  table.fw-table td{color:var(--ink2);}
+  table.fw-table tr:nth-child(odd) td{background:var(--warm-white);}
+  table.fw-table tr:nth-child(even) td{background:var(--cream);}
+  table.fw-table.compact th,table.fw-table.compact td{padding:.28rem .55rem;font-size:.8rem;}
+  /* Phase progress strip */
+  .phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem;}
+  .phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--ink4);background:var(--warm-white);text-decoration:none;}
+  .phase-pip.active{background:var(--blue);color:var(--warm-white);border-color:transparent;}
+  .phase-pip.done{background:var(--green-l);color:var(--green);border-color:var(--green);}
+  /* Before/After blocks */
+  .ba-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0;}
+  .ba-block{border-radius:10px;overflow:hidden;}
+  .ba-label{padding:.4rem .8rem;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;}
+  .ba-block.before .ba-label{background:var(--terra-l);color:var(--terra);}
+  .ba-block.after .ba-label{background:var(--green-l);color:var(--green);}
+  .ba-block pre{margin:0;border-radius:0 0 10px 10px;}
+  /* Assignment block */
+  .assignment{background:var(--blue-l);border:1px solid var(--blue);border-radius:12px;padding:1.2rem 1.4rem;margin:2rem 0 1rem;}
+  .assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem;}
+  .assignment h3{font-family:var(--ff-serif);color:var(--ink);margin-top:.2rem;margin-bottom:.5rem;}
+  .bonus{background:var(--purple-l);border:1px solid var(--purple);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem;}
+  .bonus .b-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--purple);margin-bottom:.4rem;}
+  /* Collapsible solution */
+  details.solution{margin:1rem 0 2rem;border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+  details.solution summary{padding:.9rem 1.2rem;cursor:pointer;font-weight:700;font-size:.92rem;background:var(--cream);list-style:none;display:flex;align-items:center;gap:.5rem;}
+  details.solution summary::before{content:"&#9654;";font-size:.7rem;color:var(--ink3);transition:transform .2s;}
+  details.solution[open] summary::before{transform:rotate(90deg);}
+  details.solution summary::-webkit-details-marker{display:none;}
+  .solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border);}
+  .solution-body p{font-size:.92rem;}
+  /* Nav */
+  .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:1.8rem;flex-wrap:wrap;}
+  .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:700;font-size:.9rem;padding:.7rem 1.2rem;border-radius:8px;transition:background .2s var(--ease);}
+  .nav-cta.primary{background:var(--olive);color:var(--warm-white);}
+  .nav-cta.primary:hover{background:var(--olive-dark);}
+  .nav-cta.secondary{background:var(--cream);color:var(--ink2);border:1px solid var(--border);}
+  footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.85rem;color:var(--ink3);}
+  footer a{text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+  @media(max-width:600px){
+    h1{font-size:1.55rem;}
+    .ba-wrap{grid-template-columns:1fr;}
+    .meta-row{flex-wrap:wrap;gap:.5rem;}
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+
+<main>
+
+  <p class="breadcrumb">
+    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    <a href="../00-playwrightseries-landing.html">Playwright: Zero to Architect</a> &nbsp;/&nbsp;
+    Phase 1
+  </p>
+
+  <span class="series-tag">Phase 1 of 15 &middot; Test Design Thinking</span>
+
+  <h1>Test Design Thinking</h1>
+  <p class="subtitle">What to test, where to test it, and how to design tests that tell you something useful when they fail.</p>
+
+  <div class="meta-row">
+    <span>By RN</span>
+    <span>~3 hours</span>
+    <span>Series: Playwright: Zero to Architect</span>
+    <span>Demo: PeakAndPack</span>
+  </div>
+
+  <div class="phase-strip" aria-label="Series progress">
+    <a href="../phase0/00-playwrightseries-intro-setup.html" class="phase-pip" title="Phase 0: Intro &amp; Setup">0</a>
+    <span class="phase-pip active" title="Phase 1: Test Design Thinking">1</span>
+    <a href="../phase2/02-playwrightseries-locators.html" class="phase-pip" title="Phase 2: Locators">2</a>
+    <a href="../phase3/03-playwrightseries-assertions-waits.html" class="phase-pip" title="Phase 3: Assertions &amp; Waits">3</a>
+    <a href="../phase4/04-playwrightseries-debugging-flakiness.html" class="phase-pip" title="Phase 4: Debugging &amp; Flakiness">4</a>
+    <a href="../phase5/05-playwrightseries-test-data-state.html" class="phase-pip" title="Phase 5: Test Data &amp; State">5</a>
+    <a href="../phase6/06-playwrightseries-auth-sessions.html" class="phase-pip" title="Phase 6: Authentication &amp; Sessions">6</a>
+    <a href="../phase7/07-playwrightseries-api-testing.html" class="phase-pip" title="Phase 7: API Testing">7</a>
+    <a href="../phase8/08-playwrightseries-advanced-scenarios.html" class="phase-pip" title="Phase 8: Advanced Scenarios">8</a>
+    <a href="../phase9/09-playwrightseries-page-objects.html" class="phase-pip" title="Phase 9: Page Object Model">9</a>
+    <a href="../phase10/10-playwrightseries-fixtures-config.html" class="phase-pip" title="Phase 10: Fixtures &amp; Config">10</a>
+    <a href="../phase11/11-playwrightseries-visual-regression.html" class="phase-pip" title="Phase 11: Visual Regression">11</a>
+    <a href="../phase12/12-playwrightseries-cicd-flaky-tests.html" class="phase-pip" title="Phase 12: CI/CD &amp; Flaky Tests">12</a>
+    <a href="../phase13/13-playwrightseries-ai-assisted.html" class="phase-pip" title="Phase 13: AI-Assisted Automation">13</a>
+    <a href="../phase14/14-playwrightseries-automation-leadership.html" class="phase-pip" title="Phase 14: Automation Leadership">14</a>
+    <a href="../phase15/15-playwrightseries-capstone-projects.html" class="phase-pip" title="Phase 15: Capstone Projects">15</a>
+  </div>
+
+
+  <h2>Goal</h2>
+  <p>Decide what belongs in each test layer before writing a single line of code. Most automation failures are not Playwright failures: they are test design failures. A poorly designed test breaks constantly, tests the wrong thing, or tells you nothing useful when it fails.</p>
+
+  <h2>Before: testing everything at the UI layer</h2>
+  <p>The most common wrong approach is writing an E2E test for every scenario, including ones that have nothing to do with the browser:</p>
+
+  <div class="ba-wrap">
+    <div class="ba-block before">
+      <div class="ba-label">Before: E2E test for a calculation</div>
+<pre><code>// Testing discount calculation logic in a browser test.
+// This opens a browser, loads the page, adds items, applies
+// a code, and checks the maths. Slow, fragile, wrong layer.
+test('10% discount reduces total correctly', async ({ page }) => {
+  await page.goto('https://peakandpack-ui.onrender.com/cart');
+  await page.getByRole('textbox', { name: /code/i }).fill('SAVE10');
+  await page.getByRole('button', { name: /apply/i }).click();
+  await expect(page.getByTestId('total')).toHaveText('$90.00');
+});
+</code></pre>
+    </div>
+    <div class="ba-block after">
+      <div class="ba-label">After: logic tested as a unit, UI tested for the journey</div>
+<pre><code>// The discount calculation belongs in a unit test.
+// The UI test only checks that the journey works end to end.
+
+// Unit test (fast, no browser):
+test('applyDiscount reduces total by 10%', () => {
+  expect(applyDiscount(100, 'SAVE10')).toBe(90);
+});
+
+// UI test (checks the journey, not the maths):
+test('checkout with discount code completes', async ({ page }) => {
+  await page.goto('https://peakandpack-ui.onrender.com/cart');
+  await page.getByRole('textbox', { name: /code/i }).fill('SAVE10');
+  await page.getByRole('button', { name: /apply/i }).click();
+  await expect(page.getByRole('heading', { name: /order confirmed/i })).toBeVisible();
+});
+</code></pre>
+    </div>
+  </div>
+
+  <h2>The test pyramid</h2>
+  <p>The test pyramid is a guide for where to put test effort, not a rigid rule. It says: most tests should be fast (unit), some should be at the API layer (integration), and a smaller number should be full end-to-end browser tests.</p>
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>Layer</th><th>Tests what</th><th>Speed</th><th>Use for</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Unit</strong></td><td>A single function or component in isolation</td><td>Milliseconds</td><td>Logic, calculations, transformations</td></tr>
+        <tr><td><strong>API / Integration</strong></td><td>The server and its responses</td><td>Seconds</td><td>Business rules, data validation, auth</td></tr>
+        <tr><td><strong>UI / E2E</strong></td><td>The full user journey through a real browser</td><td>10–60 seconds</td><td>Critical user flows, cross-layer integration</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><strong>The key principle:</strong> put a test at the lowest layer where it can still give you confidence. A calculation does not need a browser. A user journey does.</p>
+
+  <h2>Test design principles</h2>
+  <h3>One test, one scenario</h3>
+  <p>Each test should have one clear purpose stated in its name. A test called "checkout" that also tests login, cart, and email confirmation is four tests in one: when it fails, you don't know which part broke.</p>
+
+  <h3>Do not test every permutation at the UI layer</h3>
+  <p>PeakAndPack's quantity field accepts numbers from 1 to 99. You do not need 99 UI tests. Use <strong>Boundary Value Analysis (BVA)</strong>: test the boundaries and the midpoint.</p>
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>Input</th><th>Why test it</th><th>Layer</th></tr></thead>
+      <tbody>
+        <tr><td><code>0</code></td><td>Below the minimum : should be rejected</td><td>API or unit</td></tr>
+        <tr><td><code>1</code></td><td>The minimum valid value</td><td>API</td></tr>
+        <tr><td><code>50</code></td><td>A representative mid-range value</td><td>Unit</td></tr>
+        <tr><td><code>99</code></td><td>The maximum valid value</td><td>API</td></tr>
+        <tr><td><code>100</code></td><td>Above the maximum : should be rejected</td><td>API or unit</td></tr>
+        <tr><td>Add to cart journey</td><td>Does the UI flow complete?</td><td>UI / E2E</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Decision tables for multi-condition logic</h3>
+  <p>PeakAndPack's discount code logic has multiple conditions: the code can be valid or invalid, and the cart can be empty or have items. A decision table maps every combination to its expected outcome, so you know exactly which cases need a test and which are redundant.</p>
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>Code valid?</th><th>Cart has items?</th><th>Expected outcome</th><th>Test needed?</th></tr></thead>
+      <tbody>
+        <tr><td>Yes</td><td>Yes</td><td>Discount applied, order completes</td><td>Yes : the happy path</td></tr>
+        <tr><td>Yes</td><td>No</td><td>Error: cart is empty</td><td>Yes: edge case</td></tr>
+        <tr><td>No</td><td>Yes</td><td>Error: invalid code</td><td>Yes: negative case</td></tr>
+        <tr><td>No</td><td>No</td><td>Error: invalid code</td><td>No: duplicate of row 3</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Assert behaviour, not implementation</h3>
+  <p>Test what the user sees, not how the code achieves it. Assert that the order confirmation heading is visible: not that a specific CSS class is applied, a particular function was called, or a certain network request completed with a specific payload.</p>
+
+  <h2>After: what good test design looks like</h2>
+  <div class="callout green">
+    <p><strong>The payoff.</strong> A well-designed test suite has fast unit tests catching logic errors, API tests catching contract violations, and a small number of E2E tests covering the critical journeys. When something breaks, the failing test name tells you exactly what broke and at what layer. That is the goal.</p>
+  </div>
+
+  <div class="callout warn">
+    <p><strong>Common mistakes in Phase 1.</strong></p>
+    <ul style="margin:.5rem 0 0 1.2rem;">
+      <li><strong>Writing E2E tests for everything.</strong> The most common mistake. Calculation logic, validation rules, error messages: all of these belong at the unit or API layer, not in a browser test.</li>
+      <li><strong>Testing implementation details.</strong> Asserting that a specific CSS class is applied, a function was called with specific arguments, or a network request had a specific payload. These break every time the implementation changes, even when the behaviour is correct.</li>
+      <li><strong>One giant test.</strong> A test that logs in, adds items, applies a code, checks out, and verifies email confirmation is impossible to maintain. When it fails on CI, you spend an hour working out which step failed.</li>
+      <li><strong>Skipping the decision table.</strong> Without mapping the combinations upfront, most teams accidentally test the same scenario multiple times while missing an important edge case.</li>
+    </ul>
+  </div>
+
+  <h2>Deliverables</h2>
+  <ul>
+    <li><code>test-design-guide.md</code>: the pyramid, BVA, and decision table principles with PeakAndPack examples</li>
+    <li><code>boundary-value-examples.md</code>: BVA applied to PeakAndPack quantity and price fields</li>
+    <li><code>decision-table-discount.md</code>: the full decision table for PeakAndPack discount code logic</li>
+  </ul>
+
+  <div class="assignment">
+    <div class="a-label">Assignment</div>
+    <h3>Design the test coverage for PeakAndPack login</h3>
+    <p>PeakAndPack login has two inputs (email, password) and two outcomes (success, failure). Using a decision table, map the combinations and decide which need a test, at which layer. Then write the decision table as a markdown file and identify the one E2E test that belongs at the UI layer.</p>
+    <p>Think about: what happens with an empty email? A valid email but wrong password? A valid email that does not exist? Which of these needs a browser test and which is better as an API test?</p>
+  </div>
+
+  <div class="bonus">
+    <div class="b-label">Bonus challenge</div>
+    <p><strong>Audit a test suite you already have.</strong> Take any existing test file and categorise every test: is it testing logic that belongs at the unit layer, a contract that belongs at the API layer, or a journey that belongs at the UI layer? Count how many are at the wrong layer. What would the suite look like if you moved them?</p>
+  </div>
+
+  <details class="solution">
+    <summary>Show solution -- try it yourself first</summary>
+    <div class="solution-body">
+      <h3>Decision table for PeakAndPack login</h3>
+      <table class="fw-table">
+        <thead><tr><th>Email</th><th>Password</th><th>Expected outcome</th><th>Layer</th><th>Test?</th></tr></thead>
+        <tbody>
+          <tr><td>Valid, exists</td><td>Correct</td><td>200, token returned, redirect to home</td><td>E2E (the happy path journey)</td><td>Yes</td></tr>
+          <tr><td>Valid, exists</td><td>Wrong</td><td>401, error message shown</td><td>API</td><td>Yes</td></tr>
+          <tr><td>Valid, not registered</td><td>Any</td><td>401, error message shown</td><td>API</td><td>Yes</td></tr>
+          <tr><td>Empty</td><td>Any</td><td>400, validation error</td><td>API or unit</td><td>Yes</td></tr>
+          <tr><td>Invalid format</td><td>Any</td><td>400, validation error</td><td>API or unit</td><td>Yes</td></tr>
+          <tr><td>Valid, exists</td><td>Empty</td><td>400, validation error</td><td>API or unit</td><td>Yes</td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:.8rem;"><strong>The one E2E test:</strong> the happy path (valid email, correct password, redirect to home). Everything else is an API or unit test because it does not require a browser to verify the correct outcome.</p>
+      <p><strong>Why this matters:</strong> if you wrote all six as E2E tests, you'd have five slow browser tests testing server-side validation. The server does not care whether the request comes from a browser or curl. Testing it with a browser adds no confidence and a lot of cost.</p>
+    </div>
+  </details>
+
+
+  <div class="nav-row">
+    <a href="../phase0/00-playwrightseries-intro-setup.html" class="nav-cta secondary">&larr; Phase 0: Intro &amp; Setup</a>
+    <a href="../phase2/02-playwrightseries-locators.html" class="nav-cta primary">Phase 2: Locators &rarr;</a>
+  </div>
+
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; Playwright: Zero to Architect</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+</body>
+</html>

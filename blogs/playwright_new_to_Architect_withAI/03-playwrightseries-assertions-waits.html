@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 3: Assertions and Waits | Playwright: Zero to Architect</title>
+<meta name="description" content="Phase 3 of Playwright: Zero to Architect. Assert business outcomes, not implementation details. Wait for meaning, not time.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:#6B7C3A; --olive-dark:#4A5828; --olive-deep:#2E3A18;
+    --cream:#F5F7F0; --warm-white:#FAFCF5;
+    --ink:#1A1F14; --ink2:#3D4235; --ink3:#6B7060; --ink4:#9A9E90;
+    --border:rgba(26,31,20,0.1); --border2:rgba(26,31,20,0.06);
+    --purple:#7A4A9A; --purple-l:#EDE0F5;
+    --gold:#9A6E1A; --gold-l:#F5EDD6;
+    --blue:#2A5C9A; --blue-l:#DDE8F5;
+    --teal:#1A6B54; --teal-l:#D8EEE8;
+    --terra:#8A4A2A; --terra-l:#F5E4D8;
+    --green:#1A7A3A; --green-l:#D8F0E0;
+    --ff-serif:'Lora',Georgia,serif;
+    --ff-sans:'DM Sans',system-ui,sans-serif;
+    --ease:cubic-bezier(0.22,1,0.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--ff-sans);background:var(--warm-white);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  header.site-header{border-bottom:1px solid var(--border);padding:1.1rem 1.5rem;background:var(--warm-white);}
+  .site-header-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+  .site-name{font-family:var(--ff-serif);font-weight:600;font-size:1.05rem;text-decoration:none;}
+  main{max-width:880px;margin:0 auto;padding:2.6rem 1.5rem 5rem;}
+  .breadcrumb{font-size:.82rem;color:var(--ink3);margin-bottom:1.3rem;}
+  .breadcrumb a{text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+  .series-tag{display:inline-block;font-size:.76rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--blue);background:var(--blue-l);padding:.3rem .7rem;border-radius:999px;margin-bottom:1.1rem;}
+  h1{font-family:var(--ff-serif);font-size:2rem;font-weight:700;line-height:1.2;margin-bottom:.8rem;}
+  .subtitle{font-size:1.08rem;color:var(--ink2);margin-bottom:1.6rem;max-width:680px;}
+  .meta-row{display:flex;gap:1.1rem;font-size:.82rem;color:var(--ink3);margin-bottom:1.6rem;border-bottom:1px solid var(--border);padding-bottom:1.3rem;flex-wrap:wrap;}
+  h2{font-family:var(--ff-serif);font-size:1.35rem;font-weight:700;margin-top:2.2rem;margin-bottom:.8rem;}
+  h3{font-family:var(--ff-serif);font-size:1.1rem;font-weight:700;margin-top:1.6rem;margin-bottom:.6rem;}
+  p{margin-bottom:.9rem;color:var(--ink2);font-size:.97rem;}
+  strong{color:var(--ink);font-weight:700;}
+  ul,ol{margin:0 0 1rem 1.3rem;color:var(--ink2);}
+  li{margin-bottom:.4rem;font-size:.97rem;}
+  code{background:var(--cream);padding:.15rem .4rem;border-radius:5px;font-size:.87em;color:var(--olive-deep);}
+  pre{background:var(--ink);color:var(--cream);padding:1rem 1.1rem;border-radius:10px;overflow-x:auto;font-size:.82rem;margin:1rem 0;line-height:1.55;}
+  pre code{background:none;color:inherit;padding:0;}
+  .callout{border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.91rem;}
+  .callout p{margin-bottom:0;}
+  .callout.green{background:var(--green-l);border-left:3px solid var(--green);}.callout.green p{color:var(--olive-deep);}
+  .callout.warn{background:var(--terra-l);border-left:3px solid var(--terra);}.callout.warn p{color:var(--terra);}
+  .callout.blue{background:var(--blue-l);border-left:3px solid var(--blue);}.callout.blue p{color:var(--blue);}
+  .callout.gold{background:var(--gold-l);border-left:3px solid var(--gold);}.callout.gold p{color:var(--gold);}
+  .callout.purple{background:var(--purple-l);border-left:3px solid var(--purple);}.callout.purple p{color:var(--purple);}
+  .fw-table-wrap{overflow-x:auto;margin:1rem 0 1.5rem;}
+  table.fw-table{width:100%;border-collapse:collapse;font-size:.82rem;line-height:1.45;}
+  table.fw-table th,table.fw-table td{border:1px solid var(--border);padding:.5rem .7rem;text-align:left;vertical-align:top;}
+  table.fw-table th{background:var(--cream);font-weight:700;font-size:.77rem;}
+  table.fw-table td{color:var(--ink2);}
+  table.fw-table tr:nth-child(odd) td{background:var(--warm-white);}
+  table.fw-table tr:nth-child(even) td{background:var(--cream);}
+  table.fw-table.compact th,table.fw-table.compact td{padding:.28rem .55rem;font-size:.8rem;}
+  /* Phase progress strip */
+  .phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem;}
+  .phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--ink4);background:var(--warm-white);text-decoration:none;}
+  .phase-pip.active{background:var(--blue);color:var(--warm-white);border-color:transparent;}
+  .phase-pip.done{background:var(--green-l);color:var(--green);border-color:var(--green);}
+  /* Before/After blocks */
+  .ba-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0;}
+  .ba-block{border-radius:10px;overflow:hidden;}
+  .ba-label{padding:.4rem .8rem;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;}
+  .ba-block.before .ba-label{background:var(--terra-l);color:var(--terra);}
+  .ba-block.after .ba-label{background:var(--green-l);color:var(--green);}
+  .ba-block pre{margin:0;border-radius:0 0 10px 10px;}
+  /* Assignment block */
+  .assignment{background:var(--blue-l);border:1px solid var(--blue);border-radius:12px;padding:1.2rem 1.4rem;margin:2rem 0 1rem;}
+  .assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem;}
+  .assignment h3{font-family:var(--ff-serif);color:var(--ink);margin-top:.2rem;margin-bottom:.5rem;}
+  .bonus{background:var(--purple-l);border:1px solid var(--purple);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem;}
+  .bonus .b-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--purple);margin-bottom:.4rem;}
+  /* Collapsible solution */
+  details.solution{margin:1rem 0 2rem;border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+  details.solution summary{padding:.9rem 1.2rem;cursor:pointer;font-weight:700;font-size:.92rem;background:var(--cream);list-style:none;display:flex;align-items:center;gap:.5rem;}
+  details.solution summary::before{content:"&#9654;";font-size:.7rem;color:var(--ink3);transition:transform .2s;}
+  details.solution[open] summary::before{transform:rotate(90deg);}
+  details.solution summary::-webkit-details-marker{display:none;}
+  .solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border);}
+  .solution-body p{font-size:.92rem;}
+  /* Nav */
+  .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:1.8rem;flex-wrap:wrap;}
+  .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:700;font-size:.9rem;padding:.7rem 1.2rem;border-radius:8px;transition:background .2s var(--ease);}
+  .nav-cta.primary{background:var(--olive);color:var(--warm-white);}
+  .nav-cta.primary:hover{background:var(--olive-dark);}
+  .nav-cta.secondary{background:var(--cream);color:var(--ink2);border:1px solid var(--border);}
+  footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.85rem;color:var(--ink3);}
+  footer a{text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+  @media(max-width:600px){
+    h1{font-size:1.55rem;}
+    .ba-wrap{grid-template-columns:1fr;}
+    .meta-row{flex-wrap:wrap;gap:.5rem;}
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+
+<main>
+
+  <p class="breadcrumb">
+    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    <a href="../00-playwrightseries-landing.html">Playwright: Zero to Architect</a> &nbsp;/&nbsp;
+    Phase 3
+  </p>
+
+  <span class="series-tag">Phase 3 of 15 &middot; Assertions &amp; Waits</span>
+
+  <h1>Assertions and Waits</h1>
+  <p class="subtitle">Weak assertions pass when they should fail. Fixed sleeps make tests slow and still flaky. Both are avoidable.</p>
+
+  <div class="meta-row">
+    <span>By RN</span>
+    <span>~3 hours</span>
+    <span>Series: Playwright: Zero to Architect</span>
+    <span>Demo: PeakAndPack</span>
+  </div>
+
+  <div class="phase-strip" aria-label="Series progress">
+    <a href="../phase0/00-playwrightseries-intro-setup.html" class="phase-pip" title="Phase 0: Intro &amp; Setup">0</a>
+    <a href="../phase1/01-playwrightseries-test-design.html" class="phase-pip" title="Phase 1: Test Design Thinking">1</a>
+    <a href="../phase2/02-playwrightseries-locators.html" class="phase-pip" title="Phase 2: Locators">2</a>
+    <span class="phase-pip active" title="Phase 3: Assertions &amp; Waits">3</span>
+    <a href="../phase4/04-playwrightseries-debugging-flakiness.html" class="phase-pip" title="Phase 4: Debugging &amp; Flakiness">4</a>
+    <a href="../phase5/05-playwrightseries-test-data-state.html" class="phase-pip" title="Phase 5: Test Data &amp; State">5</a>
+    <a href="../phase6/06-playwrightseries-auth-sessions.html" class="phase-pip" title="Phase 6: Authentication &amp; Sessions">6</a>
+    <a href="../phase7/07-playwrightseries-api-testing.html" class="phase-pip" title="Phase 7: API Testing">7</a>
+    <a href="../phase8/08-playwrightseries-advanced-scenarios.html" class="phase-pip" title="Phase 8: Advanced Scenarios">8</a>
+    <a href="../phase9/09-playwrightseries-page-objects.html" class="phase-pip" title="Phase 9: Page Object Model">9</a>
+    <a href="../phase10/10-playwrightseries-fixtures-config.html" class="phase-pip" title="Phase 10: Fixtures &amp; Config">10</a>
+    <a href="../phase11/11-playwrightseries-visual-regression.html" class="phase-pip" title="Phase 11: Visual Regression">11</a>
+    <a href="../phase12/12-playwrightseries-cicd-flaky-tests.html" class="phase-pip" title="Phase 12: CI/CD &amp; Flaky Tests">12</a>
+    <a href="../phase13/13-playwrightseries-ai-assisted.html" class="phase-pip" title="Phase 13: AI-Assisted Automation">13</a>
+    <a href="../phase14/14-playwrightseries-automation-leadership.html" class="phase-pip" title="Phase 14: Automation Leadership">14</a>
+    <a href="../phase15/15-playwrightseries-capstone-projects.html" class="phase-pip" title="Phase 15: Capstone Projects">15</a>
+  </div>
+
+
+  <h2>Goal</h2>
+  <p>Assert business outcomes, not implementation details. Wait for meaning, not time. Weak assertions pass when they should fail. Fixed sleeps make tests slow and still flaky. Both are avoidable.</p>
+
+  <h2>Before: weak assertions and fixed sleeps</h2>
+
+  <div class="ba-wrap">
+    <div class="ba-block before">
+      <div class="ba-label">Before: weak assertion + sleep</div>
+<pre><code>// Asserting .toBeTruthy() on the element means "it exists in the DOM".
+// An invisible, empty, or error element still passes this.
+// The sleep is fragile -- too short on a slow machine, too long always.
+await page.getByRole('button', { name: /checkout/i }).click();
+await page.waitForTimeout(3000); // "wait 3 seconds and hope"
+const confirmation = page.getByTestId('order-confirmation');
+await expect(confirmation).toBeTruthy(); // passes even if hidden
+</code></pre>
+    </div>
+    <div class="ba-block after">
+      <div class="ba-label">After: strong assertion + meaningful wait</div>
+<pre><code>// toBeVisible() checks the element is actually visible to the user.
+// waitForResponse waits for the specific network call that proves
+// the order was created -- no sleep, no guessing.
+const orderPromise = page.waitForResponse(
+  r => r.url().includes('/api/orders/checkout')
+);
+await page.getByRole('button', { name: /checkout/i }).click();
+await orderPromise; // wait for the real completion signal
+await expect(
+  page.getByRole('heading', { name: /order confirmed/i })
+).toBeVisible(); // only passes when the user can actually see it
+</code></pre>
+    </div>
+  </div>
+
+  <h2>Strong vs weak assertions</h2>
+  <p>A weak assertion passes when the element exists in the DOM, even if it is invisible, empty, loading, or showing an error. A strong assertion checks what the user actually experiences.</p>
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>Weak (avoid)</th><th>Strong (prefer)</th><th>Why the strong version is better</th></tr></thead>
+      <tbody>
+        <tr><td><code>expect(el).toBeTruthy()</code></td><td><code>expect(el).toBeVisible()</code></td><td>Truthy passes for hidden elements. Visible checks the user can actually see it.</td></tr>
+        <tr><td><code>expect(el).not.toBeNull()</code></td><td><code>expect(el).toBeVisible()</code></td><td>Not-null passes if the element is in the DOM but display:none.</td></tr>
+        <tr><td><code>expect(text).toContain('$')</code></td><td><code>expect(el).toHaveText(/\$\d+\.\d{2}/)</code></td><td>Contains passes for any string with a dollar sign, including error messages.</td></tr>
+        <tr><td><code>expect(page.url()).toContain('confirm')</code></td><td><code>expect(page).toHaveURL(/\/order\/confirm/)</code></td><td>Contains passes for any URL with "confirm" anywhere, including error pages.</td></tr>
+        <tr><td><code>expect(await el.isVisible()).toBe(true)</code></td><td><code>await expect(el).toBeVisible()</code></td><td>The first version does not retry. The second retries until the timeout, handling async rendering.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout gold">
+    <p><strong>Always await the expect.</strong> Notice the last row: <code>await expect(el).toBeVisible()</code> vs <code>expect(await el.isVisible()).toBe(true)</code>. The first version retries the check every 100ms until it passes or times out. The second evaluates once and fails immediately if the element is still loading. This is one of the most common causes of flaky tests written by developers new to Playwright.</p>
+  </div>
+
+  <h2>UI vs API assertions</h2>
+  <p>Not everything needs to be asserted through the browser. When you add an item to the PeakAndPack cart, you can assert either the UI response (the cart count updates) or the API response (the server returned the new cart state). Choose based on what you are actually testing:</p>
+  <pre><code>// Assert the UI outcome (what the user sees)
+await page.getByRole('button', { name: /add to cart/i }).click();
+await expect(page.getByTestId('cart-item-count')).toHaveText('1');
+
+// Assert the API outcome (what the server did) -- faster, no rendering needed
+const response = await page.request.post('https://peakandpackshopdemo.onrender.com/api/cart', {
+  data: { productId: 1, quantity: 1 }
+});
+expect(response.status()).toBe(200);
+const body = await response.json();
+expect(body.itemCount).toBe(1);
+</code></pre>
+
+  <h2>Optimistic UI: asserting before the server responds</h2>
+  <p>PeakAndPack updates the cart count immediately when you click "Add to cart", before the server has confirmed the request. This is called optimistic UI. A test that asserts the cart count and then checks the server response needs to handle both:</p>
+  <pre><code>// The UI updates optimistically -- assert it immediately
+await page.getByRole('button', { name: /add to cart/i }).click();
+await expect(page.getByTestId('cart-item-count')).toHaveText('1'); // passes fast
+
+// Then wait for the server to confirm
+const res = await page.waitForResponse(r => r.url().includes('/api/cart'));
+expect(res.status()).toBe(200); // confirms the server agreed
+</code></pre>
+
+  <h2>waitForResponse: wait for meaning, not time</h2>
+  <p>The most reliable way to wait for an async action to complete is to wait for the network response that proves it completed. Not a sleep, not a fixed timeout: the actual signal.</p>
+  <pre><code>// FRAGILE: waits 2 seconds and hopes the checkout completed
+await page.getByRole('button', { name: /checkout/i }).click();
+await page.waitForTimeout(2000);
+await expect(page.getByRole('heading', { name: /confirmed/i })).toBeVisible();
+
+// RELIABLE: waits for the exact API response that means checkout succeeded
+const checkoutDone = page.waitForResponse(
+  res => res.url().includes('/api/orders/checkout') && res.status() === 201
+);
+await page.getByRole('button', { name: /checkout/i }).click();
+await checkoutDone; // only continues when the server has confirmed
+await expect(page.getByRole('heading', { name: /confirmed/i })).toBeVisible();
+</code></pre>
+
+  <div class="callout blue">
+    <p><strong>Set up the wait before the action, not after.</strong> Notice that <code>page.waitForResponse()</code> is called before the button click. If you call it after, the response might arrive and be missed before the wait is registered. Always set up the listener first, then trigger the action.</p>
+  </div>
+
+  <h2>After: reliable assertions and waits</h2>
+  <div class="callout green">
+    <p><strong>The test that never needs a sleep.</strong> Every async action in PeakAndPack has a network response that signals completion. Using <code>waitForResponse</code> means your tests are as fast as the app, not slower than your worst-case sleep. They also fail faster and more clearly -- a timeout on a real response is a real problem, not a timing guess.</p>
+  </div>
+
+  <div class="callout warn">
+    <p><strong>Common mistakes in Phase 3.</strong></p>
+    <ul style="margin:.5rem 0 0 1.2rem;">
+      <li><strong>Not awaiting expect.</strong> <code>expect(el).toBeVisible()</code> without <code>await</code> returns a Promise that is never checked. The test passes regardless of the actual state. Always write <code>await expect(el).toBeVisible()</code>.</li>
+      <li><strong>Using waitForTimeout.</strong> A sleep is always either too short (causes flakiness) or too long (makes CI slow). Replace every <code>waitForTimeout</code> with a <code>waitForResponse</code> or a specific element assertion.</li>
+      <li><strong>Asserting the wrong thing.</strong> Asserting that the URL contains "success" passes even if the page shows an error. Assert what the user actually sees: the heading, the confirmation message, the updated count.</li>
+      <li><strong>Setting up the wait after the click.</strong> If you call <code>waitForResponse</code> after the click, you risk missing the response. Set up the listener before clicking.</li>
+    </ul>
+  </div>
+
+  <h2>Deliverables</h2>
+  <ul>
+    <li><code>tests/assertions.spec.ts</code> : strong assertions throughout, no weak checks</li>
+    <li><code>tests/waits.spec.ts</code> : waitForResponse examples replacing every sleep</li>
+    <li><code>flaky-to-reliable.md</code> : before/after comparison of a flaky test fixed with waitForResponse</li>
+  </ul>
+
+  <div class="assignment">
+    <div class="a-label">Assignment</div>
+    <h3>Fix a flaky test</h3>
+    <p>Write a test for PeakAndPack's "Add to cart" flow that uses <code>waitForTimeout(1000)</code> to wait for the cart to update. Run it 10 times with <code>npx playwright test --repeat-each=10</code> and note how many times it fails. Then replace the sleep with <code>waitForResponse</code> pointing at the <code>/api/cart</code> endpoint. Run it 10 times again. Document the before and after failure counts in <code>flaky-to-reliable.md</code>.</p>
+  </div>
+
+  <div class="bonus">
+    <div class="b-label">Bonus challenge</div>
+    <p><strong>Write a test that catches the optimistic UI discrepancy.</strong> PeakAndPack updates the cart count immediately on click. Write a test that checks the cart count right after the click (before the server responds) and then checks the API response. What happens if you assert the count before the click handler fires? How does Playwright auto-waiting handle this, and what is its limit?</p>
+  </div>
+
+  <details class="solution">
+    <summary>Show solution -- try it yourself first</summary>
+    <div class="solution-body">
+      <h3>The fixed test</h3>
+      <pre><code>// BEFORE (flaky): sleep-based wait
+test('add to cart updates count (flaky)', async ({ page }) => {
+  await page.goto('https://peakandpack-ui.onrender.com/');
+  await page.getByRole('button', { name: /add to cart/i }).first().click();
+  await page.waitForTimeout(1000); // hope this is enough
+  await expect(page.getByTestId('cart-item-count')).toHaveText('1');
+});
+
+// AFTER (reliable): waitForResponse
+test('add to cart updates count (reliable)', async ({ page }) => {
+  await page.goto('https://peakandpack-ui.onrender.com/');
+  // Set up the listener BEFORE the click
+  const cartUpdated = page.waitForResponse(
+    res => res.url().includes('/api/cart') && res.status() === 200
+  );
+  await page.getByRole('button', { name: /add to cart/i }).first().click();
+  await cartUpdated; // only continues once the server confirmed
+  await expect(page.getByTestId('cart-item-count')).toHaveText('1');
+});
+</code></pre>
+      <p><strong>Why the sleep version is flaky.</strong> 1000ms is an estimate. On a slow CI machine or when the Render free tier is cold-starting, the request takes longer. The assertion runs before the server responds and fails. The <code>waitForResponse</code> version is exact: it waits for the real signal, however long that takes, up to the configured timeout.</p>
+      <p><strong>The order matters.</strong> If you move <code>page.waitForResponse()</code> after the click, the response might arrive in the milliseconds between the click and the wait registration, and you would wait forever. Always register the listener first.</p>
+    </div>
+  </details>
+
+
+  <div class="nav-row">
+    <a href="../phase2/02-playwrightseries-locators.html" class="nav-cta secondary">&larr; Phase 2: Locators</a>
+    <a href="../phase4/04-playwrightseries-debugging-flakiness.html" class="nav-cta primary">Phase 4: Debugging &amp; Flakiness &rarr;</a>
+  </div>
+
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; Playwright: Zero to Architect</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 5: Test Data and State Control | Playwright: Zero to Architect</title>
+<meta name="description" content="Phase 5 of Playwright: Zero to Architect. Build independent, deterministic tests safe to run in parallel.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:#6B7C3A; --olive-dark:#4A5828; --olive-deep:#2E3A18;
+    --cream:#F5F7F0; --warm-white:#FAFCF5;
+    --ink:#1A1F14; --ink2:#3D4235; --ink3:#6B7060; --ink4:#9A9E90;
+    --border:rgba(26,31,20,0.1); --border2:rgba(26,31,20,0.06);
+    --purple:#7A4A9A; --purple-l:#EDE0F5;
+    --gold:#9A6E1A; --gold-l:#F5EDD6;
+    --blue:#2A5C9A; --blue-l:#DDE8F5;
+    --teal:#1A6B54; --teal-l:#D8EEE8;
+    --terra:#8A4A2A; --terra-l:#F5E4D8;
+    --green:#1A7A3A; --green-l:#D8F0E0;
+    --ff-serif:'Lora',Georgia,serif;
+    --ff-sans:'DM Sans',system-ui,sans-serif;
+    --ease:cubic-bezier(0.22,1,0.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--ff-sans);background:var(--warm-white);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  header.site-header{border-bottom:1px solid var(--border);padding:1.1rem 1.5rem;background:var(--warm-white);}
+  .site-header-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+  .site-name{font-family:var(--ff-serif);font-weight:600;font-size:1.05rem;text-decoration:none;}
+  main{max-width:880px;margin:0 auto;padding:2.6rem 1.5rem 5rem;}
+  .breadcrumb{font-size:.82rem;color:var(--ink3);margin-bottom:1.3rem;}
+  .breadcrumb a{text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+  .series-tag{display:inline-block;font-size:.76rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--blue);background:var(--blue-l);padding:.3rem .7rem;border-radius:999px;margin-bottom:1.1rem;}
+  h1{font-family:var(--ff-serif);font-size:2rem;font-weight:700;line-height:1.2;margin-bottom:.8rem;}
+  .subtitle{font-size:1.08rem;color:var(--ink2);margin-bottom:1.6rem;max-width:680px;}
+  .meta-row{display:flex;gap:1.1rem;font-size:.82rem;color:var(--ink3);margin-bottom:1.6rem;border-bottom:1px solid var(--border);padding-bottom:1.3rem;flex-wrap:wrap;}
+  h2{font-family:var(--ff-serif);font-size:1.35rem;font-weight:700;margin-top:2.2rem;margin-bottom:.8rem;}
+  h3{font-family:var(--ff-serif);font-size:1.1rem;font-weight:700;margin-top:1.6rem;margin-bottom:.6rem;}
+  p{margin-bottom:.9rem;color:var(--ink2);font-size:.97rem;}
+  strong{color:var(--ink);font-weight:700;}
+  ul,ol{margin:0 0 1rem 1.3rem;color:var(--ink2);}
+  li{margin-bottom:.4rem;font-size:.97rem;}
+  code{background:var(--cream);padding:.15rem .4rem;border-radius:5px;font-size:.87em;color:var(--olive-deep);}
+  pre{background:var(--ink);color:var(--cream);padding:1rem 1.1rem;border-radius:10px;overflow-x:auto;font-size:.82rem;margin:1rem 0;line-height:1.55;}
+  pre code{background:none;color:inherit;padding:0;}
+  .callout{border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.91rem;}
+  .callout p{margin-bottom:0;}
+  .callout.green{background:var(--green-l);border-left:3px solid var(--green);}.callout.green p{color:var(--olive-deep);}
+  .callout.warn{background:var(--terra-l);border-left:3px solid var(--terra);}.callout.warn p{color:var(--terra);}
+  .callout.blue{background:var(--blue-l);border-left:3px solid var(--blue);}.callout.blue p{color:var(--blue);}
+  .callout.gold{background:var(--gold-l);border-left:3px solid var(--gold);}.callout.gold p{color:var(--gold);}
+  .callout.purple{background:var(--purple-l);border-left:3px solid var(--purple);}.callout.purple p{color:var(--purple);}
+  .fw-table-wrap{overflow-x:auto;margin:1rem 0 1.5rem;}
+  table.fw-table{width:100%;border-collapse:collapse;font-size:.82rem;line-height:1.45;}
+  table.fw-table th,table.fw-table td{border:1px solid var(--border);padding:.5rem .7rem;text-align:left;vertical-align:top;}
+  table.fw-table th{background:var(--cream);font-weight:700;font-size:.77rem;}
+  table.fw-table td{color:var(--ink2);}
+  table.fw-table tr:nth-child(odd) td{background:var(--warm-white);}
+  table.fw-table tr:nth-child(even) td{background:var(--cream);}
+  table.fw-table.compact th,table.fw-table.compact td{padding:.28rem .55rem;font-size:.8rem;}
+  /* Phase progress strip */
+  .phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem;}
+  .phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--ink4);background:var(--warm-white);text-decoration:none;}
+  .phase-pip.active{background:var(--blue);color:var(--warm-white);border-color:transparent;}
+  .phase-pip.done{background:var(--green-l);color:var(--green);border-color:var(--green);}
+  /* Before/After blocks */
+  .ba-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0;}
+  .ba-block{border-radius:10px;overflow:hidden;}
+  .ba-label{padding:.4rem .8rem;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;}
+  .ba-block.before .ba-label{background:var(--terra-l);color:var(--terra);}
+  .ba-block.after .ba-label{background:var(--green-l);color:var(--green);}
+  .ba-block pre{margin:0;border-radius:0 0 10px 10px;}
+  /* Assignment block */
+  .assignment{background:var(--blue-l);border:1px solid var(--blue);border-radius:12px;padding:1.2rem 1.4rem;margin:2rem 0 1rem;}
+  .assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem;}
+  .assignment h3{font-family:var(--ff-serif);color:var(--ink);margin-top:.2rem;margin-bottom:.5rem;}
+  .bonus{background:var(--purple-l);border:1px solid var(--purple);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem;}
+  .bonus .b-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--purple);margin-bottom:.4rem;}
+  /* Collapsible solution */
+  details.solution{margin:1rem 0 2rem;border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+  details.solution summary{padding:.9rem 1.2rem;cursor:pointer;font-weight:700;font-size:.92rem;background:var(--cream);list-style:none;display:flex;align-items:center;gap:.5rem;}
+  details.solution summary::before{content:"&#9654;";font-size:.7rem;color:var(--ink3);transition:transform .2s;}
+  details.solution[open] summary::before{transform:rotate(90deg);}
+  details.solution summary::-webkit-details-marker{display:none;}
+  .solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border);}
+  .solution-body p{font-size:.92rem;}
+  /* Nav */
+  .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:1.8rem;flex-wrap:wrap;}
+  .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:700;font-size:.9rem;padding:.7rem 1.2rem;border-radius:8px;transition:background .2s var(--ease);}
+  .nav-cta.primary{background:var(--olive);color:var(--warm-white);}
+  .nav-cta.primary:hover{background:var(--olive-dark);}
+  .nav-cta.secondary{background:var(--cream);color:var(--ink2);border:1px solid var(--border);}
+  footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.85rem;color:var(--ink3);}
+  footer a{text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+  @media(max-width:600px){
+    h1{font-size:1.55rem;}
+    .ba-wrap{grid-template-columns:1fr;}
+    .meta-row{flex-wrap:wrap;gap:.5rem;}
+  }
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+<main>
+  <p class="breadcrumb">
+    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    <a href="../00-playwrightseries-landing.html">Playwright: Zero to Architect</a> &nbsp;/&nbsp;
+    Phase 5
+  </p>
+  <span class="series-tag">Phase 5 of 15 &middot; Test Data &amp; State</span>
+  <h1>Test Data and State Control</h1>
+  <p class="subtitle">Build tests that are independent, deterministic, and safe to run in parallel. A test that depends on another test is not a test.</p>
+  <div class="meta-row">
+    <span>By RN</span>
+    <span>~4 hours</span>
+    <span>Series: Playwright: Zero to Architect</span>
+    <span>Demo: PeakAndPack</span>
+  </div>
+  <div class="phase-strip" aria-label="Series progress">
+    <a href="../phase0/00-playwrightseries-intro-setup.html" class="phase-pip" title="Phase 0: Intro &amp; Setup">0</a>
+    <a href="../phase1/01-playwrightseries-test-design.html" class="phase-pip" title="Phase 1: Test Design Thinking">1</a>
+    <a href="../phase2/02-playwrightseries-locators.html" class="phase-pip" title="Phase 2: Locators">2</a>
+    <a href="../phase3/03-playwrightseries-assertions-waits.html" class="phase-pip" title="Phase 3: Assertions &amp; Waits">3</a>
+    <a href="../phase4/04-playwrightseries-debugging-flakiness.html" class="phase-pip" title="Phase 4: Debugging &amp; Flakiness">4</a>
+    <span class="phase-pip active" title="Phase 5: Test Data &amp; State">5</span>
+    <a href="../phase6/06-playwrightseries-auth-sessions.html" class="phase-pip" title="Phase 6: Authentication &amp; Sessions">6</a>
+    <a href="../phase7/07-playwrightseries-api-testing.html" class="phase-pip" title="Phase 7: API Testing">7</a>
+    <a href="../phase8/08-playwrightseries-advanced-scenarios.html" class="phase-pip" title="Phase 8: Advanced Scenarios">8</a>
+    <a href="../phase9/09-playwrightseries-page-objects.html" class="phase-pip" title="Phase 9: Page Object Model">9</a>
+    <a href="../phase10/10-playwrightseries-fixtures-config.html" class="phase-pip" title="Phase 10: Fixtures &amp; Config">10</a>
+    <a href="../phase11/11-playwrightseries-visual-regression.html" class="phase-pip" title="Phase 11: Visual Regression">11</a>
+    <a href="../phase12/12-playwrightseries-cicd-flaky-tests.html" class="phase-pip" title="Phase 12: CI/CD &amp; Flaky Tests">12</a>
+    <a href="../phase13/13-playwrightseries-ai-assisted.html" class="phase-pip" title="Phase 13: AI-Assisted Automation">13</a>
+    <a href="../phase14/14-playwrightseries-automation-leadership.html" class="phase-pip" title="Phase 14: Automation Leadership">14</a>
+    <a href="../phase15/15-playwrightseries-capstone-projects.html" class="phase-pip" title="Phase 15: Capstone Projects">15</a>
+  </div>
+
+  <h2>Goal</h2>
+  <p>Build tests that are independent, deterministic, and safe to run in parallel. A test that depends on another test's data, or on the order tests run, is not a test: it is a script that sometimes works.</p>
+
+  <h2>Before: tests that depend on each other</h2>
+  <div class="ba-wrap">
+    <div class="ba-block before">
+      <div class="ba-label">Before: order-dependent tests sharing state</div>
+<pre><code>// Test 2 depends on Test 1 having run first.
+// Run them in parallel or in a different order: both fail.
+// The cart count assertion assumes Test 1 added an item.
+
+test('test 1: add item to cart', async ({ page }) => {
+  await page.goto('https://peakandpack-ui.onrender.com/');
+  await page.getByRole('button', { name: /add to cart/i }).first().click();
+});
+
+test('test 2: cart has one item', async ({ page }) => {
+  await page.goto('https://peakandpack-ui.onrender.com/cart');
+  // FAILS if test 1 did not run first, or ran in a different browser context
+  await expect(page.getByTestId('cart-item-count')).toHaveText('1');
+});
+</code></pre>
+    </div>
+    <div class="ba-block after">
+      <div class="ba-label">After: each test owns its state</div>
+<pre><code>// Each test sets up its own state via the API before asserting the UI.
+// Run in any order, any number of times, in parallel: both pass.
+
+test('cart shows item added via API', async ({ page, request }) => {
+  // Seed the cart via API -- fast, no UI interaction needed
+  await request.post('https://peakandpackshopdemo.onrender.com/api/cart', {
+    data: { productId: 1, quantity: 1 }
+  });
+  await page.goto('https://peakandpack-ui.onrender.com/cart');
+  await expect(page.getByTestId('cart-item-count')).toHaveText('1');
+});
+</code></pre>
+    </div>
+  </div>
+
+  <h2>Test independence: the rule</h2>
+  <p>Every test must be able to run in isolation, in any order, on any worker, and produce the same result. If removing a test from the suite changes whether another test passes, they are coupled and need to be fixed.</p>
+  <p>The three things that break independence:</p>
+  <ul>
+    <li><strong>Shared data</strong>: two tests using the same user account, the same cart, or the same database rows.</li>
+    <li><strong>Shared state</strong>: a test that leaves the browser or the server in a state the next test assumes.</li>
+    <li><strong>Execution order dependency</strong>: a test that only works if another test ran before it.</li>
+  </ul>
+
+  <h2>API setup vs UI setup</h2>
+  <p>For any test that needs data to exist before it starts (a cart with items, a logged-in user, a specific product in stock), set it up via the API rather than the UI. The API is faster, more reliable, and does not count as part of the test.</p>
+  <pre><code>import { test, expect } from '@playwright/test';
+
+test('checkout flow completes', async ({ page, request }) => {
+  // Setup: create a cart with one item via API (not through the UI)
+  const cartRes = await request.post('https://peakandpackshopdemo.onrender.com/api/cart', {
+    data: { productId: 1, quantity: 1 }
+  });
+  expect(cartRes.status()).toBe(200);
+
+  // Test: assert the UI checkout flow
+  await page.goto('https://peakandpack-ui.onrender.com/cart');
+  await page.getByRole('button', { name: /checkout/i }).click();
+  await expect(
+    page.getByRole('heading', { name: /order confirmed/i })
+  ).toBeVisible();
+});
+</code></pre>
+
+  <h2>storageState: save a session, reuse it everywhere</h2>
+  <p>Logging in through the UI in every test that needs authentication is slow and fragile. Playwright can save the browser's storage state (cookies, localStorage, sessionStorage) after a single login and reuse it across tests without repeating the login flow.</p>
+  <p>Step 1: create a global setup file that logs in once and saves the state:</p>
+  <pre><code>// fixtures/storageState.ts -- run once before the test suite
+import { chromium } from '@playwright/test';
+
+async function globalSetup() {
+  const browser = await chromium.launch();
+  const page = await browser.newPage();
+  await page.goto('https://peakandpack-demo.onrender.com/login');
+  await page.getByLabel(/email/i).fill('test@peakandpack.com');
+  await page.getByLabel(/password/i).fill('password123');
+  await page.getByRole('button', { name: /sign in/i }).click();
+  await page.waitForURL('https://peakandpack-ui.onrender.com/');
+  // Save the session to a file
+  await page.context().storageState({ path: 'fixtures/auth.json' });
+  await browser.close();
+}
+
+export default globalSetup;
+</code></pre>
+  <p>Step 2: reference it in <code>playwright.config.ts</code> and in tests that need auth:</p>
+  <pre><code>// playwright.config.ts
+export default defineConfig({
+  globalSetup: './fixtures/storageState.ts',
+  use: {
+    storageState: 'fixtures/auth.json', // every test starts logged in
+  },
+});
+</code></pre>
+
+  <h2>Parallel-safe data: isolated test users</h2>
+  <p>When tests run in parallel, two workers can interfere if they use the same user account. Each worker needs its own isolated data. The cleanest approach: generate a unique email per test using a timestamp or UUID.</p>
+  <pre><code>test('new user can register and check out', async ({ page, request }) => {
+  // Unique email per test run -- no collision with parallel workers
+  const email = `test-${Date.now()}@peakandpack.com`;
+
+  await request.post('https://peakandpackshopdemo.onrender.com/api/auth/register', {
+    data: { email, password: 'password123' }
+  });
+
+  await page.goto('https://peakandpack-ui.onrender.com/login');
+  await page.getByLabel(/email/i).fill(email);
+  await page.getByLabel(/password/i).fill('password123');
+  await page.getByRole('button', { name: /sign in/i }).click();
+  await expect(page).toHaveURL('/');
+});
+</code></pre>
+
+  <div class="callout gold">
+    <p><strong>The parallel test is the stress test.</strong> A test suite that passes sequentially but fails in parallel almost always has hidden data coupling. Enable <code>fullyParallel: true</code> in your config and run the suite. The failures it reveals are not parallel problems -- they are independence problems that parallel execution makes visible.</p>
+  </div>
+
+  <div class="callout warn">
+    <p><strong>Common mistakes in Phase 5.</strong></p>
+    <ul style="margin:.5rem 0 0 1.2rem;">
+      <li><strong>Using the same test account for all tests.</strong> The moment two tests touch the same cart simultaneously, they corrupt each other's data. Generate a unique user per test.</li>
+      <li><strong>Logging in through the UI in every test.</strong> This is the most common performance killer in Playwright suites. Save the session once with storageState and reuse it.</li>
+      <li><strong>Not cleaning up after tests.</strong> A test that creates data but does not clean it up leaves the database in an unknown state. The next test run may fail because of leftover data from a previous run.</li>
+      <li><strong>Assuming beforeAll runs before parallel workers start.</strong> In fully parallel mode, beforeAll runs once per worker, not once per suite. If you are using it for global setup, use <code>globalSetup</code> in the config instead.</li>
+    </ul>
+  </div>
+
+  <h2>Deliverables</h2>
+  <ul>
+    <li><code>tests/state.spec.ts</code>: independent, API-seeded tests with no UI setup</li>
+    <li><code>fixtures/storageState.ts</code>: global setup that saves the auth session</li>
+    <li><code>data-isolation.md</code>: your parallel-safe data patterns for PeakAndPack</li>
+  </ul>
+
+  <div class="assignment">
+    <div class="a-label">Assignment</div>
+    <h3>Break and fix a coupled test</h3>
+    <p>Write two tests: the first adds an item to the PeakAndPack cart through the UI, the second asserts the cart has one item. Run them in order and confirm they pass. Then swap their order in the file and run again. Confirm the second test now fails. Finally, rewrite both tests to be independent using API seeding. Run them in any order and confirm both pass regardless.</p>
+  </div>
+
+  <div class="bonus">
+    <div class="b-label">Bonus challenge</div>
+    <p><strong>Enable fullyParallel and find the coupling.</strong> Set <code>fullyParallel: true</code> in your config and run your full suite from phases 0 to 5. If any tests fail that passed in sequential mode, identify the coupling and fix it. Document what you found in <code>data-isolation.md</code>.</p>
+  </div>
+
+  <details class="solution">
+    <summary>Show solution -- try it yourself first</summary>
+    <div class="solution-body">
+      <h3>Independent versions of both tests</h3>
+      <pre><code>// Both tests set up their own state. Order does not matter.
+test('cart shows one item after API add', async ({ page, request }) => {
+  // Each test gets its own unique user
+  const email = `test-${Date.now()}@peakandpack.com`;
+  await request.post('https://peakandpackshopdemo.onrender.com/api/auth/register', { data: { email, password: 'pw123' }});
+  const loginRes = await request.post('https://peakandpackshopdemo.onrender.com/api/auth/login', { data: { email, password: 'pw123' }});
+  const { token } = await loginRes.json();
+  await request.post('https://peakandpackshopdemo.onrender.com/api/cart', {
+    headers: { Authorization: `Bearer ${token}` },
+    data: { productId: 1, quantity: 1 }
+  });
+  // Now assert the UI with that user's session
+  await page.goto('https://peakandpack-ui.onrender.com/cart');
+  await expect(page.getByTestId('cart-item-count')).toHaveText('1');
+});
+
+test('empty cart shows zero count', async ({ page, request }) => {
+  // Different unique user -- completely isolated
+  const email = `test-${Date.now() + 1}@peakandpack.com`;
+  await request.post('https://peakandpackshopdemo.onrender.com/api/auth/register', { data: { email, password: 'pw123' }});
+  await page.goto('https://peakandpack-ui.onrender.com/');
+  await expect(page.getByTestId('cart-item-count')).toHaveText('0');
+});
+</code></pre>
+      <p><strong>Why the timestamp works for isolation.</strong> <code>Date.now()</code> returns milliseconds since epoch. Two tests running in parallel get different timestamps and therefore different email addresses. No collision. For very high parallelism, use a UUID library instead.</p>
+    </div>
+  </details>
+
+  <div class="nav-row">
+    <a href="../phase4/04-playwrightseries-debugging-flakiness.html" class="nav-cta secondary">&larr; Phase 4: Debugging &amp; Flakiness</a>
+    <a href="../phase6/06-playwrightseries-auth-sessions.html" class="nav-cta primary">Phase 6: Authentication &amp; Sessions &rarr;</a>
+  </div>
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; Playwright: Zero to Architect</p>
+  </div>
+</main>
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+</body>
+</html>

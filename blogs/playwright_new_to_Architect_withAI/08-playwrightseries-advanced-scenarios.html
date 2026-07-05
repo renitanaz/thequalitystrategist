@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 8: Advanced Scenarios | Playwright: Zero to Architect</title>
+<meta name="description" content="Phase 8 of Playwright: Zero to Architect. File upload, multiple tabs, dialogs, iframes, drag and drop, infinite scroll.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:#6B7C3A; --olive-dark:#4A5828; --olive-deep:#2E3A18;
+    --cream:#F5F7F0; --warm-white:#FAFCF5;
+    --ink:#1A1F14; --ink2:#3D4235; --ink3:#6B7060; --ink4:#9A9E90;
+    --border:rgba(26,31,20,0.1); --border2:rgba(26,31,20,0.06);
+    --purple:#7A4A9A; --purple-l:#EDE0F5;
+    --gold:#9A6E1A; --gold-l:#F5EDD6;
+    --blue:#2A5C9A; --blue-l:#DDE8F5;
+    --teal:#1A6B54; --teal-l:#D8EEE8;
+    --terra:#8A4A2A; --terra-l:#F5E4D8;
+    --green:#1A7A3A; --green-l:#D8F0E0;
+    --ff-serif:'Lora',Georgia,serif;
+    --ff-sans:'DM Sans',system-ui,sans-serif;
+    --ease:cubic-bezier(0.22,1,0.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--ff-sans);background:var(--warm-white);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  header.site-header{border-bottom:1px solid var(--border);padding:1.1rem 1.5rem;background:var(--warm-white);}
+  .site-header-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+  .site-name{font-family:var(--ff-serif);font-weight:600;font-size:1.05rem;text-decoration:none;}
+  main{max-width:880px;margin:0 auto;padding:2.6rem 1.5rem 5rem;}
+  .breadcrumb{font-size:.82rem;color:var(--ink3);margin-bottom:1.3rem;}
+  .breadcrumb a{text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+  .series-tag{display:inline-block;font-size:.76rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--blue);background:var(--blue-l);padding:.3rem .7rem;border-radius:999px;margin-bottom:1.1rem;}
+  h1{font-family:var(--ff-serif);font-size:2rem;font-weight:700;line-height:1.2;margin-bottom:.8rem;}
+  .subtitle{font-size:1.08rem;color:var(--ink2);margin-bottom:1.6rem;max-width:680px;}
+  .meta-row{display:flex;gap:1.1rem;font-size:.82rem;color:var(--ink3);margin-bottom:1.6rem;border-bottom:1px solid var(--border);padding-bottom:1.3rem;flex-wrap:wrap;}
+  h2{font-family:var(--ff-serif);font-size:1.35rem;font-weight:700;margin-top:2.2rem;margin-bottom:.8rem;}
+  h3{font-family:var(--ff-serif);font-size:1.1rem;font-weight:700;margin-top:1.6rem;margin-bottom:.6rem;}
+  p{margin-bottom:.9rem;color:var(--ink2);font-size:.97rem;}
+  strong{color:var(--ink);font-weight:700;}
+  ul,ol{margin:0 0 1rem 1.3rem;color:var(--ink2);}
+  li{margin-bottom:.4rem;font-size:.97rem;}
+  code{background:var(--cream);padding:.15rem .4rem;border-radius:5px;font-size:.87em;color:var(--olive-deep);}
+  pre{background:var(--ink);color:var(--cream);padding:1rem 1.1rem;border-radius:10px;overflow-x:auto;font-size:.82rem;margin:1rem 0;line-height:1.55;}
+  pre code{background:none;color:inherit;padding:0;}
+  .callout{border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.91rem;}
+  .callout p{margin-bottom:0;}
+  .callout.green{background:var(--green-l);border-left:3px solid var(--green);}.callout.green p{color:var(--olive-deep);}
+  .callout.warn{background:var(--terra-l);border-left:3px solid var(--terra);}.callout.warn p{color:var(--terra);}
+  .callout.blue{background:var(--blue-l);border-left:3px solid var(--blue);}.callout.blue p{color:var(--blue);}
+  .callout.gold{background:var(--gold-l);border-left:3px solid var(--gold);}.callout.gold p{color:var(--gold);}
+  .callout.purple{background:var(--purple-l);border-left:3px solid var(--purple);}.callout.purple p{color:var(--purple);}
+  .fw-table-wrap{overflow-x:auto;margin:1rem 0 1.5rem;}
+  table.fw-table{width:100%;border-collapse:collapse;font-size:.82rem;line-height:1.45;}
+  table.fw-table th,table.fw-table td{border:1px solid var(--border);padding:.5rem .7rem;text-align:left;vertical-align:top;}
+  table.fw-table th{background:var(--cream);font-weight:700;font-size:.77rem;}
+  table.fw-table td{color:var(--ink2);}
+  table.fw-table tr:nth-child(odd) td{background:var(--warm-white);}
+  table.fw-table tr:nth-child(even) td{background:var(--cream);}
+  table.fw-table.compact th,table.fw-table.compact td{padding:.28rem .55rem;font-size:.8rem;}
+  /* Phase progress strip */
+  .phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem;}
+  .phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--ink4);background:var(--warm-white);text-decoration:none;}
+  .phase-pip.active{background:var(--blue);color:var(--warm-white);border-color:transparent;}
+  .phase-pip.done{background:var(--green-l);color:var(--green);border-color:var(--green);}
+  /* Before/After blocks */
+  .ba-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0;}
+  .ba-block{border-radius:10px;overflow:hidden;}
+  .ba-label{padding:.4rem .8rem;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;}
+  .ba-block.before .ba-label{background:var(--terra-l);color:var(--terra);}
+  .ba-block.after .ba-label{background:var(--green-l);color:var(--green);}
+  .ba-block pre{margin:0;border-radius:0 0 10px 10px;}
+  /* Assignment block */
+  .assignment{background:var(--blue-l);border:1px solid var(--blue);border-radius:12px;padding:1.2rem 1.4rem;margin:2rem 0 1rem;}
+  .assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem;}
+  .assignment h3{font-family:var(--ff-serif);color:var(--ink);margin-top:.2rem;margin-bottom:.5rem;}
+  .bonus{background:var(--purple-l);border:1px solid var(--purple);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem;}
+  .bonus .b-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--purple);margin-bottom:.4rem;}
+  /* Collapsible solution */
+  details.solution{margin:1rem 0 2rem;border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+  details.solution summary{padding:.9rem 1.2rem;cursor:pointer;font-weight:700;font-size:.92rem;background:var(--cream);list-style:none;display:flex;align-items:center;gap:.5rem;}
+  details.solution summary::before{content:"&#9654;";font-size:.7rem;color:var(--ink3);transition:transform .2s;}
+  details.solution[open] summary::before{transform:rotate(90deg);}
+  details.solution summary::-webkit-details-marker{display:none;}
+  .solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border);}
+  .solution-body p{font-size:.92rem;}
+  /* Nav */
+  .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:1.8rem;flex-wrap:wrap;}
+  .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:700;font-size:.9rem;padding:.7rem 1.2rem;border-radius:8px;transition:background .2s var(--ease);}
+  .nav-cta.primary{background:var(--olive);color:var(--warm-white);}
+  .nav-cta.primary:hover{background:var(--olive-dark);}
+  .nav-cta.secondary{background:var(--cream);color:var(--ink2);border:1px solid var(--border);}
+  footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.85rem;color:var(--ink3);}
+  footer a{text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+  @media(max-width:600px){
+    h1{font-size:1.55rem;}
+    .ba-wrap{grid-template-columns:1fr;}
+    .meta-row{flex-wrap:wrap;gap:.5rem;}
+  }
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+<main>
+  <p class="breadcrumb">
+    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    <a href="../00-playwrightseries-landing.html">Playwright: Zero to Architect</a> &nbsp;/&nbsp;
+    Phase 8
+  </p>
+  <span class="series-tag">Phase 8 of 15 &middot; Advanced Scenarios</span>
+  <h1>Advanced Scenarios</h1>
+  <p class="subtitle">File uploads, multiple tabs, dialogs, iframes, drag and drop, and infinite scroll. The parts most automation engineers skip.</p>
+  <div class="meta-row">
+    <span>By RN</span><span>~5 hours</span>
+    <span>Series: Playwright: Zero to Architect</span>
+    <span>Demo: PeakAndPack</span>
+  </div>
+  <div class="phase-strip" aria-label="Series progress">
+    <a href="../phase0/00-playwrightseries-intro-setup.html" class="phase-pip" title="Phase 0: Intro &amp; Setup">0</a>
+    <a href="../phase1/01-playwrightseries-test-design.html" class="phase-pip" title="Phase 1: Test Design Thinking">1</a>
+    <a href="../phase2/02-playwrightseries-locators.html" class="phase-pip" title="Phase 2: Locators">2</a>
+    <a href="../phase3/03-playwrightseries-assertions-waits.html" class="phase-pip" title="Phase 3: Assertions &amp; Waits">3</a>
+    <a href="../phase4/04-playwrightseries-debugging-flakiness.html" class="phase-pip" title="Phase 4: Debugging &amp; Flakiness">4</a>
+    <a href="../phase5/05-playwrightseries-test-data-state.html" class="phase-pip" title="Phase 5: Test Data &amp; State">5</a>
+    <a href="../phase6/06-playwrightseries-auth-sessions.html" class="phase-pip" title="Phase 6: Authentication &amp; Sessions">6</a>
+    <a href="../phase7/07-playwrightseries-api-testing.html" class="phase-pip" title="Phase 7: API Testing">7</a>
+    <span class="phase-pip active" title="Phase 8: Advanced Scenarios">8</span>
+    <a href="../phase9/09-playwrightseries-page-objects.html" class="phase-pip" title="Phase 9: Page Object Model">9</a>
+    <a href="../phase10/10-playwrightseries-fixtures-config.html" class="phase-pip" title="Phase 10: Fixtures &amp; Config">10</a>
+    <a href="../phase11/11-playwrightseries-visual-regression.html" class="phase-pip" title="Phase 11: Visual Regression">11</a>
+    <a href="../phase12/12-playwrightseries-cicd-flaky-tests.html" class="phase-pip" title="Phase 12: CI/CD &amp; Flaky Tests">12</a>
+    <a href="../phase13/13-playwrightseries-ai-assisted.html" class="phase-pip" title="Phase 13: AI-Assisted Automation">13</a>
+    <a href="../phase14/14-playwrightseries-automation-leadership.html" class="phase-pip" title="Phase 14: Automation Leadership">14</a>
+    <a href="../phase15/15-playwrightseries-capstone-projects.html" class="phase-pip" title="Phase 15: Capstone Projects">15</a>
+  </div>
+
+  <h2>Goal</h2>
+  <p>Handle the parts of real applications that make most automation engineers give up. File uploads, multiple tabs, dialogs, iframes, drag and drop, and infinite scroll: each requires a specific Playwright pattern.</p>
+
+  <h2>Before: skipping or hardcoding workarounds</h2>
+  <div class="ba-wrap">
+    <div class="ba-block before">
+      <div class="ba-label">Before: skipping the hard part</div>
+<pre><code>// The test skips file upload because "it's too hard to automate".
+// The dialog test uses a fixed wait instead of handling the dialog.
+// These are not tests -- they're gaps in coverage.
+
+test.skip('admin CSV upload'); // TODO: figure this out later
+
+test('delete button works', async ({ page }) => {
+  await page.goto('https://peakandpack-ui.onrender.com/admin/products');
+  await page.getByRole('button', { name: /delete/i }).first().click();
+  await page.waitForTimeout(500); // hope the dialog appears
+  // Dialog never handled -- test passes without confirming the delete
+});
+</code></pre>
+    </div>
+    <div class="ba-block after">
+      <div class="ba-label">After: every scenario handled properly</div>
+<pre><code>// File upload handled with setInputFiles.
+// Dialog handled by registering a listener before the action.
+
+test('admin can upload product CSV', async ({ page }) => {
+  await page.goto('https://peakandpack-ui.onrender.com/admin/import');
+  await page.getByLabel(/upload/i).setInputFiles('fixtures/products.csv');
+  await page.getByRole('button', { name: /import/i }).click();
+  await expect(page.getByRole('status')).toContainText(/imported/i);
+});
+
+test('delete button removes product after confirmation', async ({ page }) => {
+  // Register dialog handler BEFORE the action that triggers it
+  page.once('dialog', dialog => dialog.accept());
+  await page.goto('https://peakandpack-ui.onrender.com/admin/products');
+  await page.getByRole('button', { name: /delete/i }).first().click();
+  await expect(page.getByRole('alert')).toContainText(/deleted/i);
+});
+</code></pre>
+    </div>
+  </div>
+
+  <h2>File upload and download</h2>
+  <p><code>setInputFiles()</code> sets a file on a file input element without opening the OS file picker: the picker cannot be automated:</p>
+  <pre><code>// Upload a file
+await page.getByLabel(/upload csv/i).setInputFiles('fixtures/products.csv');
+
+// Upload multiple files
+await page.getByLabel(/images/i).setInputFiles([
+  'fixtures/image1.png',
+  'fixtures/image2.png',
+]);
+
+// Download a file and assert its content
+const downloadPromise = page.waitForEvent('download');
+await page.getByRole('link', { name: /export/i }).click();
+const download = await downloadPromise;
+const path = await download.path();
+const content = require('fs').readFileSync(path, 'utf8');
+expect(content).toContain('productId');
+</code></pre>
+
+  <h2>Multiple tabs and windows</h2>
+  <p>When a link or button opens a new tab, Playwright gives you the new page object via the <code>popup</code> event:</p>
+  <pre><code>// Open a product in a new tab and assert both tabs are consistent
+const [newTab] = await Promise.all([
+  page.waitForEvent('popup'),
+  page.getByRole('link', { name: /open in new tab/i }).click(),
+]);
+await newTab.waitForLoadState();
+
+// Assert the new tab shows the same product
+await expect(newTab.getByRole('heading', { name: /trail runner pro/i })).toBeVisible();
+// Assert the original tab is unchanged
+await expect(page.getByRole('heading', { name: /products/i })).toBeVisible();
+</code></pre>
+
+  <h2>Dialogs and alerts</h2>
+  <p>Browser dialogs (alert, confirm, prompt) must be handled by registering a listener before the action that triggers them. If you don't handle a dialog, Playwright dismisses it automatically and the test may fail for the wrong reason:</p>
+  <pre><code>// Accept a confirm dialog
+page.once('dialog', dialog => dialog.accept());
+await page.getByRole('button', { name: /delete/i }).click();
+
+// Dismiss a confirm dialog (click Cancel)
+page.once('dialog', dialog => dialog.dismiss());
+await page.getByRole('button', { name: /delete/i }).click();
+
+// Handle a prompt dialog and enter text
+page.once('dialog', dialog => dialog.accept('My new name'));
+await page.getByRole('button', { name: /rename/i }).click();
+</code></pre>
+
+  <h2>Iframes</h2>
+  <p>Elements inside an iframe are in a separate document. Use <code>frameLocator()</code> to scope your locator to the iframe first:</p>
+  <pre><code>// Find an element inside an iframe
+const frame = page.frameLocator('iframe[title="Payment form"]');
+await frame.getByLabel(/card number/i).fill('4111 1111 1111 1111');
+await frame.getByLabel(/expiry/i).fill('12/28');
+await frame.getByRole('button', { name: /pay/i }).click();
+</code></pre>
+
+  <h2>Drag and drop</h2>
+  <p>For HTML5 drag and drop, use <code>dragTo()</code>. For custom drag implementations, use <code>dispatchEvent</code> with the mouse events the implementation listens for:</p>
+  <pre><code>// HTML5 drag and drop
+const item = page.getByRole('listitem').nth(0);
+const target = page.getByRole('listitem').nth(2);
+await item.dragTo(target);
+
+// Assert the new order
+const items = await page.getByRole('listitem').allTextContents();
+expect(items[0]).toContain('expected first item');
+</code></pre>
+
+  <h2>Infinite scroll and virtualized lists</h2>
+  <p>Products not yet loaded into the DOM cannot be found by a locator. Scroll to load them first:</p>
+  <pre><code>// Scroll to the bottom of the page to trigger loading more products
+await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+
+// Wait for the new items to appear
+await page.waitForSelector('[data-testid="product-card"]:nth-child(25)');
+
+// Now assert the items that were not in the initial load
+await expect(
+  page.getByRole('article').nth(24)
+).toBeVisible();
+</code></pre>
+
+  <div class="callout gold">
+    <p><strong>Register event listeners before the action, not after.</strong> This applies to dialogs, popups, downloads, and file choosers. Playwright events fire at the moment of the action. If you set up the listener a millisecond after the click, you've already missed it.</p>
+  </div>
+
+  <div class="callout warn">
+    <p><strong>Common mistakes in Phase 8.</strong></p>
+    <ul style="margin:.5rem 0 0 1.2rem;">
+      <li><strong>Trying to click the OS file picker.</strong> Operating system dialogs cannot be automated by Playwright. Use <code>setInputFiles()</code> directly on the input element instead.</li>
+      <li><strong>Handling dialogs after the click.</strong> The dialog fires immediately when the button is clicked. Set up <code>page.once('dialog', ...)</code> before clicking, not after.</li>
+      <li><strong>Using page locators inside an iframe.</strong> Locators on <code>page</code> don't cross iframe boundaries. Always use <code>page.frameLocator('...')</code> first.</li>
+      <li><strong>Asserting virtualized list items before scrolling.</strong> Items that haven't been loaded into the DOM yet return "element not found". Scroll to load them first, then assert.</li>
+    </ul>
+  </div>
+
+  <h2>Deliverables</h2>
+  <ul>
+    <li><code>tests/advanced.spec.ts</code>: one test per scenario: upload, download, tabs, dialog, iframe, drag, scroll</li>
+    <li><code>advanced-scenarios-guide.md</code>: which Playwright API to use for each scenario</li>
+  </ul>
+
+  <div class="assignment">
+    <div class="a-label">Assignment</div>
+    <h3>Handle a confirm dialog properly</h3>
+    <p>Write two tests for PeakAndPack's product delete flow. The first accepts the confirm dialog and asserts the product is removed. The second dismisses the dialog and asserts the product is still there. Both tests must register the dialog handler before clicking the delete button. Confirm both pass.</p>
+  </div>
+
+  <div class="bonus">
+    <div class="b-label">Bonus challenge</div>
+    <p><strong>Test the download and verify its content.</strong> PeakAndPack admin has an "Export products" link that downloads a CSV. Write a test that clicks the link, captures the download with <code>waitForEvent('download')</code>, reads the downloaded file from disk, and asserts it contains a header row with <code>id,name,price</code>. This is a real end-to-end test of the export feature that cannot be done with an API test alone.</p>
+  </div>
+
+  <details class="solution">
+    <summary>Show solution -- try it yourself first</summary>
+    <div class="solution-body">
+      <h3>Accept and dismiss dialog tests</h3>
+      <pre><code>test('delete with confirmation removes the product', async ({ page }) => {
+  await page.goto('https://peakandpack-ui.onrender.com/admin/products');
+  const productName = await page.getByRole('article').first()
+    .getByRole('heading').textContent();
+
+  // Register BEFORE clicking
+  page.once('dialog', dialog => dialog.accept());
+  await page.getByRole('button', { name: /delete/i }).first().click();
+
+  // Product should no longer appear
+  await expect(page.getByText(productName!)).not.toBeVisible();
+});
+
+test('dismiss dialog keeps the product', async ({ page }) => {
+  await page.goto('https://peakandpack-ui.onrender.com/admin/products');
+  const productName = await page.getByRole('article').first()
+    .getByRole('heading').textContent();
+
+  // Dismiss instead of accept
+  page.once('dialog', dialog => dialog.dismiss());
+  await page.getByRole('button', { name: /delete/i }).first().click();
+
+  // Product should still be there
+  await expect(page.getByText(productName!)).toBeVisible();
+});
+</code></pre>
+      <p><strong>Capturing the product name before the action</strong> is the key pattern here. After the delete, you need to know what to assert is gone. Reading the name before the action means you are asserting against real data, not a hardcoded string that might not match.</p>
+    </div>
+  </details>
+
+  <div class="nav-row">
+    <a href="../phase7/07-playwrightseries-api-testing.html" class="nav-cta secondary">&larr; Phase 7: API Testing</a>
+    <a href="../phase9/09-playwrightseries-page-objects.html" class="nav-cta primary">Phase 9: Page Object Model &rarr;</a>
+  </div>
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; Playwright: Zero to Architect</p>
+  </div>
+</main>
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+</body>
+</html>

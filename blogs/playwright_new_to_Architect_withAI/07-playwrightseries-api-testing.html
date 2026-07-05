@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 7: API Testing with Playwright | Playwright: Zero to Architect</title>
+<meta name="description" content="Phase 7 of Playwright: Zero to Architect. Test the API layer directly with request context. Chain API and UI testing in one tool.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:#6B7C3A; --olive-dark:#4A5828; --olive-deep:#2E3A18;
+    --cream:#F5F7F0; --warm-white:#FAFCF5;
+    --ink:#1A1F14; --ink2:#3D4235; --ink3:#6B7060; --ink4:#9A9E90;
+    --border:rgba(26,31,20,0.1); --border2:rgba(26,31,20,0.06);
+    --purple:#7A4A9A; --purple-l:#EDE0F5;
+    --gold:#9A6E1A; --gold-l:#F5EDD6;
+    --blue:#2A5C9A; --blue-l:#DDE8F5;
+    --teal:#1A6B54; --teal-l:#D8EEE8;
+    --terra:#8A4A2A; --terra-l:#F5E4D8;
+    --green:#1A7A3A; --green-l:#D8F0E0;
+    --ff-serif:'Lora',Georgia,serif;
+    --ff-sans:'DM Sans',system-ui,sans-serif;
+    --ease:cubic-bezier(0.22,1,0.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--ff-sans);background:var(--warm-white);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  header.site-header{border-bottom:1px solid var(--border);padding:1.1rem 1.5rem;background:var(--warm-white);}
+  .site-header-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+  .site-name{font-family:var(--ff-serif);font-weight:600;font-size:1.05rem;text-decoration:none;}
+  main{max-width:880px;margin:0 auto;padding:2.6rem 1.5rem 5rem;}
+  .breadcrumb{font-size:.82rem;color:var(--ink3);margin-bottom:1.3rem;}
+  .breadcrumb a{text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+  .series-tag{display:inline-block;font-size:.76rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--blue);background:var(--blue-l);padding:.3rem .7rem;border-radius:999px;margin-bottom:1.1rem;}
+  h1{font-family:var(--ff-serif);font-size:2rem;font-weight:700;line-height:1.2;margin-bottom:.8rem;}
+  .subtitle{font-size:1.08rem;color:var(--ink2);margin-bottom:1.6rem;max-width:680px;}
+  .meta-row{display:flex;gap:1.1rem;font-size:.82rem;color:var(--ink3);margin-bottom:1.6rem;border-bottom:1px solid var(--border);padding-bottom:1.3rem;flex-wrap:wrap;}
+  h2{font-family:var(--ff-serif);font-size:1.35rem;font-weight:700;margin-top:2.2rem;margin-bottom:.8rem;}
+  h3{font-family:var(--ff-serif);font-size:1.1rem;font-weight:700;margin-top:1.6rem;margin-bottom:.6rem;}
+  p{margin-bottom:.9rem;color:var(--ink2);font-size:.97rem;}
+  strong{color:var(--ink);font-weight:700;}
+  ul,ol{margin:0 0 1rem 1.3rem;color:var(--ink2);}
+  li{margin-bottom:.4rem;font-size:.97rem;}
+  code{background:var(--cream);padding:.15rem .4rem;border-radius:5px;font-size:.87em;color:var(--olive-deep);}
+  pre{background:var(--ink);color:var(--cream);padding:1rem 1.1rem;border-radius:10px;overflow-x:auto;font-size:.82rem;margin:1rem 0;line-height:1.55;}
+  pre code{background:none;color:inherit;padding:0;}
+  .callout{border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.91rem;}
+  .callout p{margin-bottom:0;}
+  .callout.green{background:var(--green-l);border-left:3px solid var(--green);}.callout.green p{color:var(--olive-deep);}
+  .callout.warn{background:var(--terra-l);border-left:3px solid var(--terra);}.callout.warn p{color:var(--terra);}
+  .callout.blue{background:var(--blue-l);border-left:3px solid var(--blue);}.callout.blue p{color:var(--blue);}
+  .callout.gold{background:var(--gold-l);border-left:3px solid var(--gold);}.callout.gold p{color:var(--gold);}
+  .callout.purple{background:var(--purple-l);border-left:3px solid var(--purple);}.callout.purple p{color:var(--purple);}
+  .fw-table-wrap{overflow-x:auto;margin:1rem 0 1.5rem;}
+  table.fw-table{width:100%;border-collapse:collapse;font-size:.82rem;line-height:1.45;}
+  table.fw-table th,table.fw-table td{border:1px solid var(--border);padding:.5rem .7rem;text-align:left;vertical-align:top;}
+  table.fw-table th{background:var(--cream);font-weight:700;font-size:.77rem;}
+  table.fw-table td{color:var(--ink2);}
+  table.fw-table tr:nth-child(odd) td{background:var(--warm-white);}
+  table.fw-table tr:nth-child(even) td{background:var(--cream);}
+  table.fw-table.compact th,table.fw-table.compact td{padding:.28rem .55rem;font-size:.8rem;}
+  /* Phase progress strip */
+  .phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem;}
+  .phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--ink4);background:var(--warm-white);text-decoration:none;}
+  .phase-pip.active{background:var(--blue);color:var(--warm-white);border-color:transparent;}
+  .phase-pip.done{background:var(--green-l);color:var(--green);border-color:var(--green);}
+  /* Before/After blocks */
+  .ba-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0;}
+  .ba-block{border-radius:10px;overflow:hidden;}
+  .ba-label{padding:.4rem .8rem;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;}
+  .ba-block.before .ba-label{background:var(--terra-l);color:var(--terra);}
+  .ba-block.after .ba-label{background:var(--green-l);color:var(--green);}
+  .ba-block pre{margin:0;border-radius:0 0 10px 10px;}
+  /* Assignment block */
+  .assignment{background:var(--blue-l);border:1px solid var(--blue);border-radius:12px;padding:1.2rem 1.4rem;margin:2rem 0 1rem;}
+  .assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem;}
+  .assignment h3{font-family:var(--ff-serif);color:var(--ink);margin-top:.2rem;margin-bottom:.5rem;}
+  .bonus{background:var(--purple-l);border:1px solid var(--purple);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem;}
+  .bonus .b-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--purple);margin-bottom:.4rem;}
+  /* Collapsible solution */
+  details.solution{margin:1rem 0 2rem;border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+  details.solution summary{padding:.9rem 1.2rem;cursor:pointer;font-weight:700;font-size:.92rem;background:var(--cream);list-style:none;display:flex;align-items:center;gap:.5rem;}
+  details.solution summary::before{content:"&#9654;";font-size:.7rem;color:var(--ink3);transition:transform .2s;}
+  details.solution[open] summary::before{transform:rotate(90deg);}
+  details.solution summary::-webkit-details-marker{display:none;}
+  .solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border);}
+  .solution-body p{font-size:.92rem;}
+  /* Nav */
+  .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:1.8rem;flex-wrap:wrap;}
+  .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:700;font-size:.9rem;padding:.7rem 1.2rem;border-radius:8px;transition:background .2s var(--ease);}
+  .nav-cta.primary{background:var(--olive);color:var(--warm-white);}
+  .nav-cta.primary:hover{background:var(--olive-dark);}
+  .nav-cta.secondary{background:var(--cream);color:var(--ink2);border:1px solid var(--border);}
+  footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.85rem;color:var(--ink3);}
+  footer a{text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+  @media(max-width:600px){
+    h1{font-size:1.55rem;}
+    .ba-wrap{grid-template-columns:1fr;}
+    .meta-row{flex-wrap:wrap;gap:.5rem;}
+  }
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+<main>
+  <p class="breadcrumb">
+    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    <a href="../00-playwrightseries-landing.html">Playwright: Zero to Architect</a> &nbsp;/&nbsp;
+    Phase 7
+  </p>
+  <span class="series-tag">Phase 7 of 15 &middot; API Testing</span>
+  <h1>API Testing with Playwright</h1>
+  <p class="subtitle">No browser, full HTTP control. Test the API layer directly, then chain API seeding with UI assertions for the fastest and most reliable pattern.</p>
+  <div class="meta-row">
+    <span>By RN</span><span>~4 hours</span>
+    <span>Series: Playwright: Zero to Architect</span>
+    <span>Demo: PeakAndPack</span>
+  </div>
+  <div class="phase-strip" aria-label="Series progress">
+    <a href="../phase0/00-playwrightseries-intro-setup.html" class="phase-pip" title="Phase 0: Intro &amp; Setup">0</a>
+    <a href="../phase1/01-playwrightseries-test-design.html" class="phase-pip" title="Phase 1: Test Design Thinking">1</a>
+    <a href="../phase2/02-playwrightseries-locators.html" class="phase-pip" title="Phase 2: Locators">2</a>
+    <a href="../phase3/03-playwrightseries-assertions-waits.html" class="phase-pip" title="Phase 3: Assertions &amp; Waits">3</a>
+    <a href="../phase4/04-playwrightseries-debugging-flakiness.html" class="phase-pip" title="Phase 4: Debugging &amp; Flakiness">4</a>
+    <a href="../phase5/05-playwrightseries-test-data-state.html" class="phase-pip" title="Phase 5: Test Data &amp; State">5</a>
+    <a href="../phase6/06-playwrightseries-auth-sessions.html" class="phase-pip" title="Phase 6: Authentication &amp; Sessions">6</a>
+    <span class="phase-pip active" title="Phase 7: API Testing">7</span>
+    <a href="../phase8/08-playwrightseries-advanced-scenarios.html" class="phase-pip" title="Phase 8: Advanced Scenarios">8</a>
+    <a href="../phase9/09-playwrightseries-page-objects.html" class="phase-pip" title="Phase 9: Page Object Model">9</a>
+    <a href="../phase10/10-playwrightseries-fixtures-config.html" class="phase-pip" title="Phase 10: Fixtures &amp; Config">10</a>
+    <a href="../phase11/11-playwrightseries-visual-regression.html" class="phase-pip" title="Phase 11: Visual Regression">11</a>
+    <a href="../phase12/12-playwrightseries-cicd-flaky-tests.html" class="phase-pip" title="Phase 12: CI/CD &amp; Flaky Tests">12</a>
+    <a href="../phase13/13-playwrightseries-ai-assisted.html" class="phase-pip" title="Phase 13: AI-Assisted Automation">13</a>
+    <a href="../phase14/14-playwrightseries-automation-leadership.html" class="phase-pip" title="Phase 14: Automation Leadership">14</a>
+    <a href="../phase15/15-playwrightseries-capstone-projects.html" class="phase-pip" title="Phase 15: Capstone Projects">15</a>
+  </div>
+
+  <h2>Goal</h2>
+  <p>Test the PeakAndPack API directly using Playwright's request context. No browser, no UI: just HTTP calls with the same tool you already know. Then chain API and UI together for the fastest and most reliable test pattern.</p>
+
+  <h2>Before: separate tools for API and UI testing</h2>
+  <div class="ba-wrap">
+    <div class="ba-block before">
+      <div class="ba-label">Before: two tools, two contexts</div>
+<pre><code>// API tests in Postman or a separate framework.
+// UI tests in Playwright.
+// No shared context, no chaining, duplicate setup everywhere.
+
+// In Postman: manually test POST /api/cart
+// In Playwright: navigate to cart and re-add via UI
+test('cart shows added item', async ({ page }) => {
+  await page.goto('https://peakandpack-ui.onrender.com/');
+  // Repeat the UI add-to-cart flow just to set up state
+  await page.getByRole('button', { name: /add to cart/i }).first().click();
+  await page.waitForResponse(r => r.url().includes('/api/cart'));
+  await page.goto('https://peakandpack-ui.onrender.com/cart');
+  await expect(page.getByTestId('cart-item-count')).toHaveText('1');
+});
+</code></pre>
+    </div>
+    <div class="ba-block after">
+      <div class="ba-label">After: API + UI in one tool, chained</div>
+<pre><code>// Seed state via API (fast, reliable, no UI needed).
+// Assert the result in the UI (that's the actual test).
+// One tool, one context, zero duplication.
+
+test('cart page reflects API-seeded item', async ({ page, request }) => {
+  // Setup via API: instant, no browser interaction
+  await request.post('https://peakandpackshopdemo.onrender.com/api/cart', {
+    data: { productId: 1, quantity: 1 }
+  });
+  // Test via UI: this is what we're actually verifying
+  await page.goto('https://peakandpack-ui.onrender.com/cart');
+  await expect(page.getByTestId('cart-item-count')).toHaveText('1');
+  await expect(
+    page.getByRole('listitem').first()
+  ).toContainText('Trail Runner Pro');
+});
+</code></pre>
+    </div>
+  </div>
+
+  <h2>Playwright request context</h2>
+  <p>The <code>request</code> fixture gives you a full HTTP client inside a Playwright test. It shares the same origin and cookies as the browser page, which means an API call made with <code>request</code> is authenticated if the browser is authenticated.</p>
+  <pre><code>import { test, expect } from '@playwright/test';
+
+test('GET /api/products returns a list', async ({ request }) => {
+  const res = await request.get('https://peakandpackshopdemo.onrender.com/api/products');
+  expect(res.status()).toBe(200);
+  const body = await res.json();
+  expect(Array.isArray(body.products)).toBe(true);
+  expect(body.products.length).toBeGreaterThan(0);
+  // Assert the shape, not the exact values
+  expect(typeof body.products[0].id).toBe('number');
+  expect(typeof body.products[0].name).toBe('string');
+  expect(body.products[0].price).toBeGreaterThanOrEqual(0);
+});
+</code></pre>
+
+  <h2>API contract tests for PeakAndPack</h2>
+  <p>Test the key endpoints: status codes, response shapes, and the negative cases. Assert types and ranges rather than exact values so tests don't break when catalog data changes.</p>
+  <pre><code>test('POST /api/cart adds item', async ({ request }) => {
+  const res = await request.post('https://peakandpackshopdemo.onrender.com/api/cart', {
+    data: { productId: 1, quantity: 2 }
+  });
+  expect(res.status()).toBe(200);
+  const body = await res.json();
+  expect(body.itemCount).toBeGreaterThan(0);
+});
+
+test('POST /api/cart without auth returns 401', async ({ request }) => {
+  // Create a new context with no auth to test the negative case
+  const ctx = await request.newContext({ baseURL: 'https://peakandpackshopdemo.onrender.com' });
+  const res = await ctx.post('/api/cart', {
+    data: { productId: 1, quantity: 1 }
+  });
+  expect(res.status()).toBe(401);
+});
+
+test('GET /api/products/:id with invalid id returns 404', async ({ request }) => {
+  const res = await request.get('https://peakandpackshopdemo.onrender.com/api/products/999999');
+  expect(res.status()).toBe(404);
+});
+</code></pre>
+
+  <h2>Network mocking: test error states without breaking the server</h2>
+  <p>Some scenarios are hard to reproduce against a real server: a 500 error, a timeout, a payment failure. Playwright's <code>route</code> API intercepts requests and returns whatever response you define:</p>
+  <pre><code>test('checkout shows error when API returns 500', async ({ page }) => {
+  // Intercept the checkout endpoint and force a 500
+  await page.route('/api/orders/checkout', route => {
+    route.fulfill({
+      status: 500,
+      contentType: 'application/json',
+      body: JSON.stringify({ error: 'Internal server error' }),
+    });
+  });
+
+  await page.goto('https://peakandpack-ui.onrender.com/cart');
+  await page.getByRole('button', { name: /checkout/i }).click();
+  // Assert the UI shows a user-friendly error, not a crash
+  await expect(
+    page.getByRole('alert')
+  ).toContainText(/something went wrong/i);
+});
+</code></pre>
+
+  <h2>JS vs Python: when Python request context is better</h2>
+  <p>For pure API testing in a Playwright suite, JavaScript and Python are equivalent. The Python version becomes the better choice when you need to combine Playwright API calls with Python-native eval tooling: for example, running a RAGAs evaluation on the API response in the same script. That pattern is covered in the AI and LLM Testing series.</p>
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th></th><th>JS/TypeScript</th><th>Python</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Pure API testing</strong></td><td>Identical capability</td><td>Identical capability</td></tr>
+        <tr><td><strong>Combined with UI tests</strong></td><td>Natural fit in this series</td><td>Works, slightly more verbose</td></tr>
+        <tr><td><strong>Combined with AI eval tools</strong></td><td>Requires bridging to Python</td><td>One runtime, no bridge needed</td></tr>
+        <tr><td><strong>Schema validation</strong></td><td>Manual or zod library</td><td>Pydantic (cleaner for complex schemas)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout warn">
+    <p><strong>Common mistakes in Phase 7.</strong></p>
+    <ul style="margin:.5rem 0 0 1.2rem;">
+      <li><strong>Asserting exact values instead of types.</strong> <code>expect(body.products[0].price).toBe(19.99)</code> breaks the moment the price changes. Assert <code>typeof price === 'number'</code> and <code>price >= 0</code> instead.</li>
+      <li><strong>Forgetting that request shares auth with the page.</strong> If you set storageState on the test context, the <code>request</code> fixture is already authenticated. You don't need to pass auth headers manually unless you're testing a different user's context.</li>
+      <li><strong>Using route mocks in tests that also test real API behaviour.</strong> A mocked route replaces the real response. Don't mix mocking and real API assertions in the same test: you'll get confused about what you're actually testing.</li>
+      <li><strong>Not checking response body on error codes.</strong> A 400 that returns an HTML error page instead of a JSON error is a real bug. Check both the status and the content type.</li>
+    </ul>
+  </div>
+
+  <h2>Deliverables</h2>
+  <ul>
+    <li><code>tests/api.spec.ts</code>: API contract tests for PeakAndPack endpoints</li>
+    <li><code>tests/hybrid.spec.ts</code>: API seed + UI assert pattern</li>
+    <li><code>tests/mocking.spec.ts</code>: network mock examples for error states</li>
+  </ul>
+
+  <div class="assignment">
+    <div class="a-label">Assignment</div>
+    <h3>Write a hybrid test for the checkout flow</h3>
+    <p>Using the API + UI pattern: seed a cart with two different products via <code>request.post('https://peakandpackshopdemo.onrender.com/api/cart')</code>, then navigate to <code>/cart</code> in the browser and assert both products appear. Then click checkout and assert the order confirmation heading is visible. The only UI interaction should be the button click and the final assertion: all setup goes through the API.</p>
+  </div>
+
+  <div class="bonus">
+    <div class="b-label">Bonus challenge</div>
+    <p><strong>Mock the discount API to test the UI error state.</strong> Use <code>page.route()</code> to intercept <code>POST /api/orders/checkout</code> when the request body contains <code>discount_code: 'INVALID'</code> and return a 400 with a JSON body <code>{ "error": "Invalid discount code" }</code>. Write a test that applies an invalid code and asserts the UI shows the error message. Confirm the mock only fires for the invalid code, not for a valid checkout.</p>
+  </div>
+
+  <details class="solution">
+    <summary>Show solution -- try it yourself first</summary>
+    <div class="solution-body">
+      <h3>Hybrid checkout test</h3>
+      <pre><code>test('checkout with two API-seeded products', async ({ page, request }) => {
+  // Setup: add two products via API
+  await request.post('https://peakandpackshopdemo.onrender.com/api/cart', { data: { productId: 1, quantity: 1 } });
+  await request.post('https://peakandpackshopdemo.onrender.com/api/cart', { data: { productId: 2, quantity: 1 } });
+
+  // Assert: navigate to cart and verify both appear
+  await page.goto('https://peakandpack-ui.onrender.com/cart');
+  const items = page.getByRole('listitem');
+  await expect(items).toHaveCount(2);
+
+  // Test the checkout flow
+  const checkoutDone = page.waitForResponse(
+    r => r.url().includes('/api/orders/checkout') && r.status() === 201
+  );
+  await page.getByRole('button', { name: /checkout/i }).click();
+  await checkoutDone;
+  await expect(
+    page.getByRole('heading', { name: /order confirmed/i })
+  ).toBeVisible();
+});
+</code></pre>
+      <p><strong>Why this pattern is faster than pure UI testing.</strong> Seeding via API takes milliseconds. The equivalent UI flow (navigate to each product, click add to cart, wait for the API response twice) takes seconds. Over a full suite, this difference compounds. The test is also more reliable because the setup is deterministic: the API either succeeds with 200 or fails clearly, with no timing ambiguity.</p>
+    </div>
+  </details>
+
+  <div class="nav-row">
+    <a href="../phase6/06-playwrightseries-auth-sessions.html" class="nav-cta secondary">&larr; Phase 6: Authentication &amp; Sessions</a>
+    <a href="../phase8/08-playwrightseries-advanced-scenarios.html" class="nav-cta primary">Phase 8: Advanced Scenarios &rarr;</a>
+  </div>
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; Playwright: Zero to Architect</p>
+  </div>
+</main>
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+</body>
+</html>

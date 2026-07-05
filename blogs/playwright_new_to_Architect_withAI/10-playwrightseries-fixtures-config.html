@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 10: Fixtures and Advanced Configuration | Playwright: Zero to Architect</title>
+<meta name="description" content="Phase 10 of Playwright: Zero to Architect. Composable fixtures, fixture scope, Playwright projects, full configuration reference.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:#6B7C3A; --olive-dark:#4A5828; --olive-deep:#2E3A18;
+    --cream:#F5F7F0; --warm-white:#FAFCF5;
+    --ink:#1A1F14; --ink2:#3D4235; --ink3:#6B7060; --ink4:#9A9E90;
+    --border:rgba(26,31,20,0.1); --border2:rgba(26,31,20,0.06);
+    --purple:#7A4A9A; --purple-l:#EDE0F5;
+    --gold:#9A6E1A; --gold-l:#F5EDD6;
+    --blue:#2A5C9A; --blue-l:#DDE8F5;
+    --teal:#1A6B54; --teal-l:#D8EEE8;
+    --terra:#8A4A2A; --terra-l:#F5E4D8;
+    --green:#1A7A3A; --green-l:#D8F0E0;
+    --ff-serif:'Lora',Georgia,serif;
+    --ff-sans:'DM Sans',system-ui,sans-serif;
+    --ease:cubic-bezier(0.22,1,0.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--ff-sans);background:var(--warm-white);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  header.site-header{border-bottom:1px solid var(--border);padding:1.1rem 1.5rem;background:var(--warm-white);}
+  .site-header-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+  .site-name{font-family:var(--ff-serif);font-weight:600;font-size:1.05rem;text-decoration:none;}
+  main{max-width:880px;margin:0 auto;padding:2.6rem 1.5rem 5rem;}
+  .breadcrumb{font-size:.82rem;color:var(--ink3);margin-bottom:1.3rem;}
+  .breadcrumb a{text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+  .series-tag{display:inline-block;font-size:.76rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--blue);background:var(--blue-l);padding:.3rem .7rem;border-radius:999px;margin-bottom:1.1rem;}
+  h1{font-family:var(--ff-serif);font-size:2rem;font-weight:700;line-height:1.2;margin-bottom:.8rem;}
+  .subtitle{font-size:1.08rem;color:var(--ink2);margin-bottom:1.6rem;max-width:680px;}
+  .meta-row{display:flex;gap:1.1rem;font-size:.82rem;color:var(--ink3);margin-bottom:1.6rem;border-bottom:1px solid var(--border);padding-bottom:1.3rem;flex-wrap:wrap;}
+  h2{font-family:var(--ff-serif);font-size:1.35rem;font-weight:700;margin-top:2.2rem;margin-bottom:.8rem;}
+  h3{font-family:var(--ff-serif);font-size:1.1rem;font-weight:700;margin-top:1.6rem;margin-bottom:.6rem;}
+  p{margin-bottom:.9rem;color:var(--ink2);font-size:.97rem;}
+  strong{color:var(--ink);font-weight:700;}
+  ul,ol{margin:0 0 1rem 1.3rem;color:var(--ink2);}
+  li{margin-bottom:.4rem;font-size:.97rem;}
+  code{background:var(--cream);padding:.15rem .4rem;border-radius:5px;font-size:.87em;color:var(--olive-deep);}
+  pre{background:var(--ink);color:var(--cream);padding:1rem 1.1rem;border-radius:10px;overflow-x:auto;font-size:.82rem;margin:1rem 0;line-height:1.55;}
+  pre code{background:none;color:inherit;padding:0;}
+  .callout{border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.91rem;}
+  .callout p{margin-bottom:0;}
+  .callout.green{background:var(--green-l);border-left:3px solid var(--green);}.callout.green p{color:var(--olive-deep);}
+  .callout.warn{background:var(--terra-l);border-left:3px solid var(--terra);}.callout.warn p{color:var(--terra);}
+  .callout.blue{background:var(--blue-l);border-left:3px solid var(--blue);}.callout.blue p{color:var(--blue);}
+  .callout.gold{background:var(--gold-l);border-left:3px solid var(--gold);}.callout.gold p{color:var(--gold);}
+  .callout.purple{background:var(--purple-l);border-left:3px solid var(--purple);}.callout.purple p{color:var(--purple);}
+  .fw-table-wrap{overflow-x:auto;margin:1rem 0 1.5rem;}
+  table.fw-table{width:100%;border-collapse:collapse;font-size:.82rem;line-height:1.45;}
+  table.fw-table th,table.fw-table td{border:1px solid var(--border);padding:.5rem .7rem;text-align:left;vertical-align:top;}
+  table.fw-table th{background:var(--cream);font-weight:700;font-size:.77rem;}
+  table.fw-table td{color:var(--ink2);}
+  table.fw-table tr:nth-child(odd) td{background:var(--warm-white);}
+  table.fw-table tr:nth-child(even) td{background:var(--cream);}
+  table.fw-table.compact th,table.fw-table.compact td{padding:.28rem .55rem;font-size:.8rem;}
+  /* Phase progress strip */
+  .phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem;}
+  .phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--ink4);background:var(--warm-white);text-decoration:none;}
+  .phase-pip.active{background:var(--blue);color:var(--warm-white);border-color:transparent;}
+  .phase-pip.done{background:var(--green-l);color:var(--green);border-color:var(--green);}
+  /* Before/After blocks */
+  .ba-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0;}
+  .ba-block{border-radius:10px;overflow:hidden;}
+  .ba-label{padding:.4rem .8rem;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;}
+  .ba-block.before .ba-label{background:var(--terra-l);color:var(--terra);}
+  .ba-block.after .ba-label{background:var(--green-l);color:var(--green);}
+  .ba-block pre{margin:0;border-radius:0 0 10px 10px;}
+  /* Assignment block */
+  .assignment{background:var(--blue-l);border:1px solid var(--blue);border-radius:12px;padding:1.2rem 1.4rem;margin:2rem 0 1rem;}
+  .assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem;}
+  .assignment h3{font-family:var(--ff-serif);color:var(--ink);margin-top:.2rem;margin-bottom:.5rem;}
+  .bonus{background:var(--purple-l);border:1px solid var(--purple);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem;}
+  .bonus .b-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--purple);margin-bottom:.4rem;}
+  /* Collapsible solution */
+  details.solution{margin:1rem 0 2rem;border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+  details.solution summary{padding:.9rem 1.2rem;cursor:pointer;font-weight:700;font-size:.92rem;background:var(--cream);list-style:none;display:flex;align-items:center;gap:.5rem;}
+  details.solution summary::before{content:"&#9654;";font-size:.7rem;color:var(--ink3);transition:transform .2s;}
+  details.solution[open] summary::before{transform:rotate(90deg);}
+  details.solution summary::-webkit-details-marker{display:none;}
+  .solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border);}
+  .solution-body p{font-size:.92rem;}
+  /* Nav */
+  .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:1.8rem;flex-wrap:wrap;}
+  .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:700;font-size:.9rem;padding:.7rem 1.2rem;border-radius:8px;transition:background .2s var(--ease);}
+  .nav-cta.primary{background:var(--olive);color:var(--warm-white);}
+  .nav-cta.primary:hover{background:var(--olive-dark);}
+  .nav-cta.secondary{background:var(--cream);color:var(--ink2);border:1px solid var(--border);}
+  footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.85rem;color:var(--ink3);}
+  footer a{text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+  @media(max-width:600px){
+    h1{font-size:1.55rem;}
+    .ba-wrap{grid-template-columns:1fr;}
+    .meta-row{flex-wrap:wrap;gap:.5rem;}
+  }
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+<main>
+  <p class="breadcrumb">
+    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    <a href="../00-playwrightseries-landing.html">Playwright: Zero to Architect</a> &nbsp;/&nbsp;
+    Phase 10
+  </p>
+  <span class="series-tag">Phase 10 of 15 &middot; Fixtures &amp; Config</span>
+  <h1>Fixtures, Hooks and Advanced Configuration</h1>
+  <p class="subtitle">Stop repeating setup code. Fixtures compose and are typed. Configuration controls everything. Once you understand both, the suite becomes significantly easier to maintain.</p>
+  <div class="meta-row">
+    <span>By RN</span><span>~4 hours</span>
+    <span>Series: Playwright: Zero to Architect</span>
+    <span>Demo: PeakAndPack</span>
+  </div>
+  <div class="phase-strip" aria-label="Series progress">
+    <a href="../phase0/00-playwrightseries-intro-setup.html" class="phase-pip" title="Phase 0: Intro &amp; Setup">0</a>
+    <a href="../phase1/01-playwrightseries-test-design.html" class="phase-pip" title="Phase 1: Test Design Thinking">1</a>
+    <a href="../phase2/02-playwrightseries-locators.html" class="phase-pip" title="Phase 2: Locators">2</a>
+    <a href="../phase3/03-playwrightseries-assertions-waits.html" class="phase-pip" title="Phase 3: Assertions &amp; Waits">3</a>
+    <a href="../phase4/04-playwrightseries-debugging-flakiness.html" class="phase-pip" title="Phase 4: Debugging &amp; Flakiness">4</a>
+    <a href="../phase5/05-playwrightseries-test-data-state.html" class="phase-pip" title="Phase 5: Test Data &amp; State">5</a>
+    <a href="../phase6/06-playwrightseries-auth-sessions.html" class="phase-pip" title="Phase 6: Authentication &amp; Sessions">6</a>
+    <a href="../phase7/07-playwrightseries-api-testing.html" class="phase-pip" title="Phase 7: API Testing">7</a>
+    <a href="../phase8/08-playwrightseries-advanced-scenarios.html" class="phase-pip" title="Phase 8: Advanced Scenarios">8</a>
+    <a href="../phase9/09-playwrightseries-page-objects.html" class="phase-pip" title="Phase 9: Page Object Model">9</a>
+    <span class="phase-pip active" title="Phase 10: Fixtures &amp; Config">10</span>
+    <a href="../phase11/11-playwrightseries-visual-regression.html" class="phase-pip" title="Phase 11: Visual Regression">11</a>
+    <a href="../phase12/12-playwrightseries-cicd-flaky-tests.html" class="phase-pip" title="Phase 12: CI/CD &amp; Flaky Tests">12</a>
+    <a href="../phase13/13-playwrightseries-ai-assisted.html" class="phase-pip" title="Phase 13: AI-Assisted Automation">13</a>
+    <a href="../phase14/14-playwrightseries-automation-leadership.html" class="phase-pip" title="Phase 14: Automation Leadership">14</a>
+    <a href="../phase15/15-playwrightseries-capstone-projects.html" class="phase-pip" title="Phase 15: Capstone Projects">15</a>
+  </div>
+
+  <h2>Goal</h2>
+  <p>Stop repeating setup code. Fixtures compose and are typed. <code>beforeEach</code> is a workaround. Configuration controls every aspect of how Playwright runs. Once you understand all three, the suite becomes significantly easier to maintain.</p>
+
+  <h2>Before: beforeEach doing too much</h2>
+  <div class="ba-wrap">
+    <div class="ba-block before">
+      <div class="ba-label">Before: setup scattered in beforeEach</div>
+<pre><code>// beforeEach repeats setup that other tests also need.
+// Not composable, not typed, not reusable outside this file.
+let authToken: string;
+
+test.beforeEach(async ({ request }) => {
+  const res = await request.post('https://peakandpackshopdemo.onrender.com/api/auth/login', {
+    data: { email: 'test@peakandpack.com', password: 'password123' }
+  });
+  const body = await res.json();
+  authToken = body.token; // global variable, fragile in parallel
+});
+
+test('cart requires auth', async ({ request }) => {
+  const res = await request.post('https://peakandpackshopdemo.onrender.com/api/cart', {
+    headers: { Authorization: `Bearer ${authToken}` },
+    data: { productId: 1, quantity: 1 }
+  });
+  expect(res.status()).toBe(200);
+});
+</code></pre>
+    </div>
+    <div class="ba-block after">
+      <div class="ba-label">After: typed fixture, composable, reusable</div>
+<pre><code>// fixtures/index.ts -- defined once, used anywhere
+import { test as base } from '@playwright/test';
+
+type Fixtures = { authToken: string; seededCart: void };
+
+export const test = base.extend&lt;Fixtures&gt;({
+  authToken: async ({ request }, use) => {
+    const res = await request.post('https://peakandpackshopdemo.onrender.com/api/auth/login', {
+      data: { email: 'test@peakandpack.com', password: 'password123' }
+    });
+    const { token } = await res.json();
+    await use(token); // hand the token to the test
+  },
+});
+
+// tests/cart.spec.ts -- clean, no setup code
+import { test } from '../fixtures';
+import { expect } from '@playwright/test';
+
+test('cart requires auth', async ({ request, authToken }) => {
+  const res = await request.post('https://peakandpackshopdemo.onrender.com/api/cart', {
+    headers: { Authorization: `Bearer ${authToken}` },
+    data: { productId: 1, quantity: 1 }
+  });
+  expect(res.status()).toBe(200);
+});
+</code></pre>
+    </div>
+  </div>
+
+  <h2>Fixtures vs beforeEach: the real difference</h2>
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th></th><th>Fixtures</th><th>beforeEach</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Composable</strong></td><td>Yes. Fixtures can depend on other fixtures.</td><td>No. You nest or repeat them.</td></tr>
+        <tr><td><strong>Typed</strong></td><td>Yes. TypeScript knows the fixture type.</td><td>No. Variables are manual and error-prone.</td></tr>
+        <tr><td><strong>Reusable across files</strong></td><td>Yes. Export from fixtures/index.ts.</td><td>No. Copy-paste or import a setup function.</td></tr>
+        <tr><td><strong>Scope control</strong></td><td>Yes. Test scope or worker scope per fixture.</td><td>No. Always runs before every test in the describe.</td></tr>
+        <tr><td><strong>Teardown</strong></td><td>Code after <code>await use()</code> runs after the test.</td><td>Requires afterEach paired with beforeEach.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Building composable fixtures</h2>
+  <pre><code>// fixtures/index.ts
+import { test as base, Page } from '@playwright/test';
+import { CartPage } from '../pages/CartPage';
+
+type Fixtures = {
+  authToken: string;
+  seededCart: CartPage;
+  loggedInPage: Page;
+};
+
+export const test = base.extend&lt;Fixtures&gt;({
+  // Fixture 1: auth token
+  authToken: async ({ request }, use) => {
+    const res = await request.post('https://peakandpackshopdemo.onrender.com/api/auth/login', {
+      data: { email: 'test@peakandpack.com', password: 'password123' }
+    });
+    await use((await res.json()).token);
+  },
+
+  // Fixture 2: cart pre-seeded with one item (depends on authToken)
+  seededCart: async ({ request, authToken, page }, use) => {
+    await request.post('https://peakandpackshopdemo.onrender.com/api/cart', {
+      headers: { Authorization: `Bearer ${authToken}` },
+      data: { productId: 1, quantity: 1 }
+    });
+    await use(new CartPage(page));
+    // Teardown: clean up the cart after the test
+    await request.delete('https://peakandpackshopdemo.onrender.com/api/cart', {
+      headers: { Authorization: `Bearer ${authToken}` }
+    });
+  },
+
+  // Fixture 3: page already navigated to home (logged in via storageState)
+  loggedInPage: async ({ page }, use) => {
+    await page.goto('https://peakandpack-ui.onrender.com/');
+    await use(page);
+  },
+});
+</code></pre>
+
+  <h2>Fixture scope: test vs worker</h2>
+  <p>By default fixtures run fresh for every test. For expensive setup that can safely be shared, use worker scope:</p>
+  <pre><code>export const test = base.extend&lt;{}, { sharedToken: string }&gt;({
+  // Worker scope: runs once per worker process, shared across all tests in that worker
+  sharedToken: [async ({ request }, use) => {
+    const res = await request.post('https://peakandpackshopdemo.onrender.com/api/auth/login', {
+      data: { email: 'shared@peakandpack.com', password: 'password123' }
+    });
+    await use((await res.json()).token);
+  }, { scope: 'worker' }],
+});
+</code></pre>
+  <p><strong>Use worker scope carefully.</strong> If tests in the same worker modify the shared resource (empty the cart, change the user's email), they corrupt each other. Worker scope works for read-only resources like a token. Use test scope for anything that changes.</p>
+
+  <h2>Playwright projects: one config, multiple environments</h2>
+  <p>Projects let you run the same tests against different environments or browsers from one config file:</p>
+  <pre><code>// playwright.config.ts
+export default defineConfig({
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'], baseURL: 'https://peakandpack-demo.onrender.com' },
+    },
+    {
+      name: 'mobile',
+      use: { ...devices['iPhone 13'], baseURL: 'https://peakandpack-demo.onrender.com' },
+    },
+    {
+      name: 'staging',
+      use: { browserName: 'chromium', baseURL: 'https://staging.peakandpack.com' },
+      testMatch: '**/*.staging.spec.ts',
+    },
+  ],
+});
+</code></pre>
+  <p>Run a specific project: <code>npx playwright test --project=mobile</code></p>
+
+  <h2>Full configuration reference</h2>
+  <pre><code>export default defineConfig({
+  testDir: './tests',
+  fullyParallel: true,       // run all tests simultaneously
+  retries: process.env.CI ? 2 : 0, // retry only in CI
+  workers: process.env.CI ? 4 : undefined, // 4 workers in CI, auto locally
+  reporter: [['html'], ['github']], // HTML report + GitHub Actions annotations
+  use: {
+    baseURL: 'https://peakandpack-demo.onrender.com',
+    trace: 'on-first-retry',    // trace on retry
+    screenshot: 'only-on-failure', // screenshot on failure
+    video: 'retain-on-failure',    // video on failure
+    actionTimeout: 10_000,         // each action has 10s before failing
+    navigationTimeout: 30_000,     // navigation has 30s
+  },
+});
+</code></pre>
+
+  <div class="callout warn">
+    <p><strong>Common mistakes in Phase 10.</strong></p>
+    <ul style="margin:.5rem 0 0 1.2rem;">
+      <li><strong>Using worker scope for fixtures that mutate state.</strong> Two tests in the same worker sharing a cart will corrupt each other. Only use worker scope for truly read-only resources.</li>
+      <li><strong>Forgetting teardown after use().</strong> Code after <code>await use(value)</code> runs when the test finishes. This is the right place to clean up. If you skip it, leftover test data accumulates.</li>
+      <li><strong>Setting retries globally and forgetting about it.</strong> <code>retries: 2</code> in the config means every flaky test silently retries twice in CI. You stop seeing failures until the problem gets bad. Set retries consciously and track the flaky register.</li>
+      <li><strong>Not using environment variables for baseURL.</strong> Hardcoding the production URL means staging tests always hit production. Use <code>process.env.BASE_URL ?? 'https://peakandpack-demo.onrender.com'</code>.</li>
+    </ul>
+  </div>
+
+  <h2>Deliverables</h2>
+  <ul>
+    <li><code>fixtures/auth.ts</code>: authToken and loggedInPage fixtures</li>
+    <li><code>fixtures/cart.ts</code>: seededCart fixture with teardown</li>
+    <li><code>fixtures/index.ts</code>: combined export, the test object used everywhere</li>
+    <li><code>playwright.config.ts</code>: full config with projects, parallel settings, and all use options</li>
+  </ul>
+
+  <div class="assignment">
+    <div class="a-label">Assignment</div>
+    <h3>Build and use the seededCart fixture</h3>
+    <p>Create the <code>seededCart</code> fixture from the example above. Write two tests that both use it: one that asserts the cart has one item, and one that checks out. Confirm both tests start with the cart already populated and that the teardown cleans the cart after each test (verify by checking the cart count is 0 at the start of the second test without any setup code).</p>
+  </div>
+
+  <div class="bonus">
+    <div class="b-label">Bonus challenge</div>
+    <p><strong>Add a mobile project and run visual tests on it.</strong> Add a mobile project to <code>playwright.config.ts</code> using the iPhone 13 device profile. Run the visual tests from Phase 11 (or write a new one) with <code>--project=mobile</code>. Capture a baseline and compare it to the desktop baseline. What visual differences does the mobile viewport reveal?</p>
+  </div>
+
+  <details class="solution">
+    <summary>Show solution -- try it yourself first</summary>
+    <div class="solution-body">
+      <h3>seededCart fixture with teardown</h3>
+      <pre><code>// fixtures/cart.ts
+import { test as base } from '@playwright/test';
+import { CartPage } from '../pages/CartPage';
+
+export const test = base.extend&lt;{ seededCart: CartPage }&gt;({
+  seededCart: async ({ request, page }, use) => {
+    // Setup: get token and seed the cart
+    const loginRes = await request.post('https://peakandpackshopdemo.onrender.com/api/auth/login', {
+      data: { email: 'test@peakandpack.com', password: 'password123' }
+    });
+    const { token } = await loginRes.json();
+
+    await request.post('https://peakandpackshopdemo.onrender.com/api/cart', {
+      headers: { Authorization: `Bearer ${token}` },
+      data: { productId: 1, quantity: 1 }
+    });
+
+    // Hand the CartPage to the test
+    await use(new CartPage(page));
+
+    // Teardown: runs after the test finishes
+    await request.delete('https://peakandpackshopdemo.onrender.com/api/cart', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+  },
+});
+</code></pre>
+      <p><strong>Why teardown belongs in the fixture, not afterEach.</strong> If you put cleanup in <code>afterEach</code>, it runs even when the test didn't use the seeded cart. The fixture teardown only runs when the fixture was actually used, which is the correct behaviour.</p>
+    </div>
+  </details>
+
+  <div class="nav-row">
+    <a href="../phase9/09-playwrightseries-page-objects.html" class="nav-cta secondary">&larr; Phase 9: Page Object Model</a>
+    <a href="../phase11/11-playwrightseries-visual-regression.html" class="nav-cta primary">Phase 11: Visual Regression &rarr;</a>
+  </div>
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; Playwright: Zero to Architect</p>
+  </div>
+</main>
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+</body>
+</html>

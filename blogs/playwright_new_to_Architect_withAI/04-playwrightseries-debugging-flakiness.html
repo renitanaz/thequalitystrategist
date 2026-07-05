@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 4: Debugging and Flakiness | Playwright: Zero to Architect</title>
+<meta name="description" content="Phase 4 of Playwright: Zero to Architect. Debug failing tests with Trace Viewer. Diagnose flakiness by root cause.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:#6B7C3A; --olive-dark:#4A5828; --olive-deep:#2E3A18;
+    --cream:#F5F7F0; --warm-white:#FAFCF5;
+    --ink:#1A1F14; --ink2:#3D4235; --ink3:#6B7060; --ink4:#9A9E90;
+    --border:rgba(26,31,20,0.1); --border2:rgba(26,31,20,0.06);
+    --purple:#7A4A9A; --purple-l:#EDE0F5;
+    --gold:#9A6E1A; --gold-l:#F5EDD6;
+    --blue:#2A5C9A; --blue-l:#DDE8F5;
+    --teal:#1A6B54; --teal-l:#D8EEE8;
+    --terra:#8A4A2A; --terra-l:#F5E4D8;
+    --green:#1A7A3A; --green-l:#D8F0E0;
+    --ff-serif:'Lora',Georgia,serif;
+    --ff-sans:'DM Sans',system-ui,sans-serif;
+    --ease:cubic-bezier(0.22,1,0.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--ff-sans);background:var(--warm-white);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  header.site-header{border-bottom:1px solid var(--border);padding:1.1rem 1.5rem;background:var(--warm-white);}
+  .site-header-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+  .site-name{font-family:var(--ff-serif);font-weight:600;font-size:1.05rem;text-decoration:none;}
+  main{max-width:880px;margin:0 auto;padding:2.6rem 1.5rem 5rem;}
+  .breadcrumb{font-size:.82rem;color:var(--ink3);margin-bottom:1.3rem;}
+  .breadcrumb a{text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+  .series-tag{display:inline-block;font-size:.76rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--blue);background:var(--blue-l);padding:.3rem .7rem;border-radius:999px;margin-bottom:1.1rem;}
+  h1{font-family:var(--ff-serif);font-size:2rem;font-weight:700;line-height:1.2;margin-bottom:.8rem;}
+  .subtitle{font-size:1.08rem;color:var(--ink2);margin-bottom:1.6rem;max-width:680px;}
+  .meta-row{display:flex;gap:1.1rem;font-size:.82rem;color:var(--ink3);margin-bottom:1.6rem;border-bottom:1px solid var(--border);padding-bottom:1.3rem;flex-wrap:wrap;}
+  h2{font-family:var(--ff-serif);font-size:1.35rem;font-weight:700;margin-top:2.2rem;margin-bottom:.8rem;}
+  h3{font-family:var(--ff-serif);font-size:1.1rem;font-weight:700;margin-top:1.6rem;margin-bottom:.6rem;}
+  p{margin-bottom:.9rem;color:var(--ink2);font-size:.97rem;}
+  strong{color:var(--ink);font-weight:700;}
+  ul,ol{margin:0 0 1rem 1.3rem;color:var(--ink2);}
+  li{margin-bottom:.4rem;font-size:.97rem;}
+  code{background:var(--cream);padding:.15rem .4rem;border-radius:5px;font-size:.87em;color:var(--olive-deep);}
+  pre{background:var(--ink);color:var(--cream);padding:1rem 1.1rem;border-radius:10px;overflow-x:auto;font-size:.82rem;margin:1rem 0;line-height:1.55;}
+  pre code{background:none;color:inherit;padding:0;}
+  .callout{border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.91rem;}
+  .callout p{margin-bottom:0;}
+  .callout.green{background:var(--green-l);border-left:3px solid var(--green);}.callout.green p{color:var(--olive-deep);}
+  .callout.warn{background:var(--terra-l);border-left:3px solid var(--terra);}.callout.warn p{color:var(--terra);}
+  .callout.blue{background:var(--blue-l);border-left:3px solid var(--blue);}.callout.blue p{color:var(--blue);}
+  .callout.gold{background:var(--gold-l);border-left:3px solid var(--gold);}.callout.gold p{color:var(--gold);}
+  .callout.purple{background:var(--purple-l);border-left:3px solid var(--purple);}.callout.purple p{color:var(--purple);}
+  .fw-table-wrap{overflow-x:auto;margin:1rem 0 1.5rem;}
+  table.fw-table{width:100%;border-collapse:collapse;font-size:.82rem;line-height:1.45;}
+  table.fw-table th,table.fw-table td{border:1px solid var(--border);padding:.5rem .7rem;text-align:left;vertical-align:top;}
+  table.fw-table th{background:var(--cream);font-weight:700;font-size:.77rem;}
+  table.fw-table td{color:var(--ink2);}
+  table.fw-table tr:nth-child(odd) td{background:var(--warm-white);}
+  table.fw-table tr:nth-child(even) td{background:var(--cream);}
+  table.fw-table.compact th,table.fw-table.compact td{padding:.28rem .55rem;font-size:.8rem;}
+  /* Phase progress strip */
+  .phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem;}
+  .phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--ink4);background:var(--warm-white);text-decoration:none;}
+  .phase-pip.active{background:var(--blue);color:var(--warm-white);border-color:transparent;}
+  .phase-pip.done{background:var(--green-l);color:var(--green);border-color:var(--green);}
+  /* Before/After blocks */
+  .ba-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0;}
+  .ba-block{border-radius:10px;overflow:hidden;}
+  .ba-label{padding:.4rem .8rem;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;}
+  .ba-block.before .ba-label{background:var(--terra-l);color:var(--terra);}
+  .ba-block.after .ba-label{background:var(--green-l);color:var(--green);}
+  .ba-block pre{margin:0;border-radius:0 0 10px 10px;}
+  /* Assignment block */
+  .assignment{background:var(--blue-l);border:1px solid var(--blue);border-radius:12px;padding:1.2rem 1.4rem;margin:2rem 0 1rem;}
+  .assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem;}
+  .assignment h3{font-family:var(--ff-serif);color:var(--ink);margin-top:.2rem;margin-bottom:.5rem;}
+  .bonus{background:var(--purple-l);border:1px solid var(--purple);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem;}
+  .bonus .b-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--purple);margin-bottom:.4rem;}
+  /* Collapsible solution */
+  details.solution{margin:1rem 0 2rem;border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+  details.solution summary{padding:.9rem 1.2rem;cursor:pointer;font-weight:700;font-size:.92rem;background:var(--cream);list-style:none;display:flex;align-items:center;gap:.5rem;}
+  details.solution summary::before{content:"&#9654;";font-size:.7rem;color:var(--ink3);transition:transform .2s;}
+  details.solution[open] summary::before{transform:rotate(90deg);}
+  details.solution summary::-webkit-details-marker{display:none;}
+  .solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border);}
+  .solution-body p{font-size:.92rem;}
+  /* Nav */
+  .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:1.8rem;flex-wrap:wrap;}
+  .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:700;font-size:.9rem;padding:.7rem 1.2rem;border-radius:8px;transition:background .2s var(--ease);}
+  .nav-cta.primary{background:var(--olive);color:var(--warm-white);}
+  .nav-cta.primary:hover{background:var(--olive-dark);}
+  .nav-cta.secondary{background:var(--cream);color:var(--ink2);border:1px solid var(--border);}
+  footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.85rem;color:var(--ink3);}
+  footer a{text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+  @media(max-width:600px){
+    h1{font-size:1.55rem;}
+    .ba-wrap{grid-template-columns:1fr;}
+    .meta-row{flex-wrap:wrap;gap:.5rem;}
+  }
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+<main>
+  <p class="breadcrumb">
+    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    <a href="../00-playwrightseries-landing.html">Playwright: Zero to Architect</a> &nbsp;/&nbsp;
+    Phase 4
+  </p>
+  <span class="series-tag">Phase 4 of 15 &middot; Debugging &amp; Flakiness</span>
+  <h1>Debugging and Flakiness</h1>
+  <p class="subtitle">Debug methodically with Trace Viewer. Diagnose flakiness by root cause. Retries hide problems; fixes solve them.</p>
+  <div class="meta-row">
+    <span>By RN</span>
+    <span>~3 hours</span>
+    <span>Series: Playwright: Zero to Architect</span>
+    <span>Demo: PeakAndPack</span>
+  </div>
+  <div class="phase-strip" aria-label="Series progress">
+    <a href="../phase0/00-playwrightseries-intro-setup.html" class="phase-pip" title="Phase 0: Intro &amp; Setup">0</a>
+    <a href="../phase1/01-playwrightseries-test-design.html" class="phase-pip" title="Phase 1: Test Design Thinking">1</a>
+    <a href="../phase2/02-playwrightseries-locators.html" class="phase-pip" title="Phase 2: Locators">2</a>
+    <a href="../phase3/03-playwrightseries-assertions-waits.html" class="phase-pip" title="Phase 3: Assertions &amp; Waits">3</a>
+    <span class="phase-pip active" title="Phase 4: Debugging &amp; Flakiness">4</span>
+    <a href="../phase5/05-playwrightseries-test-data-state.html" class="phase-pip" title="Phase 5: Test Data &amp; State">5</a>
+    <a href="../phase6/06-playwrightseries-auth-sessions.html" class="phase-pip" title="Phase 6: Authentication &amp; Sessions">6</a>
+    <a href="../phase7/07-playwrightseries-api-testing.html" class="phase-pip" title="Phase 7: API Testing">7</a>
+    <a href="../phase8/08-playwrightseries-advanced-scenarios.html" class="phase-pip" title="Phase 8: Advanced Scenarios">8</a>
+    <a href="../phase9/09-playwrightseries-page-objects.html" class="phase-pip" title="Phase 9: Page Object Model">9</a>
+    <a href="../phase10/10-playwrightseries-fixtures-config.html" class="phase-pip" title="Phase 10: Fixtures &amp; Config">10</a>
+    <a href="../phase11/11-playwrightseries-visual-regression.html" class="phase-pip" title="Phase 11: Visual Regression">11</a>
+    <a href="../phase12/12-playwrightseries-cicd-flaky-tests.html" class="phase-pip" title="Phase 12: CI/CD &amp; Flaky Tests">12</a>
+    <a href="../phase13/13-playwrightseries-ai-assisted.html" class="phase-pip" title="Phase 13: AI-Assisted Automation">13</a>
+    <a href="../phase14/14-playwrightseries-automation-leadership.html" class="phase-pip" title="Phase 14: Automation Leadership">14</a>
+    <a href="../phase15/15-playwrightseries-capstone-projects.html" class="phase-pip" title="Phase 15: Capstone Projects">15</a>
+  </div>
+
+  <h2>Goal</h2>
+  <p>Debug failing tests methodically. Diagnose flakiness by root cause rather than masking it with retries. A flaky test is not a Playwright problem: it is a signal about your test, your app, or your environment.</p>
+
+  <h2>Before: guessing at failures</h2>
+  <div class="ba-wrap">
+    <div class="ba-block before">
+      <div class="ba-label">Before: adding retries to hide flakiness</div>
+<pre><code>// Test fails sometimes. Solution: add retries and hope.
+// This masks the problem. The flakiness is still there.
+// retries: 3 in playwright.config.ts means this test
+// can fail 3 times silently before it counts.
+
+test.describe.configure({ retries: 3 });
+test('add to cart works', async ({ page }) => {
+  await page.goto('https://peakandpack-ui.onrender.com/');
+  await page.locator('.add-btn').first().click();
+  await page.waitForTimeout(500);
+  expect(await page.locator('.cart-count').textContent()).toBe('1');
+});
+</code></pre>
+    </div>
+    <div class="ba-block after">
+      <div class="ba-label">After: root cause found and fixed</div>
+<pre><code>// Root cause: CSS locator matched wrong element on slow renders.
+// Fixed with role-based scoped locator + waitForResponse.
+// Zero retries needed.
+
+test('add to cart works', async ({ page }) => {
+  await page.goto('https://peakandpack-ui.onrender.com/');
+  const firstCard = page.getByRole('article').first();
+  const cartUpdated = page.waitForResponse(
+    r => r.url().includes('/api/cart') && r.status() === 200
+  );
+  await firstCard.getByRole('button', { name: /add to cart/i }).click();
+  await cartUpdated;
+  await expect(page.getByTestId('cart-item-count')).toHaveText('1');
+});
+</code></pre>
+    </div>
+  </div>
+
+  <h2>The Trace Viewer: your primary debugging tool</h2>
+  <p>When a test fails, the first thing to open is not the terminal output: it is the Trace Viewer. It shows every action the test took, a screenshot at each step, the DOM state, console logs, and network requests, all in a timeline you can scrub through.</p>
+  <p>Enable tracing for failed tests in <code>playwright.config.ts</code>:</p>
+  <pre><code>use: {
+  trace: 'on-first-retry', // record trace when a test fails and retries
+},</code></pre>
+  <p>After a failure, open the report and click the trace link:</p>
+  <pre><code>npx playwright show-report</code></pre>
+  <p>In the Trace Viewer, look for:</p>
+  <ul>
+    <li><strong>The red step</strong>: the exact action that failed, with a screenshot of the page at that moment.</li>
+    <li><strong>The step before it</strong>: often the real cause. The failure is a symptom; the step before shows what state the page was in.</li>
+    <li><strong>Network tab</strong>: if the test was waiting for a response, check whether the request was made, what it returned, and when.</li>
+    <li><strong>Console tab</strong>: JavaScript errors in the app that do not surface in the test output.</li>
+  </ul>
+
+  <h2>App failure vs test failure</h2>
+  <p>The most important diagnostic question: is the product broken, or is the test wrong? The answer changes everything about what you do next.</p>
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>Symptom</th><th>Likely cause</th><th>What to do</th></tr></thead>
+      <tbody>
+        <tr><td>Fails on every run, on every machine</td><td>App broken or test assertion is wrong</td><td>Check the app manually. If the app is fine, fix the assertion.</td></tr>
+        <tr><td>Fails sometimes, passes other times</td><td>Flaky test (timing, shared state, environment)</td><td>Diagnose root cause. Do not add retries.</td></tr>
+        <tr><td>Fails in CI, passes locally</td><td>Environment difference (headless, speed, ports)</td><td>Run locally with <code>--headed</code> and reduced parallelism to replicate CI.</td></tr>
+        <tr><td>Fails after a code change</td><td>App regression</td><td>File a bug. The test did its job.</td></tr>
+        <tr><td>Fails after a test change</td><td>Test broken by the edit</td><td>Review the change. Check locators and assertions.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Common flaky patterns and their fixes</h2>
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>Flaky pattern</th><th>Root cause</th><th>Fix</th></tr></thead>
+      <tbody>
+        <tr><td>Passes locally, fails in CI</td><td>Headless rendering is faster; elements not ready</td><td>Replace sleeps with <code>waitForResponse</code> or element assertions</td></tr>
+        <tr><td>Fails when run in parallel</td><td>Tests share data (same user, same cart)</td><td>Use isolated test data per worker (Phase 5)</td></tr>
+        <tr><td>Fails intermittently with "strict mode violation"</td><td>Dynamic content makes a locator match multiple elements briefly</td><td>Scope the locator to a stable container</td></tr>
+        <tr><td>Fails on first run, passes on retry</td><td>Cold-start latency (Render free tier waking up)</td><td>Add a <code>waitForLoadState('networkidle')</code> on the first navigation only</td></tr>
+        <tr><td>Fails with "element not found" on fast machines</td><td>Test runs faster than the animation or transition</td><td>Assert the element is visible, not just present</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Surface intermittent failures deliberately</h2>
+  <p>A test that fails 1 in 10 runs will not show up in normal CI. Run it repeatedly to surface the flakiness before shipping:</p>
+  <pre><code>npx playwright test tests/cart.spec.ts --repeat-each=20</code></pre>
+  <p>If it fails any of the 20 runs, it is flaky. Investigate the trace from the failing run before doing anything else.</p>
+
+  <h2>When retries are legitimate</h2>
+  <p>Retries are not always wrong. They are legitimate when the cause is genuinely external and uncontrollable: a third-party API that is occasionally slow, a free-tier host that cold-starts. The rule is: retries for environmental noise, not for test or app problems. If a retry masks a real bug, you will never know the bug exists.</p>
+
+  <div class="callout gold">
+    <p><strong>The flakiness register.</strong> Keep a markdown file listing every flaky test: its name, the root cause category, and whether it is fixed or being monitored. This turns an invisible problem into a tracked one. When flakiness rate exceeds 5% of your suite, it is a quality signal that something structural needs attention.</p>
+  </div>
+
+  <div class="callout warn">
+    <p><strong>Common mistakes in Phase 4.</strong></p>
+    <ul style="margin:.5rem 0 0 1.2rem;">
+      <li><strong>Adding retries as the first response to flakiness.</strong> Retries hide the problem. The test will still fail 1 in 3 runs silently, and you will not know about the underlying issue.</li>
+      <li><strong>Debugging from terminal output alone.</strong> The terminal tells you what failed. The Trace Viewer tells you why. Always open the trace before changing any code.</li>
+      <li><strong>Not reproducing CI failures locally.</strong> Run with <code>--headed</code>, reduce workers to 1 with <code>--workers=1</code>, and if possible use the same Node version as CI.</li>
+      <li><strong>Fixing the symptom not the cause.</strong> Adding a sleep after a flaky step makes it pass today. It will fail again when the environment is slower. Fix the wait strategy.</li>
+    </ul>
+  </div>
+
+  <h2>Deliverables</h2>
+  <ul>
+    <li><code>tests/debug-examples.spec.ts</code>: intentionally flaky versions of tests alongside their fixed versions</li>
+    <li><code>flakiness-diagnosis.md</code>: the root cause table and your personal flakiness register</li>
+  </ul>
+
+  <div class="assignment">
+    <div class="a-label">Assignment</div>
+    <h3>Diagnose a flaky test using the Trace Viewer</h3>
+    <p>Write a test for PeakAndPack that navigates to the product listing and asserts that a specific product card is visible. Introduce artificial flakiness by removing the <code>await</code> from the navigation call (<code>page.goto('https://peakandpack-ui.onrender.com/')</code> without <code>await</code>). Run it 10 times with <code>--repeat-each=10</code>. When it fails, open the trace. Find the exact step where it failed and explain in <code>flakiness-diagnosis.md</code> what the trace shows and why the missing <code>await</code> caused it.</p>
+  </div>
+
+  <div class="bonus">
+    <div class="b-label">Bonus challenge</div>
+    <p><strong>Build a flakiness register for your suite.</strong> Run your full test suite 5 times with <code>--repeat-each=5</code>. Record every test that failed at least once across the 5 runs. Categorise each by root cause using the pattern table above. How many are timing issues? How many are shared state? What is your flakiness rate (failing tests / total test runs)?</p>
+  </div>
+
+  <details class="solution">
+    <summary>Show solution -- try it yourself first</summary>
+    <div class="solution-body">
+      <h3>What the trace shows</h3>
+      <p>When <code>await</code> is removed from <code>page.goto('https://peakandpack-ui.onrender.com/')</code>, the test does not wait for the navigation to complete before moving to the next step. The trace shows the assertion firing while the page is still loading, often before any content has rendered. The screenshot in the trace will show a blank page or a loading state.</p>
+      <pre><code>// FLAKY: no await on goto
+test('product card is visible (flaky)', async ({ page }) => {
+  page.goto('https://peakandpack-ui.onrender.com/'); // missing await -- does not wait for load
+  await expect(
+    page.getByRole('article').first()
+  ).toBeVisible(); // fires before the page has loaded
+});
+
+// FIXED: await the navigation
+test('product card is visible', async ({ page }) => {
+  await page.goto('https://peakandpack-ui.onrender.com/'); // waits for load
+  await expect(
+    page.getByRole('article').first()
+  ).toBeVisible();
+});
+</code></pre>
+      <p><strong>Why it is intermittent.</strong> On a fast machine the navigation completes quickly and the assertion sometimes passes before the race condition bites. On a slow machine or in CI, the gap between the unwaited goto and the assertion is wide enough that the page is visibly empty when the assertion runs.</p>
+    </div>
+  </details>
+
+  <div class="nav-row">
+    <a href="../phase3/03-playwrightseries-assertions-waits.html" class="nav-cta secondary">&larr; Phase 3: Assertions &amp; Waits</a>
+    <a href="../phase5/05-playwrightseries-test-data-state.html" class="nav-cta primary">Phase 5: Test Data &amp; State &rarr;</a>
+  </div>
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; Playwright: Zero to Architect</p>
+  </div>
+</main>
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+</body>
+</html>

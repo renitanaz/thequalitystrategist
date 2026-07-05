@@ -259,7 +259,7 @@
   </div>
 
   <div class="callout purple">
-    <p><strong>The system prompt is where the real design work happens. The code is a few lines.</strong> Both agents are the same short script wrapped around one carefully written instruction. What makes them produce good test cases is the prompt, not the plumbing. That is why the full prompt text is printed below, exactly as used, not paraphrased.</p>
+    <p><strong>The system prompt is where the real design work happens. The code is a few lines.</strong> Both agents are the same short script wrapped around one carefully written instruction. What makes them produce good test cases is the prompt. That is why the full prompt text is printed below, exactly as used.</p>
   </div>
 
   <h2>Pick a form</h2>
@@ -360,7 +360,14 @@ sake. Return only the table, no preamble.</code></pre>
     <hr class="form-opt-divider">
     <p>Run it as a script from a terminal. This form saves the output to a file automatically, handy if you run it often. The only thing it needs installed is <strong>Node.js</strong>, the program that runs JavaScript files outside a browser. It does not need Claude Code or any other tool; the script talks to Anthropic's API on its own. Here is every step, nothing assumed.</p>
     <ol>
-      <li><strong>Check Node.js is installed.</strong> Open a terminal (on Mac: press Cmd+Space, type "Terminal", Enter. On Windows: press the Start key, type "PowerShell", Enter). Type <code>node --version</code> and press Enter. If you see a number like <code>v20.x.x</code> (anything 18 or higher), you are set, skip to step 2. If it says "command not found" or similar, Node is not installed: get it from <a href="https://nodejs.org" target="_blank">nodejs.org</a> (click the <strong>LTS</strong> button), run the installer, then close and reopen the terminal and check again.</li>
+      <li><strong>Check Node.js is installed.</strong>
+        <ul style="margin:.4rem 0 0 1.2rem;">
+          <li>Open a terminal: on Mac press Cmd+Space, type "Terminal", Enter. On Windows press Start, type "PowerShell", Enter.</li>
+          <li>Type <code>node --version</code> and press Enter.</li>
+          <li>If you see a number like <code>v20.x.x</code> (anything 18 or higher) you are set. Skip to step 2.</li>
+          <li>If it says "command not found" or similar, Node is not installed. Go to <a href="https://nodejs.org" target="_blank">nodejs.org</a>, click <strong>LTS</strong>, run the installer, then close and reopen the terminal and try again.</li>
+        </ul>
+      </li>
       <li><strong>Get an API key</strong> the same way as in the browser form: <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> &rarr; API Keys &rarr; Create Key &rarr; copy the <code>sk-ant-</code> value.</li>
       <li><strong>Download two files into the same folder:</strong> <a href="ui-testcase-agent.js" target="_blank"><code>ui-testcase-agent.js</code></a> and <a href="../phase1/peakandpack-requirements.md" target="_blank"><code>peakandpack-requirements.md</code></a>. Put both in, say, a new folder on your Desktop called <code>qa-agent</code>.</li>
       <li><strong>Point the terminal at that folder.</strong> Type <code>cd </code> (with a space after it), then drag the <code>qa-agent</code> folder onto the terminal window (this pastes its path), then press Enter.</li>
@@ -370,7 +377,13 @@ sake. Return only the table, no preamble.</code></pre>
       <li><strong>Run it.</strong> Type <code>node ui-testcase-agent.js</code> and press Enter. The script reads the requirements file next to it, calls Claude, and writes the result to <code>test-cases-ui-agent.md</code> in the same folder.</li>
     </ol>
     <div class="callout warn">
-      <p><strong>If it fails:</strong> "command not found: node" means Node.js is not installed, redo step 1. An authentication error means the key in step 5 was wrong or had a typo, redo step 5. "Cannot find module" usually means the terminal is not in the right folder, redo step 4. "ENOENT ... requirements" means the .md file is not sitting next to the script, redo step 3.</p>
+      <p><strong>If it fails:</strong></p>
+      <ul style="margin:.4rem 0 0 1.2rem;">
+        <li><strong>"command not found: node"</strong>: Node.js is not installed. Redo step 1.</li>
+        <li><strong>Authentication error</strong>: the key in step 5 was wrong or had a typo. Redo step 5.</li>
+        <li><strong>"Cannot find module"</strong>: the terminal is not in the right folder. Redo step 4.</li>
+        <li><strong>"ENOENT ... requirements"</strong>: the .md file is not sitting next to the script. Redo step 3.</li>
+      </ul>
     </div>
   </div>
 
@@ -419,7 +432,7 @@ Cover every endpoint thoroughly. Return only the table, no preamble.</code></pre
   </ul>
 
   <div class="callout purple">
-    <p><strong>The harness matters here.</strong> Both agents send the requirements once and get one answer back. There is no loop, no retry, no second opinion. That is fine for a first draft, but it means the quality of the output is capped by the quality of the prompt and the requirements doc. A vague requirement produces a vague test case. This is the same objective / metric / boundary point raised earlier in the series, applied to a single-shot tool.</p>
+    <p><strong>The harness matters here.</strong> Both agents send the requirements once and get one answer back. There is no loop, no retry, no second opinion. That is fine for a first draft, but it means the quality of the output is capped by the quality of the prompt and the requirements doc. A vague requirement produces a vague test case. The agent is only as good as what you give it.</p>
   </div>
 
   <h2>How to tell if the agent actually read the requirements</h2>

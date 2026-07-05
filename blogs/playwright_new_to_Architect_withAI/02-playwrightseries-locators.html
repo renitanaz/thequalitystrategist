@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 2: Locators | Playwright: Zero to Architect</title>
+<meta name="description" content="Phase 2 of Playwright: Zero to Architect. Find elements the right way. Locator priority, semantic locators, scoping, and AI locator mistakes.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:#6B7C3A; --olive-dark:#4A5828; --olive-deep:#2E3A18;
+    --cream:#F5F7F0; --warm-white:#FAFCF5;
+    --ink:#1A1F14; --ink2:#3D4235; --ink3:#6B7060; --ink4:#9A9E90;
+    --border:rgba(26,31,20,0.1); --border2:rgba(26,31,20,0.06);
+    --purple:#7A4A9A; --purple-l:#EDE0F5;
+    --gold:#9A6E1A; --gold-l:#F5EDD6;
+    --blue:#2A5C9A; --blue-l:#DDE8F5;
+    --teal:#1A6B54; --teal-l:#D8EEE8;
+    --terra:#8A4A2A; --terra-l:#F5E4D8;
+    --green:#1A7A3A; --green-l:#D8F0E0;
+    --ff-serif:'Lora',Georgia,serif;
+    --ff-sans:'DM Sans',system-ui,sans-serif;
+    --ease:cubic-bezier(0.22,1,0.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--ff-sans);background:var(--warm-white);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  header.site-header{border-bottom:1px solid var(--border);padding:1.1rem 1.5rem;background:var(--warm-white);}
+  .site-header-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+  .site-name{font-family:var(--ff-serif);font-weight:600;font-size:1.05rem;text-decoration:none;}
+  main{max-width:880px;margin:0 auto;padding:2.6rem 1.5rem 5rem;}
+  .breadcrumb{font-size:.82rem;color:var(--ink3);margin-bottom:1.3rem;}
+  .breadcrumb a{text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+  .series-tag{display:inline-block;font-size:.76rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--blue);background:var(--blue-l);padding:.3rem .7rem;border-radius:999px;margin-bottom:1.1rem;}
+  h1{font-family:var(--ff-serif);font-size:2rem;font-weight:700;line-height:1.2;margin-bottom:.8rem;}
+  .subtitle{font-size:1.08rem;color:var(--ink2);margin-bottom:1.6rem;max-width:680px;}
+  .meta-row{display:flex;gap:1.1rem;font-size:.82rem;color:var(--ink3);margin-bottom:1.6rem;border-bottom:1px solid var(--border);padding-bottom:1.3rem;flex-wrap:wrap;}
+  h2{font-family:var(--ff-serif);font-size:1.35rem;font-weight:700;margin-top:2.2rem;margin-bottom:.8rem;}
+  h3{font-family:var(--ff-serif);font-size:1.1rem;font-weight:700;margin-top:1.6rem;margin-bottom:.6rem;}
+  p{margin-bottom:.9rem;color:var(--ink2);font-size:.97rem;}
+  strong{color:var(--ink);font-weight:700;}
+  ul,ol{margin:0 0 1rem 1.3rem;color:var(--ink2);}
+  li{margin-bottom:.4rem;font-size:.97rem;}
+  code{background:var(--cream);padding:.15rem .4rem;border-radius:5px;font-size:.87em;color:var(--olive-deep);}
+  pre{background:var(--ink);color:var(--cream);padding:1rem 1.1rem;border-radius:10px;overflow-x:auto;font-size:.82rem;margin:1rem 0;line-height:1.55;}
+  pre code{background:none;color:inherit;padding:0;}
+  .callout{border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.91rem;}
+  .callout p{margin-bottom:0;}
+  .callout.green{background:var(--green-l);border-left:3px solid var(--green);}.callout.green p{color:var(--olive-deep);}
+  .callout.warn{background:var(--terra-l);border-left:3px solid var(--terra);}.callout.warn p{color:var(--terra);}
+  .callout.blue{background:var(--blue-l);border-left:3px solid var(--blue);}.callout.blue p{color:var(--blue);}
+  .callout.gold{background:var(--gold-l);border-left:3px solid var(--gold);}.callout.gold p{color:var(--gold);}
+  .callout.purple{background:var(--purple-l);border-left:3px solid var(--purple);}.callout.purple p{color:var(--purple);}
+  .fw-table-wrap{overflow-x:auto;margin:1rem 0 1.5rem;}
+  table.fw-table{width:100%;border-collapse:collapse;font-size:.82rem;line-height:1.45;}
+  table.fw-table th,table.fw-table td{border:1px solid var(--border);padding:.5rem .7rem;text-align:left;vertical-align:top;}
+  table.fw-table th{background:var(--cream);font-weight:700;font-size:.77rem;}
+  table.fw-table td{color:var(--ink2);}
+  table.fw-table tr:nth-child(odd) td{background:var(--warm-white);}
+  table.fw-table tr:nth-child(even) td{background:var(--cream);}
+  table.fw-table.compact th,table.fw-table.compact td{padding:.28rem .55rem;font-size:.8rem;}
+  /* Phase progress strip */
+  .phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem;}
+  .phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--ink4);background:var(--warm-white);text-decoration:none;}
+  .phase-pip.active{background:var(--blue);color:var(--warm-white);border-color:transparent;}
+  .phase-pip.done{background:var(--green-l);color:var(--green);border-color:var(--green);}
+  /* Before/After blocks */
+  .ba-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0;}
+  .ba-block{border-radius:10px;overflow:hidden;}
+  .ba-label{padding:.4rem .8rem;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;}
+  .ba-block.before .ba-label{background:var(--terra-l);color:var(--terra);}
+  .ba-block.after .ba-label{background:var(--green-l);color:var(--green);}
+  .ba-block pre{margin:0;border-radius:0 0 10px 10px;}
+  /* Assignment block */
+  .assignment{background:var(--blue-l);border:1px solid var(--blue);border-radius:12px;padding:1.2rem 1.4rem;margin:2rem 0 1rem;}
+  .assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem;}
+  .assignment h3{font-family:var(--ff-serif);color:var(--ink);margin-top:.2rem;margin-bottom:.5rem;}
+  .bonus{background:var(--purple-l);border:1px solid var(--purple);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem;}
+  .bonus .b-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--purple);margin-bottom:.4rem;}
+  /* Collapsible solution */
+  details.solution{margin:1rem 0 2rem;border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+  details.solution summary{padding:.9rem 1.2rem;cursor:pointer;font-weight:700;font-size:.92rem;background:var(--cream);list-style:none;display:flex;align-items:center;gap:.5rem;}
+  details.solution summary::before{content:"&#9654;";font-size:.7rem;color:var(--ink3);transition:transform .2s;}
+  details.solution[open] summary::before{transform:rotate(90deg);}
+  details.solution summary::-webkit-details-marker{display:none;}
+  .solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border);}
+  .solution-body p{font-size:.92rem;}
+  /* Nav */
+  .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:1.8rem;flex-wrap:wrap;}
+  .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:700;font-size:.9rem;padding:.7rem 1.2rem;border-radius:8px;transition:background .2s var(--ease);}
+  .nav-cta.primary{background:var(--olive);color:var(--warm-white);}
+  .nav-cta.primary:hover{background:var(--olive-dark);}
+  .nav-cta.secondary{background:var(--cream);color:var(--ink2);border:1px solid var(--border);}
+  footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.85rem;color:var(--ink3);}
+  footer a{text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+  @media(max-width:600px){
+    h1{font-size:1.55rem;}
+    .ba-wrap{grid-template-columns:1fr;}
+    .meta-row{flex-wrap:wrap;gap:.5rem;}
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+
+<main>
+
+  <p class="breadcrumb">
+    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    <a href="../00-playwrightseries-landing.html">Playwright: Zero to Architect</a> &nbsp;/&nbsp;
+    Phase 2
+  </p>
+
+  <span class="series-tag">Phase 2 of 15 &middot; Locators</span>
+
+  <h1>Locators: Resilient and Self-Healing</h1>
+  <p class="subtitle">The locator you choose is the single biggest factor in whether your test survives a UI change or breaks the moment a developer renames a class.</p>
+
+  <div class="meta-row">
+    <span>By RN</span>
+    <span>~3 hours</span>
+    <span>Series: Playwright: Zero to Architect</span>
+    <span>Demo: PeakAndPack</span>
+  </div>
+
+  <div class="phase-strip" aria-label="Series progress">
+    <a href="../phase0/00-playwrightseries-intro-setup.html" class="phase-pip" title="Phase 0: Intro &amp; Setup">0</a>
+    <a href="../phase1/01-playwrightseries-test-design.html" class="phase-pip" title="Phase 1: Test Design Thinking">1</a>
+    <span class="phase-pip active" title="Phase 2: Locators">2</span>
+    <a href="../phase3/03-playwrightseries-assertions-waits.html" class="phase-pip" title="Phase 3: Assertions &amp; Waits">3</a>
+    <a href="../phase4/04-playwrightseries-debugging-flakiness.html" class="phase-pip" title="Phase 4: Debugging &amp; Flakiness">4</a>
+    <a href="../phase5/05-playwrightseries-test-data-state.html" class="phase-pip" title="Phase 5: Test Data &amp; State">5</a>
+    <a href="../phase6/06-playwrightseries-auth-sessions.html" class="phase-pip" title="Phase 6: Authentication &amp; Sessions">6</a>
+    <a href="../phase7/07-playwrightseries-api-testing.html" class="phase-pip" title="Phase 7: API Testing">7</a>
+    <a href="../phase8/08-playwrightseries-advanced-scenarios.html" class="phase-pip" title="Phase 8: Advanced Scenarios">8</a>
+    <a href="../phase9/09-playwrightseries-page-objects.html" class="phase-pip" title="Phase 9: Page Object Model">9</a>
+    <a href="../phase10/10-playwrightseries-fixtures-config.html" class="phase-pip" title="Phase 10: Fixtures &amp; Config">10</a>
+    <a href="../phase11/11-playwrightseries-visual-regression.html" class="phase-pip" title="Phase 11: Visual Regression">11</a>
+    <a href="../phase12/12-playwrightseries-cicd-flaky-tests.html" class="phase-pip" title="Phase 12: CI/CD &amp; Flaky Tests">12</a>
+    <a href="../phase13/13-playwrightseries-ai-assisted.html" class="phase-pip" title="Phase 13: AI-Assisted Automation">13</a>
+    <a href="../phase14/14-playwrightseries-automation-leadership.html" class="phase-pip" title="Phase 14: Automation Leadership">14</a>
+    <a href="../phase15/15-playwrightseries-capstone-projects.html" class="phase-pip" title="Phase 15: Capstone Projects">15</a>
+  </div>
+
+
+  <h2>Goal</h2>
+  <p>Find elements the right way so tests survive UI changes without breaking. The locator you choose is the single biggest factor in whether your test is brittle or resilient.</p>
+
+  <h2>Before: the fragile locator problem</h2>
+  <p>A developer renames a CSS class during a refactor. Nothing breaks for the user ; the page looks and works the same. But three tests fail on CI. This is the fragile locator problem:</p>
+
+  <div class="ba-wrap">
+    <div class="ba-block before">
+      <div class="ba-label">Before: CSS selector breaks on restyle</div>
+<pre><code>// Using a CSS class as the locator.
+// Works today. Breaks the moment a developer renames the class.
+await page.locator('.btn-add-to-cart').click();
+await page.locator('.product-title-text').textContent();
+await page.locator('#checkout-submit-btn').click();
+</code></pre>
+    </div>
+    <div class="ba-block after">
+      <div class="ba-label">After: role-based locators survive restyling</div>
+<pre><code>// Using semantic roles and visible text.
+// A developer can rename every class on the page.
+// These tests still pass.
+await page.getByRole('button', { name: /add to cart/i }).click();
+await page.getByRole('heading', { level: 2 }).textContent();
+await page.getByRole('button', { name: /checkout/i }).click();
+</code></pre>
+    </div>
+  </div>
+
+  <h2>Locator priority</h2>
+  <p>Playwright gives you many ways to find an element. Use the highest one available ; use the highest available resilient to change:</p>
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>Priority</th><th>Locator</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td><strong>1 (best)</strong></td><td><code>getByRole()</code></td><td>Matches what a screen reader sees. Survives restyling and restructuring.</td></tr>
+        <tr><td><strong>2</strong></td><td><code>getByLabel()</code></td><td>For form fields. Matches the visible label text.</td></tr>
+        <tr><td><strong>3</strong></td><td><code>getByPlaceholder()</code></td><td>For inputs without a label. Use when getByLabel is not available.</td></tr>
+        <tr><td><strong>4</strong></td><td><code>getByText()</code></td><td>For non-interactive text. Fragile if text changes frequently.</td></tr>
+        <tr><td><strong>5</strong></td><td><code>getByTestId()</code></td><td>For elements with no stable role or text. Requires a <code>data-testid</code> attribute.</td></tr>
+        <tr><td><strong>6 (last resort)</strong></td><td><code>locator('css')</code></td><td>Avoid. Breaks on any restyle. Use only when nothing else works.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>getByRole in depth</h2>
+  <p>The most important locator. It finds elements by their ARIA role and accessible name ; the same way a screen reader or assistive technology would. Every interactive element has a role: buttons are <code>button</code>, links are <code>link</code>, headings are <code>heading</code>, form fields are <code>textbox</code> or <code>combobox</code>.</p>
+  <pre><code>// Find the "Add to cart" button (role: button, name: the button text)
+page.getByRole('button', { name: /add to cart/i })
+
+// Find the product heading (role: heading, level 2)
+page.getByRole('heading', { level: 2, name: /trail runner/i })
+
+// Find the email input (role: textbox, name from its label)
+page.getByRole('textbox', { name: /email/i })
+
+// Find the cart status indicator (role: status)
+page.getByRole('status', { name: /cart/i })
+</code></pre>
+  <p>The <code>name</code> option matches the element's accessible name ; usually its visible text, its <code>aria-label</code>, or the text of its associated <code>&lt;label&gt;</code>. Passing a regex (<code>/add to cart/i</code>) makes the match case-insensitive and partial, which is more resilient than an exact string.</p>
+
+  <h2>Scoping: find inside a container</h2>
+  <p>PeakAndPack's product listing has multiple "Add to cart" buttons ; one per card. <code>getByRole('button', { name: /add to cart/i })</code> would match all of them and Playwright would not know which to click. Scope the locator to the specific card first:</p>
+  <pre><code>// Scope to the specific product card first, then find the button inside it
+const card = page.getByRole('article').filter({ hasText: 'Trail Runner Pro' });
+await card.getByRole('button', { name: /add to cart/i }).click();
+</code></pre>
+
+  <h2>When to use data-testid</h2>
+  <p>Some elements have no stable role or visible text: dynamic icons, status indicators, custom components. For these, add a <code>data-testid</code> attribute to the HTML and use <code>getByTestId()</code>. This is a controlled contract between you and the frontend developer: the test ID is there for testing and must not be removed.</p>
+  <pre><code>// In the HTML (ask the developer to add this):
+&lt;div data-testid="cart-item-count"&gt;3&lt;/div&gt;
+
+// In the test:
+await expect(page.getByTestId('cart-item-count')).toHaveText('3');
+</code></pre>
+
+  <h2>AI-generated locator mistakes</h2>
+  <p>When you use AI to generate Playwright tests, the locators are the most likely thing to get wrong. AI tools default to CSS classes because they are the most visible pattern in HTML. Know the signs:</p>
+  <div class="callout warn">
+    <p><strong>Red flags in AI-generated locators.</strong></p>
+    <ul style="margin:.5rem 0 0 1.2rem;">
+      <li><code>page.locator('.btn-primary')</code>: CSS class. Ask: is there a visible button text I can use instead?</li>
+      <li><code>page.locator('#submit')</code>: ID selector. Often stable, but <code>getByRole('button', { name: /submit/i })</code> is more readable and equally resilient.</li>
+      <li><code>page.locator('div &gt; span:nth-child(2)')</code>: structural selector. Breaks on any DOM change.</li>
+      <li><code>page.locator('[class*="product"]')</code>: partial class match. Fragile and unclear.</li>
+    </ul>
+  </div>
+
+  <h2>After: a resilient test suite</h2>
+  <div class="callout green">
+    <p><strong>The test that survives a redesign.</strong> When the PeakAndPack design team rebrands next quarter, changes every colour, renames every CSS class, and restructures the product cards, a test suite built on <code>getByRole</code> and <code>getByLabel</code> keeps passing. A suite built on CSS selectors needs to be rewritten. The locator decision made in Phase 2 is the single biggest factor in how much maintenance your suite requires six months from now.</p>
+  </div>
+
+  <div class="callout warn">
+    <p><strong>Common mistakes in Phase 2.</strong></p>
+    <ul style="margin:.5rem 0 0 1.2rem;">
+      <li><strong>Using CSS classes by default.</strong> The most common mistake, especially when copying AI output. Always ask: is there a role or label I can use instead?</li>
+      <li><strong>Not scoping duplicate roles.</strong> If getByRole matches more than one element, Playwright will throw a "strict mode violation". Scope the locator to a container first.</li>
+      <li><strong>Overusing data-testid.</strong> Adding a testid to every element creates maintenance burden on both sides (test and code). Reserve it for elements that genuinely have no stable role or text.</li>
+      <li><strong>Exact string matching.</strong> <code>getByRole('button', { name: 'Add to cart' })</code> breaks if the text ever changes to "Add to Cart". Use a regex: <code>/add to cart/i</code>.</li>
+    </ul>
+  </div>
+
+  <h2>Deliverables</h2>
+  <ul>
+    <li><code>tests/locators.spec.ts</code>: 5 tests using resilient locators across PeakAndPack</li>
+    <li><code>locator-guide.md</code>: the priority table and when-to-use-each rules</li>
+  </ul>
+
+  <div class="assignment">
+    <div class="a-label">Assignment</div>
+    <h3>Write 5 locators for PeakAndPack without a single CSS class</h3>
+    <p>Open PeakAndPack at <a href="https://peakandpack-demo.onrender.com" target="_blank">peakandpack-demo.onrender.com</a>. Using the browser's inspector, find 5 interactive elements and write a locator for each using the highest priority available. Document your choice: why this locator type for this element? Add them all to a spec file and confirm each one resolves to exactly one element (Playwright will error if it matches more than one).</p>
+  </div>
+
+  <div class="bonus">
+    <div class="b-label">Bonus challenge</div>
+    <p><strong>Review an AI-generated test.</strong> Use Claude or another AI to generate a Playwright test for PeakAndPack's checkout flow. Then audit every locator it produced against the priority table. How many are CSS classes? How many would you replace? Rewrite the test using only <code>getByRole</code>, <code>getByLabel</code>, and <code>getByTestId</code> where necessary.</p>
+  </div>
+
+  <details class="solution">
+    <summary>Show solution -- try it yourself first</summary>
+    <div class="solution-body">
+      <h3>Example: 5 resilient locators for PeakAndPack</h3>
+      <pre><code>import { test, expect } from '@playwright/test';
+
+test('resilient locators across PeakAndPack', async ({ page }) => {
+  await page.goto('https://peakandpack-ui.onrender.com/');
+
+  // 1. Site heading - getByRole (most resilient)
+  await expect(page.getByRole('heading', { name: /peakandpack/i })).toBeVisible();
+
+  // 2. Email input on login - getByLabel (matches the label element)
+  await page.goto('https://peakandpack-ui.onrender.com/login');
+  await page.getByLabel(/email/i).fill('test@example.com');
+
+  // 3. Specific product card - scoped getByRole
+  const card = page.getByRole('article').filter({ hasText: 'Trail Runner Pro' });
+  await expect(card).toBeVisible();
+
+  // 4. Add to cart button inside that card - scoped to avoid duplicates
+  await card.getByRole('button', { name: /add to cart/i }).click();
+
+  // 5. Cart count indicator - getByTestId (no stable role or text)
+  await expect(page.getByTestId('cart-item-count')).toHaveText('1');
+});
+</code></pre>
+      <p><strong>Why scoping for the button matters.</strong> Without the <code>card</code> scope, <code>getByRole('button', { name: /add to cart/i })</code> matches every product card's button and Playwright throws a strict mode error. Scoping to the card first means the locator is both resilient (role-based) and precise (scoped).</p>
+    </div>
+  </details>
+
+
+  <div class="nav-row">
+    <a href="../phase1/01-playwrightseries-test-design.html" class="nav-cta secondary">&larr; Phase 1: Test Design Thinking</a>
+    <a href="../phase3/03-playwrightseries-assertions-waits.html" class="nav-cta primary">Phase 3: Assertions &amp; Waits &rarr;</a>
+  </div>
+
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; Playwright: Zero to Architect</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+</body>
+</html>
