@@ -117,7 +117,7 @@
   <p class="breadcrumb">
     <a href="../../index.html">Home</a> &nbsp;/&nbsp;
     <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
-    <a href="../00-playwrightseries-landing.html">Playwright: Zero to Architect</a> &nbsp;/&nbsp;
+    <a href="00-playwrightseries-landing.html">Playwright: Zero to Architect</a> &nbsp;/&nbsp;
     Phase 3
   </p>
 
@@ -134,22 +134,22 @@
   </div>
 
   <div class="phase-strip" aria-label="Series progress">
-    <a href="../phase0/00-playwrightseries-intro-setup.html" class="phase-pip" title="Phase 0: Intro &amp; Setup">0</a>
-    <a href="../phase1/01-playwrightseries-test-design.html" class="phase-pip" title="Phase 1: Test Design Thinking">1</a>
-    <a href="../phase2/02-playwrightseries-locators.html" class="phase-pip" title="Phase 2: Locators">2</a>
+    <a href="00-playwrightseries-intro-setup.html" class="phase-pip" title="Phase 0: Intro &amp; Setup">0</a>
+    <a href="01-playwrightseries-test-design.html" class="phase-pip" title="Phase 1: Test Design Thinking">1</a>
+    <a href="02-playwrightseries-locators.html" class="phase-pip" title="Phase 2: Locators">2</a>
     <span class="phase-pip active" title="Phase 3: Assertions &amp; Waits">3</span>
-    <a href="../phase4/04-playwrightseries-debugging-flakiness.html" class="phase-pip" title="Phase 4: Debugging &amp; Flakiness">4</a>
-    <a href="../phase5/05-playwrightseries-test-data-state.html" class="phase-pip" title="Phase 5: Test Data &amp; State">5</a>
-    <a href="../phase6/06-playwrightseries-auth-sessions.html" class="phase-pip" title="Phase 6: Authentication &amp; Sessions">6</a>
-    <a href="../phase7/07-playwrightseries-api-testing.html" class="phase-pip" title="Phase 7: API Testing">7</a>
-    <a href="../phase8/08-playwrightseries-advanced-scenarios.html" class="phase-pip" title="Phase 8: Advanced Scenarios">8</a>
-    <a href="../phase9/09-playwrightseries-page-objects.html" class="phase-pip" title="Phase 9: Page Object Model">9</a>
-    <a href="../phase10/10-playwrightseries-fixtures-config.html" class="phase-pip" title="Phase 10: Fixtures &amp; Config">10</a>
-    <a href="../phase11/11-playwrightseries-visual-regression.html" class="phase-pip" title="Phase 11: Visual Regression">11</a>
-    <a href="../phase12/12-playwrightseries-cicd-flaky-tests.html" class="phase-pip" title="Phase 12: CI/CD &amp; Flaky Tests">12</a>
-    <a href="../phase13/13-playwrightseries-ai-assisted.html" class="phase-pip" title="Phase 13: AI-Assisted Automation">13</a>
-    <a href="../phase14/14-playwrightseries-automation-leadership.html" class="phase-pip" title="Phase 14: Automation Leadership">14</a>
-    <a href="../phase15/15-playwrightseries-capstone-projects.html" class="phase-pip" title="Phase 15: Capstone Projects">15</a>
+    <a href="04-playwrightseries-debugging-flakiness.html" class="phase-pip" title="Phase 4: Debugging &amp; Flakiness">4</a>
+    <a href="05-playwrightseries-test-data-state.html" class="phase-pip" title="Phase 5: Test Data &amp; State">5</a>
+    <a href="06-playwrightseries-auth-sessions.html" class="phase-pip" title="Phase 6: Authentication &amp; Sessions">6</a>
+    <a href="07-playwrightseries-api-testing.html" class="phase-pip" title="Phase 7: API Testing">7</a>
+    <a href="08-playwrightseries-advanced-scenarios.html" class="phase-pip" title="Phase 8: Advanced Scenarios">8</a>
+    <a href="09-playwrightseries-page-objects.html" class="phase-pip" title="Phase 9: Page Object Model">9</a>
+    <a href="10-playwrightseries-fixtures-config.html" class="phase-pip" title="Phase 10: Fixtures &amp; Config">10</a>
+    <a href="11-playwrightseries-visual-regression.html" class="phase-pip" title="Phase 11: Visual Regression">11</a>
+    <a href="12-playwrightseries-cicd-flaky-tests.html" class="phase-pip" title="Phase 12: CI/CD &amp; Flaky Tests">12</a>
+    <a href="13-playwrightseries-ai-assisted.html" class="phase-pip" title="Phase 13: AI-Assisted Automation">13</a>
+    <a href="14-playwrightseries-automation-leadership.html" class="phase-pip" title="Phase 14: Automation Leadership">14</a>
+    <a href="15-playwrightseries-capstone-projects.html" class="phase-pip" title="Phase 15: Capstone Projects">15</a>
   </div>
 
 
@@ -166,7 +166,7 @@
 // The sleep is fragile -- too short on a slow machine, too long always.
 await page.getByRole('button', { name: /checkout/i }).click();
 await page.waitForTimeout(3000); // "wait 3 seconds and hope"
-const confirmation = page.getByTestId('order-confirmation');
+const confirmation = page.getByRole('heading', { name: /order placed/i });
 await expect(confirmation).toBeTruthy(); // passes even if hidden
 </code></pre>
     </div>
@@ -181,7 +181,7 @@ const orderPromise = page.waitForResponse(
 await page.getByRole('button', { name: /checkout/i }).click();
 await orderPromise; // wait for the real completion signal
 await expect(
-  page.getByRole('heading', { name: /order confirmed/i })
+  page.getByRole('heading', { name: /order placed/i })
 ).toBeVisible(); // only passes when the user can actually see it
 </code></pre>
     </div>
@@ -207,29 +207,28 @@ await expect(
   </div>
 
   <h2>UI vs API assertions</h2>
-  <p>Not everything needs to be asserted through the browser. When you add an item to the PeakAndPack cart, you can assert either the UI response (the cart count updates) or the API response (the server returned the new cart state). Choose based on what you are actually testing:</p>
-  <pre><code>// Assert the UI outcome (what the user sees)
-await page.getByRole('button', { name: /add to cart/i }).click();
-await expect(page.getByTestId('cart-item-count')).toHaveText('1');
+  <p>Not everything needs to be asserted through the browser. When you add an item to the PeakAndPack cart, you can assert either the UI response (does the cart page show the item) or the API response (did the server accept the request). Choose based on what you are actually testing:</p>
+  <pre><code>// Assert the UI outcome (what the user sees, after navigating to confirm it)
+await page.getByRole('button', { name: /add to cart/i }).first().click();
+await page.goto('/cart');
+await expect(page.getByText('Trekking Poles (Pair)')).toBeVisible();
 
 // Assert the API outcome (what the server did) -- faster, no rendering needed
-const response = await page.request.post('https://peakandpackshopdemo.onrender.com/api/cart', {
+const response = await page.request.post('https://peakandpack-ui.onrender.com/api/cart', {
   data: { productId: 1, quantity: 1 }
 });
 expect(response.status()).toBe(200);
-const body = await response.json();
-expect(body.itemCount).toBe(1);
 </code></pre>
+  <p><strong>Check the real request first.</strong> The endpoint above is illustrative. Open DevTools &rarr; Network before writing this test, trigger the action, and confirm the actual request URL and payload. Never assume an endpoint shape from a tutorial, verify it against the app in front of you.</p>
 
-  <h2>Optimistic UI: asserting before the server responds</h2>
-  <p>PeakAndPack updates the cart count immediately when you click "Add to cart", before the server has confirmed the request. This is called optimistic UI. A test that asserts the cart count and then checks the server response needs to handle both:</p>
-  <pre><code>// The UI updates optimistically -- assert it immediately
-await page.getByRole('button', { name: /add to cart/i }).click();
-await expect(page.getByTestId('cart-item-count')).toHaveText('1'); // passes fast
-
-// Then wait for the server to confirm
-const res = await page.waitForResponse(r => r.url().includes('/api/cart'));
-expect(res.status()).toBe(200); // confirms the server agreed
+  <h2>When there's no UI signal at all</h2>
+  <p>Some apps update a visible count optimistically, before the server confirms. PeakAndPack does neither: click "Add to cart" and nothing changes on screen, no count, no toast, no button state change. The only way to know it worked is to check the cart page or the network response. This is the strongest possible argument for <code>waitForResponse</code> over a sleep: when there is no UI to poll, guessing a timeout is not a fallback, it's the only strategy left, and it is a bad one.</p>
+  <pre><code>// There is nothing visible to assert here except by navigating away.
+// The network response is the only direct signal that the add succeeded.
+const cartUpdated = page.waitForResponse(r => r.url().includes('/api/cart'));
+await page.getByRole('button', { name: /add to cart/i }).first().click();
+const res = await cartUpdated;
+expect(res.status()).toBe(200); // the only confirmation available
 </code></pre>
 
   <h2>waitForResponse: wait for meaning, not time</h2>
@@ -237,7 +236,7 @@ expect(res.status()).toBe(200); // confirms the server agreed
   <pre><code>// FRAGILE: waits 2 seconds and hopes the checkout completed
 await page.getByRole('button', { name: /checkout/i }).click();
 await page.waitForTimeout(2000);
-await expect(page.getByRole('heading', { name: /confirmed/i })).toBeVisible();
+await expect(page.getByRole('heading', { name: /order placed/i })).toBeVisible();
 
 // RELIABLE: waits for the exact API response that means checkout succeeded
 const checkoutDone = page.waitForResponse(
@@ -245,7 +244,7 @@ const checkoutDone = page.waitForResponse(
 );
 await page.getByRole('button', { name: /checkout/i }).click();
 await checkoutDone; // only continues when the server has confirmed
-await expect(page.getByRole('heading', { name: /confirmed/i })).toBeVisible();
+await expect(page.getByRole('heading', { name: /order placed/i })).toBeVisible();
 </code></pre>
 
   <div class="callout blue">
@@ -277,7 +276,7 @@ await expect(page.getByRole('heading', { name: /confirmed/i })).toBeVisible();
   <div class="assignment">
     <div class="a-label">Assignment</div>
     <h3>Fix a flaky test</h3>
-    <p>Write a test for PeakAndPack's "Add to cart" flow that uses <code>waitForTimeout(1000)</code> to wait for the cart to update. Run it 10 times with <code>npx playwright test --repeat-each=10</code> and note how many times it fails. Then replace the sleep with <code>waitForResponse</code> pointing at the <code>/api/cart</code> endpoint. Run it 10 times again. Document the before and after failure counts in <code>flaky-to-reliable.md</code>.</p>
+    <p>Write a test for PeakAndPack's "Add to cart" flow that uses <code>waitForTimeout(1000)</code>, then navigates to <code>/cart</code> and checks the item is listed. Run it 10 times with <code>npx playwright test --repeat-each=10</code> and note how many times it fails. Then replace the sleep with <code>waitForResponse</code> pointing at the real add-to-cart request (check DevTools &rarr; Network for the actual URL first). Run it 10 times again. Document the before and after failure counts in <code>flaky-to-reliable.md</code>.</p>
   </div>
 
   <div class="bonus">
@@ -290,23 +289,26 @@ await expect(page.getByRole('heading', { name: /confirmed/i })).toBeVisible();
     <div class="solution-body">
       <h3>The fixed test</h3>
       <pre><code>// BEFORE (flaky): sleep-based wait
-test('add to cart updates count (flaky)', async ({ page }) => {
+test('add to cart is reflected in the cart (flaky)', async ({ page }) => {
   await page.goto('https://peakandpack-ui.onrender.com/');
   await page.getByRole('button', { name: /add to cart/i }).first().click();
   await page.waitForTimeout(1000); // hope this is enough
-  await expect(page.getByTestId('cart-item-count')).toHaveText('1');
+  await page.goto('/cart');
+  await expect(page.getByText('Trekking Poles (Pair)')).toBeVisible();
 });
 
 // AFTER (reliable): waitForResponse
-test('add to cart updates count (reliable)', async ({ page }) => {
+test('add to cart is reflected in the cart (reliable)', async ({ page }) => {
   await page.goto('https://peakandpack-ui.onrender.com/');
-  // Set up the listener BEFORE the click
+  // Set up the listener BEFORE the click. Confirm '/api/cart' against
+  // your own DevTools Network tab first, it's illustrative here.
   const cartUpdated = page.waitForResponse(
     res => res.url().includes('/api/cart') && res.status() === 200
   );
   await page.getByRole('button', { name: /add to cart/i }).first().click();
   await cartUpdated; // only continues once the server confirmed
-  await expect(page.getByTestId('cart-item-count')).toHaveText('1');
+  await page.goto('/cart');
+  await expect(page.getByText('Trekking Poles (Pair)')).toBeVisible();
 });
 </code></pre>
       <p><strong>Why the sleep version is flaky.</strong> 1000ms is an estimate. On a slow CI machine or when the Render free tier is cold-starting, the request takes longer. The assertion runs before the server responds and fails. The <code>waitForResponse</code> version is exact: it waits for the real signal, however long that takes, up to the configured timeout.</p>
@@ -316,8 +318,8 @@ test('add to cart updates count (reliable)', async ({ page }) => {
 
 
   <div class="nav-row">
-    <a href="../phase2/02-playwrightseries-locators.html" class="nav-cta secondary">&larr; Phase 2: Locators</a>
-    <a href="../phase4/04-playwrightseries-debugging-flakiness.html" class="nav-cta primary">Phase 4: Debugging &amp; Flakiness &rarr;</a>
+    <a href="02-playwrightseries-locators.html" class="nav-cta secondary">&larr; Phase 2: Locators</a>
+    <a href="04-playwrightseries-debugging-flakiness.html" class="nav-cta primary">Phase 4: Debugging &amp; Flakiness &rarr;</a>
   </div>
 
   <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">

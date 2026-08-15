@@ -117,7 +117,7 @@
   <p class="breadcrumb">
     <a href="../../index.html">Home</a> &nbsp;/&nbsp;
     <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
-    <a href="../00-playwrightseries-landing.html">Playwright: Zero to Architect</a> &nbsp;/&nbsp;
+    <a href="00-playwrightseries-landing.html">Playwright: Zero to Architect</a> &nbsp;/&nbsp;
     Phase 2
   </p>
 
@@ -134,22 +134,22 @@
   </div>
 
   <div class="phase-strip" aria-label="Series progress">
-    <a href="../phase0/00-playwrightseries-intro-setup.html" class="phase-pip" title="Phase 0: Intro &amp; Setup">0</a>
-    <a href="../phase1/01-playwrightseries-test-design.html" class="phase-pip" title="Phase 1: Test Design Thinking">1</a>
+    <a href="00-playwrightseries-intro-setup.html" class="phase-pip" title="Phase 0: Intro &amp; Setup">0</a>
+    <a href="01-playwrightseries-test-design.html" class="phase-pip" title="Phase 1: Test Design Thinking">1</a>
     <span class="phase-pip active" title="Phase 2: Locators">2</span>
-    <a href="../phase3/03-playwrightseries-assertions-waits.html" class="phase-pip" title="Phase 3: Assertions &amp; Waits">3</a>
-    <a href="../phase4/04-playwrightseries-debugging-flakiness.html" class="phase-pip" title="Phase 4: Debugging &amp; Flakiness">4</a>
-    <a href="../phase5/05-playwrightseries-test-data-state.html" class="phase-pip" title="Phase 5: Test Data &amp; State">5</a>
-    <a href="../phase6/06-playwrightseries-auth-sessions.html" class="phase-pip" title="Phase 6: Authentication &amp; Sessions">6</a>
-    <a href="../phase7/07-playwrightseries-api-testing.html" class="phase-pip" title="Phase 7: API Testing">7</a>
-    <a href="../phase8/08-playwrightseries-advanced-scenarios.html" class="phase-pip" title="Phase 8: Advanced Scenarios">8</a>
-    <a href="../phase9/09-playwrightseries-page-objects.html" class="phase-pip" title="Phase 9: Page Object Model">9</a>
-    <a href="../phase10/10-playwrightseries-fixtures-config.html" class="phase-pip" title="Phase 10: Fixtures &amp; Config">10</a>
-    <a href="../phase11/11-playwrightseries-visual-regression.html" class="phase-pip" title="Phase 11: Visual Regression">11</a>
-    <a href="../phase12/12-playwrightseries-cicd-flaky-tests.html" class="phase-pip" title="Phase 12: CI/CD &amp; Flaky Tests">12</a>
-    <a href="../phase13/13-playwrightseries-ai-assisted.html" class="phase-pip" title="Phase 13: AI-Assisted Automation">13</a>
-    <a href="../phase14/14-playwrightseries-automation-leadership.html" class="phase-pip" title="Phase 14: Automation Leadership">14</a>
-    <a href="../phase15/15-playwrightseries-capstone-projects.html" class="phase-pip" title="Phase 15: Capstone Projects">15</a>
+    <a href="03-playwrightseries-assertions-waits.html" class="phase-pip" title="Phase 3: Assertions &amp; Waits">3</a>
+    <a href="04-playwrightseries-debugging-flakiness.html" class="phase-pip" title="Phase 4: Debugging &amp; Flakiness">4</a>
+    <a href="05-playwrightseries-test-data-state.html" class="phase-pip" title="Phase 5: Test Data &amp; State">5</a>
+    <a href="06-playwrightseries-auth-sessions.html" class="phase-pip" title="Phase 6: Authentication &amp; Sessions">6</a>
+    <a href="07-playwrightseries-api-testing.html" class="phase-pip" title="Phase 7: API Testing">7</a>
+    <a href="08-playwrightseries-advanced-scenarios.html" class="phase-pip" title="Phase 8: Advanced Scenarios">8</a>
+    <a href="09-playwrightseries-page-objects.html" class="phase-pip" title="Phase 9: Page Object Model">9</a>
+    <a href="10-playwrightseries-fixtures-config.html" class="phase-pip" title="Phase 10: Fixtures &amp; Config">10</a>
+    <a href="11-playwrightseries-visual-regression.html" class="phase-pip" title="Phase 11: Visual Regression">11</a>
+    <a href="12-playwrightseries-cicd-flaky-tests.html" class="phase-pip" title="Phase 12: CI/CD &amp; Flaky Tests">12</a>
+    <a href="13-playwrightseries-ai-assisted.html" class="phase-pip" title="Phase 13: AI-Assisted Automation">13</a>
+    <a href="14-playwrightseries-automation-leadership.html" class="phase-pip" title="Phase 14: Automation Leadership">14</a>
+    <a href="15-playwrightseries-capstone-projects.html" class="phase-pip" title="Phase 15: Capstone Projects">15</a>
   </div>
 
 
@@ -203,22 +203,25 @@ await page.getByRole('button', { name: /checkout/i }).click();
 page.getByRole('button', { name: /add to cart/i })
 
 // Find the product heading (role: heading, level 2)
-page.getByRole('heading', { level: 2, name: /trail runner/i })
+page.getByRole('heading', { level: 2, name: /trekking poles/i })
 
 // Find the email input (role: textbox, name from its label)
 page.getByRole('textbox', { name: /email/i })
 
-// Find the cart status indicator (role: status)
-page.getByRole('status', { name: /cart/i })
+// Find the search box (role: textbox, name from its placeholder)
+page.getByRole('textbox', { name: /search gear/i })
 </code></pre>
   <p>The <code>name</code> option matches the element's accessible name ; usually its visible text, its <code>aria-label</code>, or the text of its associated <code>&lt;label&gt;</code>. Passing a regex (<code>/add to cart/i</code>) makes the match case-insensitive and partial, which is more resilient than an exact string.</p>
 
   <h2>Scoping: find inside a container</h2>
   <p>PeakAndPack's product listing has multiple "Add to cart" buttons ; one per card. <code>getByRole('button', { name: /add to cart/i })</code> would match all of them and Playwright would not know which to click. Scope the locator to the specific card first:</p>
   <pre><code>// Scope to the specific product card first, then find the button inside it
-const card = page.getByRole('article').filter({ hasText: 'Trail Runner Pro' });
+const card = page.locator('div').filter({ has: page.getByRole('heading', { name: 'Trekking Poles (Pair)' }) }).first();
 await card.getByRole('button', { name: /add to cart/i }).click();
 </code></pre>
+  <div class="callout blue">
+    <p><strong>Why not <code>getByRole('article')</code> here.</strong> That's the textbook version of this pattern, and it's worth knowing, but PeakAndPack's product cards aren't semantic <code>&lt;article&gt;</code> elements, they're plain <code>&lt;div&gt;</code>s. So the scoping locator falls back to <code>locator('div').filter({ has: ... })</code>: still role-based where it matters (the filter condition and the button inside it), the outer container is the one piece of the DOM with no better handle. That gap is itself worth raising with the frontend team: wrapping each card in <code>&lt;article&gt;</code> would make it a one-line <code>getByRole('article')</code> instead.</p>
+  </div>
 
   <h2>When to use data-testid</h2>
   <p>Some elements have no stable role or visible text: dynamic icons, status indicators, custom components. For these, add a <code>data-testid</code> attribute to the HTML and use <code>getByTestId()</code>. This is a controlled contract between you and the frontend developer: the test ID is there for testing and must not be removed.</p>
@@ -265,7 +268,7 @@ await expect(page.getByTestId('cart-item-count')).toHaveText('3');
   <div class="assignment">
     <div class="a-label">Assignment</div>
     <h3>Write 5 locators for PeakAndPack without a single CSS class</h3>
-    <p>Open PeakAndPack at <a href="https://peakandpack-demo.onrender.com" target="_blank">peakandpack-demo.onrender.com</a>. Using the browser's inspector, find 5 interactive elements and write a locator for each using the highest priority available. Document your choice: why this locator type for this element? Add them all to a spec file and confirm each one resolves to exactly one element (Playwright will error if it matches more than one).</p>
+    <p>Open PeakAndPack at <a href="https://peakandpack-ui.onrender.com" target="_blank">peakandpack-ui.onrender.com</a>. Using the browser's inspector, find 5 interactive elements and write a locator for each using the highest priority available. Document your choice: why this locator type for this element? Add them all to a spec file and confirm each one resolves to exactly one element (Playwright will error if it matches more than one).</p>
   </div>
 
   <div class="bonus">
@@ -289,25 +292,27 @@ test('resilient locators across PeakAndPack', async ({ page }) => {
   await page.goto('https://peakandpack-ui.onrender.com/login');
   await page.getByLabel(/email/i).fill('test@example.com');
 
-  // 3. Specific product card - scoped getByRole
-  const card = page.getByRole('article').filter({ hasText: 'Trail Runner Pro' });
+  // 3. Specific product card - scoped locator (no <article> wrapper exists, see callout above)
+  const card = page.locator('div').filter({ has: page.getByRole('heading', { name: 'Trekking Poles (Pair)' }) }).first();
   await expect(card).toBeVisible();
 
   // 4. Add to cart button inside that card - scoped to avoid duplicates
   await card.getByRole('button', { name: /add to cart/i }).click();
 
-  // 5. Cart count indicator - getByTestId (no stable role or text)
-  await expect(page.getByTestId('cart-item-count')).toHaveText('1');
+  // 5. Cart total - getByRole (no data-testid exists on PeakAndPack yet, role works fine here)
+  await page.goto('https://peakandpack-ui.onrender.com/cart');
+  await expect(page.getByRole('heading', { name: /^total:/i })).toBeVisible();
 });
 </code></pre>
       <p><strong>Why scoping for the button matters.</strong> Without the <code>card</code> scope, <code>getByRole('button', { name: /add to cart/i })</code> matches every product card's button and Playwright throws a strict mode error. Scoping to the card first means the locator is both resilient (role-based) and precise (scoped).</p>
+      <p><strong>Why step 5 doesn't use <code>getByTestId</code>.</strong> The "When to use data-testid" section above is real advice, but PeakAndPack doesn't have a single <code>data-testid</code> anywhere today. Reach for it when you hit an element with no role or stable text, not by default. Here, the cart total already has a role and readable text, so <code>getByRole</code> covers it with nothing to add.</p>
     </div>
   </details>
 
 
   <div class="nav-row">
-    <a href="../phase1/01-playwrightseries-test-design.html" class="nav-cta secondary">&larr; Phase 1: Test Design Thinking</a>
-    <a href="../phase3/03-playwrightseries-assertions-waits.html" class="nav-cta primary">Phase 3: Assertions &amp; Waits &rarr;</a>
+    <a href="01-playwrightseries-test-design.html" class="nav-cta secondary">&larr; Phase 1: Test Design Thinking</a>
+    <a href="03-playwrightseries-assertions-waits.html" class="nav-cta primary">Phase 3: Assertions &amp; Waits &rarr;</a>
   </div>
 
   <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
