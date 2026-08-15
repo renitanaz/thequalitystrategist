@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Git for QA: The Basics | The Quality Strategist</title>
+<meta name="description" content="A shared primer: what Git is, how to turn a test project into a repo, commit, branch, and push it to GitHub, written for QA and test automation engineers.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+  :root {
+    --olive:       #6B7C3A;
+    --olive-dark:  #4A5828;
+    --olive-deep:  #2E3A18;
+    --cream:       #F5F7F0;
+    --warm-white:  #FAFCF5;
+    --ink:         #1A1F14;
+    --ink2:        #3D4235;
+    --ink3:        #6B7060;
+    --ink4:        #9A9E90;
+    --border:      rgba(26,31,20,0.1);
+    --border2:     rgba(26,31,20,0.06);
+    --purple:      #7A4A9A; --purple-l: #EDE0F5;
+    --gold:        #9A6E1A; --gold-l:   #F5EDD6;
+    --blue:        #2A5C9A; --blue-l:   #DDE8F5;
+    --rose:        #9A2A4A; --rose-l:   #F5DDE5;
+    --teal:        #1A6B54; --teal-l:   #D8EEE8;
+    --terra:       #8A4A2A; --terra-l:  #F5E4D8;
+    --green:       #1A7A3A; --green-l:  #D8F0E0;
+    --ff-serif: 'Lora', Georgia, serif;
+    --ff-sans:  'DM Sans', system-ui, sans-serif;
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: var(--ff-sans);
+    background: var(--warm-white);
+    color: var(--ink);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; }
+  header.site-header { border-bottom: 1px solid var(--border); padding: 1.1rem 1.5rem; background: var(--warm-white); }
+  .site-header-inner { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+  .site-name { font-family: var(--ff-serif); font-weight: 600; font-size: 1.05rem; text-decoration: none; }
+  main { max-width: 880px; margin: 0 auto; padding: 2.6rem 1.5rem 5rem; }
+
+  .breadcrumb { font-size: .82rem; color: var(--ink3); margin-bottom: 1.3rem; }
+  .breadcrumb a { text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+
+  .series-tag {
+    display: inline-block; font-size: .76rem; font-weight: 700; letter-spacing: .04em;
+    text-transform: uppercase; color: var(--teal); background: var(--teal-l);
+    padding: .3rem .7rem; border-radius: 999px; margin-bottom: 1.1rem;
+  }
+
+  h1 { font-family: var(--ff-serif); font-size: 2rem; font-weight: 700; line-height: 1.2; margin-bottom: .8rem; }
+  .subtitle { font-size: 1.08rem; color: var(--ink2); margin-bottom: 1.6rem; max-width: 680px; }
+  .meta-row {
+    display: flex; gap: 1.1rem; font-size: .82rem; color: var(--ink3);
+    margin-bottom: 1.6rem; border-bottom: 1px solid var(--border); padding-bottom: 1.3rem;
+  }
+
+  h2 { font-family: var(--ff-serif); font-size: 1.35rem; font-weight: 700; margin-top: 2.2rem; margin-bottom: .8rem; }
+  h3 { font-family: var(--ff-serif); font-size: 1.1rem; font-weight: 700; margin-top: 1.4rem; margin-bottom: .6rem; }
+  p { margin-bottom: .9rem; color: var(--ink2); font-size: .97rem; }
+  strong { color: var(--ink); font-weight: 700; }
+  ul, ol { margin: 0 0 1rem 1.3rem; color: var(--ink2); }
+  li { margin-bottom: .4rem; }
+  code { background: var(--cream); padding: .15rem .4rem; border-radius: 5px; font-size: .87em; color: var(--olive-deep); }
+  pre {
+    background: var(--ink); color: var(--cream); padding: 1rem 1.1rem; border-radius: 10px;
+    overflow-x: auto; font-size: .82rem; margin: 1rem 0; line-height: 1.55;
+  }
+  pre code { background: none; color: inherit; padding: 0; }
+
+  .callout { border-radius: 0 10px 10px 0; padding: 1.05rem 1.3rem; margin: 1.3rem 0; font-size: .91rem; }
+  .callout p { margin-bottom: 0; }
+  .callout.green { background: var(--green-l); border-left: 3px solid var(--green); } .callout.green p { color: var(--olive-deep); }
+  .callout.warn { background: var(--terra-l); border-left: 3px solid var(--terra); } .callout.warn p { color: var(--terra); }
+  .callout.blue { background: var(--blue-l); border-left: 3px solid var(--blue); } .callout.blue p { color: var(--blue); }
+  .callout.gold { background: var(--gold-l); border-left: 3px solid var(--gold); } .callout.gold p { color: var(--gold); }
+  .callout.purple { background: var(--purple-l); border-left: 3px solid var(--purple); } .callout.purple p { color: var(--purple); }
+
+  .fw-table-wrap { overflow-x: auto; margin: 1rem 0 1.5rem; }
+  table.fw-table { width: 100%; border-collapse: collapse; font-size: .82rem; line-height: 1.45; }
+  table.fw-table th, table.fw-table td { border: 1px solid var(--border); padding: .5rem .7rem; text-align: left; vertical-align: top; }
+  table.fw-table th { background: var(--cream); font-weight: 700; font-size: .77rem; }
+  table.fw-table td { color: var(--ink2); }
+  table.fw-table tr:nth-child(odd) td { background: var(--warm-white); }
+  table.fw-table tr:nth-child(even) td { background: var(--cream); }
+
+  .checklist { list-style: none; margin-left: 0; }
+  .checklist li { display: flex; gap: .55rem; align-items: baseline; margin-bottom: .4rem; font-size: .92rem; color: var(--ink2); }
+  .checklist li::before { content: "\2713"; color: var(--green); font-weight: 700; flex-shrink: 0; }
+
+  .nav-row { display: flex; justify-content: space-between; gap: .8rem; margin-top: 1.8rem; flex-wrap: wrap; }
+  .nav-cta {
+    display: inline-flex; align-items: center; gap: .5rem; text-decoration: none;
+    font-weight: 700; font-size: .9rem; padding: .7rem 1.2rem; border-radius: 8px;
+    transition: background .2s var(--ease);
+  }
+  .nav-cta.primary { background: var(--olive); color: var(--warm-white); }
+  .nav-cta.primary:hover { background: var(--olive-dark); }
+  .nav-cta.secondary { background: var(--cream); color: var(--ink2); border: 1px solid var(--border); }
+
+  footer { border-top: 1px solid var(--border); padding: 2rem 1.5rem; text-align: center; font-size: .85rem; color: var(--ink3); }
+  footer a { text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 600px) {
+    h1 { font-size: 1.55rem; }
+    .meta-row { flex-wrap: wrap; gap: .5rem; }
+  }
+
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+
+<main>
+
+  <p class="breadcrumb">
+    <a href="../../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    <a href="../00-ShopDemo-AI-Augmented-QA-Series-Introduction.html">AI-Augmented QA Series</a> &nbsp;/&nbsp;
+    Git for QA
+  </p>
+
+  <span class="series-tag">Shared primer &middot; Start here</span>
+
+  <h1>Git for QA: The Basics</h1>
+  <p class="subtitle">Every automated phase in this series, and in Playwright: Zero to Architect, assumes your test code lives in a Git repository. This is the whole foundation in one page: what Git is, how to turn a folder of tests into a tracked project, how to commit and branch, and how to push it to GitHub. Already comfortable with Git? Skip straight back to the phase you came from.</p>
+
+  <div class="meta-row">
+    <span>By RN</span>
+    <span>~6 min read</span>
+    <span>Shared across series</span>
+  </div>
+
+  <h2>What Git is</h2>
+  <ul>
+    <li>Tracks every change made to your test files over time, no more <code>tests-final-v2-ACTUAL.ts</code></li>
+    <li><strong>Commit</strong> = a saved snapshot with a note on what changed</li>
+    <li><strong>Branch</strong> = a copy of the history you can experiment on without touching the working version</li>
+    <li>GitHub = a copy of that history online, survives a dead laptop, lets others see and review it</li>
+  </ul>
+
+  <div class="callout gold">
+    <p><strong>Think of it like a local godown and a destination warehouse:</strong></p>
+    <ul>
+      <li>Your machine = the godown. You manufacture goods (write code) and store finished batches on the shelf = <code>commit</code>. Local only, nothing has shipped yet.</li>
+      <li>GitHub = the destination warehouse you export to. <code>git push</code> = the shipment leaving your godown.</li>
+      <li>Before every shipment, check the destination's <em>current</em> stock, not what it had last time you looked. That check is <code>git pull</code>.</li>
+      <li>Skip the check and your shipment may conflict with stock someone else already delivered, Git refuses it and tells you to check the warehouse's books first.</li>
+    </ul>
+  </div>
+
+  <div class="godown-diagram" role="img" aria-label="Diagram: your machine as a local godown where you manufacture and store commits, connected to GitHub as a destination warehouse by two arrows, git push shipping stock out and git pull checking the destination's stock first.">
+    <svg viewBox="0 0 680 240" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">
+      <rect x="16" y="30" width="270" height="180" rx="14" fill="var(--cream)" stroke="var(--olive)" stroke-width="1.5"/>
+      <text x="151" y="58" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" letter-spacing="1" fill="var(--olive-dark)">YOUR MACHINE</text>
+      <text x="151" y="76" text-anchor="middle" font-family="Lora, serif" font-size="15" font-weight="700" fill="var(--ink)">Local Godown</text>
+
+      <g>
+        <rect x="46" y="96" width="52" height="38" rx="4" fill="var(--warm-white)" stroke="var(--olive)" stroke-width="1.2"/>
+        <text x="72" y="119" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="var(--olive-dark)">commit 1</text>
+        <rect x="115" y="96" width="52" height="38" rx="4" fill="var(--warm-white)" stroke="var(--olive)" stroke-width="1.2"/>
+        <text x="141" y="119" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="var(--olive-dark)">commit 2</text>
+        <rect x="184" y="96" width="52" height="38" rx="4" fill="var(--warm-white)" stroke="var(--olive)" stroke-width="1.2"/>
+        <text x="210" y="119" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="var(--olive-dark)">commit 3</text>
+      </g>
+      <text x="151" y="160" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="var(--ink3)">manufacture (write code)</text>
+      <text x="151" y="178" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="var(--ink3)">+ store on the shelf (commit)</text>
+
+      <rect x="394" y="30" width="270" height="180" rx="14" fill="var(--teal-l)" stroke="var(--teal)" stroke-width="1.5"/>
+      <text x="529" y="58" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" letter-spacing="1" fill="var(--teal)">GITHUB</text>
+      <text x="529" y="76" text-anchor="middle" font-family="Lora, serif" font-size="15" font-weight="700" fill="var(--ink)">Destination Warehouse</text>
+
+      <g>
+        <rect x="424" y="96" width="52" height="38" rx="4" fill="var(--warm-white)" stroke="var(--teal)" stroke-width="1.2"/>
+        <text x="450" y="119" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="var(--teal)">commit 1</text>
+        <rect x="493" y="96" width="52" height="38" rx="4" fill="var(--warm-white)" stroke="var(--teal)" stroke-width="1.2"/>
+        <text x="519" y="119" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="var(--teal)">commit 2</text>
+        <rect x="562" y="96" width="52" height="38" rx="4" fill="var(--warm-white)" stroke="var(--teal)" stroke-width="1.2" stroke-dasharray="3 3"/>
+        <text x="588" y="119" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="var(--teal)">commit ?</text>
+      </g>
+      <text x="529" y="160" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="var(--ink3)">the shared warehouse</text>
+      <text x="529" y="178" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="var(--ink3)">everyone ships to</text>
+
+      <defs>
+        <marker id="arrow-push" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="var(--olive)"/>
+        </marker>
+        <marker id="arrow-pull" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="var(--blue)"/>
+        </marker>
+      </defs>
+
+      <path d="M290,92 C 330,80 350,80 390,92" fill="none" stroke="var(--olive)" stroke-width="2" marker-end="url(#arrow-push)"/>
+      <text x="340" y="72" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="var(--olive-dark)">git push</text>
+      <text x="340" y="86" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="var(--ink3)">ship the batch</text>
+
+      <path d="M390,152 C 350,164 330,164 290,152" fill="none" stroke="var(--blue)" stroke-width="2" marker-end="url(#arrow-pull)"/>
+      <text x="340" y="180" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="var(--blue)">git pull</text>
+      <text x="340" y="194" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="var(--ink3)">check their stock first</text>
+    </svg>
+  </div>
+
+  <div class="callout blue">
+    <p><strong>Glossary</strong></p>
+    <ul>
+      <li><strong>Repository (repo):</strong> a folder Git is tracking</li>
+      <li><strong>Commit:</strong> a saved snapshot with a message</li>
+      <li><strong>Branch:</strong> a separate line of work off the main history</li>
+      <li><strong>Remote:</strong> the copy of the repo hosted elsewhere (GitHub, here)</li>
+      <li><strong>Push / pull:</strong> send commits to the remote / bring remote commits down to you</li>
+      <li><strong>Clone:</strong> download a full copy of an existing remote repo</li>
+      <li><strong>Pull request (PR):</strong> a request to merge one branch into another, usually reviewed first</li>
+      <li><strong>.gitignore:</strong> a file listing what Git should never track</li>
+    </ul>
+  </div>
+
+  <h2>Step 1: check Git is installed</h2>
+  <pre><code>git --version</code></pre>
+  <ul>
+    <li>See a version number? You're set.</li>
+    <li>Error? Install Git from <a href="https://git-scm.com/downloads" target="_blank">git-scm.com</a>, then reopen the terminal.</li>
+  </ul>
+
+  <h2>Step 2: tell Git who you are</h2>
+  <p>Set once, globally, used by every repo on your machine:</p>
+  <pre><code>git config --global user.name "Your Name"
+git config --global user.email "you@example.com"</code></pre>
+
+  <h2>Step 3: turn your test project into a repo</h2>
+  <pre><code>cd peakandpack-tests
+git init</code></pre>
+  <ul>
+    <li><code>git init</code> just switches tracking on, nothing is saved yet, like putting up empty shelving in the godown</li>
+    <li>Joining a repo that already exists on GitHub? Use <code>clone</code> instead, that's opening a godown pre-stocked with a copy of the warehouse's contents:</li>
+  </ul>
+  <pre><code>git clone https://github.com/your-org/your-repo.git</code></pre>
+
+  <h2>Step 4: tell it what to ignore</h2>
+  <p>Create <code>.gitignore</code> in the project root, before your first commit:</p>
+  <pre><code>node_modules/
+test-results/
+playwright-report/
+.env</code></pre>
+  <ul>
+    <li><code>node_modules</code>, huge and rebuildable from <code>package.json</code></li>
+    <li>Report folders, regenerated every run</li>
+    <li><code>.env</code>, where API keys live</li>
+  </ul>
+
+  <div class="callout warn">
+    <p><strong>Already committed a secret by mistake?</strong> Adding it to <code>.gitignore</code> stops future commits but doesn't erase it from history. Rotate the key immediately, then clean the history.</p>
+  </div>
+
+  <h2>Step 5: your first commit</h2>
+  <pre><code>git status
+git add .
+git commit -m "Initial Playwright test setup"</code></pre>
+  <ul>
+    <li><code>git add .</code> stages everything not ignored, packing a batch onto a pallet</li>
+    <li><code>git commit</code> saves that snapshot locally, labelled and on the shelf</li>
+    <li>Nothing has left your machine yet, that's the next step</li>
+  </ul>
+
+  <h2>Step 6: push it to GitHub</h2>
+  <p>Create an empty repo at <a href="https://github.com/new" target="_blank">github.com/new</a> (no README, yours already has content), then:</p>
+  <pre><code>git remote add origin https://github.com/your-username/your-repo.git
+git branch -M main
+git push -u origin main</code></pre>
+  <ul>
+    <li><code>-u</code> links local <code>main</code> to the remote one, so future pushes are just <code>git push</code></li>
+    <li>This is the actual shipment: commits leave your godown and land in the shared warehouse</li>
+  </ul>
+
+  <h2>Step 7: branch per change</h2>
+  <pre><code>git checkout -b add-checkout-tests
+# ...write and run your tests...
+git add .
+git commit -m "Add checkout flow test coverage"
+git push -u origin add-checkout-tests</code></pre>
+  <ul>
+    <li>Working on <code>main</code> directly is fine solo; branching per change scales to a team</li>
+    <li>A branch is a separate production line, prototype without touching the shelf everyone ships from</li>
+    <li>Open a pull request on GitHub comparing your branch to <code>main</code></li>
+    <li>CI (Phase 12 in Playwright: Zero to Architect) runs your suite here before anything merges</li>
+  </ul>
+
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td><code>git status</code></td><td>What's changed, staged, or untracked right now.</td></tr>
+        <tr><td><code>git diff</code></td><td>The exact line-by-line changes, not yet staged.</td></tr>
+        <tr><td><code>git log --oneline</code></td><td>Commit history, one line per commit.</td></tr>
+        <tr><td><code>git checkout -b name</code></td><td>Create and switch to a new branch.</td></tr>
+        <tr><td><code>git checkout main</code></td><td>Switch back to the main branch.</td></tr>
+        <tr><td><code>git pull</code></td><td>Bring down the latest commits from the remote.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout gold">
+    <p><strong>Common beginner snags</strong></p>
+    <ul>
+      <li>"fatal: not a git repository": you're not inside a folder Git has initialised, check with <code>git status</code></li>
+      <li>Push rejected as "behind": the warehouse has stock your godown doesn't, someone shipped since you last checked, run <code>git pull</code> first</li>
+      <li>Merge conflict: not a failure, just two branches changing the same lines, resolve by hand then <code>git add</code> + <code>git commit</code></li>
+      <li>Committed to the wrong branch: <code>git status</code> before you start, every time</li>
+    </ul>
+  </div>
+
+  <h2>You're ready</h2>
+  <ul>
+    <li>Init or clone</li>
+    <li>Ignore what shouldn't be tracked</li>
+    <li>Commit in small snapshots with clear messages</li>
+    <li>Branch per change</li>
+    <li>Push, then open a pull request</li>
+  </ul>
+  <p>Every phase in this series and in Playwright: Zero to Architect that mentions committing test code or opening a PR is a variation on exactly this loop.</p>
+
+  <div class="nav-row">
+    <a href="../../playwright_new_to_Architect_withAI/00-playwrightseries-intro-setup.html" class="nav-cta secondary">&larr; Back to where you came from</a>
+    <a href="playwright-basics.html" class="nav-cta primary">Playwright Basics &rarr;</a>
+  </div>
+
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; Shared primer</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="../../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+</body>
+</html>
