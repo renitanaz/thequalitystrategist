@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 15: Capstone Projects | Playwright: Zero to Architect</title>
+<meta name="description" content="Phase 15 of Playwright: Zero to Architect, the final phase. Six capstone projects against PeakAndPack, applying everything from Phases 0 through 14.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:#6B7C3A; --olive-dark:#4A5828; --olive-deep:#2E3A18;
+    --cream:#F5F7F0; --warm-white:#FAFCF5;
+    --ink:#1A1F14; --ink2:#3D4235; --ink3:#6B7060; --ink4:#9A9E90;
+    --border:rgba(26,31,20,0.1); --border2:rgba(26,31,20,0.06);
+    --purple:#7A4A9A; --purple-l:#EDE0F5;
+    --gold:#9A6E1A; --gold-l:#F5EDD6;
+    --blue:#2A5C9A; --blue-l:#DDE8F5;
+    --teal:#1A6B54; --teal-l:#D8EEE8;
+    --terra:#8A4A2A; --terra-l:#F5E4D8;
+    --green:#1A7A3A; --green-l:#D8F0E0;
+    --ff-serif:'Lora',Georgia,serif;
+    --ff-sans:'DM Sans',system-ui,sans-serif;
+    --ease:cubic-bezier(0.22,1,0.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--ff-sans);background:var(--warm-white);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  header.site-header{border-bottom:1px solid var(--border);padding:1.1rem 1.5rem;background:var(--warm-white);}
+  .site-header-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+  .site-name{font-family:var(--ff-serif);font-weight:600;font-size:1.05rem;text-decoration:none;}
+  main{max-width:880px;margin:0 auto;padding:2.6rem 1.5rem 5rem;}
+  .breadcrumb{font-size:.82rem;color:var(--ink3);margin-bottom:1.3rem;}
+  .breadcrumb a{text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+  .series-tag{display:inline-block;font-size:.76rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--blue);background:var(--blue-l);padding:.3rem .7rem;border-radius:999px;margin-bottom:1.1rem;}
+  h1{font-family:var(--ff-serif);font-size:2rem;font-weight:700;line-height:1.2;margin-bottom:.8rem;}
+  .subtitle{font-size:1.08rem;color:var(--ink2);margin-bottom:1.6rem;max-width:680px;}
+  .meta-row{display:flex;gap:1.1rem;font-size:.82rem;color:var(--ink3);margin-bottom:1.6rem;border-bottom:1px solid var(--border);padding-bottom:1.3rem;flex-wrap:wrap;}
+  h2{font-family:var(--ff-serif);font-size:1.35rem;font-weight:700;margin-top:2.2rem;margin-bottom:.8rem;}
+  h3{font-family:var(--ff-serif);font-size:1.1rem;font-weight:700;margin-top:1.6rem;margin-bottom:.6rem;}
+  p{margin-bottom:.9rem;color:var(--ink2);font-size:.97rem;}
+  strong{color:var(--ink);font-weight:700;}
+  ul,ol{margin:0 0 1rem 1.3rem;color:var(--ink2);}
+  li{margin-bottom:.4rem;font-size:.97rem;}
+  code{background:var(--cream);padding:.15rem .4rem;border-radius:5px;font-size:.87em;color:var(--olive-deep);}
+  .callout{border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.91rem;}
+  .callout p{margin-bottom:0;}
+  .callout.green{background:var(--green-l);border-left:3px solid var(--green);}.callout.green p{color:var(--olive-deep);}
+  .callout.warn{background:var(--terra-l);border-left:3px solid var(--terra);}.callout.warn p{color:var(--terra);}
+  .callout.blue{background:var(--blue-l);border-left:3px solid var(--blue);}.callout.blue p{color:var(--blue);}
+  .callout.gold{background:var(--gold-l);border-left:3px solid var(--gold);}.callout.gold p{color:var(--gold);}
+  .callout.purple{background:var(--purple-l);border-left:3px solid var(--purple);}.callout.purple p{color:var(--purple);}
+  .phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem;}
+  .phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--ink4);background:var(--warm-white);text-decoration:none;}
+  .phase-pip.active{background:var(--blue);color:var(--warm-white);border-color:transparent;}
+  .project-card{border:1px solid var(--border);border-radius:12px;padding:1.3rem 1.5rem;margin:1.2rem 0;}
+  .project-num{display:inline-flex;align-items:center;justify-content:center;width:1.9rem;height:1.9rem;border-radius:50%;background:var(--olive);color:var(--warm-white);font-family:var(--ff-serif);font-weight:700;font-size:.9rem;margin-right:.6rem;flex-shrink:0;}
+  .project-title{display:flex;align-items:center;font-family:var(--ff-serif);font-size:1.15rem;font-weight:700;color:var(--ink);margin-bottom:.7rem;}
+  .project-meta{font-size:.76rem;text-transform:uppercase;letter-spacing:.04em;color:var(--ink3);margin-bottom:.6rem;}
+  details.solution{margin:1rem 0 2rem;border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+  details.solution summary{padding:.9rem 1.2rem;cursor:pointer;font-weight:700;font-size:.92rem;background:var(--cream);list-style:none;display:flex;align-items:center;gap:.5rem;}
+  details.solution summary::before{content:"&#9654;";font-size:.7rem;color:var(--ink3);transition:transform .2s;}
+  details.solution[open] summary::before{transform:rotate(90deg);}
+  details.solution summary::-webkit-details-marker{display:none;}
+  .solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border);}
+  .solution-body p{font-size:.92rem;}
+  .series-complete{background:var(--green-l);border:1px solid var(--green);border-radius:14px;padding:1.6rem 1.7rem;margin:2.2rem 0;}
+  .series-complete h3{font-family:var(--ff-serif);color:var(--green);margin-bottom:.6rem;}
+  .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:1.8rem;flex-wrap:wrap;}
+  .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:700;font-size:.9rem;padding:.7rem 1.2rem;border-radius:8px;transition:background .2s var(--ease);}
+  .nav-cta.primary{background:var(--olive);color:var(--warm-white);}
+  .nav-cta.primary:hover{background:var(--olive-dark);}
+  .nav-cta.secondary{background:var(--cream);color:var(--ink2);border:1px solid var(--border);}
+  footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.85rem;color:var(--ink3);}
+  footer a{text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+  @media(max-width:600px){
+    h1{font-size:1.55rem;}
+    .meta-row{flex-wrap:wrap;gap:.5rem;}
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+
+<main>
+
+  <p class="breadcrumb">
+    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    <a href="00-playwrightseries-landing.html">Playwright: Zero to Architect</a> &nbsp;/&nbsp;
+    Phase 15
+  </p>
+
+  <span class="series-tag">Phase 15 of 15 &middot; Capstone Projects</span>
+
+  <h1>Six Capstone Projects</h1>
+  <p class="subtitle">No new concepts in this phase, only application. Six independent projects against PeakAndPack, each one drawing on a different stretch of Phases 0 through 14. Do as many as are relevant to where you want to go next: automation engineer, SDET, or automation lead.</p>
+
+  <div class="meta-row">
+    <span>By RN</span>
+    <span>Self-paced</span>
+    <span>Series: Playwright: Zero to Architect</span>
+    <span>Demo: PeakAndPack</span>
+  </div>
+
+  <div class="phase-strip" aria-label="Series progress">
+    <a href="00-playwrightseries-intro-setup.html" class="phase-pip" title="Phase 0: Intro &amp; Setup">0</a>
+    <a href="01-playwrightseries-test-design.html" class="phase-pip" title="Phase 1: Test Design Thinking">1</a>
+    <a href="02-playwrightseries-locators.html" class="phase-pip" title="Phase 2: Locators">2</a>
+    <a href="03-playwrightseries-assertions-waits.html" class="phase-pip" title="Phase 3: Assertions &amp; Waits">3</a>
+    <a href="04-playwrightseries-debugging-flakiness.html" class="phase-pip" title="Phase 4: Debugging &amp; Flakiness">4</a>
+    <a href="05-playwrightseries-test-data-state.html" class="phase-pip" title="Phase 5: Test Data &amp; State">5</a>
+    <a href="06-playwrightseries-auth-sessions.html" class="phase-pip" title="Phase 6: Auth &amp; Sessions">6</a>
+    <a href="07-playwrightseries-api-testing.html" class="phase-pip" title="Phase 7: API Testing">7</a>
+    <a href="08-playwrightseries-advanced-scenarios.html" class="phase-pip" title="Phase 8: Advanced Scenarios">8</a>
+    <a href="09-playwrightseries-page-objects.html" class="phase-pip" title="Phase 9: Page Object Model">9</a>
+    <a href="10-playwrightseries-fixtures-config.html" class="phase-pip" title="Phase 10: Fixtures &amp; Config">10</a>
+    <a href="11-playwrightseries-visual-regression.html" class="phase-pip" title="Phase 11: Visual Regression">11</a>
+    <a href="12-playwrightseries-cicd-flaky-tests.html" class="phase-pip" title="Phase 12: CI/CD &amp; Flaky Tests">12</a>
+    <a href="13-playwrightseries-ai-assisted.html" class="phase-pip" title="Phase 13: AI-Assisted Automation">13</a>
+    <a href="14-playwrightseries-automation-leadership.html" class="phase-pip" title="Phase 14: Automation Leadership">14</a>
+    <span class="phase-pip active" title="Phase 15: Capstone Projects">15</span>
+  </div>
+
+  <h2>How to use this phase</h2>
+  <p>Each project below names what to build, what "done" looks like, and which earlier phases it draws on most. None of them have a single correct solution the way earlier phases' assignments did, there's a suggested approach in each collapsible solution, but the point is applying judgment across a full project, not matching a reference answer.</p>
+
+  <div class="project-card">
+    <div class="project-title"><span class="project-num">1</span>Full page-object-model rebuild</div>
+    <div class="project-meta">Draws on: Phase 9, Phase 2, Phase 1</div>
+    <p>Take every test you've written across the series and rebuild it on top of a proper page object layer: one class per PeakAndPack page (Product listing, Cart, Checkout, Login), each exposing actions and locators, no test file touching a raw locator directly.</p>
+    <p><strong>Done looks like:</strong> every spec file reads as user actions and assertions only, page objects hold all the locators, and adding a new test for an existing page needs zero new locator work.</p>
+  </div>
+
+  <div class="project-card">
+    <div class="project-title"><span class="project-num">2</span>Visual regression coverage</div>
+    <div class="project-meta">Draws on: Phase 11, Phase 4</div>
+    <p>Add baseline screenshots for the product listing, cart, and checkout pages, at both desktop and mobile width. Capture the real, current state of the negative-price and unnamed-product bugs as part of the baseline, don't wait for them to be fixed to start tracking visual regressions elsewhere on the page.</p>
+    <p><strong>Done looks like:</strong> a visual regression suite that fails on an unintended layout change and stays quiet on the two known, already-tracked bugs.</p>
+  </div>
+
+  <div class="project-card">
+    <div class="project-title"><span class="project-num">3</span>CI pipeline with flaky-test quarantine</div>
+    <div class="project-meta">Draws on: Phase 12, Phase 4</div>
+    <p>Set up GitHub Actions to run the full suite on every PR, sharded for speed. Add a quarantine mechanism: a test that fails intermittently gets tagged <code>@quarantine</code> and moves to a separate, non-blocking job instead of being deleted or ignored.</p>
+    <p><strong>Done looks like:</strong> a PR can't merge on a genuine failure, but a known-flaky test doesn't block merges either, and there's a visible list of what's in quarantine and why.</p>
+  </div>
+
+  <div class="project-card">
+    <div class="project-title"><span class="project-num">4</span>An AI-reviewed suite pass</div>
+    <div class="project-meta">Draws on: Phase 13</div>
+    <p>Run every spec file in your suite through the Phase 13 reviewer prompt. Document every finding, which ones you fixed, and which ones you decided not to and why (not every finding deserves a fix; that judgment call is the point).</p>
+    <p><strong>Done looks like:</strong> a written record showing the suite was reviewed against a stated standard, not just "looks fine to me."</p>
+  </div>
+
+  <div class="project-card">
+    <div class="project-title"><span class="project-num">5</span>An accessibility-integrated test pass</div>
+    <div class="project-meta">Draws on: the Shift-Left Accessibility series, Phase 2</div>
+    <p>Add automated accessibility checks (axe-core, per the Shift-Left Accessibility series' Phase 31) to your PeakAndPack suite, running alongside the functional assertions, not as a separate suite. Check the product listing, login form, and checkout flow.</p>
+    <p><strong>Done looks like:</strong> a CI run that fails on a genuine WCAG violation the same way it fails on a broken checkout, one pipeline, one bar.</p>
+  </div>
+
+  <div class="project-card">
+    <div class="project-title"><span class="project-num">6</span>A capstone report on the suite's architecture</div>
+    <div class="project-meta">Draws on: Phase 14, all prior phases</div>
+    <p>Write the document you'd hand a new senior hire on day one: what the suite tests and why, the conventions from Phase 14, the known bugs it's designed to catch (with bug IDs), what's deliberately out of scope, and what you'd do differently starting over.</p>
+    <p><strong>Done looks like:</strong> someone who has never seen this suite could read the report and know where to add their first test without asking you a single question.</p>
+  </div>
+
+  <details class="solution">
+    <summary>Show approach notes for all six &mdash; try them yourself first</summary>
+    <div class="solution-body">
+      <h3>What tends to go wrong in each</h3>
+      <p><strong>Project 1:</strong> the most common mistake is a page object that just wraps locators one-to-one with no real actions (<code>getEmailField()</code> instead of <code>login(email, password)</code>). A good page object hides the steps, not just the selectors.</p>
+      <p><strong>Project 2:</strong> baselining a bug feels wrong the first time you do it. It isn't, the baseline records current reality, and updating it when BUG-011 gets fixed is a one-line change, not a redesign.</p>
+      <p><strong>Project 3:</strong> quarantine only works if something forces a review of what's in it. A quarantine list that only grows is worse than no quarantine, it hides real regressions behind old, ignored ones.</p>
+      <p><strong>Project 4:</strong> the value is in the "decided not to fix" column as much as the fixes. A reviewer that agrees with every finding without pushback hasn't actually exercised judgment.</p>
+      <p><strong>Project 5:</strong> the failure mode is running the accessibility check as a separate, ignorable job. If it doesn't block the same way a broken login blocks, it will get muted the first time it's inconvenient.</p>
+      <p><strong>Project 6:</strong> the report is often written for yourself, dense with context only you have. Test it by having someone unfamiliar with the project read it and try to answer "where would my first test go" from the document alone.</p>
+    </div>
+  </details>
+
+  <div class="series-complete">
+    <h3>Series complete</h3>
+    <p><strong>Playwright: Zero to Architect is done.</strong> You've gone from a hardcoded URL and a CSS selector in Phase 0 to a suite with conventions, CI, AI-assisted review, and a documented architecture. Every phase built on the one before it: locators fed assertions, assertions fed debugging, page objects fed fixtures, and all of it fed the leadership and capstone work here. The bugs seeded into PeakAndPack (BUG-008 through BUG-014, referenced across the series) were never the point on their own, they were the proof, at every phase, that the tests you were writing could actually tell the difference between working and broken.</p>
+  </div>
+
+  <div class="nav-row">
+    <a href="14-playwrightseries-automation-leadership.html" class="nav-cta secondary">&larr; Phase 14: Automation Leadership</a>
+    <a href="00-playwrightseries-landing.html" class="nav-cta primary">Back to Series Overview &rarr;</a>
+  </div>
+
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; Playwright: Zero to Architect</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+</body>
+</html>

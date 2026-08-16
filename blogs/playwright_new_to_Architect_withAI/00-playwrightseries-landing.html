@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Playwright: Zero to Architect | The Quality Strategist</title>
+<meta name="description" content="A complete Playwright series, zero prior automation experience to architect level, across 16 phases against a real app, PeakAndPack.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:#6B7C3A; --olive-dark:#4A5828; --olive-deep:#2E3A18;
+    --cream:#F5F7F0; --warm-white:#FAFCF5;
+    --ink:#1A1F14; --ink2:#3D4235; --ink3:#6B7060; --ink4:#9A9E90;
+    --border:rgba(26,31,20,0.1); --border2:rgba(26,31,20,0.06);
+    --purple:#7A4A9A; --purple-l:#EDE0F5;
+    --gold:#9A6E1A; --gold-l:#F5EDD6;
+    --blue:#2A5C9A; --blue-l:#DDE8F5;
+    --teal:#1A6B54; --teal-l:#D8EEE8;
+    --terra:#8A4A2A; --terra-l:#F5E4D8;
+    --green:#1A7A3A; --green-l:#D8F0E0;
+    --ff-serif:'Lora',Georgia,serif;
+    --ff-sans:'DM Sans',system-ui,sans-serif;
+    --ease:cubic-bezier(0.22,1,0.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--ff-sans);background:var(--warm-white);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  header.site-header{border-bottom:1px solid var(--border);padding:1.1rem 1.5rem;background:var(--warm-white);}
+  .site-header-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+  .site-name{font-family:var(--ff-serif);font-weight:600;font-size:1.05rem;text-decoration:none;}
+  main{max-width:880px;margin:0 auto;padding:2.6rem 1.5rem 5rem;}
+  .breadcrumb{font-size:.82rem;color:var(--ink3);margin-bottom:1.3rem;}
+  .breadcrumb a{text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+  .series-tag{display:inline-block;font-size:.76rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--blue);background:var(--blue-l);padding:.3rem .7rem;border-radius:999px;margin-bottom:1.1rem;}
+  h1{font-family:var(--ff-serif);font-size:2.1rem;font-weight:700;line-height:1.2;margin-bottom:.8rem;}
+  .subtitle{font-size:1.08rem;color:var(--ink2);margin-bottom:1.6rem;max-width:680px;}
+  .meta-row{display:flex;gap:1.1rem;font-size:.82rem;color:var(--ink3);margin-bottom:1.6rem;border-bottom:1px solid var(--border);padding-bottom:1.3rem;flex-wrap:wrap;}
+  h2{font-family:var(--ff-serif);font-size:1.35rem;font-weight:700;margin-top:2.2rem;margin-bottom:.8rem;}
+  h3{font-family:var(--ff-serif);font-size:1.1rem;font-weight:700;margin-top:1.6rem;margin-bottom:.6rem;}
+  p{margin-bottom:.9rem;color:var(--ink2);font-size:.97rem;}
+  strong{color:var(--ink);font-weight:700;}
+  ul,ol{margin:0 0 1rem 1.3rem;color:var(--ink2);}
+  li{margin-bottom:.4rem;font-size:.97rem;}
+  code{background:var(--cream);padding:.15rem .4rem;border-radius:5px;font-size:.87em;color:var(--olive-deep);}
+  .callout{border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.91rem;}
+  .callout p{margin-bottom:0;}
+  .callout.green{background:var(--green-l);border-left:3px solid var(--green);}.callout.green p{color:var(--olive-deep);}
+  .callout.blue{background:var(--blue-l);border-left:3px solid var(--blue);}.callout.blue p{color:var(--blue);}
+  .fw-table-wrap{overflow-x:auto;margin:1rem 0 1.5rem;}
+  table.fw-table{width:100%;border-collapse:collapse;font-size:.82rem;line-height:1.45;}
+  table.fw-table th,table.fw-table td{border:1px solid var(--border);padding:.5rem .7rem;text-align:left;vertical-align:top;}
+  table.fw-table th{background:var(--cream);font-weight:700;font-size:.77rem;}
+  table.fw-table td{color:var(--ink2);}
+  table.fw-table tr:nth-child(odd) td{background:var(--warm-white);}
+  table.fw-table tr:nth-child(even) td{background:var(--cream);}
+  table.fw-table.compact th,table.fw-table.compact td{padding:.28rem .55rem;font-size:.8rem;}
+  .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:1.8rem;flex-wrap:wrap;}
+  .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:700;font-size:.9rem;padding:.7rem 1.2rem;border-radius:8px;transition:background .2s var(--ease);}
+  .nav-cta.primary{background:var(--olive);color:var(--warm-white);}
+  .nav-cta.primary:hover{background:var(--olive-dark);}
+  .nav-cta.secondary{background:var(--cream);color:var(--ink2);border:1px solid var(--border);}
+  footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.85rem;color:var(--ink3);}
+  footer a{text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+  @media(max-width:600px){
+    h1{font-size:1.65rem;}
+    .meta-row{flex-wrap:wrap;gap:.5rem;}
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+
+<main>
+
+  <p class="breadcrumb">
+    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    Playwright: Zero to Architect
+  </p>
+
+  <span class="series-tag">Series Overview &middot; 16 Phases</span>
+
+  <h1>Playwright: Zero to Architect</h1>
+  <p class="subtitle">A complete Playwright series for anyone starting from zero. No prior automation experience needed. By Phase 15 you will have the skills to design, build, and lead a Playwright test suite at an architect level.</p>
+
+  <div class="meta-row">
+    <span>By RN</span>
+    <span>16 phases</span>
+    <span>Demo: PeakAndPack</span>
+    <span>Prerequisite: None</span>
+  </div>
+
+  <h2>What this series is</h2>
+  <p>Each phase teaches one concept, applies it to a real app, and leaves you with a working file. The series is designed to be read in order: locators (Phase 2) assume the test-design thinking from Phase 1, page objects (Phase 9) assume everything from Phases 1 through 8. But every phase also stands on its own if you need to jump to a specific topic.</p>
+  <p>The series moves in four deliberate stages, from writing a single reliable test to leading a whole suite as a team asset.</p>
+
+  <div class="fw-table-wrap">
+    <table class="fw-table compact" style="table-layout:fixed;width:100%;">
+      <colgroup>
+        <col style="width:22%">
+        <col style="width:28%">
+        <col style="width:8%">
+        <col style="width:42%">
+      </colgroup>
+      <thead><tr><th>Movement</th><th>What you learn</th><th>Phase</th><th>Phase name</th></tr></thead>
+      <tbody>
+        <tr><td rowspan="5"><strong>1: Test Design Thinking</strong></td><td rowspan="5" style="font-size:.8rem;line-height:1.4;">What to test, how to find elements, assert outcomes, wait correctly, and debug failures.</td><td>0</td><td><a href="00-playwrightseries-intro-setup.html">Intro &amp; Setup</a></td></tr>
+        <tr><td>1</td><td><a href="01-playwrightseries-test-design.html">Test Design Thinking</a></td></tr>
+        <tr><td>2</td><td><a href="02-playwrightseries-locators.html">Locators</a></td></tr>
+        <tr><td>3</td><td><a href="03-playwrightseries-assertions-waits.html">Assertions &amp; Waits</a></td></tr>
+        <tr><td>4</td><td><a href="04-playwrightseries-debugging-flakiness.html">Debugging &amp; Flakiness</a></td></tr>
+        <tr><td rowspan="4"><strong>2: Production-Quality Tests</strong></td><td rowspan="4" style="font-size:.8rem;line-height:1.4;">Tests that work in CI, across parallel workers, and against real authenticated sessions.</td><td>5</td><td><a href="05-playwrightseries-test-data-state.html">Test Data &amp; State</a></td></tr>
+        <tr><td>6</td><td><a href="06-playwrightseries-auth-sessions.html">Authentication &amp; Sessions</a></td></tr>
+        <tr><td>7</td><td><a href="07-playwrightseries-api-testing.html">API Testing</a></td></tr>
+        <tr><td>8</td><td><a href="08-playwrightseries-advanced-scenarios.html">Advanced Scenarios</a></td></tr>
+        <tr><td rowspan="4"><strong>3: Expert Automation Design</strong></td><td rowspan="4" style="font-size:.8rem;line-height:1.4;">Architect a suite that scales: page objects, fixtures, visual regression, CI, flaky test management.</td><td>9</td><td><a href="09-playwrightseries-page-objects.html">Page Object Model</a></td></tr>
+        <tr><td>10</td><td><a href="10-playwrightseries-fixtures-config.html">Fixtures &amp; Config</a></td></tr>
+        <tr><td>11</td><td><a href="11-playwrightseries-visual-regression.html">Visual Regression</a></td></tr>
+        <tr><td>12</td><td><a href="12-playwrightseries-cicd-flaky-tests.html">CI/CD &amp; Flaky Tests</a></td></tr>
+        <tr><td rowspan="3"><strong>4: Mastery Through Practice</strong></td><td rowspan="3" style="font-size:.8rem;line-height:1.4;">AI as a reviewer, team-level automation leadership, six capstone projects.</td><td>13</td><td><a href="13-playwrightseries-ai-assisted.html">AI-Assisted Automation</a></td></tr>
+        <tr><td>14</td><td><a href="14-playwrightseries-automation-leadership.html">Automation Leadership</a></td></tr>
+        <tr><td>15</td><td><a href="15-playwrightseries-capstone-projects.html">Capstone Projects</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>The demo app: PeakAndPack</h2>
+  <p>Every phase is applied to PeakAndPack, a lightweight e-commerce app with login, a product listing, a cart, and a checkout flow. It is purpose-built for this series: enough complexity to teach every concept without a domain that gets in the way of the learning.</p>
+  <p>PeakAndPack is live at <a href="https://peakandpack-ui.onrender.com" target="_blank"><code>peakandpack-ui.onrender.com</code></a>. You do not need to run it locally. It stays the same across all phases so the tests you write in Phase 0 are still valid in Phase 15.</p>
+
+  <div class="callout blue">
+    <p><strong>PeakAndPack has real, live bugs, on purpose.</strong> A negative price, a discount code that gives 100% off instead of 10%, an authorization gap between users' order histories. These aren't simulated for the exercises, they're actual defects in the running app, seeded so that a correct test genuinely fails against it and a superficial one gives false confidence. Several phases reference these by bug ID as you go.</p>
+  </div>
+
+  <h2>Who this is for</h2>
+  <ul>
+    <li>QA engineers who test manually today and want to move into automation.</li>
+    <li>Developers who write tests without much structure and want the architecture behind a suite that scales.</li>
+    <li>Anyone who has used Playwright a little and wants the gaps filled in: page objects, fixtures, CI, and how to lead a team's automation practice, not just write individual tests.</li>
+  </ul>
+  <p>No prerequisite series. If you've never used Git before, the <a href="../Mind_On_QA_WithAI/Basics/git-for-qa.html">Git for QA primer</a> is a five-minute read that covers everything Phase 0 assumes.</p>
+
+  <div class="nav-row">
+    <a href="../../blogs.html" class="nav-cta secondary">&larr; All series</a>
+    <a href="00-playwrightseries-intro-setup.html" class="nav-cta primary">Start with Phase 0 &rarr;</a>
+  </div>
+
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; Playwright: Zero to Architect</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+</body>
+</html>

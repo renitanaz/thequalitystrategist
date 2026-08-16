@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 0: Get PeakAndPack Ready to Test | The Quality Strategist</title>
+<meta name="description" content="Before any testing phase, confirm PeakAndPack's API and UI are live and reachable. Phase 0 of the AI-Augmented QA series.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:       #6B7C3A;
+    --olive-dark:  #4A5828;
+    --olive-deep:  #2E3A18;
+    --cream:       #F5F7F0;
+    --warm-white:  #FAFCF5;
+    --ink:         #1A1F14;
+    --ink2:        #3D4235;
+    --ink3:        #6B7060;
+    --ink4:        #9A9E90;
+    --border:      rgba(26,31,20,0.1);
+    --border2:     rgba(26,31,20,0.06);
+    --purple:      #7A4A9A; --purple-l: #EDE0F5;
+    --gold:        #9A6E1A; --gold-l:   #F5EDD6;
+    --blue:        #2A5C9A; --blue-l:   #DDE8F5;
+    --rose:        #9A2A4A; --rose-l:   #F5DDE5;
+    --teal:        #1A6B54; --teal-l:   #D8EEE8;
+    --terra:       #8A4A2A; --terra-l:  #F5E4D8;
+    --green:       #1A7A3A; --green-l:  #D8F0E0;
+    --ff-serif: 'Lora', Georgia, serif;
+    --ff-sans:  'DM Sans', system-ui, sans-serif;
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: var(--ff-sans);
+    background: var(--warm-white);
+    color: var(--ink);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; }
+  header.site-header {
+    border-bottom: 1px solid var(--border);
+    padding: 1.1rem 1.5rem;
+    background: var(--warm-white);
+  }
+  .site-header-inner { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+  .site-name { font-family: var(--ff-serif); font-weight: 600; font-size: 1.05rem; text-decoration: none; }
+  main { max-width: 880px; margin: 0 auto; padding: 2.6rem 1.5rem 5rem; }
+
+  .breadcrumb { font-size: .82rem; color: var(--ink3); margin-bottom: 1.3rem; }
+  .breadcrumb a { text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+
+  .series-tag {
+    display: inline-block;
+    font-size: .76rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--teal);
+    background: var(--teal-l);
+    padding: .3rem .7rem;
+    border-radius: 999px;
+    margin-bottom: 1.1rem;
+  }
+
+  h1 {
+    font-family: var(--ff-serif);
+    font-size: 2.1rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: .8rem;
+  }
+  .subtitle { font-size: 1.1rem; color: var(--ink2); margin-bottom: 1.8rem; max-width: 680px; }
+  .meta-row {
+    display: flex; gap: 1.1rem; font-size: .82rem; color: var(--ink3);
+    margin-bottom: 2.2rem; border-bottom: 1px solid var(--border); padding-bottom: 1.3rem;
+  }
+
+  h2 {
+    font-family: var(--ff-serif);
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-top: 2.4rem;
+    margin-bottom: .8rem;
+  }
+  p { margin-bottom: .9rem; color: var(--ink2); font-size: .98rem; }
+  strong { color: var(--ink); font-weight: 700; }
+  ul, ol { margin: 0 0 1rem 1.3rem; color: var(--ink2); }
+  li { margin-bottom: .4rem; font-size: .98rem; }
+  code { background: var(--cream); padding: .15rem .4rem; border-radius: 5px; font-size: .87em; color: var(--olive-deep); }
+  pre { background: var(--ink); color: var(--cream); padding: 1rem 1.1rem; border-radius: 10px; overflow-x: auto; font-size: .82rem; margin: 1rem 0; line-height: 1.55; }
+  pre code { background: none; color: inherit; padding: 0; }
+
+  .stat-strip {
+    display: flex; gap: 0; margin: 1.6rem 0 2rem;
+    border-radius: 12px; overflow: hidden; border: 1px solid var(--border);
+  }
+  .stat-strip > div { flex: 1; padding: 1rem 1.1rem; text-align: center; }
+  .stat-strip .stat-num { font-family: var(--ff-serif); font-size: 1.6rem; font-weight: 700; display: block; }
+  .stat-strip .stat-label { font-size: .76rem; color: var(--ink3); margin-top: .2rem; }
+  .stat-strip .s1 { background: var(--terra-l); }
+  .stat-strip .s1 .stat-num { color: var(--terra); }
+  .stat-strip .s2 { background: var(--blue-l); }
+  .stat-strip .s2 .stat-num { color: var(--blue); }
+  .stat-strip .s3 { background: var(--green-l); }
+  .stat-strip .s3 .stat-num { color: var(--green); }
+
+  .callout { border-radius: 0 10px 10px 0; padding: 1.1rem 1.4rem; margin: 1.4rem 0; font-size: .92rem; }
+  .callout p { margin-bottom: 0; }
+  .callout.green { background: var(--green-l); border-left: 3px solid var(--green); }
+  .callout.green p { color: var(--olive-deep); }
+  .callout.warn { background: var(--terra-l); border-left: 3px solid var(--terra); }
+  .callout.warn p { color: var(--terra); }
+  .callout.blue { background: var(--blue-l); border-left: 3px solid var(--blue); }
+  .callout.blue p { color: var(--blue); }
+
+  .checklist { list-style: none; margin-left: 0; }
+  .checklist li { display: flex; gap: .55rem; align-items: baseline; margin-bottom: .5rem; font-size: .95rem; color: var(--ink2); }
+  .checklist li::before { content: "\2713"; color: var(--green); font-weight: 700; flex-shrink: 0; }
+
+  .fw-table-wrap { overflow-x: auto; margin: 1rem 0 1.5rem; }
+  table.fw-table { width: 100%; border-collapse: collapse; font-size: .85rem; line-height: 1.5; }
+  table.fw-table th, table.fw-table td { border: 1px solid var(--border); padding: .55rem .75rem; text-align: left; vertical-align: top; }
+  table.fw-table th { background: var(--cream); font-weight: 700; font-size: .8rem; }
+  table.fw-table td { color: var(--ink2); }
+
+  .switcher-note {
+    font-size: .8rem; color: var(--ink4); margin-top: 2.2rem; padding-top: 1.1rem; border-top: 1px solid var(--border);
+  }
+
+  .nav-cta {
+    display: inline-flex; align-items: center; gap: .5rem;
+    background: var(--olive); color: var(--warm-white); text-decoration: none;
+    font-weight: 700; font-size: .92rem; padding: .75rem 1.3rem; border-radius: 8px;
+    transition: background .2s var(--ease);
+  }
+  .nav-cta:hover { background: var(--olive-dark); }
+
+  footer { border-top: 1px solid var(--border); padding: 2rem 1.5rem; text-align: center; font-size: .85rem; color: var(--ink3); }
+  footer a { text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 600px) {
+    h1 { font-size: 1.6rem; }
+    .meta-row { flex-wrap: wrap; gap: .5rem; }
+    .stat-strip { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+
+<main>
+
+  <p class="breadcrumb">
+    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    <a href="00-ShopDemo-AI-Augmented-QA-Series-Introduction.html">AI-Augmented QA Series</a> &nbsp;/&nbsp;
+    Phase 0
+  </p>
+
+  <span class="series-tag">Phase 0 of 8 &middot; App Setup</span>
+
+  <h1>Get PeakAndPack Ready to Test</h1>
+  <p class="subtitle">Before Phase 1's requirements document means anything, confirm the app it describes is actually live and reachable. This phase is five minutes of verification, not a deployment guide, you don't need to run anything yourself.</p>
+
+  <div class="meta-row">
+    <span>By RN</span>
+    <span>~5 min</span>
+    <span>Series: AI-Augmented QA</span>
+  </div>
+
+  <p>PeakAndPack is already deployed and stays live for the whole series: the same instance, the same seeded bugs, from Phase 0 through Phase 8. You don't fork a repo or spin up your own copy, you test against the real thing directly, the same way every reader of this series does.</p>
+
+  <div class="stat-strip">
+    <div class="s1"><span class="stat-num">2</span><span class="stat-label">services: API + UI, one monorepo</span></div>
+    <div class="s2"><span class="stat-num">10</span><span class="stat-label">seeded products, 3 with visible defects</span></div>
+    <div class="s3"><span class="stat-num">1</span><span class="stat-label">shared instance for the whole series</span></div>
+  </div>
+
+  <h2>What PeakAndPack is</h2>
+  <p>A full-stack e-commerce app, purpose-built for this series: a Node.js and SQLite API and a small React UI, deployed as two separate services on Render's free tier from one monorepo. It has login, a product listing, a cart, and a checkout flow, enough to teach every testing approach without a domain that gets in the way.</p>
+
+  <h2>Step 1: confirm the API is live</h2>
+  <p>The API and the UI are separate Render services with separate URLs:</p>
+  <ul>
+    <li><strong>API:</strong> <code>https://peakandpackshopdemo.onrender.com</code></li>
+    <li><strong>UI:</strong> <code>https://peakandpack-ui.onrender.com</code></li>
+  </ul>
+  <p>Open the API's health check in a browser or curl it:</p>
+  <pre><code>curl https://peakandpackshopdemo.onrender.com/health</code></pre>
+  <p>A healthy response looks like:</p>
+  <pre><code>{"status":"ok","timestamp":"2026-08-15T18:32:09.222Z","version":"1.0.0"}</code></pre>
+
+  <div class="callout warn">
+    <p><strong>First request can take up to a minute.</strong> Render's free tier spins services down after inactivity. The first request after a quiet period returns a slow response or a brief 503 while it wakes up, that's expected, not a bug. Wait a few seconds and retry before assuming anything is broken. Every phase from here on assumes you know this, so a cold start doesn't get mistaken for a real failure partway through a testing session.</p>
+  </div>
+
+  <h2>Step 2: confirm the product data loads</h2>
+  <p>Once the health check passes, confirm the product endpoint returns real data:</p>
+  <pre><code>curl https://peakandpackshopdemo.onrender.com/api/products</code></pre>
+  <p>You should get back an array of 10 products. Three of them look wrong on purpose, don't fix your test setup to hide them, they're the point of the next several phases:</p>
+  <ul>
+    <li>One product with a negative price</li>
+    <li>One product with an empty name</li>
+    <li>One product priced at $9,999.99</li>
+  </ul>
+
+  <h2>Step 3: confirm the UI loads against the live API</h2>
+  <p>Open <code>https://peakandpack-ui.onrender.com</code> in a browser. You should see the product grid load (briefly showing "Loading gear&hellip;" first, that's the UI waiting on the API, not a bug). If the API is still cold-starting, the page may show an empty or stalled state, reload after a few seconds.</p>
+
+  <h2>Step 4: confirm the test account works</h2>
+  <p>A test account is pre-filled on the login page so nobody needs to register their own:</p>
+  <ul>
+    <li><strong>Email:</strong> <code>test@peakandpack.com</code></li>
+    <li><strong>Password:</strong> <code>password123</code></li>
+  </ul>
+  <p>Log in, confirm you land on the product listing signed in ("Hi, Test User" appears top-right), and that <code>/cart</code> and <code>/orders</code> are reachable without a redirect back to login.</p>
+
+  <div class="callout blue">
+    <p><strong>Two different domains, easy to mix up.</strong> The UI (<code>peakandpack-ui</code>) and the API (<code>peakandpackshopdemo</code>) don't share a hostname, they're separate Render services from the same monorepo. Later phases writing API tests need the API domain, not the UI domain. Check DevTools &rarr; Network on the live UI if you're ever unsure which request goes where.</p>
+  </div>
+
+  <h2>Verification checklist</h2>
+  <ul class="checklist">
+    <li><code>/health</code> returns <code>{"status":"ok"}</code></li>
+    <li><code>/api/products</code> returns 10 products</li>
+    <li>The UI loads the product grid at <code>peakandpack-ui.onrender.com</code></li>
+    <li>Login works with the test account</li>
+    <li><code>/cart</code> and <code>/orders</code> are reachable while logged in</li>
+  </ul>
+  <p>All five passing means you're ready for Phase 1. Nothing here is testing PeakAndPack yet, it's confirming the ground you're about to test is solid.</p>
+
+  <h2>Deliverable</h2>
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <tbody>
+        <tr><td>Live API</td><td><code>https://peakandpackshopdemo.onrender.com</code></td></tr>
+        <tr><td>Live UI</td><td><code>https://peakandpack-ui.onrender.com</code></td></tr>
+        <tr><td>Health check</td><td>Passing</td></tr>
+        <tr><td>Test credentials</td><td>Confirmed working</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p><strong>Time:</strong> About 5 minutes once you know what to check. No manual vs. AI vs. automation split here, there's nothing to test yet, only something to confirm is running.</p>
+
+  <div class="switcher-note">
+    <p>Phase 0 (this post) and Phase 1 are the only single posts in the series. From Phase 2 on, every phase splits into a landing post plus one post per approach: Manual, Manual + AI, Automated, AI QA Agent.</p>
+  </div>
+
+  <div style="margin-top:1.8rem">
+    <a href="phase1/01-PeakAndPack-Phase1-Requirements-Document.html" class="nav-cta">Next: Phase 1, Requirements <span aria-hidden="true">&rarr;</span></a>
+  </div>
+
+  <div style="margin-top:2.6rem;padding-top:1.6rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; AI-Augmented QA Series</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+</body>
+</html>

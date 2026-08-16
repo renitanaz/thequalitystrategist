@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 13: AI-Assisted Automation | Playwright: Zero to Architect</title>
+<meta name="description" content="Phase 13 of Playwright: Zero to Architect. Using AI to review and generate Playwright tests without lowering the bar the earlier phases set.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:#6B7C3A; --olive-dark:#4A5828; --olive-deep:#2E3A18;
+    --cream:#F5F7F0; --warm-white:#FAFCF5;
+    --ink:#1A1F14; --ink2:#3D4235; --ink3:#6B7060; --ink4:#9A9E90;
+    --border:rgba(26,31,20,0.1); --border2:rgba(26,31,20,0.06);
+    --purple:#7A4A9A; --purple-l:#EDE0F5;
+    --gold:#9A6E1A; --gold-l:#F5EDD6;
+    --blue:#2A5C9A; --blue-l:#DDE8F5;
+    --teal:#1A6B54; --teal-l:#D8EEE8;
+    --terra:#8A4A2A; --terra-l:#F5E4D8;
+    --green:#1A7A3A; --green-l:#D8F0E0;
+    --ff-serif:'Lora',Georgia,serif;
+    --ff-sans:'DM Sans',system-ui,sans-serif;
+    --ease:cubic-bezier(0.22,1,0.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--ff-sans);background:var(--warm-white);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  header.site-header{border-bottom:1px solid var(--border);padding:1.1rem 1.5rem;background:var(--warm-white);}
+  .site-header-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+  .site-name{font-family:var(--ff-serif);font-weight:600;font-size:1.05rem;text-decoration:none;}
+  main{max-width:880px;margin:0 auto;padding:2.6rem 1.5rem 5rem;}
+  .breadcrumb{font-size:.82rem;color:var(--ink3);margin-bottom:1.3rem;}
+  .breadcrumb a{text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+  .series-tag{display:inline-block;font-size:.76rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--blue);background:var(--blue-l);padding:.3rem .7rem;border-radius:999px;margin-bottom:1.1rem;}
+  h1{font-family:var(--ff-serif);font-size:2rem;font-weight:700;line-height:1.2;margin-bottom:.8rem;}
+  .subtitle{font-size:1.08rem;color:var(--ink2);margin-bottom:1.6rem;max-width:680px;}
+  .meta-row{display:flex;gap:1.1rem;font-size:.82rem;color:var(--ink3);margin-bottom:1.6rem;border-bottom:1px solid var(--border);padding-bottom:1.3rem;flex-wrap:wrap;}
+  h2{font-family:var(--ff-serif);font-size:1.35rem;font-weight:700;margin-top:2.2rem;margin-bottom:.8rem;}
+  h3{font-family:var(--ff-serif);font-size:1.1rem;font-weight:700;margin-top:1.6rem;margin-bottom:.6rem;}
+  p{margin-bottom:.9rem;color:var(--ink2);font-size:.97rem;}
+  strong{color:var(--ink);font-weight:700;}
+  ul,ol{margin:0 0 1rem 1.3rem;color:var(--ink2);}
+  li{margin-bottom:.4rem;font-size:.97rem;}
+  code{background:var(--cream);padding:.15rem .4rem;border-radius:5px;font-size:.87em;color:var(--olive-deep);}
+  pre{background:var(--ink);color:var(--cream);padding:1rem 1.1rem;border-radius:10px;overflow-x:auto;font-size:.82rem;margin:1rem 0;line-height:1.55;}
+  pre code{background:none;color:inherit;padding:0;}
+  .callout{border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.91rem;}
+  .callout p{margin-bottom:0;}
+  .callout.green{background:var(--green-l);border-left:3px solid var(--green);}.callout.green p{color:var(--olive-deep);}
+  .callout.warn{background:var(--terra-l);border-left:3px solid var(--terra);}.callout.warn p{color:var(--terra);}
+  .callout.blue{background:var(--blue-l);border-left:3px solid var(--blue);}.callout.blue p{color:var(--blue);}
+  .callout.gold{background:var(--gold-l);border-left:3px solid var(--gold);}.callout.gold p{color:var(--gold);}
+  .callout.purple{background:var(--purple-l);border-left:3px solid var(--purple);}.callout.purple p{color:var(--purple);}
+  .fw-table-wrap{overflow-x:auto;margin:1rem 0 1.5rem;}
+  table.fw-table{width:100%;border-collapse:collapse;font-size:.82rem;line-height:1.45;}
+  table.fw-table th,table.fw-table td{border:1px solid var(--border);padding:.5rem .7rem;text-align:left;vertical-align:top;}
+  table.fw-table th{background:var(--cream);font-weight:700;font-size:.77rem;}
+  table.fw-table td{color:var(--ink2);}
+  table.fw-table tr:nth-child(odd) td{background:var(--warm-white);}
+  table.fw-table tr:nth-child(even) td{background:var(--cream);}
+  .phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem;}
+  .phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--ink4);background:var(--warm-white);text-decoration:none;}
+  .phase-pip.active{background:var(--blue);color:var(--warm-white);border-color:transparent;}
+  .ba-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0;}
+  .ba-block{border-radius:10px;overflow:hidden;}
+  .ba-label{padding:.4rem .8rem;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;}
+  .ba-block.before .ba-label{background:var(--terra-l);color:var(--terra);}
+  .ba-block.after .ba-label{background:var(--green-l);color:var(--green);}
+  .ba-block pre{margin:0;border-radius:0 0 10px 10px;}
+  .assignment{background:var(--blue-l);border:1px solid var(--blue);border-radius:12px;padding:1.2rem 1.4rem;margin:2rem 0 1rem;}
+  .assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem;}
+  .assignment h3{font-family:var(--ff-serif);color:var(--ink);margin-top:.2rem;margin-bottom:.5rem;}
+  .bonus{background:var(--purple-l);border:1px solid var(--purple);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem;}
+  .bonus .b-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--purple);margin-bottom:.4rem;}
+  details.solution{margin:1rem 0 2rem;border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+  details.solution summary{padding:.9rem 1.2rem;cursor:pointer;font-weight:700;font-size:.92rem;background:var(--cream);list-style:none;display:flex;align-items:center;gap:.5rem;}
+  details.solution summary::before{content:"&#9654;";font-size:.7rem;color:var(--ink3);transition:transform .2s;}
+  details.solution[open] summary::before{transform:rotate(90deg);}
+  details.solution summary::-webkit-details-marker{display:none;}
+  .solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border);}
+  .solution-body p{font-size:.92rem;}
+  .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:1.8rem;flex-wrap:wrap;}
+  .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:700;font-size:.9rem;padding:.7rem 1.2rem;border-radius:8px;transition:background .2s var(--ease);}
+  .nav-cta.primary{background:var(--olive);color:var(--warm-white);}
+  .nav-cta.primary:hover{background:var(--olive-dark);}
+  .nav-cta.secondary{background:var(--cream);color:var(--ink2);border:1px solid var(--border);}
+  footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.85rem;color:var(--ink3);}
+  footer a{text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+  @media(max-width:600px){
+    h1{font-size:1.55rem;}
+    .ba-wrap{grid-template-columns:1fr;}
+    .meta-row{flex-wrap:wrap;gap:.5rem;}
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+
+<main>
+
+  <p class="breadcrumb">
+    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    <a href="00-playwrightseries-landing.html">Playwright: Zero to Architect</a> &nbsp;/&nbsp;
+    Phase 13
+  </p>
+
+  <span class="series-tag">Phase 13 of 15 &middot; AI-Assisted Automation</span>
+
+  <h1>Using AI to Review and Extend Your Suite</h1>
+  <p class="subtitle">By Phase 13 you can write a resilient test yourself. This phase is about using AI to go faster without lowering the bar every earlier phase set: as a reviewer of what already exists, and a generator of new tests you still own.</p>
+
+  <div class="meta-row">
+    <span>By RN</span>
+    <span>~30 min</span>
+    <span>Series: Playwright: Zero to Architect</span>
+    <span>Demo: PeakAndPack</span>
+  </div>
+
+  <div class="phase-strip" aria-label="Series progress">
+    <a href="00-playwrightseries-intro-setup.html" class="phase-pip" title="Phase 0: Intro &amp; Setup">0</a>
+    <a href="01-playwrightseries-test-design.html" class="phase-pip" title="Phase 1: Test Design Thinking">1</a>
+    <a href="02-playwrightseries-locators.html" class="phase-pip" title="Phase 2: Locators">2</a>
+    <a href="03-playwrightseries-assertions-waits.html" class="phase-pip" title="Phase 3: Assertions &amp; Waits">3</a>
+    <a href="04-playwrightseries-debugging-flakiness.html" class="phase-pip" title="Phase 4: Debugging &amp; Flakiness">4</a>
+    <a href="05-playwrightseries-test-data-state.html" class="phase-pip" title="Phase 5: Test Data &amp; State">5</a>
+    <a href="06-playwrightseries-auth-sessions.html" class="phase-pip" title="Phase 6: Auth &amp; Sessions">6</a>
+    <a href="07-playwrightseries-api-testing.html" class="phase-pip" title="Phase 7: API Testing">7</a>
+    <a href="08-playwrightseries-advanced-scenarios.html" class="phase-pip" title="Phase 8: Advanced Scenarios">8</a>
+    <a href="09-playwrightseries-page-objects.html" class="phase-pip" title="Phase 9: Page Object Model">9</a>
+    <a href="10-playwrightseries-fixtures-config.html" class="phase-pip" title="Phase 10: Fixtures &amp; Config">10</a>
+    <a href="11-playwrightseries-visual-regression.html" class="phase-pip" title="Phase 11: Visual Regression">11</a>
+    <a href="12-playwrightseries-cicd-flaky-tests.html" class="phase-pip" title="Phase 12: CI/CD &amp; Flaky Tests">12</a>
+    <span class="phase-pip active" title="Phase 13: AI-Assisted Automation">13</span>
+    <a href="14-playwrightseries-automation-leadership.html" class="phase-pip" title="Phase 14: Automation Leadership">14</a>
+    <a href="15-playwrightseries-capstone-projects.html" class="phase-pip" title="Phase 15: Capstone Projects">15</a>
+  </div>
+
+  <h2>Goal for this phase</h2>
+  <p>Use AI two ways against your existing PeakAndPack suite: as a reviewer that audits code you already wrote, and as a generator for new tests you review before they count. Leave with a documented review checklist and at least one AI-drafted test that passed your own bar, not the model's.</p>
+
+  <h2>Before: accepting AI output because it runs</h2>
+  <p>The most common mistake with AI-assisted automation isn't using it, it's treating "the test passes" as proof it's good. A test can pass and still be exactly the fragile, low-value test Phases 1 through 3 taught you to avoid.</p>
+
+  <div class="ba-wrap">
+    <div class="ba-block before">
+      <div class="ba-label">Before: accepted as-is because it ran green</div>
+<pre><code>// AI-generated, pasted in, never reviewed against
+// the priority table from Phase 2.
+test('add to cart works', async ({ page }) => {
+  await page.goto('https://peakandpack-ui.onrender.com/');
+  await page.click('.product-card:nth-child(1) .btn-cart');
+  await page.waitForTimeout(2000);
+  expect(await page.locator('.cart-badge').count()).toBeGreaterThan(0);
+});
+</code></pre>
+    </div>
+    <div class="ba-block after">
+      <div class="ba-label">After: same intent, reviewed against Phase 1-3 standards</div>
+<pre><code>// Reviewed: role-based locator, scoped, no sleep,
+// asserts something that actually exists on PeakAndPack.
+test('add to cart updates the cart page', async ({ page }) => {
+  await page.goto('https://peakandpack-ui.onrender.com/');
+  await page.getByRole('button', { name: /add to cart/i }).first().click();
+  await page.goto('/cart');
+  await expect(page.getByText('Trekking Poles (Pair)')).toBeVisible();
+});
+</code></pre>
+    </div>
+  </div>
+
+  <p>The "before" version has three of the exact problems Phase 2 named: a structural CSS selector (<code>nth-child</code>), a fixed sleep instead of a real wait, and an assertion on a <code>.cart-badge</code> element that doesn't exist on the real app, PeakAndPack has no live cart-count indicator anywhere, confirmed back in Phase 0. It runs. It would have failed the first time someone actually added an item, because that badge is never there to find.</p>
+
+  <h2>AI as a reviewer</h2>
+  <p>Point AI at a spec file you already wrote and ask it to audit the locators and waits against a stated standard, not a generic "improve this code" prompt.</p>
+  <pre><code>You are reviewing a Playwright spec file for a QA team that requires:
+1. No CSS class or structural selectors (getByRole, getByLabel, getByText only,
+   or getByTestId when there is genuinely no role or text to use).
+2. No waitForTimeout. Every wait must be tied to a real signal: an assertion
+   with auto-retry, or waitForResponse.
+3. Every assertion must check something visible to the user, not just that
+   an element exists in the DOM.
+
+Here is the file: [paste your spec file]
+
+For each violation, quote the line, name which of the three rules it breaks,
+and suggest a fix. Do not rewrite the whole file, list the findings.</code></pre>
+  <p>This is deliberately narrower than "review my code." A model asked to generally improve a test will restructure it, rename things, and bury the three violations you actually care about inside stylistic opinions. A model asked to check three named rules gives you a findings list you can act on in minutes.</p>
+
+  <h2>AI as a generator, with guardrails</h2>
+  <p>Generating a new test from a requirement follows the same shape as the test-case agents from Phase 3: give it the constraint up front, generate, then review against the same three rules, every time, no exceptions for AI-authored code.</p>
+  <pre><code>Write a Playwright test for: a logged-in user removes an item from their
+PeakAndPack cart and the total recalculates.
+
+Constraints: getByRole/getByLabel/getByText locators only. No waitForTimeout.
+Assert what the user would see on screen, not an internal state.
+I will log in and add an item in a beforeEach, you only need the removal
+and the total-recalculation check.</code></pre>
+
+  <div class="callout gold">
+    <p><strong>Why the constraints go in the prompt, not the review.</strong> It's tempting to just generate freely and clean up after. In practice, a model told the rules upfront produces far fewer violations than one corrected after the fact, the same reason the requirements document in Phase 1 works better than testing from memory. Put the standard in the prompt; use the review pass to catch what still slips through, not to do the whole job.</p>
+  </div>
+
+  <h2>What AI gets wrong by default, and why</h2>
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>Default AI behaviour</th><th>Why it happens</th><th>What Phase 13 review catches</th></tr></thead>
+      <tbody>
+        <tr><td>CSS class or <code>nth-child</code> locators</td><td>These are the most common pattern in public training data and tutorials</td><td>Rule 1: reject, replace with role/label/text</td></tr>
+        <tr><td><code>waitForTimeout</code> after an action</td><td>It's the simplest thing that makes a flaky demo pass once</td><td>Rule 2: reject, replace with an auto-retrying assertion or <code>waitForResponse</code></td></tr>
+        <tr><td>Asserting a status code or DOM presence instead of visible outcome</td><td>Easier to generate without seeing the actual rendered app</td><td>Rule 3: reject, assert what a user would see</td></tr>
+        <tr><td>Inventing an element that doesn't exist (a cart badge, a toast)</td><td>The model is pattern-matching against typical e-commerce apps, not the real PeakAndPack DOM</td><td>Caught only by checking the real app, not by re-reading the code</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout warn">
+    <p><strong>Common mistakes in Phase 13.</strong></p>
+    <ul style="margin:.5rem 0 0 1.2rem;">
+      <li><strong>Reviewing the code but not the app.</strong> A locator can look perfectly resilient (role-based, scoped) and still target an element that doesn't exist on PeakAndPack. Rule 1-3 review catches style; only checking the live app catches invented elements.</li>
+      <li><strong>Letting AI restructure working tests "while it's in there."</strong> Scope every prompt to the specific rule violations. An unscoped "improve this" prompt touches things you didn't ask about and makes the diff hard to review.</li>
+      <li><strong>Treating a passing AI-generated test as reviewed.</strong> Passing and reviewed are different claims. Every AI-generated test needs the same locator/wait/assertion check as human-written code, no exceptions.</li>
+      <li><strong>Not keeping the constraint prompt.</strong> If the rules only live in your head, every teammate using AI reinvents them differently. Save the review prompt as a checked-in file, Phase 14 covers making this a team standard.</li>
+    </ul>
+  </div>
+
+  <h2>Deliverables</h2>
+  <ul>
+    <li><code>ai-review-checklist.md</code>: the three-rule review prompt, saved as a reusable file</li>
+    <li><code>tests/cart-removal.spec.ts</code>: one AI-generated test, reviewed and corrected against the checklist</li>
+  </ul>
+
+  <div class="assignment">
+    <div class="a-label">Assignment</div>
+    <h3>Audit an existing spec file</h3>
+    <p>Take any spec file from an earlier phase (Phase 9's page objects are a good candidate) and run it through the reviewer prompt above. Document every finding, whether you agree with it, and whether you'd have caught it yourself without the prompt.</p>
+  </div>
+
+  <div class="bonus">
+    <div class="b-label">Bonus challenge</div>
+    <p><strong>Generate a test for a feature you know is buggy.</strong> Ask AI to write a test for PeakAndPack's discount code behaviour without telling it about BUG-009. Does it generate a test that would catch the bug, or one that assumes the discount works correctly? What does that tell you about relying on AI to find bugs it doesn't know exist?</p>
+  </div>
+
+  <details class="solution">
+    <summary>Show solution &mdash; try it yourself first</summary>
+    <div class="solution-body">
+      <h3>The reviewed cart-removal test</h3>
+      <pre><code>import { test, expect } from '@playwright/test';
+
+test('removing an item recalculates the cart total', async ({ page }) => {
+  await page.goto('https://peakandpack-ui.onrender.com/login');
+  await page.getByLabel(/email/i).fill('test@peakandpack.com');
+  await page.getByLabel(/password/i).fill('password123');
+  await page.getByRole('button', { name: /log in/i }).click();
+
+  await page.getByRole('button', { name: /add to cart/i }).first().click();
+  await page.goto('/cart');
+  await page.getByRole('button', { name: /remove/i }).click();
+
+  await expect(page.getByText('Your Cart')).toBeVisible();
+  await expect(page.getByText('Trekking Poles (Pair)')).not.toBeVisible();
+});
+</code></pre>
+      <p><strong>What the first draft got wrong.</strong> The initial AI output asserted <code>page.getByTestId('cart-total')).toHaveText('$0.00')</code>. PeakAndPack has no <code>data-testid</code> attributes anywhere, confirmed back in Phase 2, so the model invented a hook that doesn't exist. The reviewed version drops that assertion and checks something real: the removed item's name is no longer visible.</p>
+      <p><strong>Why this still needs a human.</strong> Knowing PeakAndPack has no test IDs isn't something the model could know from the requirements text alone, it's something you know from having actually looked at the app. That gap, between what's written down and what's true of the running system, is exactly what the review pass exists to close.</p>
+    </div>
+  </details>
+
+  <div class="nav-row">
+    <a href="12-playwrightseries-cicd-flaky-tests.html" class="nav-cta secondary">&larr; Phase 12: CI/CD &amp; Flaky Tests</a>
+    <a href="14-playwrightseries-automation-leadership.html" class="nav-cta primary">Phase 14: Automation Leadership &rarr;</a>
+  </div>
+
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; Playwright: Zero to Architect</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+</body>
+</html>

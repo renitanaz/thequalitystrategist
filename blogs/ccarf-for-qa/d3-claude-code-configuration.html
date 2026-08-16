@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The CLAUDE.md, the Skill, and the CI Gate: What D3 Actually Tests | The Quality Strategist</title>
+  <meta name="description" content="Same PeakAndPack QA setup, configured four ways: a shared CLAUDE.md and path-scoped rules, a command versus a scoped skill, a plan-mode decision, and a CI gate. CCAR-F D3, Claude Code Configuration and Workflows." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0d0d0d;--bg2:#161616;--bg3:#1e1e1e;--border:#2e2e2e;--text:#f0f0f0;--text-2:#c8c8c8;--text-3:#8a8a8a;--green:#4ade80;--green-bg:rgba(74,222,128,0.07);--blue:#60a5fa;--blue-bg:rgba(96,165,250,0.07);--amber:#fbbf24;--amber-bg:rgba(251,191,36,0.07);--purple:#a78bfa;--purple-bg:rgba(167,139,250,0.07);--red:#f87171;--red-bg:rgba(248,113,113,0.07);--teal:#2dd4bf;--teal-bg:rgba(45,212,191,0.07)}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;line-height:1.8;-webkit-font-smoothing:antialiased}
+    a{color:inherit}
+    .skip-link{position:absolute;top:-100%;left:1rem;background:var(--blue);color:#000;padding:.5rem 1rem;border-radius:0 0 6px 6px;font-size:.85rem;font-weight:500;text-decoration:none;z-index:999}.skip-link:focus{top:0}
+    nav.site-nav{position:sticky;top:0;z-index:100;background:rgba(13,13,13,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:56px}
+    .nav-logo{font-family:'DM Serif Display',serif;font-size:1rem;color:var(--text);text-decoration:none}
+    .nav-links{display:flex;gap:2rem;list-style:none}.nav-links a{color:var(--text-3);text-decoration:none;font-size:.85rem}.nav-links a:hover{color:var(--text)}
+    .blog-header{max-width:900px;margin:0 auto;padding:4rem 2rem 2.5rem;border-bottom:1px solid var(--border)}
+    .breadcrumb{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}.breadcrumb a{color:var(--text-3);text-decoration:none}
+    .blog-tags{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.25rem}
+    .tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+    .tag.accent{background:var(--blue-bg);color:var(--blue);border-color:rgba(96,165,250,.25)}
+    .blog-header h1{font-family:'DM Serif Display',serif;font-size:clamp(1.7rem,4vw,2.5rem);line-height:1.25;color:var(--text);margin-bottom:.75rem}
+    .blog-subtitle{font-family:'DM Serif Display',serif;font-size:1.05rem;font-style:italic;color:var(--text-3);margin-bottom:1.25rem}
+    .blog-meta{display:flex;align-items:center;gap:1.25rem;font-size:.82rem;color:var(--text-3);flex-wrap:wrap}.blog-meta .series{color:var(--text-2);font-weight:500}
+    main{max-width:900px;margin:0 auto;padding:3rem 2rem 5rem}
+    .blog-body p{color:var(--text-2);margin-bottom:1.25rem;font-weight:300}.blog-body p strong{color:var(--text);font-weight:500}
+    .blog-body h2{font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--text);margin:2.6rem 0 1rem}
+    .blog-body h3{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--text);margin:1.6rem 0 .7rem}
+    .blog-body ul,.blog-body ol{padding-left:1.5rem;margin-bottom:1.25rem;color:var(--text-2);font-weight:300}.blog-body li{margin-bottom:.4rem}
+    code{background:var(--bg3);padding:.15rem .45rem;border-radius:5px;font-size:.85em;color:var(--teal);font-family:monospace}
+    pre{background:var(--bg2);border:1px solid var(--border);padding:1rem 1.2rem;border-radius:10px;overflow-x:auto;font-size:.82rem;margin:1rem 0;line-height:1.6;font-family:monospace;color:var(--text-2)}
+    pre code{background:none;padding:0;color:inherit}
+
+    .blueprint-box{background:var(--purple-bg);border-left:3px solid var(--purple);border-radius:0 10px 10px 0;padding:1.1rem 1.4rem;margin:1.75rem 0;font-size:.92rem}
+    .blueprint-box .bp-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--purple);font-weight:600;margin-bottom:.4rem}
+    .blueprint-box p{color:var(--text-2);margin-bottom:0}
+
+    .deliverable-box{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.2rem 1.4rem;margin:1.5rem 0}
+    .deliverable-box .d-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--green);font-weight:600;margin-bottom:.6rem}
+    .deliverable-box ul{margin:0;padding-left:1.2rem}
+    .deliverable-box a{color:var(--text);text-decoration:underline;text-underline-offset:2px}
+    .howto{font-size:.82rem;color:var(--text-3);margin-top:.9rem;padding-top:.8rem;border-top:1px dashed var(--border)}
+    .howto strong{color:var(--text-2);font-weight:500}
+
+    .callout{background:var(--green-bg);border-left:3px solid var(--green);border-radius:0 10px 10px 0;padding:1.1rem 1.4rem;margin:1.5rem 0;font-size:.92rem}
+    .callout.amber{background:var(--amber-bg);border-left-color:var(--amber)}
+    .callout.red{background:var(--red-bg);border-left-color:var(--red)}
+    .callout.blue{background:var(--blue-bg);border-left-color:var(--blue)}
+    .callout p{color:var(--text-2);margin-bottom:0}
+
+    .diagram-wrap{margin:1.75rem 0;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.2rem}
+
+    .axis-grid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin:1.4rem 0}
+    .axis-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:.9rem 1.1rem}
+    .axis-card .a-title{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--teal);font-weight:600;margin-bottom:.4rem}
+    .axis-card p{font-size:.86rem;margin-bottom:0;color:var(--text-2)}
+
+    .pull-quote{font-family:'DM Serif Display',serif;font-style:italic;font-size:1.25rem;line-height:1.5;color:var(--text);border-left:3px solid var(--teal);padding:.3rem 0 .3rem 1.3rem;margin:2rem 0}
+
+    .verdict-row{display:flex;align-items:flex-start;gap:.7rem;padding:.65rem 0;border-bottom:1px solid var(--border)}
+    .verdict-row:last-child{border-bottom:none}
+    .verdict-icon{flex-shrink:0;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;margin-top:.1rem}
+    .verdict-icon.plan{background:var(--purple-bg);color:var(--purple)}
+    .verdict-icon.direct{background:var(--green-bg);color:var(--green)}
+    .verdict-label{font-size:.9rem;color:var(--text)}
+    .verdict-sub{font-size:.8rem;color:var(--text-3)}
+
+    .not-solve{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.3rem 1.5rem;margin-top:2.5rem}
+    .not-solve .ns-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);font-weight:600;margin-bottom:.6rem}
+
+    .quiz-block{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.3rem 1.4rem;margin:1.75rem 0}
+    .quiz-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--teal);font-weight:600;margin-bottom:.7rem}
+    .quiz-stem{color:var(--text);font-size:.95rem;margin-bottom:1rem;font-weight:400}
+    .quiz-options{display:flex;flex-direction:column;gap:.6rem}
+    .quiz-opt{display:block;width:100%;text-align:left;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:.7rem .9rem;color:var(--text-2);font-family:'DM Sans',sans-serif;font-size:.86rem;line-height:1.5;cursor:pointer;transition:border-color .15s,background .15s}
+    .quiz-opt:hover:not(:disabled){border-color:var(--text-3)}
+    .quiz-opt:disabled{cursor:default}
+    .quiz-opt.correct{border-color:var(--green);background:var(--green-bg);color:var(--text)}
+    .quiz-opt.incorrect{border-color:var(--red);background:var(--red-bg);color:var(--text)}
+    .quiz-feedback{margin-top:1rem;padding-top:1rem;border-top:1px dashed var(--border)}
+    .quiz-verdict{font-weight:600;margin-bottom:.5rem;font-size:.9rem}
+    .quiz-verdict.ok{color:var(--green)}
+    .quiz-verdict.miss{color:var(--red)}
+    .quiz-explain{color:var(--text-2);font-size:.88rem;margin-bottom:0}
+
+    .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:2.5rem;flex-wrap:wrap}
+    .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:500;font-size:.88rem;padding:.7rem 1.2rem;border-radius:8px}
+    .nav-cta.secondary{background:var(--bg3);color:var(--text-2);border:1px solid var(--border)}
+
+    footer{border-top:1px solid var(--border);padding:2rem;text-align:center;font-size:.78rem;color:var(--text-3)}footer a{color:var(--text-3);text-decoration:none}
+    @media(max-width:620px){nav.site-nav{padding:0 1.25rem}.nav-links{display:none}.blog-header,main{padding-left:1.25rem;padding-right:1.25rem}.axis-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <ul class="nav-links" role="list">
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#series">Series</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a></li>
+  </ul>
+</nav>
+
+<header class="blog-header">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="index.html">CCAR-F for QA</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <span aria-current="page">D3: Claude Code Configuration</span>
+  </nav>
+  <div class="blog-tags">
+    <span class="tag accent">D3 &middot; 20%</span>
+    <span class="tag">Post 02 of 5</span>
+  </div>
+  <h1>The CLAUDE.md, the Skill, and the CI Gate: What D3 Actually Tests</h1>
+  <p class="blog-subtitle">Same PeakAndPack QA setup, configured four ways: a shared CLAUDE.md and path-scoped rules, a command versus a scoped skill, a plan-mode decision, and a CI gate that reviews someone else's diff.</p>
+  <div class="blog-meta">
+    <span class="series">CCAR-F for QA</span>
+    <span aria-hidden="true">&middot;</span>
+    <span>~8 min read</span>
+  </div>
+</header>
+
+<main id="main-content" class="blog-body">
+
+  <p>Domain 3 doesn't test whether you can write a prompt. It tests whether you can configure the tool that runs the prompt, correctly enough that a teammate who never talks to you still gets the right conventions, the right context, and the right guardrails the moment they clone the repo.</p>
+  <p>Configuration bugs are a different species from prompt bugs. A bad prompt fails loudly, you see the wrong answer. A bad config fails silently: a rule file with the wrong glob pattern just never loads, and nothing tells you it didn't.</p>
+
+  <h2>Four things D3 actually asks you to know</h2>
+  <div class="axis-grid">
+    <div class="axis-card"><div class="a-title">3.1 / 3.3 &middot; Config scope</div><p>CLAUDE.md hierarchy: user, project, directory. <code>@import</code> to stay modular. <code>.claude/rules/</code> for path-scoped conventions a directory structure can't express.</p></div>
+    <div class="axis-card"><div class="a-title">3.2 &middot; Commands &amp; skills</div><p>A command is a shared shortcut. A skill has frontmatter: <code>context: fork</code> for isolation, <code>allowed-tools</code> for restriction, <code>argument-hint</code> for usability.</p></div>
+    <div class="axis-card"><div class="a-title">3.4 &middot; Plan vs. direct</div><p>Plan mode for architectural decisions and multi-file changes. Direct execution when the scope and the fix are both already obvious.</p></div>
+    <div class="axis-card"><div class="a-title">3.6 &middot; CI/CD</div><p><code>-p</code> for non-interactive mode, <code>--output-format json</code> with <code>--json-schema</code> for machine-parseable output a pipeline can act on.</p></div>
+  </div>
+
+  <h2>Part 1: config that a new teammate actually inherits</h2>
+  <p>The failure mode Task Statement 3.1 names directly: a developer isn't getting your instructions because they live in your personal <code>~/.claude/CLAUDE.md</code>, not the project's. It works for you and nobody else, and the gap is invisible until someone's output quietly stops matching the standard.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 700 260" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" role="img" aria-label="Diagram showing CLAUDE.md hierarchy: user-level config in the home directory applies only to that person and is never shared, project-level config at the repo root is version-controlled and reaches every teammate. Two separate, unconnected mechanisms extend it: at-import pulls an always-loaded file directly into CLAUDE.md, while path-scoped rule files under dot-claude slash rules are discovered independently by Claude Code and load only when a matching file is open, with no import required.">
+      <rect x="20" y="20" width="200" height="56" rx="8" fill="#161616" stroke="#2e2e2e" stroke-dasharray="4 3"/>
+      <text x="120" y="42" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="#8a8a8a">~/.claude/CLAUDE.md</text>
+      <text x="120" y="60" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#8a8a8a">user-level, not shared</text>
+
+      <rect x="250" y="20" width="200" height="56" rx="8" fill="#0f1f30" stroke="#60a5fa" stroke-width="1.5"/>
+      <text x="350" y="42" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="#60a5fa">.claude/CLAUDE.md</text>
+      <text x="350" y="60" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#c8c8c8">project-level, version-controlled</text>
+
+      <rect x="480" y="20" width="200" height="56" rx="8" fill="#161616" stroke="#2e2e2e" stroke-dasharray="4 3"/>
+      <text x="580" y="42" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="#8a8a8a">subdir/CLAUDE.md</text>
+      <text x="580" y="60" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#8a8a8a">directory-level, bound to that folder</text>
+
+      <path d="M350,76 L350,104" stroke="#60a5fa" stroke-width="1.5" marker-end="url(#arrowD3a)"/>
+
+      <rect x="175" y="110" width="350" height="50" rx="8" fill="#0f1f30" stroke="#60a5fa" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <text x="350" y="130" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#60a5fa">@import environment-facts.md</text>
+      <text x="350" y="146" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#8a8a8a">explicit, always loaded into CLAUDE.md itself</text>
+
+      <text x="350" y="188" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#f87171">a separate, unconnected mechanism, not reached through CLAUDE.md at all</text>
+
+      <rect x="100" y="196" width="500" height="46" rx="8" fill="#1a2e14" stroke="#4ade80" stroke-width="1.5"/>
+      <text x="350" y="214" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#4ade80">.claude/rules/*.md &mdash; paths: [&quot;tests/**/*.spec.ts&quot;]</text>
+      <text x="350" y="229" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#8a8a8a">discovered directly by Claude Code, loads only for matching files</text>
+
+      <defs>
+        <marker id="arrowD3a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#60a5fa"/></marker>
+      </defs>
+    </svg>
+  </div>
+
+  <div class="axis-grid">
+    <div class="axis-card"><div class="a-title">Why project-level, not user-level</div><p>Only project-scoped config is in version control. A rule that lives in someone's home directory is a rule that exists for an audience of one.</p></div>
+    <div class="axis-card"><div class="a-title">Why path-scoped rules, not more CLAUDE.md files</div><p>PeakAndPack's tests aren't confined to one directory. A glob like <code>tests/**/*.spec.ts</code> reaches all of them, a directory-bound file can't.</p></div>
+  </div>
+
+  <div class="callout blue">
+    <p><strong>Diagnosing this in practice:</strong> the exam guide's own skill point for 3.1 is running <code>/memory</code> to see which files actually loaded. If a teammate's output doesn't match the standard, that's the first thing to check, not a longer prompt.</p>
+  </div>
+
+  <div class="quiz-block" aria-live="polite">
+    <div class="quiz-label">Exam sample question &middot; Scenario: Code Generation with Claude Code</div>
+    <p class="quiz-stem">Your codebase has distinct areas with different coding conventions: React components use functional style with hooks, API handlers use async/await with specific error handling, and database models follow a repository pattern. Test files are spread throughout the codebase alongside the code they test (e.g., <code>Button.test.tsx</code> next to <code>Button.tsx</code>), and you want all tests to follow the same conventions regardless of location. What's the most maintainable way to ensure Claude automatically applies the correct conventions when generating code?</p>
+    <div class="quiz-options">
+      <button class="quiz-opt" data-correct="true">A. Create rule files in <code>.claude/rules/</code> with YAML frontmatter specifying glob patterns to conditionally apply conventions based on file paths.</button>
+      <button class="quiz-opt">B. Consolidate all conventions in the root CLAUDE.md file under headers for each area, relying on Claude to infer which section applies.</button>
+      <button class="quiz-opt">C. Create skills in <code>.claude/skills/</code> for each code type that include the relevant conventions in their SKILL.md files.</button>
+      <button class="quiz-opt">D. Place a separate CLAUDE.md file in each subdirectory containing that area's specific conventions.</button>
+    </div>
+    <div class="quiz-feedback" hidden>
+      <p class="quiz-verdict"></p>
+      <p class="quiz-explain"><code>.claude/rules/</code> with glob patterns (e.g. <code>**/*.test.tsx</code>) applies conventions by file path regardless of directory location, essential for test files spread throughout the codebase. B relies on inference, not explicit matching. C requires manual invocation or Claude choosing to load the skill, the opposite of deterministic automatic application. D can't handle files spread across many directories, CLAUDE.md files are directory-bound.</p>
+    </div>
+  </div>
+
+  <div class="deliverable-box">
+    <div class="d-label">Deliverable, Part 1</div>
+    <ul>
+      <li><a href="d3-claude-md/CLAUDE.md">d3-claude-md/CLAUDE.md</a>: a real project-level CLAUDE.md for PeakAndPack QA work</li>
+      <li><a href="d3-claude-md/environment-facts.md">d3-claude-md/environment-facts.md</a>: pulled in via <code>@import</code>, always loaded, not path-scoped</li>
+      <li><a href="d3-claude-md/rules/playwright-tests.md">d3-claude-md/rules/playwright-tests.md</a>: path-scoped to <code>tests/**/*.spec.ts</code>, discovered independently, no import needed</li>
+      <li><a href="d3-claude-md/rules/bug-reports.md">d3-claude-md/rules/bug-reports.md</a>: path-scoped to <code>reports/**/*.md</code></li>
+    </ul>
+    <p class="howto"><strong>How to use it:</strong> drop CLAUDE.md, environment-facts.md, and the rules/ folder into <code>.claude/</code> at your repo root and commit them. No invocation needed, Claude Code loads CLAUDE.md every session and discovers the rules files on its own. Run <code>/memory</code> to confirm what actually loaded.</p>
+  </div>
+
+  <h2>Part 2: a command everyone gets, a skill that stays contained</h2>
+  <p>Both live under <code>.claude/</code> and both get invoked with a slash, but they're not the same tool. A command is a shortcut, the same prompt every time, shared the moment it's committed. A skill carries frontmatter that changes how it runs: <code>context: fork</code> isolates it, <code>allowed-tools</code> restricts it, <code>argument-hint</code> tells a developer what to pass.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 700 190" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" role="img" aria-label="Diagram contrasting a slash command, which runs directly in the main conversation with full context, against a skill configured with context fork, which runs in an isolated sub-agent and returns only a summary, with allowed-tools restricting what it can do.">
+      <text x="20" y="26" font-family="DM Sans, sans-serif" font-size="12" font-weight="700" fill="#f0f0f0" letter-spacing="1">/triage-bug &mdash; COMMAND</text>
+      <rect x="20" y="40" width="170" height="46" rx="8" fill="#1e1e1e" stroke="#2e2e2e"/>
+      <text x="105" y="68" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" fill="#c8c8c8">Main conversation</text>
+      <path d="M190,63 L228,63" stroke="#8a8a8a" stroke-width="1.5" marker-end="url(#arrowD3b)"/>
+      <rect x="230" y="40" width="170" height="46" rx="8" fill="#1e1e1e" stroke="#2e2e2e"/>
+      <text x="315" y="63" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#c8c8c8">Runs inline, full</text>
+      <text x="315" y="78" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#c8c8c8">context, no isolation</text>
+
+      <text x="20" y="120" font-family="DM Sans, sans-serif" font-size="12" font-weight="700" fill="#a78bfa" letter-spacing="1">/reproduce-bug &mdash; SKILL, context: fork</text>
+      <rect x="20" y="134" width="170" height="46" rx="8" fill="#1e1e1e" stroke="#2e2e2e"/>
+      <text x="105" y="162" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" fill="#c8c8c8">Main conversation</text>
+      <path d="M190,157 L228,157" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrowD3c)"/>
+      <rect x="230" y="134" width="200" height="46" rx="8" fill="#2e1a3a" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <text x="330" y="152" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#a78bfa">Isolated sub-agent</text>
+      <text x="330" y="167" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#c8c8c8">allowed-tools: Bash, WebFetch</text>
+      <path d="M430,157 L468,157" stroke="#4ade80" stroke-width="1.5" marker-end="url(#arrowD3d)"/>
+      <rect x="470" y="134" width="200" height="46" rx="8" fill="#0f2e1a" stroke="#4ade80"/>
+      <text x="570" y="157" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#4ade80">Summary only returns</text>
+
+      <defs>
+        <marker id="arrowD3b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8a8a8a"/></marker>
+        <marker id="arrowD3c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/></marker>
+        <marker id="arrowD3d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#4ade80"/></marker>
+      </defs>
+    </svg>
+  </div>
+
+  <div class="axis-grid">
+    <div class="axis-card"><div class="a-title">Why fork the reproduction skill</div><p>Reproducing a bug against a cold-starting Render API means retries and raw HTTP responses. Forking keeps that noise out of the conversation doing the actual triage.</p></div>
+    <div class="axis-card"><div class="a-title">Why scope its tools</div><p><code>allowed-tools: ["Bash", "WebFetch"]</code> means this skill cannot write a file or run a destructive command, whatever the prompt asks it to do.</p></div>
+  </div>
+
+  <p class="pull-quote">Choosing between skills and CLAUDE.md is choosing between on-demand invocation for a task-specific workflow, and an always-loaded standard nobody has to remember to run.</p>
+
+  <div class="quiz-block" aria-live="polite">
+    <div class="quiz-label">Exam sample question &middot; Scenario: Code Generation with Claude Code</div>
+    <p class="quiz-stem">You want to create a custom <code>/review</code> slash command that runs your team's standard code review checklist. This command should be available to every developer when they clone or pull the repository. Where should you create this command file?</p>
+    <div class="quiz-options">
+      <button class="quiz-opt" data-correct="true">A. In the <code>.claude/commands/</code> directory in the project repository.</button>
+      <button class="quiz-opt">B. In <code>~/.claude/commands/</code> in each developer's home directory.</button>
+      <button class="quiz-opt">C. In the CLAUDE.md file at the project root.</button>
+      <button class="quiz-opt">D. In a <code>.claude/config.json</code> file with a commands array.</button>
+    </div>
+    <div class="quiz-feedback" hidden>
+      <p class="quiz-verdict"></p>
+      <p class="quiz-explain">Project-scoped slash commands live in <code>.claude/commands/</code>, version-controlled and automatically available the moment a developer clones or pulls the repo. B is for personal commands not shared via version control. C is for project instructions and context, not command definitions. D describes a configuration mechanism that doesn't exist in Claude Code.</p>
+    </div>
+  </div>
+
+  <div class="deliverable-box">
+    <div class="d-label">Deliverable, Part 2</div>
+    <ul>
+      <li><a href="d3-triage-command.md">d3-triage-command.md</a>: the <code>/triage-bug</code> command, project-scoped, reuses D1's bug catalog</li>
+      <li><a href="d3-reproduce-skill/SKILL.md">d3-reproduce-skill/SKILL.md</a>: a skill with <code>context: fork</code>, <code>allowed-tools</code>, and <code>argument-hint</code> all set deliberately, not defaults</li>
+    </ul>
+    <p class="howto"><strong>How to use it:</strong> copy the command to <code>.claude/commands/triage-bug.md</code>, then type <code>/triage-bug</code> followed by a failing test's output. Copy the skill folder to <code>.claude/skills/reproduce-bug/</code>, then type <code>/reproduce-bug BUG-007</code> (or any bug ID or description), the invocable name comes from the folder, not the filename.</p>
+  </div>
+
+  <h2>Part 3: plan mode is a decision, not a mood</h2>
+  <p>Task Statement 3.4 isn't asking whether you know plan mode exists. It's asking whether you can tell, before you start, which side of the line a given task falls on. Two real PeakAndPack fixes, reasoned through against the guide's own criteria:</p>
+
+  <div class="deliverable-box">
+    <div class="verdict-row"><div class="verdict-icon plan">P</div><div><div class="verdict-label">Close BUG-004 and BUG-007 together</div><div class="verdict-sub">Multi-file, three valid places for validation to live, affects every future price-bearing endpoint. Plan mode.</div></div></div>
+    <div class="verdict-row"><div class="verdict-icon direct">D</div><div><div class="verdict-label">Close BUG-002 alone</div><div class="verdict-sub">One handler, one obvious fix, the guide's own textbook example. Direct execution.</div></div></div>
+  </div>
+
+  <div class="callout amber">
+    <p><strong>The same bug, either side of the line:</strong> BUG-004 and BUG-007 could each be fixed alone as a Task-B-shaped change. What moves them into plan-mode territory is the decision to fix them <em>together</em>, because that turns a validation fix into a decision about where validation lives project-wide. Scope decides this, not bug severity or how the fix reads in isolation.</p>
+  </div>
+
+  <div class="quiz-block" aria-live="polite">
+    <div class="quiz-label">Exam sample question &middot; Scenario: Code Generation with Claude Code</div>
+    <p class="quiz-stem">You've been assigned to restructure the team's monolithic application into microservices. This will involve changes across dozens of files and requires decisions about service boundaries and module dependencies. Which approach should you take?</p>
+    <div class="quiz-options">
+      <button class="quiz-opt" data-correct="true">A. Enter plan mode to explore the codebase, understand dependencies, and design an implementation approach before making changes.</button>
+      <button class="quiz-opt">B. Start with direct execution and make changes incrementally, letting the implementation reveal the natural service boundaries.</button>
+      <button class="quiz-opt">C. Use direct execution with comprehensive upfront instructions detailing exactly how each service should be structured.</button>
+      <button class="quiz-opt">D. Begin in direct execution mode and only switch to plan mode if you encounter unexpected complexity.</button>
+    </div>
+    <div class="quiz-feedback" hidden>
+      <p class="quiz-verdict"></p>
+      <p class="quiz-explain">Plan mode is built for large-scale changes, multiple valid approaches, and architectural decisions, exactly what monolith-to-microservices restructuring requires. B risks costly rework when dependencies surface late. C assumes the right structure without exploring the code first. D ignores that the complexity is already known upfront, not something that might emerge later.</p>
+    </div>
+  </div>
+
+  <div class="deliverable-box">
+    <div class="d-label">Deliverable, Part 3</div>
+    <ul>
+      <li><a href="d3-plan-vs-direct.md">d3-plan-vs-direct.md</a>: the full reasoning for both tasks against the guide's stated criteria</li>
+    </ul>
+    <p class="howto"><strong>How to use it:</strong> this is a worked example to reason from, not a file you deploy. Run its two criteria checks (multi-file? architectural? multiple valid approaches?) against your own next task before opening plan mode out of habit either way.</p>
+  </div>
+
+  <h2>Part 4: a reviewer with no memory of writing the code</h2>
+  <p>Task Statement 3.6 is CI integration, and its least obvious knowledge point isn't a flag, it's session isolation: the same session that wrote a diff is a worse reviewer of that diff than a fresh one, because it already believes its own reasoning.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 700 170" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" role="img" aria-label="Diagram: a pull request triggers a fresh, non-interactive claude -p invocation that has no memory of writing the code, which outputs JSON validated against a schema, which is then posted as inline PR comments.">
+      <rect x="20" y="62" width="130" height="46" rx="8" fill="#1e1e1e" stroke="#2e2e2e"/>
+      <text x="85" y="90" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" fill="#c8c8c8">PR opened</text>
+      <path d="M150,85 L188,85" stroke="#8a8a8a" stroke-width="1.5" marker-end="url(#arrowD3e)"/>
+
+      <rect x="190" y="55" width="190" height="60" rx="8" fill="#2e2410" stroke="#fbbf24" stroke-width="1.5"/>
+      <text x="285" y="78" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#fbbf24">claude -p, fresh session</text>
+      <text x="285" y="93" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#c8c8c8">no memory of writing this diff</text>
+      <text x="285" y="106" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#c8c8c8">CLAUDE.md loaded automatically</text>
+      <path d="M380,85 L418,85" stroke="#8a8a8a" stroke-width="1.5" marker-end="url(#arrowD3f)"/>
+
+      <rect x="420" y="62" width="130" height="46" rx="8" fill="#161616" stroke="#2e2e2e"/>
+      <text x="485" y="82" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="#c8c8c8">--json-schema</text>
+      <text x="485" y="97" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="#c8c8c8">validated output</text>
+      <path d="M550,85 L588,85" stroke="#4ade80" stroke-width="1.5" marker-end="url(#arrowD3g)"/>
+
+      <rect x="590" y="62" width="90" height="46" rx="8" fill="#0f2e1a" stroke="#4ade80"/>
+      <text x="635" y="90" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#4ade80">PR comments</text>
+
+      <defs>
+        <marker id="arrowD3e" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8a8a8a"/></marker>
+        <marker id="arrowD3f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8a8a8a"/></marker>
+        <marker id="arrowD3g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#4ade80"/></marker>
+      </defs>
+    </svg>
+  </div>
+
+  <div class="axis-grid">
+    <div class="axis-card"><div class="a-title">-p, not the default</div><p>Without it, a pipeline runner sends the prompt, gets silence, and hangs until the job times out waiting for input that never comes.</p></div>
+    <div class="axis-card"><div class="a-title">Structured, not prose</div><p>A JSON schema turns findings into something a script can post inline, instead of a paragraph a script can only forward whole.</p></div>
+  </div>
+
+  <div class="quiz-block" aria-live="polite">
+    <div class="quiz-label">Exam sample question &middot; Scenario: Claude Code for Continuous Integration</div>
+    <p class="quiz-stem">Your pipeline script runs <code>claude "Analyze this pull request for security issues"</code> but the job hangs indefinitely. Logs indicate Claude Code is waiting for interactive input. What's the correct approach to run Claude Code in an automated pipeline?</p>
+    <div class="quiz-options">
+      <button class="quiz-opt" data-correct="true">A. Add the -p flag: <code>claude -p "Analyze this pull request for security issues"</code></button>
+      <button class="quiz-opt">B. Set the environment variable <code>CLAUDE_HEADLESS=true</code> before running the command.</button>
+      <button class="quiz-opt">C. Redirect stdin from /dev/null: <code>claude "..." &lt; /dev/null</code></button>
+      <button class="quiz-opt">D. Add the --batch flag: <code>claude --batch "Analyze this pull request for security issues"</code></button>
+    </div>
+    <div class="quiz-feedback" hidden>
+      <p class="quiz-verdict"></p>
+      <p class="quiz-explain">The <code>-p</code> (or <code>--print</code>) flag is the documented way to run Claude Code non-interactively: it processes the prompt, outputs to stdout, and exits without waiting for input, exactly what a CI pipeline needs. B and D reference flags and environment variables that don't exist in Claude Code. C is a Unix workaround that doesn't address the actual command syntax.</p>
+    </div>
+  </div>
+
+  <div class="deliverable-box">
+    <div class="d-label">Deliverable, Part 4</div>
+    <ul>
+      <li><a href="d3-ci-review.sh">d3-ci-review.sh</a>: the full CI script, checkout-scoped, non-interactive, posts inline PR comments</li>
+      <li><a href="d3-review-schema.json">d3-review-schema.json</a>: the JSON schema its findings are validated against</li>
+    </ul>
+    <p class="howto"><strong>How to use it:</strong> <code>chmod +x d3-ci-review.sh</code>, wire it into your CI workflow with <code>ANTHROPIC_API_KEY</code> set as a repo secret and <code>gh</code>/<code>jq</code> available on the runner. It's a no-op unless the PR's diff touches <code>src/checkout/**</code> or <code>src/cart/**</code>.</p>
+  </div>
+
+  <h2>The QA angle: config bugs have no stack trace</h2>
+  <p>A wrong assertion fails a test, loudly, with a line number. A rule file scoped to the wrong glob just never loads, silently, and the only symptom is Claude quietly not following a convention nobody remembers to check for.</p>
+  <p>Testing configuration itself means testing for absence: create a decoy file outside a rule's glob and confirm the rule doesn't apply to it, run <code>/memory</code> after onboarding a fresh clone and diff what loaded against what you expected, and treat a CI review's schema validation failure as a finding in its own right, not just infrastructure noise to retry past.</p>
+
+  <div class="blueprint-box">
+    <div class="bp-label">Blueprint tie &middot; D3, 20%, Task Statements 3.1&ndash;3.6</div>
+    <p>D3 tests configuration as a set of concrete choices, not a vague "set things up well": project-level versus user-level CLAUDE.md (3.1), glob-scoped rules versus directory-bound ones (3.3), a shared command versus an isolated skill (3.2), plan mode versus direct execution against stated criteria (3.4), and a CI pipeline that runs non-interactively with structured output (3.6). Every one of those showed up as a real file in this post, not a description of one.</p>
+  </div>
+
+  <div class="not-solve">
+    <div class="ns-label">What this does not solve</div>
+    <p style="color:var(--text-2);font-weight:300;margin-bottom:0">This post doesn't cover Task Statement 3.5 (iterative refinement: concrete input/output examples, test-driven iteration, the interview pattern) with a worked example, none of this post's tasks needed enough back-and-forth to demonstrate it honestly. The CI script hasn't run inside an actual GitHub Actions pipeline, this writing environment has no CI runner to execute it against, though the script itself is complete and matches the documented flags. And none of Part 2's command or skill has been invoked inside a live interactive Claude Code session here, they're written correctly against the documented frontmatter, not demonstrated running.</p>
+  </div>
+
+  <div class="nav-row">
+    <a href="index.html" class="nav-cta secondary">&larr; Back to CCAR-F for QA</a>
+  </div>
+
+  <div style="margin-top:2.6rem;padding-top:1.6rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--text-3)">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; CCAR-F for QA</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+<script>
+document.querySelectorAll('.quiz-block').forEach(function (block) {
+  var opts = block.querySelectorAll('.quiz-opt');
+  var feedback = block.querySelector('.quiz-feedback');
+  var verdict = block.querySelector('.quiz-verdict');
+  opts.forEach(function (opt) {
+    opt.addEventListener('click', function () {
+      if (block.classList.contains('answered')) return;
+      block.classList.add('answered');
+      var isCorrect = opt.getAttribute('data-correct') === 'true';
+      opts.forEach(function (o) {
+        o.disabled = true;
+        if (o.getAttribute('data-correct') === 'true') o.classList.add('correct');
+        else if (o === opt) o.classList.add('incorrect');
+      });
+      verdict.textContent = isCorrect ? 'Correct.' : 'Not quite, here is why:';
+      verdict.className = 'quiz-verdict ' + (isCorrect ? 'ok' : 'miss');
+      feedback.hidden = false;
+    });
+  });
+});
+</script>
+</body>
+</html>

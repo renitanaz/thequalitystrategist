@@ -14,14 +14,14 @@
 - **Location:** Product card, "Sleeping Bag (-15C)," price line
 - **Symptom:** Price renders as `$-89.00` in red text. No product price should ever be negative; this is a data or calculation defect surfacing directly in the UI, not just an API concern.
 - **Severity:** High
-- **Related requirement:** Phase 1 requirements state prices must be non-negative ("each with a non-negative price"). This is the same root cause as BUG-011 in the manual visual checklist, confirmed here on a live screenshot.
+- **Related requirement:** Phase 1 requirements state prices must be non-negative ("each with a non-negative price"). This is BUG-001 from the series bug catalog, confirmed here on a live screenshot.
 
 ## Unnamed product shown as "(no name)"
 
 - **Location:** Product card between Headlamp and GPS Watch
-- **Symptom:** Title reads literally "(no name)," with description "Mystery item with no name." This does **not** match the manual checklist's V-01 claim of a blank title area, on the actual live page the title area is populated with visible placeholder-style text, not empty. Worth confirming whether this fallback text is server-generated (a real missing-name case handled gracefully) or a seeded placeholder product, either way, a customer-facing card should not read "(no name)."
+- **Symptom:** Title reads literally "(no name)," with description "Mystery item with no name." This does **not** match the manual checklist's V-01 claim of a blank title area, on the actual live page the title area is populated with visible placeholder-style text, not empty.
 - **Severity:** Medium
-- **Related requirement:** Ties to the Products section's implicit expectation that every listed product has a real name; unclear from the requirements document alone whether the current text is intentional test data or a genuine gap. Marked to confirm.
+- **Related requirement:** This is BUG-002 from the series bug catalog ("Product with an empty name"). The catalog names it as an empty-name case, the live rendering is a graceful fallback string rather than a blank area, worth noting as the actual customer-facing symptom differs from how the bug is titled.
 
 ## Header controls crowd the nav at mobile width
 

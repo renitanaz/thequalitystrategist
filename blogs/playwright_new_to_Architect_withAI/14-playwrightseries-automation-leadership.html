@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 14: Automation Leadership | Playwright: Zero to Architect</title>
+<meta name="description" content="Phase 14 of Playwright: Zero to Architect. Moving from writing tests to owning a suite as a team asset: conventions, PR review, suite health, and when to say no.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:#6B7C3A; --olive-dark:#4A5828; --olive-deep:#2E3A18;
+    --cream:#F5F7F0; --warm-white:#FAFCF5;
+    --ink:#1A1F14; --ink2:#3D4235; --ink3:#6B7060; --ink4:#9A9E90;
+    --border:rgba(26,31,20,0.1); --border2:rgba(26,31,20,0.06);
+    --purple:#7A4A9A; --purple-l:#EDE0F5;
+    --gold:#9A6E1A; --gold-l:#F5EDD6;
+    --blue:#2A5C9A; --blue-l:#DDE8F5;
+    --teal:#1A6B54; --teal-l:#D8EEE8;
+    --terra:#8A4A2A; --terra-l:#F5E4D8;
+    --green:#1A7A3A; --green-l:#D8F0E0;
+    --ff-serif:'Lora',Georgia,serif;
+    --ff-sans:'DM Sans',system-ui,sans-serif;
+    --ease:cubic-bezier(0.22,1,0.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--ff-sans);background:var(--warm-white);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  header.site-header{border-bottom:1px solid var(--border);padding:1.1rem 1.5rem;background:var(--warm-white);}
+  .site-header-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+  .site-name{font-family:var(--ff-serif);font-weight:600;font-size:1.05rem;text-decoration:none;}
+  main{max-width:880px;margin:0 auto;padding:2.6rem 1.5rem 5rem;}
+  .breadcrumb{font-size:.82rem;color:var(--ink3);margin-bottom:1.3rem;}
+  .breadcrumb a{text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+  .series-tag{display:inline-block;font-size:.76rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--blue);background:var(--blue-l);padding:.3rem .7rem;border-radius:999px;margin-bottom:1.1rem;}
+  h1{font-family:var(--ff-serif);font-size:2rem;font-weight:700;line-height:1.2;margin-bottom:.8rem;}
+  .subtitle{font-size:1.08rem;color:var(--ink2);margin-bottom:1.6rem;max-width:680px;}
+  .meta-row{display:flex;gap:1.1rem;font-size:.82rem;color:var(--ink3);margin-bottom:1.6rem;border-bottom:1px solid var(--border);padding-bottom:1.3rem;flex-wrap:wrap;}
+  h2{font-family:var(--ff-serif);font-size:1.35rem;font-weight:700;margin-top:2.2rem;margin-bottom:.8rem;}
+  h3{font-family:var(--ff-serif);font-size:1.1rem;font-weight:700;margin-top:1.6rem;margin-bottom:.6rem;}
+  p{margin-bottom:.9rem;color:var(--ink2);font-size:.97rem;}
+  strong{color:var(--ink);font-weight:700;}
+  ul,ol{margin:0 0 1rem 1.3rem;color:var(--ink2);}
+  li{margin-bottom:.4rem;font-size:.97rem;}
+  code{background:var(--cream);padding:.15rem .4rem;border-radius:5px;font-size:.87em;color:var(--olive-deep);}
+  pre{background:var(--ink);color:var(--cream);padding:1rem 1.1rem;border-radius:10px;overflow-x:auto;font-size:.82rem;margin:1rem 0;line-height:1.55;}
+  pre code{background:none;color:inherit;padding:0;}
+  .callout{border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.91rem;}
+  .callout p{margin-bottom:0;}
+  .callout.green{background:var(--green-l);border-left:3px solid var(--green);}.callout.green p{color:var(--olive-deep);}
+  .callout.warn{background:var(--terra-l);border-left:3px solid var(--terra);}.callout.warn p{color:var(--terra);}
+  .callout.blue{background:var(--blue-l);border-left:3px solid var(--blue);}.callout.blue p{color:var(--blue);}
+  .callout.gold{background:var(--gold-l);border-left:3px solid var(--gold);}.callout.gold p{color:var(--gold);}
+  .callout.purple{background:var(--purple-l);border-left:3px solid var(--purple);}.callout.purple p{color:var(--purple);}
+  .fw-table-wrap{overflow-x:auto;margin:1rem 0 1.5rem;}
+  table.fw-table{width:100%;border-collapse:collapse;font-size:.82rem;line-height:1.45;}
+  table.fw-table th,table.fw-table td{border:1px solid var(--border);padding:.5rem .7rem;text-align:left;vertical-align:top;}
+  table.fw-table th{background:var(--cream);font-weight:700;font-size:.77rem;}
+  table.fw-table td{color:var(--ink2);}
+  table.fw-table tr:nth-child(odd) td{background:var(--warm-white);}
+  table.fw-table tr:nth-child(even) td{background:var(--cream);}
+  .phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem;}
+  .phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--ink4);background:var(--warm-white);text-decoration:none;}
+  .phase-pip.active{background:var(--blue);color:var(--warm-white);border-color:transparent;}
+  .ba-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0;}
+  .ba-block{border-radius:10px;overflow:hidden;}
+  .ba-label{padding:.4rem .8rem;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;}
+  .ba-block.before .ba-label{background:var(--terra-l);color:var(--terra);}
+  .ba-block.after .ba-label{background:var(--green-l);color:var(--green);}
+  .ba-block pre{margin:0;border-radius:0 0 10px 10px;}
+  .assignment{background:var(--blue-l);border:1px solid var(--blue);border-radius:12px;padding:1.2rem 1.4rem;margin:2rem 0 1rem;}
+  .assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem;}
+  .assignment h3{font-family:var(--ff-serif);color:var(--ink);margin-top:.2rem;margin-bottom:.5rem;}
+  .bonus{background:var(--purple-l);border:1px solid var(--purple);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem;}
+  .bonus .b-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--purple);margin-bottom:.4rem;}
+  details.solution{margin:1rem 0 2rem;border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+  details.solution summary{padding:.9rem 1.2rem;cursor:pointer;font-weight:700;font-size:.92rem;background:var(--cream);list-style:none;display:flex;align-items:center;gap:.5rem;}
+  details.solution summary::before{content:"&#9654;";font-size:.7rem;color:var(--ink3);transition:transform .2s;}
+  details.solution[open] summary::before{transform:rotate(90deg);}
+  details.solution summary::-webkit-details-marker{display:none;}
+  .solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border);}
+  .solution-body p{font-size:.92rem;}
+  .checklist{list-style:none;margin-left:0;}
+  .checklist li{display:flex;gap:.55rem;align-items:baseline;margin-bottom:.5rem;font-size:.94rem;color:var(--ink2);}
+  .checklist li::before{content:"\2713";color:var(--green);font-weight:700;flex-shrink:0;}
+  .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:1.8rem;flex-wrap:wrap;}
+  .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:700;font-size:.9rem;padding:.7rem 1.2rem;border-radius:8px;transition:background .2s var(--ease);}
+  .nav-cta.primary{background:var(--olive);color:var(--warm-white);}
+  .nav-cta.primary:hover{background:var(--olive-dark);}
+  .nav-cta.secondary{background:var(--cream);color:var(--ink2);border:1px solid var(--border);}
+  footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.85rem;color:var(--ink3);}
+  footer a{text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+  @media(max-width:600px){
+    h1{font-size:1.55rem;}
+    .ba-wrap{grid-template-columns:1fr;}
+    .meta-row{flex-wrap:wrap;gap:.5rem;}
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+
+<main>
+
+  <p class="breadcrumb">
+    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    <a href="00-playwrightseries-landing.html">Playwright: Zero to Architect</a> &nbsp;/&nbsp;
+    Phase 14
+  </p>
+
+  <span class="series-tag">Phase 14 of 15 &middot; Automation Leadership</span>
+
+  <h1>Leading a Test Automation Practice</h1>
+  <p class="subtitle">Everything so far made you good at writing tests. This phase is about the suite as a shared asset: conventions other people follow, a review process that catches drift, and the judgment to say no to a test that shouldn't exist.</p>
+
+  <div class="meta-row">
+    <span>By RN</span>
+    <span>~30 min</span>
+    <span>Series: Playwright: Zero to Architect</span>
+    <span>Demo: PeakAndPack</span>
+  </div>
+
+  <div class="phase-strip" aria-label="Series progress">
+    <a href="00-playwrightseries-intro-setup.html" class="phase-pip" title="Phase 0: Intro &amp; Setup">0</a>
+    <a href="01-playwrightseries-test-design.html" class="phase-pip" title="Phase 1: Test Design Thinking">1</a>
+    <a href="02-playwrightseries-locators.html" class="phase-pip" title="Phase 2: Locators">2</a>
+    <a href="03-playwrightseries-assertions-waits.html" class="phase-pip" title="Phase 3: Assertions &amp; Waits">3</a>
+    <a href="04-playwrightseries-debugging-flakiness.html" class="phase-pip" title="Phase 4: Debugging &amp; Flakiness">4</a>
+    <a href="05-playwrightseries-test-data-state.html" class="phase-pip" title="Phase 5: Test Data &amp; State">5</a>
+    <a href="06-playwrightseries-auth-sessions.html" class="phase-pip" title="Phase 6: Auth &amp; Sessions">6</a>
+    <a href="07-playwrightseries-api-testing.html" class="phase-pip" title="Phase 7: API Testing">7</a>
+    <a href="08-playwrightseries-advanced-scenarios.html" class="phase-pip" title="Phase 8: Advanced Scenarios">8</a>
+    <a href="09-playwrightseries-page-objects.html" class="phase-pip" title="Phase 9: Page Object Model">9</a>
+    <a href="10-playwrightseries-fixtures-config.html" class="phase-pip" title="Phase 10: Fixtures &amp; Config">10</a>
+    <a href="11-playwrightseries-visual-regression.html" class="phase-pip" title="Phase 11: Visual Regression">11</a>
+    <a href="12-playwrightseries-cicd-flaky-tests.html" class="phase-pip" title="Phase 12: CI/CD &amp; Flaky Tests">12</a>
+    <a href="13-playwrightseries-ai-assisted.html" class="phase-pip" title="Phase 13: AI-Assisted Automation">13</a>
+    <span class="phase-pip active" title="Phase 14: Automation Leadership">14</span>
+    <a href="15-playwrightseries-capstone-projects.html" class="phase-pip" title="Phase 15: Capstone Projects">15</a>
+  </div>
+
+  <h2>Goal for this phase</h2>
+  <p>Produce two documents most solo-written suites never have: a written conventions standard, and a PR review checklist that enforces it. Leave able to answer "should this new test exist at all" as confidently as "is this test written well."</p>
+
+  <h2>Before: conventions that only live in one person's head</h2>
+  <p>A suite written entirely by one disciplined engineer can look excellent and still fail the moment a second person contributes to it, because the standard was never written down anywhere a new contributor could find it.</p>
+
+  <div class="ba-wrap">
+    <div class="ba-block before">
+      <div class="ba-label">Before: two contributors, two styles</div>
+<pre><code>// contributor-a.spec.ts (Phase 2-3 conventions)
+test('checkout completes', async ({ page }) => {
+  await page.getByRole('button', { name: /checkout/i }).click();
+});
+
+// contributor-b.spec.ts (never read Phase 2-3, no one told them)
+test('checkout completes', async ({ page }) => {
+  await page.locator('#checkout-btn').click();
+  await page.waitForTimeout(1500);
+});
+</code></pre>
+    </div>
+    <div class="ba-block after">
+      <div class="ba-label">After: one standard, enforced at review, not just known</div>
+<pre><code>// CONTRIBUTING.md, section 2: Locators and waits
+// - getByRole/getByLabel/getByText only, CSS selectors
+//   need a comment explaining why nothing else worked.
+// - No waitForTimeout. Ever. PR review blocks on it.
+// Both contributors' PRs are checked against this file,
+// not against whatever the reviewer happens to remember.
+</code></pre>
+    </div>
+  </div>
+
+  <p>The difference isn't that contributor B is careless, it's that the standard existed only as contributor A's personal habit. Writing it down is what makes it enforceable by anyone, including someone reviewing a PR from a person more senior than them.</p>
+
+  <h2>Suite-wide conventions worth writing down</h2>
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>Convention</th><th>Why it needs to be explicit</th></tr></thead>
+      <tbody>
+        <tr><td>Locator priority (Phase 2's table)</td><td>Without it written down, "resilient" means whatever each contributor was taught last</td><td></td></tr>
+        <tr><td>File and test naming</td><td>A test named <code>test1</code> or a file named <code>misc.spec.ts</code> is unfindable six months later</td></tr>
+        <tr><td>Tagging convention (<code>@smoke</code>, <code>@regression</code>)</td><td>Phase 12's CI sharding and selective runs depend on tags being applied consistently, not just by whoever remembers</td></tr>
+        <tr><td>Where fixtures live and how they're shared</td><td>Phase 10 patterns only pay off if everyone uses the shared fixture instead of writing their own login flow per file</td></tr>
+        <tr><td>What earns a <code>data-testid</code> request</td><td>Without a rule, every missing role/label becomes a testid request, and the app fills up with test-only attributes</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>A PR review checklist for new tests</h2>
+  <p>A checklist turns "does this look right" (which varies by reviewer and by how tired they are) into a fixed set of yes/no checks anyone on the team can apply the same way.</p>
+  <ul class="checklist">
+    <li>Every locator is role, label, or text-based, or has a comment explaining why not</li>
+    <li>No <code>waitForTimeout</code> anywhere in the diff</li>
+    <li>Every assertion checks something a user would actually see or experience</li>
+    <li>The test is tagged correctly for CI sharding (Phase 12)</li>
+    <li>If the test is new coverage for a known bug (check the bug list), it's written to fail until the bug is fixed, not adjusted to match current broken behaviour</li>
+    <li>Test name describes the behaviour, not the implementation ("checkout blocks empty cart," not "test 14")</li>
+  </ul>
+
+  <div class="callout gold">
+    <p><strong>The checklist is also the onboarding doc.</strong> A new engineer joining the project doesn't need a separate "how we write tests" conversation if the PR checklist already states the rules and the reviewer applies them consistently. The first PR review they get is the training. This is worth more than a wiki page nobody reads before their first contribution.</p>
+  </div>
+
+  <h2>Measuring suite health</h2>
+  <p>"How's the suite doing" needs a real answer, not a feeling. Three numbers matter more than raw test count:</p>
+  <ul>
+    <li><strong>Flake rate.</strong> Tests that fail and pass on rerun with no code change, tracked per test, not suite-wide. A suite with a 2% overall flake rate can still have five tests that fail one run in three, and those five are where trust erodes fastest.</li>
+    <li><strong>Runtime, and its trend.</strong> Not just today's number, whether it is climbing. Phase 12's sharding buys you headroom, it doesn't fix a suite that adds five minutes every month with no offsetting cleanup.</li>
+    <li><strong>Coverage by user journey, not by line.</strong> "80% code coverage" says nothing about whether checkout, the highest-risk flow per Phase 1's risk ranking, actually has a test. Track coverage against the risk map from the requirements, not against a percentage a linter reports.</li>
+  </ul>
+
+  <h2>When to say no to a new E2E test</h2>
+  <p>Phase 1 introduced the test pyramid: put a test at the lowest layer that still gives confidence. Automation leadership means enforcing that at review time, not just knowing it. A PR that adds a full browser test for a pure calculation, exactly the "before" example from Phase 1, is a test the suite would be healthier without.</p>
+  <div class="callout blue">
+    <p><strong>Ask this at review, every time:</strong> "Could this be a unit or API test instead, and lose nothing?" If yes, that's the conversation to have before the PR merges, not a retrospective six months later when the suite has grown slow and nobody remembers why half of it is E2E.</p>
+  </div>
+
+  <div class="callout warn">
+    <p><strong>Common mistakes in Phase 14.</strong></p>
+    <ul style="margin:.5rem 0 0 1.2rem;">
+      <li><strong>Writing the standard once and never updating it.</strong> A conventions doc that doesn't reflect a rule the team actually started enforcing last month trains people to ignore it.</li>
+      <li><strong>Measuring suite health only by pass/fail count.</strong> A suite that's 100% green with a 15% flake rate people have learned to just rerun is not healthy, it's a suite nobody trusts and everyone routes around.</li>
+      <li><strong>Applying the PR checklist inconsistently by seniority.</strong> The moment a senior engineer's PR skips the checklist "because they know what they're doing," the checklist stops being a standard and becomes a suggestion for juniors only.</li>
+      <li><strong>Saying no to new E2E tests without offering the alternative.</strong> "Don't test this at the UI layer" without "here's how to test it at the unit/API layer instead" just discourages testing the behaviour at all.</li>
+    </ul>
+  </div>
+
+  <h2>Deliverables</h2>
+  <ul>
+    <li><code>CONTRIBUTING.md</code>: locator, wait, naming, and tagging conventions, written for a new contributor</li>
+    <li><code>pr-checklist.md</code>: the review checklist, ready to paste into a PR template</li>
+    <li><code>suite-health.md</code>: current flake rate, runtime trend, and journey coverage against the Phase 1 risk map</li>
+  </ul>
+
+  <div class="assignment">
+    <div class="a-label">Assignment</div>
+    <h3>Review a real PR against the checklist</h3>
+    <p>Take any spec file you wrote in an earlier phase (before you knew this checklist existed) and review it as if it were a teammate's PR. List every checklist item it fails. Then fix it. This is the fastest way to feel how much the checklist changes what "good enough" means once it's written down.</p>
+  </div>
+
+  <div class="bonus">
+    <div class="b-label">Bonus challenge</div>
+    <p><strong>Draft the "no" conversation.</strong> Write out, as if messaging a teammate, how you'd explain declining to add a full E2E test for validating that a discount percentage calculates correctly, and what you'd suggest instead. The goal is a response that doesn't just say no, it hands them a better path.</p>
+  </div>
+
+  <details class="solution">
+    <summary>Show solution &mdash; try it yourself first</summary>
+    <div class="solution-body">
+      <h3>Example PR checklist, as a template</h3>
+      <pre><code>## New test checklist
+
+- [ ] Locators: getByRole/getByLabel/getByText only (or a comment explaining
+      why not)
+- [ ] No waitForTimeout anywhere in this diff
+- [ ] Assertions check what a user sees, not internal state or a status
+      code alone
+- [ ] Tagged correctly (@smoke / @regression / @slow)
+- [ ] If this covers a known bug, it fails until the bug is fixed
+- [ ] Test name describes behaviour, not implementation
+- [ ] Could this be a unit or API test instead, with no loss of confidence?
+</code></pre>
+      <p><strong>Why "tagged correctly" is on a leadership-phase checklist, not just a technical one.</strong> Tagging is easy to skip because an untagged test still runs and still passes review by every other line item. It's exactly the kind of small omission that only costs something later, when Phase 12's selective CI runs quietly miss it. A checklist's job is to catch the things that are easy to forget precisely because they don't fail anything today.</p>
+    </div>
+  </details>
+
+  <div class="nav-row">
+    <a href="13-playwrightseries-ai-assisted.html" class="nav-cta secondary">&larr; Phase 13: AI-Assisted Automation</a>
+    <a href="15-playwrightseries-capstone-projects.html" class="nav-cta primary">Phase 15: Capstone Projects &rarr;</a>
+  </div>
+
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; Playwright: Zero to Architect</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+</body>
+</html>

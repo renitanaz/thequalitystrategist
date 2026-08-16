@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Case Facts, the Scratchpad, and the Calibrated Guess: What D5 Actually Tests | The Quality Strategist</title>
+  <meta name="description" content="Same PeakAndPack QA setup, stretched across a long session: what survives context trimming, when to escalate instead of guess, what an interrupted investigation recovers from, and why a confidence score means nothing until it's calibrated. CCAR-F D5, Context Management and Reliability." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0d0d0d;--bg2:#161616;--bg3:#1e1e1e;--border:#2e2e2e;--text:#f0f0f0;--text-2:#c8c8c8;--text-3:#8a8a8a;--green:#4ade80;--green-bg:rgba(74,222,128,0.07);--blue:#60a5fa;--blue-bg:rgba(96,165,250,0.07);--amber:#fbbf24;--amber-bg:rgba(251,191,36,0.07);--purple:#a78bfa;--purple-bg:rgba(167,139,250,0.07);--red:#f87171;--red-bg:rgba(248,113,113,0.07);--teal:#2dd4bf;--teal-bg:rgba(45,212,191,0.07)}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;line-height:1.8;-webkit-font-smoothing:antialiased}
+    a{color:inherit}
+    .skip-link{position:absolute;top:-100%;left:1rem;background:var(--purple);color:#000;padding:.5rem 1rem;border-radius:0 0 6px 6px;font-size:.85rem;font-weight:500;text-decoration:none;z-index:999}.skip-link:focus{top:0}
+    nav.site-nav{position:sticky;top:0;z-index:100;background:rgba(13,13,13,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:56px}
+    .nav-logo{font-family:'DM Serif Display',serif;font-size:1rem;color:var(--text);text-decoration:none}
+    .nav-links{display:flex;gap:2rem;list-style:none}.nav-links a{color:var(--text-3);text-decoration:none;font-size:.85rem}.nav-links a:hover{color:var(--text)}
+    .blog-header{max-width:900px;margin:0 auto;padding:4rem 2rem 2.5rem;border-bottom:1px solid var(--border)}
+    .breadcrumb{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}.breadcrumb a{color:var(--text-3);text-decoration:none}
+    .blog-tags{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.25rem}
+    .tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+    .tag.accent{background:var(--purple-bg);color:var(--purple);border-color:rgba(167,139,250,.25)}
+    .blog-header h1{font-family:'DM Serif Display',serif;font-size:clamp(1.7rem,4vw,2.5rem);line-height:1.25;color:var(--text);margin-bottom:.75rem}
+    .blog-subtitle{font-family:'DM Serif Display',serif;font-size:1.05rem;font-style:italic;color:var(--text-3);margin-bottom:1.25rem}
+    .blog-meta{display:flex;align-items:center;gap:1.25rem;font-size:.82rem;color:var(--text-3);flex-wrap:wrap}.blog-meta .series{color:var(--text-2);font-weight:500}
+    main{max-width:900px;margin:0 auto;padding:3rem 2rem 5rem}
+    .blog-body p{color:var(--text-2);margin-bottom:1.25rem;font-weight:300}.blog-body p strong{color:var(--text);font-weight:500}
+    .blog-body h2{font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--text);margin:2.6rem 0 1rem}
+    .blog-body h3{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--text);margin:1.6rem 0 .7rem}
+    .blog-body ul,.blog-body ol{padding-left:1.5rem;margin-bottom:1.25rem;color:var(--text-2);font-weight:300}.blog-body li{margin-bottom:.4rem}
+    code{background:var(--bg3);padding:.15rem .45rem;border-radius:5px;font-size:.85em;color:var(--teal);font-family:monospace}
+    pre{background:var(--bg2);border:1px solid var(--border);padding:1rem 1.2rem;border-radius:10px;overflow-x:auto;font-size:.82rem;margin:1rem 0;line-height:1.6;font-family:monospace;color:var(--text-2)}
+    pre code{background:none;padding:0;color:inherit}
+
+    .blueprint-box{background:var(--purple-bg);border-left:3px solid var(--purple);border-radius:0 10px 10px 0;padding:1.1rem 1.4rem;margin:1.75rem 0;font-size:.92rem}
+    .blueprint-box .bp-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--purple);font-weight:600;margin-bottom:.4rem}
+    .blueprint-box p{color:var(--text-2);margin-bottom:0}
+
+    .deliverable-box{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.2rem 1.4rem;margin:1.5rem 0}
+    .deliverable-box .d-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--green);font-weight:600;margin-bottom:.6rem}
+    .deliverable-box ul{margin:0;padding-left:1.2rem}
+    .deliverable-box a{color:var(--text);text-decoration:underline;text-underline-offset:2px}
+    .howto{font-size:.82rem;color:var(--text-3);margin-top:.9rem;padding-top:.8rem;border-top:1px dashed var(--border)}
+    .howto strong{color:var(--text-2);font-weight:500}
+
+    .callout{background:var(--green-bg);border-left:3px solid var(--green);border-radius:0 10px 10px 0;padding:1.1rem 1.4rem;margin:1.5rem 0;font-size:.92rem}
+    .callout.amber{background:var(--amber-bg);border-left-color:var(--amber)}
+    .callout.red{background:var(--red-bg);border-left-color:var(--red)}
+    .callout.blue{background:var(--blue-bg);border-left-color:var(--blue)}
+    .callout p{color:var(--text-2);margin-bottom:0}
+
+    .diagram-wrap{margin:1.75rem 0;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.2rem}
+
+    .axis-grid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin:1.4rem 0}
+    .axis-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:.9rem 1.1rem}
+    .axis-card .a-title{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--teal);font-weight:600;margin-bottom:.4rem}
+    .axis-card p{font-size:.86rem;margin-bottom:0;color:var(--text-2)}
+
+    .pull-quote{font-family:'DM Serif Display',serif;font-style:italic;font-size:1.25rem;line-height:1.5;color:var(--text);border-left:3px solid var(--teal);padding:.3rem 0 .3rem 1.3rem;margin:2rem 0}
+
+    .stat-strip{display:flex;gap:0;margin:1.75rem 0;border-radius:12px;overflow:hidden;border:1px solid var(--border)}
+    .stat-strip>div{flex:1;padding:1.1rem 1rem;text-align:center}
+    .stat-strip .stat-num{font-family:'DM Serif Display',serif;font-size:1.6rem;font-weight:700;display:block;line-height:1}
+    .stat-strip .stat-label{font-size:.72rem;color:var(--text-3);margin-top:.4rem}
+    .stat-strip .s1{background:var(--green-bg)}.stat-strip .s1 .stat-num{color:var(--green)}
+    .stat-strip .s2{background:var(--red-bg)}.stat-strip .s2 .stat-num{color:var(--red)}
+    .stat-strip .s3{background:var(--teal-bg)}.stat-strip .s3 .stat-num{color:var(--teal)}
+
+    .not-solve{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.3rem 1.5rem;margin-top:2.5rem}
+    .not-solve .ns-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);font-weight:600;margin-bottom:.6rem}
+
+    .quiz-block{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.3rem 1.4rem;margin:1.75rem 0}
+    .quiz-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--teal);font-weight:600;margin-bottom:.7rem}
+    .quiz-stem{color:var(--text);font-size:.95rem;margin-bottom:1rem;font-weight:400}
+    .quiz-options{display:flex;flex-direction:column;gap:.6rem}
+    .quiz-opt{display:block;width:100%;text-align:left;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:.7rem .9rem;color:var(--text-2);font-family:'DM Sans',sans-serif;font-size:.86rem;line-height:1.5;cursor:pointer;transition:border-color .15s,background .15s}
+    .quiz-opt:hover:not(:disabled){border-color:var(--text-3)}
+    .quiz-opt:disabled{cursor:default}
+    .quiz-opt.correct{border-color:var(--green);background:var(--green-bg);color:var(--text)}
+    .quiz-opt.incorrect{border-color:var(--red);background:var(--red-bg);color:var(--text)}
+    .quiz-feedback{margin-top:1rem;padding-top:1rem;border-top:1px dashed var(--border)}
+    .quiz-verdict{font-weight:600;margin-bottom:.5rem;font-size:.9rem}
+    .quiz-verdict.ok{color:var(--green)}
+    .quiz-verdict.miss{color:var(--red)}
+    .quiz-explain{color:var(--text-2);font-size:.88rem;margin-bottom:0}
+
+    .reveal-box{background:var(--bg2);border:1px solid var(--border);border-radius:12px;margin:1.75rem 0;overflow:hidden}
+    .reveal-box summary{cursor:pointer;padding:1rem 1.3rem;font-size:.88rem;font-weight:500;color:var(--text);list-style:none;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+    .reveal-box summary::-webkit-details-marker{display:none}
+    .reveal-box summary::after{content:"+";color:var(--text-3);font-size:1.15rem;flex-shrink:0}
+    .reveal-box[open] summary::after{content:"\2212"}
+    .reveal-box[open] summary{border-bottom:1px solid var(--border)}
+    .reveal-content{padding:1.1rem 1.3rem;color:var(--text-2);font-size:.9rem}
+    .reveal-content p{margin-bottom:.8rem}
+    .reveal-content p:last-child,.reveal-content ul:last-child{margin-bottom:0}
+    .reveal-content ul{padding-left:1.3rem;margin-bottom:.8rem}
+    .reveal-content li{margin-bottom:.4rem}
+
+    .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:2.5rem;flex-wrap:wrap}
+    .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:500;font-size:.88rem;padding:.7rem 1.2rem;border-radius:8px}
+    .nav-cta.secondary{background:var(--bg3);color:var(--text-2);border:1px solid var(--border)}
+
+    footer{border-top:1px solid var(--border);padding:2rem;text-align:center;font-size:.78rem;color:var(--text-3)}footer a{color:var(--text-3);text-decoration:none}
+    @media(max-width:620px){nav.site-nav{padding:0 1.25rem}.nav-links{display:none}.blog-header,main{padding-left:1.25rem;padding-right:1.25rem}.axis-grid{grid-template-columns:1fr}.stat-strip{flex-direction:column}}
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <ul class="nav-links" role="list">
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#series">Series</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a></li>
+  </ul>
+</nav>
+
+<header class="blog-header">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="index.html">CCAR-F for QA</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <span aria-current="page">D5: Context Management</span>
+  </nav>
+  <div class="blog-tags">
+    <span class="tag accent">D5 &middot; 15%</span>
+    <span class="tag">Post 03 of 5</span>
+  </div>
+  <h1>The Case Facts, the Scratchpad, and the Calibrated Guess: What D5 Actually Tests</h1>
+  <p class="blog-subtitle">Same PeakAndPack QA setup, stretched across a long session: what survives context trimming, when to escalate instead of guess, what an interrupted investigation recovers from, and why a confidence score means nothing until it's calibrated.</p>
+  <div class="blog-meta">
+    <span class="series">CCAR-F for QA</span>
+    <span aria-hidden="true">&middot;</span>
+    <span>~8 min read</span>
+  </div>
+</header>
+
+<main id="main-content" class="blog-body">
+
+  <p>D5 is the lightest domain by weight, 15%, and the easiest to underrate because none of it is about getting an answer right. It's about what's still true, still attributed, and still legible after a session runs long enough to stop being a single clean exchange.</p>
+  <p>Every deliverable below reuses Post 01's triage agent and Post 01's own real finding, a live discrepancy the catalog didn't know about, because D5 isn't a new task, it's what happens to an existing one under pressure: more tool calls, more time, more sources that might disagree.</p>
+
+  <h2>Four things D5 actually asks you to know</h2>
+  <div class="axis-grid">
+    <div class="axis-card"><div class="a-title">5.1 &middot; What survives</div><p>A persistent case-facts block, placed first, holding exact values. Verbose tool output gets trimmed before it accumulates, not summarized after.</p></div>
+    <div class="axis-card"><div class="a-title">5.2 / 5.3 &middot; Escalate or propagate</div><p>Explicit criteria beat sentiment or self-reported confidence. A failed tool call reports what actually happened, not a generic status.</p></div>
+    <div class="axis-card"><div class="a-title">5.4 &middot; What outlives a restart</div><p>Scratchpad files, subagent delegation for verbose exploration, <code>/compact</code> between phases, a manifest for crash recovery.</p></div>
+    <div class="axis-card"><div class="a-title">5.5 / 5.6 &middot; Calibrated, not just confident</div><p>Field-level confidence, stratified sampling. Conflicting sources get annotated, never silently resolved by picking one.</p></div>
+  </div>
+
+  <h2>Part 1: the case-facts block</h2>
+  <p>D1's triage agent appends every tool result to history verbatim, fine for three tools across six scenarios. It stops being fine once a live-API check starts returning full response bodies: the guide's own example is 40+ fields per lookup when five are relevant.</p>
+
+  <details class="reveal-box">
+    <summary>Guess what gets lost first when a long session gets summarized, before you look</summary>
+    <div class="reveal-content">
+      <p>Two separate risks the guide names under Task Statement 5.1, not one:</p>
+      <ul>
+        <li><strong>Progressive summarization</strong> condenses numerical values, percentages, dates, and stated expectations into vague prose. "The discount was wrong" survives a summary. "SAVE10 applied 100% instead of 10%" often doesn't.</li>
+        <li><strong>The "lost in the middle" effect.</strong> Models reliably process the start and end of a long input, findings buried in the middle of a growing history are the ones most likely to get dropped or ignored, even though they're technically still there.</li>
+      </ul>
+      <p>A case-facts block addresses both: exact values instead of summarized ones, and positioned first instead of buried mid-history.</p>
+    </div>
+  </details>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 700 190" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" role="img" aria-label="Diagram contrasting raw tool results accumulating and growing with each iteration, burying earlier findings, against a case facts block that stays a constant small size across iterations because verbose tool output is trimmed to relevant fields immediately after extraction.">
+      <text x="20" y="24" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="#f87171" letter-spacing="1">WITHOUT TRIMMING</text>
+      <rect x="20" y="34" width="80" height="24" rx="4" fill="#2e1414" stroke="#f87171"/>
+      <rect x="110" y="34" width="120" height="24" rx="4" fill="#2e1414" stroke="#f87171"/>
+      <rect x="240" y="34" width="170" height="24" rx="4" fill="#2e1414" stroke="#f87171"/>
+      <rect x="420" y="34" width="240" height="24" rx="4" fill="#2e1414" stroke="#f87171"/>
+      <text x="680" y="50" font-family="DM Sans, sans-serif" font-size="14" fill="#f87171">&#8594;</text>
+      <text x="20" y="76" font-family="DM Sans, sans-serif" font-size="9.5" fill="#8a8a8a">growing with every iteration, findings buried forty fields deep</text>
+
+      <text x="20" y="118" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="#4ade80" letter-spacing="1">WITH CASE FACTS</text>
+      <rect x="20" y="128" width="90" height="24" rx="4" fill="#0f2e1a" stroke="#4ade80"/>
+      <rect x="120" y="128" width="90" height="24" rx="4" fill="#0f2e1a" stroke="#4ade80"/>
+      <rect x="220" y="128" width="90" height="24" rx="4" fill="#0f2e1a" stroke="#4ade80"/>
+      <rect x="320" y="128" width="90" height="24" rx="4" fill="#0f2e1a" stroke="#4ade80"/>
+      <text x="430" y="145" font-family="DM Sans, sans-serif" font-size="10" fill="#4ade80">constant size, updated in place</text>
+      <text x="20" y="170" font-family="DM Sans, sans-serif" font-size="9.5" fill="#8a8a8a">positioned first, raw tool output discarded right after extraction</text>
+    </svg>
+  </div>
+
+  <div class="axis-grid">
+    <div class="axis-card"><div class="a-title">Trim, don't summarize</div><p>Summarizing under context pressure flattens exact values. Trimming at extraction time keeps the numbers that matter and discards only what doesn't.</p></div>
+    <div class="axis-card"><div class="a-title">Position matters</div><p>The case-facts block goes at the start of the next prompt, not buried mid-history where the "lost in the middle" effect is worst.</p></div>
+  </div>
+
+  <div class="deliverable-box">
+    <div class="d-label">Deliverable, Part 1</div>
+    <ul>
+      <li><a href="d5-case-facts.ts">d5-case-facts.ts</a>: extraction and case-facts-block functions, adaptable into d1-triage-agent.ts's tool loop</li>
+    </ul>
+    <p class="howto"><strong>How to use it:</strong> call <code>extractCaseFacts()</code> after every tool result instead of appending the raw result to history untouched, then prepend <code>caseFactsBlock()</code>'s output to the next prompt. Not run against a live key here, the extraction logic is real and adaptable.</p>
+  </div>
+
+  <h2>Part 2: escalate, or propagate what actually happened</h2>
+  <p>5.2 and 5.3 are two sides of the same problem: when the agent itself can't resolve something, what does it do instead of guessing? Escalate to a human, or hand the coordinator enough information to decide.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 700 190" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" role="img" aria-label="Diagram: a live API check produces one of three outcomes. A two-oh-two with data or an empty result set is a valid response, not an error. A five-oh-three is an access failure the subagent retries locally. A network error is unresolvable and gets propagated to the coordinator with structured context, never silently suppressed.">
+      <rect x="20" y="70" width="140" height="46" rx="8" fill="#1e1e1e" stroke="#2e2e2e"/>
+      <text x="90" y="98" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" fill="#c8c8c8">check_live_api</text>
+
+      <path d="M160,80 C 220,55 260,45 310,40" stroke="#4ade80" stroke-width="1.5" fill="none" marker-end="url(#arrowD5a)"/>
+      <rect x="310" y="20" width="220" height="40" rx="8" fill="#0f2e1a" stroke="#4ade80"/>
+      <text x="420" y="45" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="#4ade80">200, has data or is empty: valid</text>
+
+      <path d="M160,93 L 300,93" stroke="#2dd4bf" stroke-width="1.5" fill="none" marker-end="url(#arrowD5b)"/>
+      <rect x="310" y="73" width="220" height="40" rx="8" fill="#0f2e2e" stroke="#2dd4bf"/>
+      <text x="420" y="98" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="#2dd4bf">503: access failure, retry locally</text>
+
+      <path d="M160,106 C 220,130 260,140 310,146" stroke="#f87171" stroke-width="1.5" fill="none" marker-end="url(#arrowD5c)"/>
+      <rect x="310" y="126" width="220" height="40" rx="8" fill="#2e1414" stroke="#f87171"/>
+      <text x="420" y="151" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="#f87171">network error: propagate, don't suppress</text>
+
+      <defs>
+        <marker id="arrowD5a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#4ade80"/></marker>
+        <marker id="arrowD5b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2dd4bf"/></marker>
+        <marker id="arrowD5c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f87171"/></marker>
+      </defs>
+    </svg>
+  </div>
+
+  <div class="callout amber">
+    <p><strong>The BUG-011 mistake, generalized:</strong> a 200 response with an empty result set is not the same event as a 503 or a network timeout, but a generic error handler often treats "nothing came back" identically regardless of why. Conflating "the endpoint answered and the answer was empty" with "the endpoint never answered" is the same category error as the catalog/live discrepancy from Post 01.</p>
+  </div>
+
+  <div class="quiz-block" aria-live="polite">
+    <div class="quiz-label">Exam sample question &middot; Scenario: Multi-Agent Research System</div>
+    <p class="quiz-stem">The web search subagent times out while researching a complex topic. You need to design how this failure information flows back to the coordinator agent. Which error propagation approach best enables intelligent recovery?</p>
+    <div class="quiz-options">
+      <button class="quiz-opt" data-correct="true">A. Return structured error context to the coordinator including the failure type, the attempted query, any partial results, and potential alternative approaches.</button>
+      <button class="quiz-opt">B. Implement automatic retry logic with exponential backoff within the subagent, returning a generic "search unavailable" status only after all retries are exhausted.</button>
+      <button class="quiz-opt">C. Catch the timeout within the subagent and return an empty result set marked as successful.</button>
+      <button class="quiz-opt">D. Propagate the timeout exception directly to a top-level handler that terminates the entire research workflow.</button>
+    </div>
+    <div class="quiz-feedback" hidden>
+      <p class="quiz-verdict"></p>
+      <p class="quiz-explain">Structured error context gives the coordinator what it needs to make an intelligent recovery decision, retry with a modified query, try an alternative, or proceed with partial results. B's generic status hides valuable context. C suppresses the error by marking failure as success, preventing any recovery. D terminates the entire workflow unnecessarily when recovery strategies could succeed.</p>
+    </div>
+  </div>
+
+  <p>Escalation criteria run on the same principle as error handling: specific and explicit, not a vibe. The agent escalates when the live check contradicts the catalog, when a developer's test output explicitly asks for a human, or when two catalog entries match ambiguously, never on self-reported confidence or sentiment alone, both of which the guide names directly as unreliable proxies for actual complexity.</p>
+
+  <div class="quiz-block" aria-live="polite">
+    <div class="quiz-label">Exam sample question &middot; Scenario: Customer Support Resolution Agent</div>
+    <p class="quiz-stem">Your agent achieves 55% first-contact resolution, well below the 80% target. Logs show it escalates straightforward cases (standard damage replacements with photo evidence) while attempting to autonomously handle complex situations requiring policy exceptions. What's the most effective way to improve escalation calibration?</p>
+    <div class="quiz-options">
+      <button class="quiz-opt" data-correct="true">A. Add explicit escalation criteria to your system prompt with few-shot examples demonstrating when to escalate versus resolve autonomously.</button>
+      <button class="quiz-opt">B. Have the agent self-report a confidence score (1-10) before each response and automatically route to humans when confidence falls below a threshold.</button>
+      <button class="quiz-opt">C. Deploy a separate classifier model trained on historical tickets to predict which requests need escalation before the main agent begins processing.</button>
+      <button class="quiz-opt">D. Implement sentiment analysis to detect customer frustration levels and automatically escalate when negative sentiment exceeds a threshold.</button>
+    </div>
+    <div class="quiz-feedback" hidden>
+      <p class="quiz-verdict"></p>
+      <p class="quiz-explain">Explicit escalation criteria with few-shot examples directly address the root cause: unclear decision boundaries. It's the proportionate first response before adding infrastructure. B fails because self-reported LLM confidence is poorly calibrated, the agent is already incorrectly confident on the hard cases. C is over-engineered before prompt optimization has even been tried. D solves a different problem, sentiment doesn't correlate with case complexity.</p>
+    </div>
+  </div>
+
+  <div class="deliverable-box">
+    <div class="d-label">Deliverable, Part 2</div>
+    <ul>
+      <li><a href="d5-escalation-criteria.md">d5-escalation-criteria.md</a>: explicit escalate/don't-escalate criteria and a structured handoff shape</li>
+      <li><a href="d5-error-propagation.ts">d5-error-propagation.ts</a>: structured tool-error types, extending d1-coordinator-subagents.ts's verify-reproduction subagent</li>
+    </ul>
+    <p class="howto"><strong>How to use it:</strong> swap d1-triage-agent.ts's plain <code>file-new / link-existing / flag-flaky-retry</code> verdict for the four-way version in the criteria doc, and replace <code>check_live_api</code>'s raw fetch with <code>checkLiveApiWithStructuredErrors()</code> so failures carry a type instead of just throwing.</p>
+  </div>
+
+  <h2>Part 3: the scratchpad that survives a restart</h2>
+  <p>The triage task doesn't run long enough to need this. A regression investigation spanning cart, checkout, and shared pricing logic does. Past a certain point in an unaided session, the guide's own failure mode shows up: the agent starts referencing "typical patterns" instead of the specific line it found forty tool calls ago.</p>
+
+  <details class="reveal-box">
+    <summary>Guess what a session without a scratchpad starts doing wrong, before you look</summary>
+    <div class="reveal-content">
+      <p>Not hallucinating, exactly, degrading. The guide's own description: models in extended sessions "start giving inconsistent answers and referencing typical patterns rather than specific classes discovered earlier." The finding is technically still in the conversation history, it's just stopped being what the model actually reasons from.</p>
+      <p>A scratchpad file doesn't fix the model's attention, it routes around the problem: the specific finding lives on disk, referenced by path, instead of depending on staying salient in a growing history.</p>
+    </div>
+  </details>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 700 150" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" role="img" aria-label="Timeline diagram: an exploration phase writes findings to a scratchpad file, a compact command runs once those findings are safely on disk, a second exploration phase reads the scratchpad instead of re-deriving, and if the session crashes, a fresh session reads the scratchpad manifest first before resuming.">
+      <rect x="10" y="50" width="150" height="46" rx="8" fill="#1e1e1e" stroke="#2e2e2e"/>
+      <text x="85" y="78" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="#c8c8c8">Explore, phase 1</text>
+      <path d="M160,73 L 195,73" stroke="#8a8a8a" stroke-width="1.5" marker-end="url(#arrowD5d)"/>
+
+      <rect x="197" y="50" width="140" height="46" rx="8" fill="#0f2e1a" stroke="#4ade80"/>
+      <text x="267" y="78" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="#4ade80">scratchpad.md</text>
+      <path d="M337,73 L 372,73" stroke="#8a8a8a" stroke-width="1.5" marker-end="url(#arrowD5e)"/>
+
+      <rect x="374" y="50" width="90" height="46" rx="8" fill="#161616" stroke="#2e2e2e" stroke-dasharray="4 3"/>
+      <text x="419" y="78" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="#8a8a8a">/compact</text>
+      <path d="M464,73 L 499,73" stroke="#8a8a8a" stroke-width="1.5" marker-end="url(#arrowD5f)"/>
+
+      <rect x="501" y="50" width="150" height="46" rx="8" fill="#1e1e1e" stroke="#2e2e2e"/>
+      <text x="576" y="70" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="#c8c8c8">Explore, phase 2</text>
+      <text x="576" y="85" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="8.5" fill="#8a8a8a">reads scratchpad first</text>
+
+      <text x="267" y="120" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#f87171">crash here &#8594; fresh session reads the manifest, not the whole codebase</text>
+
+      <defs>
+        <marker id="arrowD5d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8a8a8a"/></marker>
+        <marker id="arrowD5e" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8a8a8a"/></marker>
+        <marker id="arrowD5f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8a8a8a"/></marker>
+      </defs>
+    </svg>
+  </div>
+
+  <p class="pull-quote">Not "the agent remembers more." What it needs to remember lives somewhere designed to hold it accurately, a file, written once, referenced by path, instead of somewhere that degrades under pressure.</p>
+
+  <div class="deliverable-box">
+    <div class="d-label">Deliverable, Part 3</div>
+    <ul>
+      <li><a href="d5-scratchpad-investigation.md">d5-scratchpad-investigation.md</a>: the full worked investigation, why each step matters</li>
+      <li><a href="d5-scratchpad-template.md">d5-scratchpad-template.md</a>: an actual scratchpad file, manifest section included</li>
+    </ul>
+    <p class="howto"><strong>How to use it:</strong> no script to run. Have a real investigating session write findings to a scratchpad file as it goes, point follow-up questions back at that file instead of re-exploring, and run <code>/compact</code> once a phase's findings are safely on disk.</p>
+  </div>
+
+  <h2>Part 4: a confidence score you calibrated, or didn't</h2>
+  <p>"94% accurate" can still hide one category the system is systematically wrong on. Six scenarios is too small a sample to prove anything, which is exactly why it's a useful illustration: 100% correct on six scenarios looks identical to "got lucky on the one hard case" without stratifying by category first.</p>
+
+  <details class="reveal-box">
+    <summary>Guess why a 97% aggregate accuracy number can still be hiding a real problem, before you look</summary>
+    <div class="reveal-content">
+      <p>Because it's one number covering every document type and field, and a system can be excellent on the common cases while being quietly, consistently wrong on one rare one, the aggregate never separates the two.</p>
+      <p>The guide's fix: stratified random sampling, measuring error rates per document type and per field instead of trusting one blended percentage, specifically to catch the segment a single aggregate number would hide.</p>
+    </div>
+  </details>
+
+  <div class="stat-strip">
+    <div class="s1"><span class="stat-num">4/4</span><span class="stat-label">clean catalog match, no discrepancy</span></div>
+    <div class="s3"><span class="stat-num">1/1</span><span class="stat-label">live check contradicted catalog, caught it</span></div>
+    <div class="s2"><span class="stat-num">n=6</span><span class="stat-label">too small to trust any one aggregate number</span></div>
+  </div>
+
+  <p>Verdict-level confidence hides the same thing aggregate accuracy does. Splitting it per field is more honest:</p>
+  <pre><code>{
+  "match": "BUG-011",
+  "matchConfidence": "low",
+  "liveReproductionConfidence": "high",
+  "actionConfidence": "high"
+}</code></pre>
+  <p>High confidence in what was directly observed, low confidence in which catalog entry it belongs to. One collapsed number would have hidden that split entirely.</p>
+
+  <p>Provenance is the same discipline applied to sources instead of fields. The correct shape for the BUG-011 conflict never picks a winner:</p>
+  <pre><code>{
+  "claims": [
+    { "source": "bug-catalog", "claim": "returns 500 on empty query" },
+    { "source": "live-api-check", "claim": "returns 200, empty results" }
+  ],
+  "conflictDetected": true
+}</code></pre>
+
+  <div class="deliverable-box">
+    <div class="d-label">Deliverable, Part 4</div>
+    <ul>
+      <li><a href="d5-confidence-calibration.md">d5-confidence-calibration.md</a>: stratified breakdown and a field-level confidence schema</li>
+      <li><a href="d5-provenance-conflict.md">d5-provenance-conflict.md</a>: the BUG-011 conflict, structured correctly this time</li>
+    </ul>
+    <p class="howto"><strong>How to use it:</strong> no script to run. Change any verdict schema to report confidence per field instead of one overall number, and any synthesis schema that draws on more than one source to carry a <code>claims</code> array plus a <code>conflictDetected</code> flag instead of collapsing to a single value.</p>
+  </div>
+
+  <h2>The QA angle: reliability is a property of the session, not the answer</h2>
+  <p>A single triage verdict can be correct and the system can still be unreliable, if getting there depended on context that happened not to overflow yet, or on a source conflict that happened not to come up. D5 is what a QA seat actually owns here: not whether one run got the right answer, but whether the same system stays right at call fifty, after a restart, and when two sources disagree.</p>
+
+  <div class="blueprint-box">
+    <div class="bp-label">Blueprint tie &middot; D5, 15%, Task Statements 5.1&ndash;5.6</div>
+    <p>D5 is the lightest domain by weight and the one most likely to be treated as an afterthought once a system produces correct answers in testing. Every task statement here is really the same question asked from a different angle: what happens when the easy case (short session, one source, no failures) stops being the case you're in.</p>
+  </div>
+
+  <div class="not-solve">
+    <div class="ns-label">What this does not solve</div>
+    <p style="color:var(--text-2);font-weight:300;margin-bottom:0">None of this post's patterns have been run inside a real extended session, the scratchpad walkthrough is a worked example, not a session transcript, and the case-facts and error-propagation code hasn't executed against a live key, same methodology limits as the earlier posts. It also doesn't measure actual context savings in tokens, "trimmed" is a real code change here, not a benchmarked one. And it doesn't cover what happens when the case-facts extraction itself is wrong, a bad extractor is a new failure mode this post doesn't address.</p>
+  </div>
+
+  <div class="nav-row">
+    <a href="index.html" class="nav-cta secondary">&larr; Back to CCAR-F for QA</a>
+  </div>
+
+  <div style="margin-top:2.6rem;padding-top:1.6rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--text-3)">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; CCAR-F for QA</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+<script>
+document.querySelectorAll('.quiz-block').forEach(function (block) {
+  var opts = block.querySelectorAll('.quiz-opt');
+  var feedback = block.querySelector('.quiz-feedback');
+  var verdict = block.querySelector('.quiz-verdict');
+  opts.forEach(function (opt) {
+    opt.addEventListener('click', function () {
+      if (block.classList.contains('answered')) return;
+      block.classList.add('answered');
+      var isCorrect = opt.getAttribute('data-correct') === 'true';
+      opts.forEach(function (o) {
+        o.disabled = true;
+        if (o.getAttribute('data-correct') === 'true') o.classList.add('correct');
+        else if (o === opt) o.classList.add('incorrect');
+      });
+      verdict.textContent = isCorrect ? 'Correct.' : 'Not quite, here is why:';
+      verdict.className = 'quiz-verdict ' + (isCorrect ? 'ok' : 'miss');
+      feedback.hidden = false;
+    });
+  });
+});
+</script>
+</body>
+</html>

@@ -12,9 +12,9 @@ Walk the live UI against this checklist, resizing the browser to mobile width (a
 
 | # | Check | Expected | Result | Screenshot |
 |---|---|---|---|---|
-| V-01 | Product with empty name | A fallback label, not a blank title area | FAIL: renders blank (BUG-010) | product-empty-name.png |
-| V-02 | Negative price on a card | No negative price should ever display | FAIL: shows "-$89.00" in red (BUG-011) | product-negative-price.png |
-| V-03 | Very large price ($9,999.99) at narrow width | Fits or wraps cleanly inside the price area | FAIL: overflows/clips below ~400px (BUG-012) | product-price-overflow.png |
+| V-01 | Product with empty name | A fallback label, not a blank title area | Renders as literal text "(no name)", not blank (BUG-002) | product-empty-name.png |
+| V-02 | Negative price on a card | No negative price should ever display | FAIL: shows "-$89.00" in red (BUG-001) | product-negative-price.png |
+| V-03 | Very large price ($9,999.99) at narrow width | Fits or wraps cleanly inside the price area | Re-verified at 375px: renders on one line, no overflow or clipping (BUG-003 is the price value itself, not a display defect) | product-price-overflow.png |
 | V-04 | Product image missing | A placeholder image or graceful gap | Confirm on live UI | product-missing-image.png |
 | V-05 | Card grid alignment | Cards align to a consistent grid at all widths | Confirm | grid-alignment.png |
 
@@ -47,4 +47,4 @@ Walk the live UI against this checklist, resizing the browser to mobile width (a
 
 This checklist confirms how known issues actually look to a user. The negative price and empty name were already known from the Phase 1 requirements and Phase 3 test cases; here they get a visible face. "The API returns a negative price" and "the product card shows a red -$89.00" are the same root cause but two different deliverables, the second is the one a non-technical stakeholder reacts to.
 
-The three visual bugs confirmed here are BUG-010 (blank name), BUG-011 (negative price display), and BUG-012 (large price overflow).
+The visual bugs confirmed here are BUG-001 (negative price display) and BUG-002 (unnamed product renders as literal "(no name)" text, not blank). BUG-003 (the $9,999.99 price) is a data bug, not a display defect: it renders correctly, the value itself is just wrong.

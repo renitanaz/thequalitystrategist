@@ -214,12 +214,12 @@ await page.goto('/cart');
 await expect(page.getByText('Trekking Poles (Pair)')).toBeVisible();
 
 // Assert the API outcome (what the server did) -- faster, no rendering needed
-const response = await page.request.post('https://peakandpack-ui.onrender.com/api/cart', {
+const response = await page.request.post('https://peakandpackshopdemo.onrender.com/api/cart', {
   data: { productId: 1, quantity: 1 }
 });
 expect(response.status()).toBe(200);
 </code></pre>
-  <p><strong>Check the real request first.</strong> The endpoint above is illustrative. Open DevTools &rarr; Network before writing this test, trigger the action, and confirm the actual request URL and payload. Never assume an endpoint shape from a tutorial, verify it against the app in front of you.</p>
+  <p><strong>Note the domain split.</strong> The UI lives at <code>peakandpack-ui.onrender.com</code>, the API it actually calls lives at a different host, <code>peakandpackshopdemo.onrender.com</code>, a separate Render service from the same project. Assuming the API shares the UI's domain is an easy mistake; open DevTools &rarr; Network and check the real request URL before writing an API test, don't guess it from the page you're looking at.</p>
 
   <h2>When there's no UI signal at all</h2>
   <p>Some apps update a visible count optimistically, before the server confirms. PeakAndPack does neither: click "Add to cart" and nothing changes on screen, no count, no toast, no button state change. The only way to know it worked is to check the cart page or the network response. This is the strongest possible argument for <code>waitForResponse</code> over a sleep: when there is no UI to poll, guessing a timeout is not a fallback, it's the only strategy left, and it is a bad one.</p>
