@@ -192,7 +192,7 @@
     <a href="07-phase7-ai-agent.html" class="switch-btn c-agent">AI QA Agent</a>
   </div>
 
-  <p>Same seven bugs, but this time the heavy lifting of the write-up goes to Claude. You provide the evidence — a screenshot, an API response, a failing test output — and Claude drafts the structured bug report. Your job is to review, correct severity, and confirm the steps actually reproduce the issue before anything is filed.</p>
+  <p>Same seven confirmed bugs, but this time the heavy lifting of the write-up goes to Claude. You provide the evidence — a screenshot, an API response, a failing test output — and Claude drafts the structured bug report. Your job is to review, correct severity, and confirm the steps actually reproduce the issue before anything is filed. This pass also produced one false positive that the review step should have caught, see below.</p>
 
   <div class="callout gold">
     <p><strong>The prompt that works.</strong> Paste the evidence and say: "This is the output of a test/screenshot/API call for PeakAndPack. Write a structured bug report with: Steps to reproduce, Expected, Actual, Severity (Critical/High/Medium/Low with justification), and Evidence. Base severity on user and business impact, not just technical severity."</p>
@@ -203,10 +203,11 @@
     <thead><tr><th>Bug</th><th>What the AI draft added</th><th>What needed human correction</th></tr></thead>
     <tbody>
       <tr><td>BUG-009 (discount)</td><td>Named the business impact clearly: "every SAVE10 transaction results in $0 revenue". The manual draft said "incorrect discount".</td><td>Nothing — the AI draft was kept as written.</td></tr>
-      <tr><td>BUG-013 (orders leak)</td><td>Flagged a second impact the manual report missed: "a malicious user could enumerate all customer order histories by iterating user IDs".</td><td>Severity confirmed Critical. The enumeration risk was added to the manual report too.</td></tr>
-      <tr><td>BUG-014 (search 500)</td><td>Identified two separate issues: the wrong status code AND the stack trace leakage. The manual report had combined them into one vague finding.</td><td>Split into two sub-findings as the AI suggested. Both kept.</td></tr>
-      <tr><td>BUG-010 (blank title)</td><td>Suggested the fallback should show the SKU, not just "Unnamed product", because the SKU is searchable and useful in a support context.</td><td>Suggestion kept. It's a better expected value than the manual version.</td></tr>
-      <tr><td>BUG-008, 011, 012</td><td>Produced clean, accurate drafts matching the manual versions closely.</td><td>BUG-012 severity changed from Medium to Low — the AI overweighted the visual impact.</td></tr>
+      <tr><td>BUG-010 (orders leak)</td><td>Flagged a second impact the manual report missed: "a malicious user could enumerate all customer order histories by iterating user IDs".</td><td>Severity confirmed Critical. The enumeration risk was added to the manual report too.</td></tr>
+      <tr><td>BUG-011 (search 500)</td><td>Identified two separate issues: the wrong status code AND the stack trace leakage. The manual report had combined them into one vague finding.</td><td>Split into two sub-findings as the AI suggested. Both kept.</td></tr>
+      <tr><td>BUG-002 (blank title)</td><td>Suggested the fallback should show the SKU, not just "Unnamed product", because the SKU is searchable and useful in a support context.</td><td>Suggestion kept. It's a better expected value than the manual version.</td></tr>
+      <tr><td>BUG-008, BUG-001</td><td>Produced clean, accurate drafts matching the manual versions closely.</td><td>Nothing — both drafts were kept as written.</td></tr>
+      <tr><td>BUG-003 (price $9,999.99)</td><td>Flagged the price as overflowing its card on mobile.</td><td>Wrong on review: checked against the live UI at 375px and it does not overflow. The underlying data bug (the $9,999.99 price itself) is real; the overflow claim was not. Corrected before filing.</td></tr>
     </tbody>
   </table></div>
 
@@ -225,13 +226,14 @@
       <tr><td>Quality of steps to reproduce</td><td>Consistent</td><td>Consistent (AI matches manual)</td></tr>
       <tr><td>Business impact language</td><td>Terse</td><td>Richer (AI naturally expands)</td></tr>
       <tr><td>Severity accuracy</td><td>High (human judgment)</td><td>High after review (one correction needed)</td></tr>
-      <tr><td>Missed impacts surfaced</td><td>0</td><td>2 (BUG-013 enumeration, BUG-014 split)</td></tr>
+      <tr><td>Missed impacts surfaced</td><td>0</td><td>2 (BUG-010 enumeration, BUG-011 split)</td></tr>
+      <tr><td>False positives introduced</td><td>0</td><td>1 (BUG-003 overflow claim, caught and corrected on review)</td></tr>
     </tbody>
   </table></div>
 
     <div class="nav-row">
     <a href="07-phase7-manual.html" class="nav-cta secondary">&larr; Manual, No AI</a>
-    <a href="07-phase7-manual-ai.html" class="nav-cta primary">Manual + AI &rarr;</a>
+    <a href="07-phase7-automated.html" class="nav-cta primary">Automated, Playwright &rarr;</a>
   </div>
 
   <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">

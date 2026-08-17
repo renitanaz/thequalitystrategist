@@ -164,7 +164,7 @@ test('test 1: add item to cart', async ({ page }) => {
 test('test 2: cart has one item', async ({ page }) => {
   await page.goto('https://peakandpack-ui.onrender.com/cart');
   // FAILS if test 1 did not run first, or ran in a different browser context
-  await expect(page.getByTestId('cart-item-count')).toHaveText('1');
+  await expect(page.getByRole('button', { name: 'Remove' })).toHaveCount(1);
 });
 </code></pre>
     </div>
@@ -179,7 +179,7 @@ test('cart shows item added via API', async ({ page, request }) => {
     data: { productId: 1, quantity: 1 }
   });
   await page.goto('https://peakandpack-ui.onrender.com/cart');
-  await expect(page.getByTestId('cart-item-count')).toHaveText('1');
+  await expect(page.getByRole('button', { name: 'Remove' })).toHaveCount(1);
 });
 </code></pre>
     </div>
@@ -207,9 +207,10 @@ test('checkout flow completes', async ({ page, request }) => {
 
   // Test: assert the UI checkout flow
   await page.goto('https://peakandpack-ui.onrender.com/cart');
-  await page.getByRole('button', { name: /checkout/i }).click();
+  await page.getByRole('button', { name: /proceed to checkout/i }).click();
+  await page.getByRole('button', { name: /place order/i }).click();
   await expect(
-    page.getByRole('heading', { name: /order confirmed/i })
+    page.getByRole('heading', { name: /order placed/i })
   ).toBeVisible();
 });
 </code></pre>
@@ -223,7 +224,7 @@ import { chromium } from '@playwright/test';
 async function globalSetup() {
   const browser = await chromium.launch();
   const page = await browser.newPage();
-  await page.goto('https://peakandpack-demo.onrender.com/login');
+  await page.goto('https://peakandpack-ui.onrender.com/login');
   await page.getByLabel(/email/i).fill('test@peakandpack.com');
   await page.getByLabel(/password/i).fill('password123');
   await page.getByRole('button', { name: /sign in/i }).click();
@@ -312,15 +313,15 @@ test('cart shows one item after API add', async ({ page, request }) => {
   });
   // Now assert the UI with that user's session
   await page.goto('https://peakandpack-ui.onrender.com/cart');
-  await expect(page.getByTestId('cart-item-count')).toHaveText('1');
+  await expect(page.getByRole('button', { name: 'Remove' })).toHaveCount(1);
 });
 
 test('empty cart shows zero count', async ({ page, request }) => {
   // Different unique user -- completely isolated
   const email = `test-${Date.now() + 1}@peakandpack.com`;
   await request.post('https://peakandpackshopdemo.onrender.com/api/auth/register', { data: { email, password: 'pw123' }});
-  await page.goto('https://peakandpack-ui.onrender.com/');
-  await expect(page.getByTestId('cart-item-count')).toHaveText('0');
+  await page.goto('https://peakandpack-ui.onrender.com/cart');
+  await expect(page.getByText('Your cart is empty.')).toBeVisible();
 });
 </code></pre>
       <p><strong>Why the timestamp works for isolation.</strong> <code>Date.now()</code> returns milliseconds since epoch. Two tests running in parallel get different timestamps and therefore different email addresses. No collision. For very high parallelism, use a UUID library instead.</p>

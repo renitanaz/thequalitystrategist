@@ -14,9 +14,9 @@ Call the endpoints (Postman or curl against the base URL above), then paste the 
 
 | Finding | Why a 200-only check misses it |
 |---|---|
-| Orders response contains other users' orders (BUG-013) | The status is 200, so a check that only asserts the status passes. Only reading the body reveals order records with different user ids. |
+| Orders response contains other users' orders (BUG-010) | The status is 200, so a check that only asserts the status passes. Only reading the body reveals order records with different user ids. |
 | Checkout total is 0.00 with SAVE10 (BUG-009) | The request succeeds (201), so status looks fine. The violation is in the total field: 100% off instead of 10%. |
-| Search returns 500 on missing query (BUG-014) | This one a status check does catch, but Claude also noted the response body is an unstructured stack trace, itself a second issue (internal details leaking to the client). |
+| Search returns 500 on missing query (BUG-011) | This one a status check does catch, but Claude also noted the response body is an unstructured stack trace, itself a second issue (internal details leaking to the client). |
 
 ## Prompts used
 
@@ -26,11 +26,11 @@ The single prompt that did the work, run once per pasted response:
 
 ## Confirmed contract violations
 
-**BUG-013, cross-user data exposure on GET /api/orders.** Severity: Critical. The response returned orders belonging to users other than the authenticated caller. Status 200 masks it; the body is where the leak shows. A contract test here must assert that every returned order's user id matches the caller.
+**BUG-010, cross-user data exposure on GET /api/orders.** Severity: Critical. The response returned orders belonging to users other than the authenticated caller. Status 200 masks it; the body is where the leak shows. A contract test here must assert that every returned order's user id matches the caller.
 
 **BUG-009, discount applies 100% instead of 10%.** Severity: Critical. Carried from Phase 3. The checkout response's total field reflects a full discount. The contract test asserts the charged total equals the pre-discount total times 0.9.
 
-**BUG-014, GET /api/search returns 500 on missing query.** Severity: High. Should be a 400. Secondary issue Claude flagged: the 500 body exposes an internal stack trace, which should never reach a client.
+**BUG-011, GET /api/search returns 500 on missing query.** Severity: High. Should be a 400. Secondary issue Claude flagged: the 500 body exposes an internal stack trace, which should never reach a client.
 
 ## Review note
 

@@ -192,7 +192,7 @@
     <a href="07-phase7-ai-agent.html" class="switch-btn c-agent active">AI QA Agent</a>
   </div>
 
-  <p>The agent reads the failing test output, the visual diffs, and the API responses from Phases 3 to 6, then produces a complete bug detection report: all seven bugs formally documented, severity justified, and a detection analysis showing which approach would have caught each bug first.</p>
+  <p>The agent reads the failing test output, the visual diffs, and the API responses from Phases 3 to 6, then produces a complete bug detection report: seven of the eleven seeded bugs formally documented, severity justified, and a detection analysis showing which approach would have caught each bug first. It also correctly ruled out an eighth suspected finding, see the sample output below.</p>
 
   <h2>What the agent does</h2>
   <ol>
@@ -260,12 +260,12 @@ Rules:
     <thead><tr><th>Bug ID</th><th>Title</th><th>Severity</th><th>First surfaced</th></tr></thead>
     <tbody>
       <tr><td>BUG-009</td><td>SAVE10 discount code applies 100% off instead of 10%</td><td>Critical</td><td>Phase 3, TC-101</td></tr>
-      <tr><td>BUG-013</td><td>Orders endpoint returns all users' order histories</td><td>Critical</td><td>Phase 5, API contract test</td></tr>
+      <tr><td>BUG-010</td><td>Orders endpoint returns all users' order histories</td><td>Critical</td><td>Phase 5, API contract test</td></tr>
       <tr><td>BUG-008</td><td>No stock check before checkout — out-of-stock items can be ordered</td><td>High</td><td>Phase 3, TC-104</td></tr>
-      <tr><td>BUG-014</td><td>GET /api/search returns 500 and leaks stack trace when q param is missing</td><td>High</td><td>Phase 5, search contract test</td></tr>
-      <tr><td>BUG-011</td><td>Negative price renders as -$89.00 on product card</td><td>High</td><td>Phase 4, visual baseline diff</td></tr>
-      <tr><td>BUG-010</td><td>Product card renders blank title when name field is empty</td><td>Medium</td><td>Phase 4, visual baseline diff</td></tr>
-      <tr><td>BUG-012</td><td>Large price overflows product card container at mobile width</td><td>Low</td><td>Phase 4, mobile visual test</td></tr>
+      <tr><td>BUG-011</td><td>GET /api/search returns 500 and leaks stack trace when q param is missing</td><td>High</td><td>Phase 5, search contract test</td></tr>
+      <tr><td>BUG-001</td><td>Negative price renders as -$89.00 on product card</td><td>High</td><td>Phase 4, visual baseline diff</td></tr>
+      <tr><td>BUG-002</td><td>Product card renders blank title when name field is empty</td><td>Medium</td><td>Phase 4, visual baseline diff</td></tr>
+      <tr><td>BUG-003</td><td>Price set at $9,999.99, no upper bound validation (checked for mobile overflow too, does not reproduce)</td><td>Low</td><td>Phase 4, visual checklist</td></tr>
     </tbody>
   </table></div>
 
@@ -275,12 +275,12 @@ Rules:
     <thead><tr><th>Bug</th><th>Earliest catch</th><th>If it reached production</th></tr></thead>
     <tbody>
       <tr><td>BUG-009 (discount)</td><td>Phase 3 test cases</td><td>Every SAVE10 transaction: $0 revenue</td></tr>
-      <tr><td>BUG-013 (orders leak)</td><td>Phase 5 API contract</td><td>Data privacy incident — all customer order histories exposed</td></tr>
+      <tr><td>BUG-010 (orders leak)</td><td>Phase 5 API contract</td><td>Data privacy incident — all customer order histories exposed</td></tr>
       <tr><td>BUG-008 (stock check)</td><td>Phase 3 test cases</td><td>Oversold inventory, failed fulfillment, customer complaints</td></tr>
-      <tr><td>BUG-014 (search 500)</td><td>Phase 5 API contract</td><td>Broken search experience + internal implementation exposed</td></tr>
-      <tr><td>BUG-011 (negative price)</td><td>Phase 4 visual</td><td>Customer confusion, trust damage across the product listing</td></tr>
-      <tr><td>BUG-010 (blank title)</td><td>Phase 4 visual</td><td>Broken-looking cards — low severity but visible to everyone</td></tr>
-      <tr><td>BUG-012 (overflow)</td><td>Phase 4 visual</td><td>Mobile price unreadable — affects high-value item purchases</td></tr>
+      <tr><td>BUG-011 (search 500)</td><td>Phase 5 API contract</td><td>Broken search experience + internal implementation exposed</td></tr>
+      <tr><td>BUG-001 (negative price)</td><td>Phase 4 visual</td><td>Customer confusion, trust damage across the product listing</td></tr>
+      <tr><td>BUG-002 (blank title)</td><td>Phase 4 visual</td><td>Broken-looking cards — low severity but visible to everyone</td></tr>
+      <tr><td>BUG-003 (unvalidated price)</td><td>Phase 4 visual</td><td>Low likelihood on its own; symptom of a missing validation rule</td></tr>
     </tbody>
   </table></div>
 
@@ -290,7 +290,7 @@ Rules:
 
     <div class="nav-row">
     <a href="07-phase7-automated.html" class="nav-cta secondary">&larr; Automated, Playwright</a>
-    <a href="07-phase7-manual-ai.html" class="nav-cta primary">Manual + AI &rarr;</a>
+    <a href="../phase8/08-phase8-landing.html" class="nav-cta primary">Phase 8: Reporting &rarr;</a>
   </div>
 
   <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">

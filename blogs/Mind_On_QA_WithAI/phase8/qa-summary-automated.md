@@ -9,24 +9,25 @@
 
 | Metric | Value |
 |---|---|
-| Total tests | 38 |
+| Total tests | 37 |
 | Passing | 31 |
-| Failing | 7 |
+| Failing | 6 |
 | Suite duration | ~45 seconds |
 
 ---
 
-## Failing tests (the 7 planted bugs)
+## Failing tests (6 of the 11 planted bugs)
 
 | Test | File | Bug ID | Severity |
 |---|---|---|---|
 | TC-101: checkout with valid discount | checkout.spec.ts | BUG-009 | Critical |
 | TC-104: checkout blocks out-of-stock item | checkout.spec.ts | BUG-008 | High |
-| product card with empty name | visual.spec.ts | BUG-010 | Medium |
-| product card negative price | visual.spec.ts | BUG-011 | High |
-| product card large price overflow at mobile | visual.spec.ts | BUG-012 | Low |
-| GET /api/orders returns only caller's orders | api.spec.ts | BUG-013 | Critical |
-| GET /api/search without q returns 400 | api.spec.ts | BUG-014 | High |
+| product card with empty name | visual.spec.ts | BUG-002 | Medium |
+| product card negative price | visual.spec.ts | BUG-001 | High |
+| GET /api/orders returns only caller's orders | api.spec.ts | BUG-010 | Critical |
+| GET /api/search without q returns 400 | api.spec.ts | BUG-011 | High |
+
+A suspected large-price overflow (product card at mobile width) was checked at 375px and does not reproduce, no test for it here. BUG-003 (price set at $9,999.99) and BUG-004 through BUG-007 are not covered by this automated suite, they were confirmed or missed by other approaches, see `qa-programme-summary.md`.
 
 ---
 

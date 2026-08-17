@@ -208,26 +208,25 @@ test('mobile product listing matches baseline', async ({ page }) => {
 </code></pre>
 
   <h2>Masking dynamic content</h2>
-  <p>Timestamps, live prices, user avatars, and random content change between runs and cause false failures. Mask them so they are ignored in the comparison:</p>
-  <pre><code>test('checkout page matches baseline', async ({ page }) => {
-  await page.goto('/checkout');
-  await expect(page).toHaveScreenshot('checkout.png', {
+  <p>Timestamps, live prices, user avatars, and random content change between runs and cause false failures. Mask them so they are ignored in the comparison. PeakAndPack's order history page has exactly this problem: every order row prints the timestamp it was placed at, so a baseline captured today never matches a run captured tomorrow:</p>
+  <pre><code>test('order history matches baseline', async ({ page }) => {
+  await page.goto('/orders');
+  await expect(page).toHaveScreenshot('order-history.png', {
     mask: [
-      page.getByTestId('order-timestamp'),  // changes every run
-      page.getByTestId('user-avatar'),       // different per user
+      page.getByText(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/),  // order timestamp, changes every run
     ],
     maxDiffPixelRatio: 0.02,
   });
 });
 </code></pre>
-  <p>Masked areas are replaced with a solid colour in the comparison. The rest of the page is still compared pixel by pixel.</p>
+  <p>Masked areas are replaced with a solid colour in the comparison. The rest of the page is still compared pixel by pixel. An app with per-user avatars or live-updating prices would mask those the same way, once the frontend team adds a stable <code>data-testid</code> to them (PeakAndPack itself has none yet, see Phase 2).</p>
 
   <h2>Component screenshots vs full-page screenshots</h2>
   <pre><code>// Full page (default): captures the entire scrollable page
 await expect(page).toHaveScreenshot('full-page.png');
 
 // Specific element: captures only the product card
-const card = page.getByRole('article').first();
+const card = page.locator('div').filter({ has: page.getByRole('heading', { level: 3 }) }).first();
 await expect(card).toHaveScreenshot('product-card.png');
 
 // Clipped region: captures a specific area
@@ -299,7 +298,7 @@ jobs:
 
   <div class="bonus">
     <div class="b-label">Bonus challenge</div>
-    <p><strong>Write a component screenshot test for the cart badge.</strong> The cart item count badge in the header is a small, specific component. Write a visual test that captures just the badge using <code>expect(element).toHaveScreenshot()</code>. Add an item to the cart via API first, capture the "1 item" state, then add a second and capture the "2 items" state. Now you have two baselines that document the component's two key states.</p>
+    <p><strong>Write a component screenshot test for the cart total.</strong> The <code>Total: $X.XX</code> heading on the cart page is a small, specific component. Write a visual test that captures just that heading using <code>expect(element).toHaveScreenshot()</code>. Add an item to the cart via API first, capture the one-item total, then add a second item and capture the two-item total. Now you have two baselines that document the component's two key states.</p>
   </div>
 
   <details class="solution">
@@ -314,10 +313,6 @@ test('product listing visual regression', async ({ page }) => {
 
   await expect(page).toHaveScreenshot('product-listing.png', {
     maxDiffPixelRatio: 0.02,
-    mask: [
-      page.getByTestId('live-price'),    // if prices are dynamic
-      page.getByTestId('promotion-banner'), // if promotions rotate
-    ],
   });
 });
 </code></pre>

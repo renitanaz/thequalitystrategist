@@ -268,13 +268,11 @@ import { Reporter, TestCase, TestResult } from '@playwright/test/reporter';
 class ActionableReporter implements Reporter {
   onTestEnd(test: TestCase, result: TestResult) {
     if (result.status === 'failed') {
-      console.log('
- FAILED:', test.title);
+      console.log('\n FAILED:', test.title);
       // Print the first error with expected vs actual
       const error = result.errors[0];
       if (error?.message) {
-        console.log('  Error:', error.message.split('
-').slice(0,3).join(' | '));
+        console.log('  Error:', error.message.split('\n').slice(0,3).join(' | '));
       }
       // Print screenshot path if captured
       const screenshot = result.attachments.find(a => a.name === 'screenshot');

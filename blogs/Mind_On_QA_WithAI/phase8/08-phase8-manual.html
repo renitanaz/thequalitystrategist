@@ -210,34 +210,35 @@
     <thead><tr><th>Approach</th><th>Used in phases</th><th>What it contributed</th></tr></thead>
     <tbody>
       <tr><td>Manual, No AI</td><td>All phases</td><td>Ground truth. Human judgment on what matters. Baseline for every other approach.</td></tr>
-      <tr><td>Manual + AI</td><td>All phases</td><td>Speed on first drafts. Surfaced gaps the manual pass missed (BUG-013 enumeration risk, BUG-014 split).</td></tr>
+      <tr><td>Manual + AI</td><td>All phases</td><td>Speed on first drafts. Surfaced gaps the manual pass missed (BUG-010 enumeration risk, BUG-011 split).</td></tr>
       <tr><td>Automated, Playwright</td><td>Phases 3, 4, 5, 6, 7</td><td>Repeatable regression coverage. Visual baseline comparison. CI-ready bug detection.</td></tr>
       <tr><td>AI QA Agent</td><td>Phases 2, 3, 4, 5, 6, 7</td><td>Scale at low effort. Strategy reasoning, test case generation, visual review, flow analysis, bug write-up.</td></tr>
     </tbody>
   </table></div>
 
   <h3>Results</h3>
-  <p>Seven bugs found across the full test programme. Two Critical, three High, one Medium, one Low.</p>
+  <p>7 of the 11 seeded bugs found across the full test programme. Two Critical, three High, one Medium, one Low. The other four (BUG-004 through BUG-007, all API/data-layer issues with no visible UI symptom) went uncaught in this pass, see the note below the table.</p>
   <div class="fw-table-wrap"><table class="fw-table">
     <thead><tr><th>ID</th><th>Bug</th><th>Severity</th><th>Status</th></tr></thead>
     <tbody>
       <tr><td>BUG-009</td><td>SAVE10 applies 100% off instead of 10%</td><td>Critical</td><td>Open</td></tr>
-      <tr><td>BUG-013</td><td>Orders endpoint exposes all users' order histories</td><td>Critical</td><td>Open</td></tr>
+      <tr><td>BUG-010</td><td>Orders endpoint exposes all users' order histories</td><td>Critical</td><td>Open</td></tr>
       <tr><td>BUG-008</td><td>No stock check before checkout</td><td>High</td><td>Open</td></tr>
-      <tr><td>BUG-014</td><td>Search returns 500 and leaks stack trace on missing query</td><td>High</td><td>Open</td></tr>
-      <tr><td>BUG-011</td><td>Negative price displays as "-$89.00" on product card</td><td>High</td><td>Open</td></tr>
-      <tr><td>BUG-010</td><td>Product card renders blank title when name is empty</td><td>Medium</td><td>Open</td></tr>
-      <tr><td>BUG-012</td><td>Large price overflows card at mobile width</td><td>Low</td><td>Open</td></tr>
+      <tr><td>BUG-011</td><td>Search returns 500 and leaks stack trace on missing query</td><td>High</td><td>Open</td></tr>
+      <tr><td>BUG-001</td><td>Negative price displays as "-$89.00" on product card</td><td>High</td><td>Open</td></tr>
+      <tr><td>BUG-002</td><td>Product card renders blank title when name is empty</td><td>Medium</td><td>Open</td></tr>
+      <tr><td>BUG-003</td><td>Price set at $9,999.99, no upper bound validation</td><td>Low</td><td>Open</td></tr>
     </tbody>
   </table></div>
+  <p>Not caught in this pass: BUG-004 (no price validation on the products endpoint), BUG-005 (no default sort), BUG-006 (registration accepts an empty name), BUG-007 (cart total trusts client-side prices).</p>
 
   <h3>Risk assessment</h3>
-  <p>Two findings carry risk that makes release without fix inadvisable. BUG-009 means every checkout using SAVE10 results in $0 revenue — at any transaction volume, this is a direct and ongoing financial loss. BUG-013 is a data privacy violation: any authenticated user can read any other user's order history, and a malicious caller could enumerate all customer purchases by iterating user IDs.</p>
-  <p>The remaining five bugs range from High (BUG-008, 011, 014) to Low (BUG-012). All are important but none carries the combination of likelihood and business impact of the two Critical findings.</p>
+  <p>Two findings carry risk that makes release without fix inadvisable. BUG-009 means every checkout using SAVE10 results in $0 revenue — at any transaction volume, this is a direct and ongoing financial loss. BUG-010 is a data privacy violation: any authenticated user can read any other user's order history, and a malicious caller could enumerate all customer purchases by iterating user IDs.</p>
+  <p>The remaining five confirmed bugs range from High (BUG-008, 001, 011) to Low (BUG-003). All are important but none carries the combination of likelihood and business impact of the two Critical findings. The four uncaught bugs (BUG-004 through BUG-007) remain unassessed risk until a future pass targets the API/data layer more directly.</p>
 
   <h3>Recommendation</h3>
-  <p><strong>Do not release to production</strong> until BUG-009 and BUG-013 are fixed and verified. Both are Critical severity with direct revenue and privacy consequences.</p>
-  <p>BUG-008, BUG-011, and BUG-014 should be fixed in the same release cycle. BUG-010 and BUG-012 can follow in a subsequent release given their lower severity and limited user impact.</p>
+  <p><strong>Do not release to production</strong> until BUG-009 and BUG-010 are fixed and verified. Both are Critical severity with direct revenue and privacy consequences.</p>
+  <p>BUG-008, BUG-001, and BUG-011 should be fixed in the same release cycle. BUG-002 and BUG-003 can follow in a subsequent release given their lower severity and limited user impact. BUG-004 through BUG-007 need a dedicated API/data-layer pass before they can be assessed at all.</p>
   <p>Verification: the automated test suite in <code>checkout.spec.ts</code>, <code>api.spec.ts</code>, and <code>e2e-flows.spec.ts</code> contains tests designed to pass once each bug is fixed. No manual re-test is needed — run the suite, confirm the previously-failing tests turn green.</p>
 
     <div class="nav-row">

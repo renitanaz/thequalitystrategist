@@ -265,11 +265,12 @@ expect(items[0]).toContain('expected first item');
 await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
 
 // Wait for the new items to appear
-await page.waitForSelector('[data-testid="product-card"]:nth-child(25)');
+const productCards = page.locator('div').filter({ has: page.getByRole('heading', { level: 3 }) });
+await expect(productCards).toHaveCount(25);
 
 // Now assert the items that were not in the initial load
 await expect(
-  page.getByRole('article').nth(24)
+  productCards.nth(24)
 ).toBeVisible();
 </code></pre>
 
@@ -310,7 +311,7 @@ await expect(
       <h3>Accept and dismiss dialog tests</h3>
       <pre><code>test('delete with confirmation removes the product', async ({ page }) => {
   await page.goto('https://peakandpack-ui.onrender.com/admin/products');
-  const productName = await page.getByRole('article').first()
+  const productName = await page.locator('div').filter({ has: page.getByRole('heading', { level: 3 }) }).first()
     .getByRole('heading').textContent();
 
   // Register BEFORE clicking
@@ -323,7 +324,7 @@ await expect(
 
 test('dismiss dialog keeps the product', async ({ page }) => {
   await page.goto('https://peakandpack-ui.onrender.com/admin/products');
-  const productName = await page.getByRole('article').first()
+  const productName = await page.locator('div').filter({ has: page.getByRole('heading', { level: 3 }) }).first()
     .getByRole('heading').textContent();
 
   // Dismiss instead of accept

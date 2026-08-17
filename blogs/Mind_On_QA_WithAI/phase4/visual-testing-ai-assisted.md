@@ -12,7 +12,7 @@ Capture screenshots of the live UI, hand them to Claude for a second pass, then 
 
 ## Issues confirmed (after review)
 
-### BUG-010, blank product card title
+### BUG-002, blank product card title
 
 **Severity:** Medium
 **Where:** Product listing, any product with an empty name field
@@ -20,7 +20,7 @@ Capture screenshots of the live UI, hand them to Claude for a second pass, then 
 **Expected:** A fallback label (for example the SKU or "Unnamed product") so the card never looks broken.
 **Screenshot:** product-empty-name.png
 
-### BUG-011, negative price displayed
+### BUG-001, negative price displayed
 
 **Severity:** High
 **Where:** Product listing card
@@ -29,20 +29,16 @@ Capture screenshots of the live UI, hand them to Claude for a second pass, then 
 **Note:** The data-level cause overlaps with the pricing issues tracked in Phase 3; this entry is specifically the rendering symptom.
 **Screenshot:** product-negative-price.png
 
-### BUG-012, large price overflows at narrow widths
+## Flagged, then ruled out
 
-**Severity:** Low
-**Where:** Product card price area, below roughly 400px viewport width
-**Visible symptom:** A price like $9,999.99 clips or spills outside its container on mobile.
-**Expected:** The price area wraps or scales so the full value stays readable.
-**Screenshot:** product-price-overflow.png
+Claude's first pass over the mobile screenshot also flagged the $9,999.99 price ("large price overflows at narrow widths, below ~400px") as a possible bug. Re-checked against the live UI at 375px: it renders fully on one line, no clipping or wrapping. Not a real issue, dropped from the list below. Worth keeping as a reminder that a screenshot review is a second pair of eyes, not a verdict, anything it flags still needs confirming against the live app before it becomes a bug report.
 
 ## What the review pass added over the manual checklist
 
 | Change | Why |
 |---|---|
 | Turned each checklist FAIL into a structured bug report | A stakeholder needs severity, location, symptom, and expected, not just a ticked box. |
-| Caught the large-price overflow only visible on mobile | Easy to miss at desktop width; a fresh screenshot review at 375px surfaced it. |
+| Ruled out a suspected large-price overflow after re-checking at 375px | A screenshot review can flag things that don't hold up; confirming against the live app caught it before it became a false bug report. |
 | Separated visible symptom from root cause | "Shows -$89.00" (visual) versus "API returns a negative price" (data) are two findings, written for two audiences. |
 
 ## Review note

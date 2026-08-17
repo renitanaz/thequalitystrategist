@@ -152,39 +152,45 @@
     <div class="ba-block before">
       <div class="ba-label">Before: locators in every test file</div>
 <pre><code>// The same locator appears in 20 different test files.
-// PeakAndPack renames the checkout button from "Checkout" to "Buy now".
+// PeakAndPack renames "Proceed to checkout" to "Go to checkout".
 // 20 tests break. 20 files to update. One afternoon wasted.
 
 test('checkout with discount', async ({ page }) => {
   await page.goto('https://peakandpack-ui.onrender.com/cart');
-  await page.getByRole('textbox', { name: /code/i }).fill('SAVE10');
-  await page.getByRole('button', { name: /checkout/i }).click(); // in 20 files
-  await expect(page.getByRole('heading', { name: /confirmed/i })).toBeVisible();
+  await page.getByRole('button', { name: /proceed to checkout/i }).click(); // in 20 files
+  await page.getByPlaceholder(/save10/i).fill('SAVE10');
+  await page.getByRole('button', { name: /place order/i }).click();
+  await expect(page.getByRole('heading', { name: /order placed/i })).toBeVisible();
 });
 
 test('checkout without discount', async ({ page }) => {
   await page.goto('https://peakandpack-ui.onrender.com/cart');
-  await page.getByRole('button', { name: /checkout/i }).click(); // same locator again
-  await expect(page.getByRole('heading', { name: /confirmed/i })).toBeVisible();
+  await page.getByRole('button', { name: /proceed to checkout/i }).click(); // same locator again
+  await page.getByRole('button', { name: /place order/i }).click();
+  await expect(page.getByRole('heading', { name: /order placed/i })).toBeVisible();
 });
 </code></pre>
     </div>
     <div class="ba-block after">
       <div class="ba-label">After: locators in page objects, tests read like journeys</div>
-<pre><code>// The checkout button locator lives in CartPage only.
+<pre><code>// The "proceed to checkout" locator lives in CartPage only.
 // PeakAndPack renames it: one file to update, all tests pass again.
 
 test('checkout with discount', async ({ page }) => {
   const cart = new CartPage(page);
-  await cart.applyDiscount('SAVE10');
-  const confirmation = await cart.checkout();
-  await confirmation.assertOrderConfirmed();
+  await cart.goto();
+  const checkout = await cart.proceedToCheckout();
+  await checkout.applyDiscount('SAVE10');
+  await checkout.placeOrder();
+  await checkout.assertOrderConfirmed();
 });
 
 test('checkout without discount', async ({ page }) => {
   const cart = new CartPage(page);
-  const confirmation = await cart.checkout(); // same method, no duplicated locator
-  await confirmation.assertOrderConfirmed();
+  await cart.goto();
+  const checkout = await cart.proceedToCheckout(); // same method, no duplicated locator
+  await checkout.placeOrder();
+  await checkout.assertOrderConfirmed();
 });
 </code></pre>
     </div>
@@ -204,43 +210,45 @@ export class CartPage {
   }
 
   async getItemCount(): Promise&lt;number&gt; {
-    const text = await this.page.getByTestId('cart-item-count').textContent();
-    return parseInt(text ?? '0', 10);
+    return await this.page.getByRole('button', { name: 'Remove' }).count();
   }
 
-  async applyDiscount(code: string) {
-    await this.page.getByRole('textbox', { name: /discount/i }).fill(code);
-    await this.page.getByRole('button', { name: /apply/i }).click();
-  }
-
-  async checkout(): Promise&lt;CheckoutPage&gt; {
-    const done = this.page.waitForResponse(
-      r => r.url().includes('/api/orders/checkout') && r.status() === 201
-    );
-    await this.page.getByRole('button', { name: /checkout|buy now/i }).click();
-    await done;
+  async proceedToCheckout(): Promise&lt;CheckoutPage&gt; {
+    await this.page.getByRole('button', { name: /proceed to checkout/i }).click();
     return new CheckoutPage(this.page);
   }
 }
 </code></pre>
 
   <h2>Building the CheckoutPage object</h2>
-  <p>Methods return new page objects when an action navigates to a new page: keeping the chain readable and typed:</p>
+  <p>Methods return new page objects when an action navigates to a new page: keeping the chain readable and typed. On PeakAndPack, the discount code field and the "Place order" button live on the same checkout page, one submit does both, so <code>applyDiscount</code> only fills the field and <code>placeOrder</code> is the separate step that actually submits:</p>
   <pre><code>// pages/CheckoutPage.ts
 import { Page, expect } from '@playwright/test';
 
 export class CheckoutPage {
   constructor(private page: Page) {}
 
+  async applyDiscount(code: string) {
+    await this.page.getByPlaceholder(/save10/i).fill(code);
+  }
+
+  async placeOrder() {
+    const done = this.page.waitForResponse(
+      r => r.url().includes('/api/orders/checkout') && r.status() === 201
+    );
+    await this.page.getByRole('button', { name: /place order/i }).click();
+    await done;
+  }
+
   async assertOrderConfirmed() {
     await expect(
-      this.page.getByRole('heading', { name: /order confirmed/i })
+      this.page.getByRole('heading', { name: /order placed/i })
     ).toBeVisible();
   }
 
   async getOrderId(): Promise&lt;string&gt; {
-    const text = await this.page.getByTestId('order-id').textContent();
-    return text ?? '';
+    const text = await this.page.getByText(/Order ID: \d+/).textContent();
+    return text?.replace('Order ID: ', '') ?? '';
   }
 }
 </code></pre>
@@ -304,7 +312,7 @@ export class CartPage extends BasePage {
   <p>The architect decides when the investment pays off. Phases 0 to 8 of this series deliberately used locators directly because the suite was small and the patterns were the point. Phase 9 introduces POM because you now have enough tests to see the problem it solves.</p>
 
   <div class="callout gold">
-    <p><strong>The test reads like a user journey, not a Playwright tutorial.</strong> When POM is working well, a non-technical stakeholder can read a test and understand what the user does. <code>await cart.applyDiscount('SAVE10'); const confirmation = await cart.checkout(); await confirmation.assertOrderConfirmed();</code> needs no explanation. That readability is the real payoff.</p>
+    <p><strong>The test reads like a user journey, not a Playwright tutorial.</strong> When POM is working well, a non-technical stakeholder can read a test and understand what the user does. <code>const checkout = await cart.proceedToCheckout(); await checkout.applyDiscount('SAVE10'); await checkout.placeOrder(); await checkout.assertOrderConfirmed();</code> needs no explanation. That readability is the real payoff.</p>
   </div>
 
   <div class="callout warn">

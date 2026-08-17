@@ -82,7 +82,7 @@
 
   <span class="series-tag">Phase 7 of 8 &middot; Bug Detection</span>
   <h1>Bug Detection</h1>
-  <p class="subtitle">Seven bugs were planted in PeakAndPack at the start of this series. This phase surfaces all of them, documents them properly, and asks which approach found what.</p>
+  <p class="subtitle">11 bugs were planted in PeakAndPack at the start of this series. This phase surfaces 7 of them, documents them properly, and asks which approach found what, and which slipped through.</p>
 
   <div class="meta-row">
     <span>By RN</span>
@@ -94,21 +94,22 @@
     <p><strong>This is the payoff phase.</strong> Every earlier phase planted a flag. Phase 3 wrote test cases designed to fail. Phase 4 captured visual bugs on screen. Phase 5 found the API contract violations. Phase 6 showed how the bugs feel end to end. Phase 7 brings them all together into a formal bug report set and asks the question the series has been building to: which approach caught what, and how early?</p>
   </div>
 
-  <h2>The seven planted bugs</h2>
+  <h2>7 of the 11 planted bugs, caught</h2>
   <div class="fw-table-wrap">
     <table class="fw-table">
       <thead><tr><th>ID</th><th>Bug</th><th>Where it hides</th><th>First catchable in</th></tr></thead>
       <tbody>
         <tr><td><span class="bug-badge">BUG-008</span></td><td>No stock check before checkout</td><td>Checkout API</td><td>Phase 3 (test cases)</td></tr>
         <tr><td><span class="bug-badge">BUG-009</span></td><td>SAVE10 applies 100% off instead of 10%</td><td>Checkout API + UI</td><td>Phase 3 (test cases)</td></tr>
-        <tr><td><span class="bug-badge">BUG-010</span></td><td>Product card renders blank title</td><td>Product listing UI</td><td>Phase 4 (visual)</td></tr>
-        <tr><td><span class="bug-badge">BUG-011</span></td><td>Negative price shows as "-$89.00"</td><td>Product listing UI</td><td>Phase 4 (visual)</td></tr>
-        <tr><td><span class="bug-badge">BUG-012</span></td><td>Large price overflows at mobile width</td><td>Product listing UI (mobile)</td><td>Phase 4 (visual)</td></tr>
-        <tr><td><span class="bug-badge">BUG-013</span></td><td>Orders endpoint returns all users' orders</td><td>Orders API</td><td>Phase 5 (API contract)</td></tr>
-        <tr><td><span class="bug-badge">BUG-014</span></td><td>Search crashes with 500 on missing query</td><td>Search API</td><td>Phase 5 (API contract)</td></tr>
+        <tr><td><span class="bug-badge">BUG-001</span></td><td>Negative price shows as "-$89.00"</td><td>Product listing UI</td><td>Phase 4 (visual)</td></tr>
+        <tr><td><span class="bug-badge">BUG-002</span></td><td>Product card renders blank title</td><td>Product listing UI</td><td>Phase 4 (visual)</td></tr>
+        <tr><td><span class="bug-badge">BUG-003</span></td><td>Price set at $9,999.99, no upper bound validation</td><td>Product listing UI (data)</td><td>Phase 4 (visual)</td></tr>
+        <tr><td><span class="bug-badge">BUG-010</span></td><td>Orders endpoint returns all users' orders</td><td>Orders API</td><td>Phase 5 (API contract)</td></tr>
+        <tr><td><span class="bug-badge">BUG-011</span></td><td>Search crashes with 500 on missing query</td><td>Search API</td><td>Phase 5 (API contract)</td></tr>
       </tbody>
     </table>
   </div>
+  <p>Four seeded bugs went uncaught in this pass: BUG-004 (no price validation on the products endpoint), BUG-005 (no default sort), BUG-006 (registration accepts an empty name field), BUG-007 (cart total trusts client-side prices). All four are API/data-layer issues with no visible UI symptom, none of the four approaches below happened to target them directly. See <code>bug-detection-report.md</code> for the full account.</p>
 
   <h2>What this phase does</h2>
   <p>Phase 7 is not about running more tests. Every test that catches these bugs was already written in earlier phases. This phase is about <strong>formal documentation</strong>: turning a failing assertion or a screenshot into a proper bug report that a developer can act on, a stakeholder can understand, and a future tester can use to confirm the fix.</p>
@@ -131,13 +132,13 @@
     <div class="approach-card">
       <div class="ac-label">Approach C</div>
       <div class="ac-title">Automated, Playwright</div>
-      <div class="ac-body">The failing tests from Phases 3–6 are the bug detection. This approach wires them into a pipeline and shows what the CI output looks like when all seven bugs are present.</div>
+      <div class="ac-body">The failing tests from Phases 3–6 are the bug detection. This approach wires them into a pipeline and shows what the CI output looks like when all seven detectable bugs are present.</div>
       <a href="07-phase7-automated.html">Automated approach &rarr;</a>
     </div>
     <div class="approach-card">
       <div class="ac-label">Approach D</div>
       <div class="ac-title">AI QA Agent</div>
-      <div class="ac-body">An agent reads failing test results, traces, and screenshots, writes up the bug reports automatically, and produces a detection analysis across all seven bugs.</div>
+      <div class="ac-body">An agent reads failing test results, traces, and screenshots, writes up the bug reports automatically, and produces a detection analysis across all seven detected bugs.</div>
       <a href="07-phase7-ai-agent.html">AI Agent approach &rarr;</a>
     </div>
   </div>
@@ -149,15 +150,15 @@
       <tbody>
         <tr><td>BUG-008 (stock check)</td><td>Catches it</td><td>Catches it</td><td>TC-104 designed to fail</td><td>Catches it</td></tr>
         <tr><td>BUG-009 (discount)</td><td>Catches it</td><td>Catches it</td><td>TC-101 designed to fail</td><td>Catches it</td></tr>
-        <tr><td>BUG-010 (blank title)</td><td>Catches it</td><td>Catches it + names it</td><td>Visual baseline diff</td><td>Screenshot review</td></tr>
-        <tr><td>BUG-011 (negative price)</td><td>Catches it</td><td>Catches it + names severity</td><td>Visual baseline diff</td><td>Screenshot review</td></tr>
-        <tr><td>BUG-012 (price overflow)</td><td>Catches it (mobile only)</td><td>Catches it</td><td>Mobile viewport visual test</td><td>Screenshot review</td></tr>
-        <tr><td>BUG-013 (orders leak)</td><td>Catches it (body read)</td><td>Catches it</td><td>Orders isolation test fails</td><td>Catches it</td></tr>
-        <tr><td>BUG-014 (search 500)</td><td>Catches it</td><td>Catches it + notes stack trace</td><td>Search contract test fails</td><td>Catches it</td></tr>
+        <tr><td>BUG-001 (negative price)</td><td>Catches it</td><td>Catches it + names severity</td><td>Visual baseline diff</td><td>Screenshot review</td></tr>
+        <tr><td>BUG-002 (blank title)</td><td>Catches it</td><td>Catches it + names it</td><td>Visual baseline diff</td><td>Screenshot review</td></tr>
+        <tr><td>BUG-003 (price $9,999.99)</td><td>Catches it</td><td>Not caught, misread as an overflow that doesn't reproduce</td><td>Not caught, spec asserted a false overflow, since removed</td><td>Catches it, and correctly rules out the overflow</td></tr>
+        <tr><td>BUG-010 (orders leak)</td><td>Catches it (body read)</td><td>Catches it</td><td>Orders isolation test fails</td><td>Catches it</td></tr>
+        <tr><td>BUG-011 (search 500)</td><td>Catches it</td><td>Catches it + notes stack trace</td><td>Search contract test fails</td><td>Catches it</td></tr>
       </tbody>
     </table>
   </div>
-  <p>The honest observation: all four approaches catch all seven bugs eventually. The difference is <strong>speed, depth, and documentation quality</strong>. The automated approach catches BUG-010, 011, 012 only if baselines were captured and the visual tests run. Manual catches BUG-013 only if the tester reads the response body rather than trusting the 200 status.</p>
+  <p>The honest observation: no single approach caught all seven bugs. Manual and AI Agent both correctly identified BUG-003 and correctly ruled out the overflow symptom the other two approaches misreported. That's not a case for one approach over another, it's a case for reconciling discrepancies across approaches before a finding gets written into a final report. The automated approach catches BUG-001, 002 only if baselines were captured and the visual tests run. Manual catches BUG-010 only if the tester reads the response body rather than trusting the 200 status. And all four approaches, run across six phases, still missed four bugs entirely (BUG-004 through BUG-007), see the note above.</p>
 
   <div class="nav-row">
     <a href="../phase6/06-phase6-landing.html" class="nav-cta secondary">&larr; Phase 6: E2E Flows</a>

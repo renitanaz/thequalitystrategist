@@ -174,13 +174,14 @@ test('add to cart works', async ({ page }) => {
 
 test('add to cart works', async ({ page }) => {
   await page.goto('https://peakandpack-ui.onrender.com/');
-  const firstCard = page.getByRole('article').first();
+  const firstCard = page.locator('div').filter({ has: page.getByRole('heading', { level: 3 }) }).first();
   const cartUpdated = page.waitForResponse(
     r => r.url().includes('/api/cart') && r.status() === 200
   );
   await firstCard.getByRole('button', { name: /add to cart/i }).click();
   await cartUpdated;
-  await expect(page.getByTestId('cart-item-count')).toHaveText('1');
+  await page.goto('https://peakandpack-ui.onrender.com/cart');
+  await expect(page.getByRole('button', { name: 'Remove' })).toHaveCount(1);
 });
 </code></pre>
     </div>
@@ -279,7 +280,7 @@ test('add to cart works', async ({ page }) => {
 test('product card is visible (flaky)', async ({ page }) => {
   page.goto('https://peakandpack-ui.onrender.com/'); // missing await -- does not wait for load
   await expect(
-    page.getByRole('article').first()
+    page.locator('div').filter({ has: page.getByRole('heading', { level: 3 }) }).first()
   ).toBeVisible(); // fires before the page has loaded
 });
 
@@ -287,7 +288,7 @@ test('product card is visible (flaky)', async ({ page }) => {
 test('product card is visible', async ({ page }) => {
   await page.goto('https://peakandpack-ui.onrender.com/'); // waits for load
   await expect(
-    page.getByRole('article').first()
+    page.locator('div').filter({ has: page.getByRole('heading', { level: 3 }) }).first()
   ).toBeVisible();
 });
 </code></pre>

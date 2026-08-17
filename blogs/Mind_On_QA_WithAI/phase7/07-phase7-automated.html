@@ -195,54 +195,56 @@
   <p>The automated approach to bug detection is not a new set of tests. It's running the tests that were written in Phases 3, 4, 5, and 6 — tests that were designed to fail against the current build — and reading the output as a bug detection report.</p>
 
   <div class="callout blue">
-    <p><strong>This is why those tests were called "designed to fail."</strong> TC-101 (BUG-009), TC-104 (BUG-008), the visual baseline diffs (BUG-010, 011, 012), the orders isolation test (BUG-013), and the search contract test (BUG-014) were all written to pass against a correct implementation and fail against the current one. Running them now is bug detection in under 60 seconds.</p>
+    <p><strong>This is why those tests were called "designed to fail."</strong> TC-101 (BUG-009), TC-104 (BUG-008), the visual baseline diffs (BUG-001, 002), the orders isolation test (BUG-010), and the search contract test (BUG-011) were all written to pass against a correct implementation and fail against the current one. Running them now is bug detection in under 60 seconds. A visual test for a suspected mobile overflow (BUG-003) was also written, but removed after the overflow turned out not to reproduce, see the callout below.</p>
   </div>
 
   <h2>Running the full detection suite</h2>
   <p>All tests from Phases 3–6 are tagged. Run only the ones targeting known bugs:</p>
-  <pre><code>npx playwright test --grep "BUG-008|BUG-009|BUG-013|BUG-014"
+  <pre><code>npx playwright test --grep "BUG-008|BUG-009|BUG-010|BUG-011"
 npx playwright test tests/visual.spec.ts --update-snapshots=never</code></pre>
   <p>The second command runs the visual suite without re-baselining, so any diff from the stored baseline (captured in Phase 4) counts as a failure.</p>
 
   <h2>What the CI output looks like</h2>
-  <pre><code>  7 failed
+  <pre><code>  6 failed
     checkout.spec.ts:32:5 › TC-101: checkout with valid discount @critical
     checkout.spec.ts:58:5 › TC-104: checkout blocks out-of-stock item @high
-    visual.spec.ts:18:5  › product card with empty name (BUG-010) @high
-    visual.spec.ts:30:5  › product card negative price (BUG-011) @critical
-    visual.spec.ts:44:5  › product card large price overflow (BUG-012) @high
-    api.spec.ts:89:5     › GET /api/orders returns only caller's orders (BUG-013) @critical
-    api.spec.ts:52:5     › GET /api/search without q returns 400 (BUG-014) @critical
+    visual.spec.ts:18:5  › product card with empty name (BUG-002) @high
+    visual.spec.ts:30:5  › product card negative price (BUG-001) @critical
+    api.spec.ts:89:5     › GET /api/orders returns only caller's orders (BUG-010) @critical
+    api.spec.ts:52:5     › GET /api/search without q returns 400 (BUG-011) @critical
 
-  7 passed (38 tests total)</code></pre>
+  31 passed, 6 failed (37 tests total)</code></pre>
 
   <div class="callout green">
-    <p><strong>38 tests, 7 known failures, 31 passing.</strong> The 31 passing tests are not noise — they confirm that the rest of the system works correctly. The 7 failures are precisely the 7 planted bugs. Every failure is named, linked to a bug ID, and points to the exact file and line. A developer can go from this output to a fix without a meeting.</p>
+    <p><strong>37 tests, 6 known failures, 31 passing.</strong> The 31 passing tests are not noise — they confirm that the rest of the system works correctly. The 6 failures are 6 of the 11 planted bugs (a 7th, BUG-003, is confirmed by Manual and AI Agent but has no automated test, see below). Every failure is named, linked to a bug ID, and points to the exact file and line. A developer can go from this output to a fix without a meeting.</p>
+  </div>
+
+  <div class="callout warn">
+    <p><strong>A visual test was removed, not fixed.</strong> An earlier version of <code>visual.spec.ts</code> included a test asserting that the $9,999.99 price (BUG-003) clips at 375px viewport width. Checked directly against the live UI: it does not clip, renders fully on one line. That test made an assertion about pixels that were never actually wrong, it was deleted rather than kept as a false-positive-generating check. BUG-003 itself, the unvalidated $9,999.99 price value, is still real, it's just not something a screenshot diff can confirm on its own.</p>
   </div>
 
   <h2>When a bug is fixed</h2>
-  <p>This is the automation payoff. When a developer fixes BUG-009 (the discount logic), TC-101 turns green on the next run — automatically, with no changes to the test. The fix is verified the moment CI runs. No manual re-test needed. The same applies to every one of the seven bugs: fix the code, run the suite, watch the corresponding test pass.</p>
+  <p>This is the automation payoff. When a developer fixes BUG-009 (the discount logic), TC-101 turns green on the next run — automatically, with no changes to the test. The fix is verified the moment CI runs. No manual re-test needed. The same applies to every one of these six bugs: fix the code, run the suite, watch the corresponding test pass.</p>
 
   <div class="fw-table-wrap"><table class="fw-table">
     <thead><tr><th>Bug</th><th>Test that catches it</th><th>File</th><th>Turns green when</th></tr></thead>
     <tbody>
       <tr><td>BUG-008</td><td>TC-104</td><td>checkout.spec.ts</td><td>Stock check added to checkout endpoint</td></tr>
       <tr><td>BUG-009</td><td>TC-101</td><td>checkout.spec.ts</td><td>Discount logic corrected to 10%</td></tr>
-      <tr><td>BUG-010</td><td>Visual baseline diff</td><td>visual.spec.ts</td><td>Fallback title added to product card</td></tr>
-      <tr><td>BUG-011</td><td>Visual baseline diff</td><td>visual.spec.ts</td><td>Negative price filtered before render</td></tr>
-      <tr><td>BUG-012</td><td>Mobile viewport visual diff</td><td>visual.spec.ts</td><td>Price container handles overflow</td></tr>
-      <tr><td>BUG-013</td><td>Orders isolation assertion</td><td>api.spec.ts + e2e-flows.spec.ts</td><td>Orders filtered by authenticated user ID</td></tr>
-      <tr><td>BUG-014</td><td>Search 400 assertion</td><td>api.spec.ts</td><td>Missing q param returns 400 not 500</td></tr>
+      <tr><td>BUG-002</td><td>Visual baseline diff</td><td>visual.spec.ts</td><td>Fallback title added to product card</td></tr>
+      <tr><td>BUG-001</td><td>Visual baseline diff</td><td>visual.spec.ts</td><td>Negative price filtered before render</td></tr>
+      <tr><td>BUG-010</td><td>Orders isolation assertion</td><td>api.spec.ts + e2e-flows.spec.ts</td><td>Orders filtered by authenticated user ID</td></tr>
+      <tr><td>BUG-011</td><td>Search 400 assertion</td><td>api.spec.ts</td><td>Missing q param returns 400 not 500</td></tr>
     </tbody>
   </table></div>
 
   <h2>Your deliverable</h2>
-  <p>The CI output itself is the deliverable. Save it as <a href="bug-detection-report.txt" target="_blank"><code>bug-detection-report.txt</code></a> — a snapshot of the full test run showing all 7 failures with their test names, file locations, and failure messages. This is the automated bug detection report.</p>
+  <p>The CI output itself is the deliverable. Save it as <a href="bug-detection-report.txt" target="_blank"><code>bug-detection-report.txt</code></a> — a snapshot of the full test run showing all 6 failures with their test names, file locations, and failure messages. This is the automated bug detection report.</p>
   <p><strong>Time:</strong> ~60 seconds to run the suite. The tests were already written in Phases 3–6.
 
     <div class="nav-row">
     <a href="07-phase7-manual-ai.html" class="nav-cta secondary">&larr; Manual + AI</a>
-    <a href="07-phase7-manual-ai.html" class="nav-cta primary">Manual + AI &rarr;</a>
+    <a href="07-phase7-ai-agent.html" class="nav-cta primary">AI QA Agent &rarr;</a>
   </div>
 
   <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">

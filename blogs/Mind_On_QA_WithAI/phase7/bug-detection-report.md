@@ -9,7 +9,7 @@
 
 ## Summary
 
-7 bugs detected across all four testing phases. 2 Critical, 3 High, 1 Medium, 1 Low. All were planted intentionally in the PeakAndPack build at the start of this series. None reached the end of the testing pipeline undetected.
+7 of the 11 bugs seeded intentionally in the PeakAndPack build were detected across the four testing phases run so far: 2 Critical, 3 High, 1 Medium, 1 Low. The remaining four (BUG-004 through BUG-007) are API/data-layer issues with no visible UI symptom, none of the four testing approaches used in Phases 3 to 6 happened to target them, see the note at the end of this report.
 
 ---
 
@@ -29,7 +29,7 @@
 
 ---
 
-## BUG-013 — Orders endpoint returns all users' order histories
+## BUG-010 — Orders endpoint returns all users' order histories
 
 **Severity:** Critical
 **Steps to reproduce:**
@@ -62,7 +62,7 @@
 
 ---
 
-## BUG-014 — GET /api/search returns 500 and leaks stack trace when q param is missing
+## BUG-011 — GET /api/search returns 500 and leaks stack trace when q param is missing
 
 **Severity:** High
 **Steps to reproduce:**
@@ -78,7 +78,7 @@
 
 ---
 
-## BUG-011 — Negative price renders as "-$89.00" on product card
+## BUG-001 — Negative price renders as "-$89.00" on product card
 
 **Severity:** High
 **Steps to reproduce:**
@@ -93,7 +93,7 @@
 
 ---
 
-## BUG-010 — Product card renders blank title when name field is empty
+## BUG-002 — Product card renders blank title when name field is empty
 
 **Severity:** Medium
 **Steps to reproduce:**
@@ -109,18 +109,20 @@
 
 ---
 
-## BUG-012 — Large price overflows product card container at mobile width
+## BUG-003 — Price set at $9,999.99, no upper bound validation
 
 **Severity:** Low
 **Steps to reproduce:**
-1. Open the product listing page at 375px viewport width
-2. Find the product priced at $9,999.99
+1. Open the product listing page
+2. Find "Insulated Water Bottle," priced at $9,999.99
 
-**Expected:** The price wraps or scales to fit the card at all widths.
-**Actual:** The price clips or overflows its container below roughly 400px. Part of the price string is hidden.
-**Evidence:** `visual.spec.ts` mobile viewport visual test. Screenshot: `card-high-price-mobile.png`.
-**First surfaced:** Phase 4, mobile visual test
-**Production cost:** Affects only high-priced items on narrow screens. Low probability of customer impact. Edge case.
+**Expected:** Product prices are validated against a sane upper bound before they reach the catalog.
+**Actual:** The price renders correctly on the card, this is not a display defect, the underlying data value itself is the problem: no validation stopped an absurd price from being seeded.
+**Evidence:** `visual-testing-checklist.md` (Manual), confirmed independently by `visual-review-output.md` (AI Agent).
+**First surfaced:** Phase 4, visual checklist
+**Production cost:** Low likelihood of customer impact on its own, but the same missing validation is the general case behind BUG-004 (no price validation on the products endpoint) — this is one instance of that broader gap made visible.
+
+**Ruled out alongside this:** both Manual+AI and Automated initially flagged this same price as *overflowing or clipping its card* below ~400px viewport width. Manual and AI Agent both checked the same product at 375px and found it renders fully on one line, no clipping, re-verified directly against the live UI for this report. The overflow claim was corrected in `visual-testing-ai-assisted.md` and the assertion was removed from `visual.spec.ts`. Two of four approaches produced a false positive on the *display* symptom while all four correctly agreed on the *data* problem, a reminder that a screenshot-based finding is a lead, not a verdict, until it's confirmed against the live app.
 
 ---
 
@@ -129,13 +131,17 @@
 | Bug | Severity | First caught in | Approach that catches it |
 |---|---|---|---|
 | BUG-009 (discount) | Critical | Phase 3 | All four |
-| BUG-013 (orders leak) | Critical | Phase 5 | Manual (body read), Automated, AI Agent |
+| BUG-010 (orders leak) | Critical | Phase 5 | Manual (body read), Automated, AI Agent |
 | BUG-008 (stock check) | High | Phase 3 | All four |
-| BUG-014 (search 500) | High | Phase 5 | All four |
-| BUG-011 (negative price) | High | Phase 4 | Manual, Manual+AI, Automated (visual), AI Agent |
-| BUG-010 (blank title) | Medium | Phase 4 | Manual, Manual+AI, Automated (visual), AI Agent |
-| BUG-012 (overflow) | Low | Phase 4 | Manual (mobile only), Automated (mobile visual), AI Agent |
+| BUG-011 (search 500) | High | Phase 5 | All four |
+| BUG-001 (negative price) | High | Phase 4 | Manual, Manual+AI, Automated (visual), AI Agent |
+| BUG-002 (blank title) | Medium | Phase 4 | Manual, Manual+AI, Automated (visual), AI Agent |
+| BUG-003 (price $9,999.99) | Low | Phase 4 | Manual, AI Agent |
 
 ### Key observation
 
-The two most expensive bugs to reach production (BUG-009 and BUG-013 — revenue loss and data privacy) were catchable in Phase 3 and Phase 5 respectively, long before any user sees the UI. The visual bugs (BUG-010, 011, 012) required Phase 4's screenshot-based approach to surface formally. BUG-013 specifically requires reading the response body — a status-code-only check would have passed it.
+The two most expensive bugs to reach production (BUG-009 and BUG-010 — revenue loss and data privacy) were catchable in Phase 3 and Phase 5 respectively, long before any user sees the UI. The visual bugs (BUG-001, 002, 003) required Phase 4's screenshot-based approach to surface formally. BUG-010 specifically requires reading the response body — a status-code-only check would have passed it.
+
+### Not caught in this pass
+
+BUG-004 (no price validation on the products endpoint), BUG-005 (no default sort), BUG-006 (registration accepts an empty name field), and BUG-007 (cart total trusts client-side prices) were all seeded in the app and named as known risks back in the Phase 1 requirements, but none of the four testing approaches run in Phases 3 through 6 produced a confirmed finding for them. All four are API/data-layer issues without a UI symptom, which is likely why the UI-focused passes (Manual, Manual+AI, AI Agent screenshot review) missed them, and the automated suite never had a spec written against those specific endpoints. A useful, honest result: four different testing approaches, run across six phases, still left a real gap. Closing it would take a pass specifically aimed at request-level validation on the products and cart endpoints.

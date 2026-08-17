@@ -177,7 +177,7 @@
   <span class="series-tag">Phase 7 of 8 &middot; Bug Detection</span>
 
   <h1>Bug Detection, By Hand</h1>
-  <p class="subtitle">Seven bugs, seven structured reports. Steps, expected, actual, severity, evidence.</p>
+  <p class="subtitle">7 of 11 seeded bugs found, seven structured reports. Steps, expected, actual, severity, evidence.</p>
 
   <div class="meta-row">
     <span>By RN</span>
@@ -192,13 +192,13 @@
     <a href="07-phase7-ai-agent.html" class="switch-btn c-agent">AI QA Agent</a>
   </div>
 
-  <p>Seven bugs, documented by hand. No AI, no automation — just the live site, the API, and a structured bug report format. The goal is thorough, actionable documentation that a developer can pick up and act on without follow-up questions.</p>
+  <p>7 of the 11 seeded bugs, documented by hand. No AI, no automation — just the live site, the API, and a structured bug report format. The goal is thorough, actionable documentation that a developer can pick up and act on without follow-up questions.</p>
 
   <div class="callout blue">
     <p><strong>What a good bug report contains.</strong> Five fields, no more: <strong>Steps to reproduce</strong> (exact, numbered, reproducible by anyone), <strong>Expected</strong> (what the requirements or common sense say should happen), <strong>Actual</strong> (what actually happened, specific), <strong>Severity</strong> (Critical/High/Medium/Low based on user and business impact), and <strong>Evidence</strong> (screenshot, API response, or test output). A bug report missing any of these will bounce back from a developer.</p>
   </div>
 
-  <h2>The seven bug reports</h2>
+  <h2>Seven bug reports (of 11 seeded bugs)</h2>
 
   <h3>BUG-008 — No stock check before checkout</h3>
   <div class="fw-table-wrap"><table class="fw-table">
@@ -218,7 +218,7 @@
     <tr><td><strong>Evidence</strong></td><td>TC-101 in checkout.spec.ts. API response: <code>{"total":0.00,"discountApplied":true}</code>.</td></tr>
   </table></div>
 
-  <h3>BUG-010 — Product card renders blank title</h3>
+  <h3>BUG-002 — Product card renders blank title</h3>
   <div class="fw-table-wrap"><table class="fw-table">
     <tr><td><strong>Steps</strong></td><td>1. Open <a href="https://peakandpack-ui.onrender.com/" target="_blank">peakandpack-ui.onrender.com</a>. 2. Find the product card whose name field is empty in the database.</td></tr>
     <tr><td><strong>Expected</strong></td><td>A fallback label (for example "Unnamed product" or the product SKU) so the card never appears broken.</td></tr>
@@ -227,7 +227,7 @@
     <tr><td><strong>Evidence</strong></td><td>Screenshot: product-empty-name.png. Visual baseline diff in Phase 4.</td></tr>
   </table></div>
 
-  <h3>BUG-011 — Negative price displays as "-$89.00"</h3>
+  <h3>BUG-001 — Negative price displays as "-$89.00"</h3>
   <div class="fw-table-wrap"><table class="fw-table">
     <tr><td><strong>Steps</strong></td><td>1. Open the product listing page. 2. Find the product card with a negative price in the database.</td></tr>
     <tr><td><strong>Expected</strong></td><td>A valid price or a hidden/flagged product. A negative price should never reach the customer-facing UI.</td></tr>
@@ -236,16 +236,16 @@
     <tr><td><strong>Evidence</strong></td><td>Screenshot: product-negative-price.png. Visual baseline diff in Phase 4.</td></tr>
   </table></div>
 
-  <h3>BUG-012 — Large price overflows at mobile width</h3>
+  <h3>BUG-003 — Price set at $9,999.99, no upper bound validation</h3>
   <div class="fw-table-wrap"><table class="fw-table">
-    <tr><td><strong>Steps</strong></td><td>1. Open the product listing at 375px viewport width. 2. Find the product priced at $9,999.99.</td></tr>
-    <tr><td><strong>Expected</strong></td><td>The price wraps or scales to fit the card at all widths.</td></tr>
-    <tr><td><strong>Actual</strong></td><td>The price clips or overflows its container below roughly 400px. Part of the price is hidden.</td></tr>
-    <tr><td><strong>Severity</strong></td><td>Low — affects only high-priced items on narrow screens. Cosmetic but unprofessional.</td></tr>
-    <tr><td><strong>Evidence</strong></td><td>Screenshot: product-price-overflow.png. Mobile viewport visual test in Phase 4.</td></tr>
+    <tr><td><strong>Steps</strong></td><td>1. Open the product listing. 2. Find "Insulated Water Bottle," priced at $9,999.99.</td></tr>
+    <tr><td><strong>Expected</strong></td><td>Product prices are validated against a sane upper bound before they reach the catalog.</td></tr>
+    <tr><td><strong>Actual</strong></td><td>The price renders correctly, this is not a display defect. The data value itself is the problem: nothing stopped an absurd price from being seeded. Checked at 375px viewport width in case it also clipped visually, it does not, renders fully on one line.</td></tr>
+    <tr><td><strong>Severity</strong></td><td>Low — low likelihood of customer impact on its own, but the same missing validation is the general case behind BUG-004 (no price validation on the products endpoint).</td></tr>
+    <tr><td><strong>Evidence</strong></td><td>Screenshot: product-price-overflow.png (kept as evidence that it does not overflow, not that it does).</td></tr>
   </table></div>
 
-  <h3>BUG-013 — Orders endpoint returns all users' orders</h3>
+  <h3>BUG-010 — Orders endpoint returns all users' orders</h3>
   <div class="fw-table-wrap"><table class="fw-table">
     <tr><td><strong>Steps</strong></td><td>1. Log in as User A. 2. GET /api/orders with User A's token. 3. Inspect the response body.</td></tr>
     <tr><td><strong>Expected</strong></td><td>Only User A's orders appear. Orders belonging to other users are never returned.</td></tr>
@@ -254,7 +254,7 @@
     <tr><td><strong>Evidence</strong></td><td>GET /api/orders response contains orders with multiple distinct userId values. Orders isolation test in Phase 5 and Phase 6 both designed to fail on this.</td></tr>
   </table></div>
 
-  <h3>BUG-014 — Search returns 500 on missing query parameter</h3>
+  <h3>BUG-011 — Search returns 500 on missing query parameter</h3>
   <div class="fw-table-wrap"><table class="fw-table">
     <tr><td><strong>Steps</strong></td><td>1. GET https://peakandpackshopdemo.onrender.com/api/search (no <code>?q=</code> parameter).</td></tr>
     <tr><td><strong>Expected</strong></td><td>400, clear validation error: "q parameter is required".</td></tr>
@@ -267,10 +267,10 @@
   <div class="fw-table-wrap"><table class="fw-table">
     <thead><tr><th>Severity</th><th>Bugs</th><th>Fix first because</th></tr></thead>
     <tbody>
-      <tr><td><strong>Critical</strong></td><td>BUG-009 (discount), BUG-013 (orders leak)</td><td>Revenue loss and data privacy — both cause immediate, serious harm</td></tr>
-      <tr><td><strong>High</strong></td><td>BUG-008 (stock), BUG-011 (negative price), BUG-014 (search 500)</td><td>Operational failures and trust damage visible to customers</td></tr>
-      <tr><td><strong>Medium</strong></td><td>BUG-010 (blank title)</td><td>Visible but not blocking — cosmetic damage to store credibility</td></tr>
-      <tr><td><strong>Low</strong></td><td>BUG-012 (price overflow)</td><td>Edge case — high price on narrow screen only</td></tr>
+      <tr><td><strong>Critical</strong></td><td>BUG-009 (discount), BUG-010 (orders leak)</td><td>Revenue loss and data privacy — both cause immediate, serious harm</td></tr>
+      <tr><td><strong>High</strong></td><td>BUG-008 (stock), BUG-001 (negative price), BUG-011 (search 500)</td><td>Operational failures and trust damage visible to customers</td></tr>
+      <tr><td><strong>Medium</strong></td><td>BUG-002 (blank title)</td><td>Visible but not blocking — cosmetic damage to store credibility</td></tr>
+      <tr><td><strong>Low</strong></td><td>BUG-003 (price $9,999.99)</td><td>Edge case — one unvalidated price, low customer impact</td></tr>
     </tbody>
   </table></div>
 

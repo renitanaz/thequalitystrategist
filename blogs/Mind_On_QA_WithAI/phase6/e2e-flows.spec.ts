@@ -17,7 +17,7 @@ import { test as base, expect } from '@playwright/test';
  *
  * Two tests are written to FAIL against the current build, because the
  * assertion states the correct behaviour and the build has known bugs:
- * BUG-009 (discount 100%) and BUG-013 (orders leak). Those failures are
+ * BUG-009 (discount 100%) and BUG-010 (orders leak). Those failures are
  * the point; they turn green when the bugs are fixed.
  */
 
@@ -87,7 +87,7 @@ test.describe('E2E flows', () => {
     expect(body.total).toBeGreaterThan(0);
   });
 
-  // Flow 5: Order history isolation (designed to fail: BUG-013)
+  // Flow 5: Order history isolation (designed to fail: BUG-010)
   test('flow 5: order history shows only the caller\'s orders @critical', async ({ request, authToken }) => {
     const auth = { Authorization: `Bearer ${authToken}` };
     const res = await request.get('/api/orders', { headers: auth });
@@ -95,7 +95,7 @@ test.describe('E2E flows', () => {
     const body = await res.json();
     const callerId = 1; // the authenticated user's id in a real run
     // Status 200 is not enough: the leak is in the body. Every order
-    // returned must belong to the caller. Currently fails (BUG-013).
+    // returned must belong to the caller. Currently fails (BUG-010).
     body.orders.forEach((o: any) => {
       expect(o.userId).toBe(callerId);
     });

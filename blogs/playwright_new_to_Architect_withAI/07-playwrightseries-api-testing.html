@@ -163,7 +163,7 @@ test('cart shows added item', async ({ page }) => {
   await page.getByRole('button', { name: /add to cart/i }).first().click();
   await page.waitForResponse(r => r.url().includes('/api/cart'));
   await page.goto('https://peakandpack-ui.onrender.com/cart');
-  await expect(page.getByTestId('cart-item-count')).toHaveText('1');
+  await expect(page.getByRole('button', { name: 'Remove' })).toHaveCount(1);
 });
 </code></pre>
     </div>
@@ -180,10 +180,8 @@ test('cart page reflects API-seeded item', async ({ page, request }) => {
   });
   // Test via UI: this is what we're actually verifying
   await page.goto('https://peakandpack-ui.onrender.com/cart');
-  await expect(page.getByTestId('cart-item-count')).toHaveText('1');
-  await expect(
-    page.getByRole('listitem').first()
-  ).toContainText('Trail Runner Pro');
+  await expect(page.getByRole('button', { name: 'Remove' })).toHaveCount(1);
+  await expect(page.getByText('Trail Runner Pro')).toBeVisible();
 });
 </code></pre>
     </div>
@@ -306,17 +304,18 @@ test('GET /api/products/:id with invalid id returns 404', async ({ request }) =>
 
   // Assert: navigate to cart and verify both appear
   await page.goto('https://peakandpack-ui.onrender.com/cart');
-  const items = page.getByRole('listitem');
+  const items = page.getByRole('button', { name: 'Remove' });
   await expect(items).toHaveCount(2);
 
   // Test the checkout flow
+  await page.getByRole('button', { name: /proceed to checkout/i }).click();
   const checkoutDone = page.waitForResponse(
     r => r.url().includes('/api/orders/checkout') && r.status() === 201
   );
-  await page.getByRole('button', { name: /checkout/i }).click();
+  await page.getByRole('button', { name: /place order/i }).click();
   await checkoutDone;
   await expect(
-    page.getByRole('heading', { name: /order confirmed/i })
+    page.getByRole('heading', { name: /order placed/i })
   ).toBeVisible();
 });
 </code></pre>

@@ -18,7 +18,7 @@ import { test, expect } from '@playwright/test';
  *
  * Three tests are written to FAIL against the current build, because
  * the expected value is the correct contract and the build has known
- * violations: BUG-014 (search 500), BUG-013 (orders leak), BUG-009
+ * violations: BUG-011 (search 500), BUG-010 (orders leak), BUG-009
  * (discount 100%). Those failures are the point.
  */
 
@@ -61,7 +61,7 @@ test.describe('API contract', () => {
     expect(body.results).toBeInstanceOf(Array);
   });
 
-  test('GET /api/search without q returns 400, not 500 (BUG-014) @critical', async ({ request }) => {
+  test('GET /api/search without q returns 400, not 500 (BUG-011) @critical', async ({ request }) => {
     const res = await request.get('/api/search');
     // Currently fails: the endpoint throws and returns 500. A missing
     // optional query is a client error and must be a 4xx.
@@ -108,7 +108,7 @@ test.describe('API contract', () => {
     expect(body.totalCharged).toBeGreaterThan(0);
   });
 
-  test('GET /api/orders returns only the caller\'s orders (BUG-013) @critical', async ({ request }) => {
+  test('GET /api/orders returns only the caller\'s orders (BUG-010) @critical', async ({ request }) => {
     const res = await request.get('/api/orders');
     expect(res.status()).toBe(200);
     const body = await res.json();
