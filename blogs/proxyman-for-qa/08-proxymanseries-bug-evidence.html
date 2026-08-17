@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Post 8: Capturing Evidence for Bug Reports | Proxyman for QA</title>
+<meta name="description" content="Exporting a HAR file or curl command from a captured request, and what to include when a proxy capture is the actual evidence in a bug report, not just a screenshot.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:#6B7C3A; --olive-dark:#4A5828; --olive-deep:#2E3A18;
+    --cream:#F5F7F0; --warm-white:#FAFCF5;
+    --ink:#1A1F14; --ink2:#3D4235; --ink3:#6B7060; --ink4:#9A9E90;
+    --border:rgba(26,31,20,0.1); --border2:rgba(26,31,20,0.06);
+    --purple:#7A4A9A; --purple-l:#EDE0F5;
+    --gold:#9A6E1A; --gold-l:#F5EDD6;
+    --blue:#2A5C9A; --blue-l:#DDE8F5;
+    --teal:#1A6B54; --teal-l:#D8EEE8;
+    --terra:#8A4A2A; --terra-l:#F5E4D8;
+    --green:#1A7A3A; --green-l:#D8F0E0;
+    --rose:#9A2A4A; --rose-l:#F5DDE5;
+    --ff-serif:'Lora',Georgia,serif;
+    --ff-sans:'DM Sans',system-ui,sans-serif;
+    --ease:cubic-bezier(0.22,1,0.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--ff-sans);background:var(--warm-white);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  header.site-header{border-bottom:1px solid var(--border);padding:1.1rem 1.5rem;background:var(--warm-white);}
+  .site-header-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+  .site-name{font-family:var(--ff-serif);font-weight:600;font-size:1.05rem;text-decoration:none;}
+  main{max-width:880px;margin:0 auto;padding:2.6rem 1.5rem 5rem;}
+  .breadcrumb{font-size:.82rem;color:var(--ink3);margin-bottom:1.3rem;}
+  .breadcrumb a{text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+  .series-tag{display:inline-block;font-size:.76rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--gold);background:var(--gold-l);padding:.3rem .7rem;border-radius:999px;margin-bottom:1.1rem;}
+  h1{font-family:var(--ff-serif);font-size:2.1rem;font-weight:700;line-height:1.2;margin-bottom:.8rem;}
+  .subtitle{font-size:1.08rem;color:var(--ink2);margin-bottom:1.6rem;max-width:680px;}
+  .meta-row{display:flex;gap:1.1rem;font-size:.82rem;color:var(--ink3);margin-bottom:1.6rem;border-bottom:1px solid var(--border);padding-bottom:1.3rem;flex-wrap:wrap;}
+  .phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem;}
+  .phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--ink4);background:var(--warm-white);text-decoration:none;}
+  .phase-pip.active{background:var(--gold);color:var(--warm-white);border-color:transparent;}
+  .phase-pip.done{background:var(--green-l);color:var(--green);border-color:var(--green);}
+  .phase-pip.soon{cursor:default;opacity:.55;}
+  h2{font-family:var(--ff-serif);font-size:1.35rem;font-weight:700;margin-top:2.2rem;margin-bottom:.8rem;}
+  h3{font-family:var(--ff-serif);font-size:1.1rem;font-weight:700;margin-top:1.6rem;margin-bottom:.6rem;}
+  p{margin-bottom:.9rem;color:var(--ink2);font-size:.97rem;}
+  strong{color:var(--ink);font-weight:700;}
+  ul,ol{margin:0 0 1rem 1.3rem;color:var(--ink2);}
+  li{margin-bottom:.4rem;font-size:.97rem;}
+  code{background:var(--cream);padding:.15rem .4rem;border-radius:5px;font-size:.87em;color:var(--olive-deep);}
+  pre{background:var(--ink);color:var(--cream);padding:1rem 1.1rem;border-radius:10px;overflow-x:auto;font-size:.82rem;margin:1rem 0;line-height:1.55;}
+  pre code{background:none;color:inherit;padding:0;}
+  .diagram-wrap{margin:1.4rem 0 1.7rem;background:var(--cream);border:1px solid var(--border);border-radius:12px;padding:1.1rem;}
+  .callout{border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.91rem;}
+  .callout p{margin-bottom:0;}
+  .callout.green{background:var(--green-l);border-left:3px solid var(--green);}.callout.green p{color:var(--olive-deep);}
+  .callout.blue{background:var(--blue-l);border-left:3px solid var(--blue);}.callout.blue p{color:var(--blue);}
+  .callout.gold{background:var(--gold-l);border-left:3px solid var(--gold);}.callout.gold p{color:var(--gold);}
+  .fw-table-wrap{overflow-x:auto;margin:1rem 0 1.5rem;}
+  table.fw-table{width:100%;border-collapse:collapse;font-size:.85rem;line-height:1.45;}
+  table.fw-table th,table.fw-table td{border:1px solid var(--border);padding:.5rem .7rem;text-align:left;vertical-align:top;}
+  table.fw-table th{background:var(--cream);font-weight:700;font-size:.8rem;}
+  table.fw-table td{color:var(--ink2);}
+  table.fw-table tr:nth-child(odd) td{background:var(--warm-white);}
+  table.fw-table tr:nth-child(even) td{background:var(--cream);}
+  .why-box{background:var(--cream);border-radius:8px;padding:.85rem 1.05rem;margin:.7rem 0 1.2rem;font-size:.89rem;}
+  .why-box .why-label{font-weight:700;color:var(--olive-dark);font-size:.76rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.3rem;}
+  .why-box p{margin-bottom:0;color:var(--ink2);}
+  .practical{background:var(--blue-l);border-radius:8px;padding:.9rem 1.1rem;margin:1.1rem 0 1.4rem;font-size:.91rem;border-left:3px solid var(--blue);}
+  .practical .practical-label{font-weight:700;color:var(--blue);font-size:.76rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.4rem;}
+  .practical p{margin-bottom:.5rem;color:var(--ink2);}
+  .practical p:last-child{margin-bottom:0;}
+  .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:1.8rem;flex-wrap:wrap;}
+  .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:700;font-size:.9rem;padding:.7rem 1.2rem;border-radius:8px;transition:background .2s var(--ease);}
+  .nav-cta.primary{background:var(--olive);color:var(--warm-white);}
+  .nav-cta.primary:hover{background:var(--olive-dark);}
+  .nav-cta.secondary{background:var(--cream);color:var(--ink2);border:1px solid var(--border);}
+  footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.85rem;color:var(--ink3);}
+  footer a{text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+  @media(max-width:600px){
+    h1{font-size:1.65rem;}
+    .meta-row{flex-wrap:wrap;gap:.5rem;}
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+
+<main>
+
+  <p class="breadcrumb">
+    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    <a href="00-proxymanseries-landing.html">Proxyman for QA</a> &nbsp;/&nbsp;
+    Post 8
+  </p>
+
+  <span class="series-tag">Post 8 of 9 &middot; Bug Evidence</span>
+
+  <h1>Capturing evidence for bug reports</h1>
+  <p class="subtitle">A screenshot proves the UI looked wrong. It doesn't prove why. Every practical exercise since Post 3 has produced a real request and response, this post is about turning one of those into evidence a developer can act on immediately, not evidence they have to reverse-engineer first.</p>
+
+  <div class="meta-row">
+    <span>By RN</span>
+    <span>~10 min read</span>
+    <span>Demo: PeakAndPack</span>
+  </div>
+
+  <div class="phase-strip" aria-label="Series progress">
+    <a href="00-proxymanseries-landing.html" class="phase-pip" title="Series overview">0</a>
+    <a href="01-proxymanseries-setup.html" class="phase-pip done" title="Post 1: Setup">1</a>
+    <a href="02-proxymanseries-troubleshooting.html" class="phase-pip done" title="Post 2: Troubleshooting">2</a>
+    <a href="03-proxymanseries-reading-traffic.html" class="phase-pip done" title="Post 3: Reading traffic">3</a>
+    <a href="04-proxymanseries-breakpoints.html" class="phase-pip done" title="Post 4: Breakpoints">4</a>
+    <a href="05-proxymanseries-map-local-remote.html" class="phase-pip done" title="Post 5: Map Local/Remote">5</a>
+    <a href="06-proxymanseries-network-conditions.html" class="phase-pip done" title="Post 6: Network conditions">6</a>
+    <a href="07-proxymanseries-composer.html" class="phase-pip done" title="Post 7: Composer">7</a>
+    <span class="phase-pip active" title="Post 8: Bug evidence">8</span>
+    <a href="09-proxymanseries-quick-reference.html" class="phase-pip" title="Post 9: Quick reference">9</a>
+  </div>
+
+  <h2>Why a screenshot alone invites a "can't reproduce"</h2>
+  <p>A screenshot of a broken checkout page tells a developer the UI was wrong. It doesn't tell them what request produced that state, what the server actually sent back, or whether the client mishandled a correct response or the server sent a wrong one in the first place. Without that, "can't reproduce" is the honest, likely reply, not a brush-off.</p>
+  <p>A captured request and response answers exactly the question a screenshot can't: here is what was sent, here is what came back, here is where the two stop matching.</p>
+
+  <h2>Two export formats, two audiences</h2>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 700 190" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" role="img" aria-label="One captured request branches into two export formats. HAR file, for opening in another proxy or network analyzer tool, imported rather than read directly. Copy as curl, an executable command a developer can paste straight into a terminal and run themselves, no tool required.">
+      <rect x="270" y="16" width="160" height="42" rx="8" fill="#FAFCF5" stroke="#D8C8B8"/>
+      <text x="350" y="42" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="#3D4235">Captured request</text>
+
+      <path d="M320,58 L160,100" fill="none" stroke="#2A5C9A" stroke-width="1.5" marker-end="url(#e1)"/>
+      <path d="M380,58 L540,100" fill="none" stroke="#9A6E1A" stroke-width="1.5" marker-end="url(#e2)"/>
+
+      <rect x="40" y="102" width="220" height="70" rx="8" fill="#DDE8F5" stroke="#2A5C9A"/>
+      <text x="150" y="124" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="#2A5C9A">Export as HAR</text>
+      <text x="150" y="140" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#2A5C9A">for another proxy or</text>
+      <text x="150" y="154" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#2A5C9A">network analyzer to import</text>
+
+      <rect x="440" y="102" width="220" height="70" rx="8" fill="#F5EDD6" stroke="#9A6E1A"/>
+      <text x="550" y="124" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="#9A6E1A">Copy as curl</text>
+      <text x="550" y="140" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#9A6E1A">a developer pastes straight</text>
+      <text x="550" y="154" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#9A6E1A">into a terminal, no tool needed</text>
+
+      <defs>
+        <marker id="e1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2A5C9A"/></marker>
+        <marker id="e2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9A6E1A"/></marker>
+      </defs>
+    </svg>
+  </div>
+
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th></th><th>HAR</th><th>Copy as curl</th></tr></thead>
+      <tbody>
+        <tr><td><strong>What it is</strong></td><td>A structured file (right-click a request &rarr; Export &rarr; HAR) containing the full request and response, headers, body, and timing.</td><td>A single executable shell command (right-click &rarr; Copy as curl) that reproduces the exact request.</td></tr>
+        <tr><td><strong>Best for</strong></td><td>Handing off to someone who'll open it in their own proxy or network analyzer tool, preserving everything, including timing.</td><td>A developer who just wants to run the exact request themselves, right now, without installing anything.</td></tr>
+        <tr><td><strong>Limitation</strong></td><td>Not human-readable on its own, needs a tool to open. Not appropriate to attach if it contains another user's real session data.</td><td>Only captures the request, not the response, since a curl command is something you run, not something you receive.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout blue">
+    <p><strong>Check what's in the export before you attach it to a bug report.</strong> Both formats include every header on the request, which usually means an <code>Authorization</code> token or session cookie. Fine for a demo app like PeakAndPack, not fine to paste into a shared ticket for anything touching real user data without scrubbing it first.</p>
+  </div>
+
+  <h2>Practical: turn a real finding into a proper bug report</h2>
+  <div class="practical">
+    <span class="practical-label">Try it</span>
+    <p>Pick one finding from an earlier post's deliverable, the breakpoint exercise in Post 4, the Map Local states in Post 5, or the search edge cases in Post 7. Whichever one actually surfaced unexpected behavior.</p>
+    <p>Export that request as curl, and write it up in the same Steps / Expected / Actual / Severity / Evidence format used throughout the AI-Augmented QA series on this site, with the curl command as your Evidence field instead of a screenshot description. Notice how much less interpretation the developer reading it has to do.</p>
+  </div>
+
+  <h2>AI-assisted: drafting the report from the capture</h2>
+  <p>The same pattern used across the AI-Augmented QA series on this site applies directly here: paste the exported curl command, or the key request/response fields, into an AI tool along with what you expected to happen, and ask for a first-draft bug report in the Steps / Expected / Actual / Severity format.</p>
+  <p>What it's good at: turning "here's a curl command and it returned a 500 when I expected a 400" into properly structured prose in seconds, faster than typing the template out by hand every time.</p>
+  <p>What it can't do for you: confirm the steps actually reproduce the issue (only running them again proves that), or judge severity against your specific business context (a "minor" API inconsistency might be a contract-breaking change for a partner integration, and no AI reading the request in isolation knows that). Review the draft the same way Post 4 of the AI-Augmented QA bug-detection phase does: as a fast first pass, not a final answer.</p>
+
+  <div class="callout blue">
+    <p><strong>Think before pasting a capture into a third-party AI tool.</strong> The same headers-and-cookies caution from earlier applies with more force here: a capture handed to an external service leaves your machine. Fine for PeakAndPack's demo credentials, not something to do by habit with a capture containing a real user's session token or personal data without checking your organization's data-handling policy first.</p>
+  </div>
+
+  <h2>Your deliverable</h2>
+  <p>One complete bug report, <code>peakandpack-proxyman-bug-report.md</code>, evidence included, either handwritten or AI-drafted and reviewed. If nothing from earlier posts turned up a real discrepancy, that's fine, write up the search endpoint's missing-parameter behavior from Post 7 instead, since PeakAndPack's search has a documented rough edge worth confirming against the live app either way.</p>
+  <p><strong>Time:</strong> ~15 minutes handwritten if you already have a finding from an earlier post, ~5 to 10 with AI-assisted drafting plus review, ~25 either way if you're capturing a fresh finding first.</p>
+
+  <div class="nav-row">
+    <a href="07-proxymanseries-composer.html" class="nav-cta secondary">&larr; Post 7: Composer</a>
+    <a href="09-proxymanseries-quick-reference.html" class="nav-cta primary">Post 9: Quick reference &rarr;</a>
+  </div>
+
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; Proxyman for QA</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+</body>
+</html>

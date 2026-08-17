@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Post 7: Accessibility Testing | CMS Testing for QA</title>
+<meta name="description" content="Alt text, heading hierarchy, form labels, contrast, and keyboard focus: the accessibility checks a CMS's content layer breaks silently, tested with free tools against a seeded demo site.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:#6B7C3A; --olive-dark:#4A5828; --olive-deep:#2E3A18;
+    --cream:#F5F7F0; --warm-white:#FAFCF5;
+    --ink:#1A1F14; --ink2:#3D4235; --ink3:#6B7060; --ink4:#9A9E90;
+    --border:rgba(26,31,20,0.1); --border2:rgba(26,31,20,0.06);
+    --purple:#7A4A9A; --purple-l:#EDE0F5;
+    --gold:#9A6E1A; --gold-l:#F5EDD6;
+    --blue:#2A5C9A; --blue-l:#DDE8F5;
+    --teal:#1A6B54; --teal-l:#D8EEE8;
+    --terra:#8A4A2A; --terra-l:#F5E4D8;
+    --green:#1A7A3A; --green-l:#D8F0E0;
+    --rose:#9A2A4A; --rose-l:#F5DDE5;
+    --ff-serif:'Lora',Georgia,serif;
+    --ff-sans:'DM Sans',system-ui,sans-serif;
+    --ease:cubic-bezier(0.22,1,0.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--ff-sans);background:var(--warm-white);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  header.site-header{border-bottom:1px solid var(--border);padding:1.1rem 1.5rem;background:var(--warm-white);}
+  .site-header-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+  .site-name{font-family:var(--ff-serif);font-weight:600;font-size:1.05rem;text-decoration:none;}
+  main{max-width:880px;margin:0 auto;padding:2.6rem 1.5rem 5rem;}
+  .breadcrumb{font-size:.82rem;color:var(--ink3);margin-bottom:1.3rem;}
+  .breadcrumb a{text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+  .series-tag{display:inline-block;font-size:.76rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--gold);background:var(--gold-l);padding:.3rem .7rem;border-radius:999px;margin-bottom:1.1rem;}
+  h1{font-family:var(--ff-serif);font-size:2.1rem;font-weight:700;line-height:1.2;margin-bottom:.8rem;}
+  .subtitle{font-size:1.08rem;color:var(--ink2);margin-bottom:1.6rem;max-width:680px;}
+  .meta-row{display:flex;gap:1.1rem;font-size:.82rem;color:var(--ink3);margin-bottom:1.6rem;border-bottom:1px solid var(--border);padding-bottom:1.3rem;flex-wrap:wrap;}
+  .phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem;}
+  .phase-pip{display:inline-flex;align-items:center;justify-content:center;width:1.9rem;height:1.9rem;border-radius:50%;font-size:.68rem;font-weight:700;border:1.5px solid var(--border);color:var(--ink4);background:var(--warm-white);text-decoration:none;}
+  .phase-pip.active{background:var(--gold);color:var(--warm-white);border-color:transparent;}
+  .phase-pip.done{background:var(--green-l);color:var(--green);border-color:var(--green);}
+  .phase-pip.soon{cursor:default;opacity:.55;}
+  h2{font-family:var(--ff-serif);font-size:1.35rem;font-weight:700;margin-top:2.2rem;margin-bottom:.8rem;}
+  h3{font-family:var(--ff-serif);font-size:1.1rem;font-weight:700;margin-top:1.6rem;margin-bottom:.6rem;}
+  p{margin-bottom:.9rem;color:var(--ink2);font-size:.97rem;}
+  strong{color:var(--green);font-weight:700;}
+  ul,ol{margin:0 0 1rem 1.3rem;color:var(--ink2);}
+  li{margin-bottom:.4rem;font-size:.97rem;}
+  code{background:var(--cream);padding:.15rem .4rem;border-radius:5px;font-size:.87em;color:var(--olive-deep);}
+  .callout{border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.91rem;}
+  .callout p{margin-bottom:0;}
+  .callout.green{background:var(--green-l);border-left:3px solid var(--green);}.callout.green p{color:var(--olive-deep);}
+  .callout.blue{background:var(--blue-l);border-left:3px solid var(--blue);}.callout.blue p{color:var(--blue);}
+  .callout.gold{background:var(--gold-l);border-left:3px solid var(--gold);}.callout.gold p{color:var(--gold);}
+  .callout.warn{background:var(--terra-l);border-left:3px solid var(--terra);}.callout.warn p{color:var(--terra);}
+  .fw-table-wrap{overflow-x:auto;margin:1rem 0 1.5rem;}
+  table.fw-table{width:100%;border-collapse:collapse;font-size:.85rem;line-height:1.45;}
+  table.fw-table th,table.fw-table td{border:1px solid var(--border);padding:.5rem .7rem;text-align:left;vertical-align:top;}
+  table.fw-table th{background:var(--cream);font-weight:700;font-size:.8rem;}
+  table.fw-table td{color:var(--ink2);}
+  table.fw-table tr:nth-child(odd) td{background:var(--warm-white);}
+  table.fw-table tr:nth-child(even) td{background:var(--cream);}
+  .diagram-wrap{margin:1.4rem 0 1.7rem;background:var(--cream);border:1px solid var(--border);border-radius:12px;padding:1.1rem;}
+  .why-box{background:var(--cream);border-radius:8px;padding:.85rem 1.05rem;margin:.7rem 0 1.2rem;font-size:.89rem;}
+  .why-box .why-label{font-weight:700;color:var(--olive-dark);font-size:.76rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.3rem;}
+  .why-box p{margin-bottom:.5rem;color:var(--ink2);}
+  .why-box p:last-child{margin-bottom:0;}
+  .practical{background:var(--blue-l);border-radius:8px;padding:.9rem 1.1rem;margin:1.1rem 0 1.4rem;font-size:.91rem;border-left:3px solid var(--blue);}
+  .practical .practical-label{font-weight:700;color:var(--blue);font-size:.76rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.4rem;}
+  .practical p{margin-bottom:.5rem;color:var(--ink2);}
+  .practical p:last-child{margin-bottom:0;}
+  .takeaways{background:var(--teal-l);border:1px solid var(--teal);border-radius:10px;padding:1.1rem 1.3rem;margin:1.5rem 0 2rem;}
+  .takeaways .takeaways-label{font-weight:700;color:var(--teal);font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.6rem;}
+  .takeaways ul{margin:0 0 0 1.2rem;}
+  .takeaways li{color:var(--ink2);font-size:.93rem;margin-bottom:.4rem;}
+  .takeaways li:last-child{margin-bottom:0;}
+  .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:1.8rem;flex-wrap:wrap;}
+  .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:700;font-size:.9rem;padding:.7rem 1.2rem;border-radius:8px;transition:background .2s var(--ease);}
+  .nav-cta.primary{background:var(--olive);color:var(--warm-white);}
+  .nav-cta.primary:hover{background:var(--olive-dark);}
+  .nav-cta.secondary{background:var(--cream);color:var(--ink2);border:1px solid var(--border);}
+  footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.85rem;color:var(--ink3);}
+  footer a{text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+  @media(max-width:600px){
+    h1{font-size:1.65rem;}
+    .meta-row{flex-wrap:wrap;gap:.5rem;}
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+
+<main>
+
+  <p class="breadcrumb">
+    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    <a href="00-cmsseries-landing.html">CMS Testing for QA</a> &nbsp;/&nbsp;
+    Post 7
+  </p>
+
+  <span class="series-tag">Post 7 of 17 &middot; Quality pillars</span>
+
+  <h1>Accessibility testing</h1>
+  <p class="subtitle">A developer builds an accessible template once. An editor breaks it, one missing alt attribute or one skipped heading level at a time, every time they publish, forever after. This post is about the checks that catch that ongoing content-side risk, and about the honest limits of the free tools that automate part of it.</p>
+
+  <div class="meta-row">
+    <span>By RN</span>
+    <span>~10 min read</span>
+    <span>Demo: Grove &amp; Bean</span>
+  </div>
+
+  <div class="phase-strip" aria-label="Series progress">
+    <a href="00-cmsseries-landing.html" class="phase-pip" title="Series overview">0</a>
+    <a href="01-cmsseries-what-makes-different.html" class="phase-pip" title="Post 1: What makes CMS testing different">1</a>
+    <a href="02-cmsseries-content-editorial-workflow.html" class="phase-pip" title="Post 2: Content and editorial workflow">2</a>
+    <a href="03-cmsseries-functional-template-testing.html" class="phase-pip" title="Post 3: Functional and template testing">3</a>
+    <a href="04-cmsseries-api-integration-testing.html" class="phase-pip" title="Post 4: API and integration testing">4</a>
+    <a href="05-cmsseries-headless-cms-considerations.html" class="phase-pip" title="Post 5: Headless CMS considerations">5</a>
+    <a href="06-cmsseries-seo-testing.html" class="phase-pip" title="Post 6: SEO testing">6</a>
+    <span class="phase-pip active" title="Post 7: Accessibility testing">7</span>
+    <a href="08-cmsseries-performance-caching-testing.html" class="phase-pip" title="Post 8: Performance and caching testing">8</a>
+    <a href="09-cmsseries-analytics-tracking-testing.html" class="phase-pip" title="Post 9: Analytics and tracking validation">9</a>
+    <a href="10-cmsseries-security-testing.html" class="phase-pip" title="Post 10: Security testing">10</a>
+    <a href="11-cmsseries-crossbrowser-visual-testing.html" class="phase-pip" title="Post 11: Cross-browser and visual testing">11</a>
+    <a href="12-cmsseries-forms-lead-capture-testing.html" class="phase-pip" title="Post 12: Forms and lead-capture testing">12</a>
+    <a href="13-cmsseries-localization-testing.html" class="phase-pip" title="Post 13: Localization testing">13</a>
+    <a href="14-cmsseries-legal-compliance-testing.html" class="phase-pip" title="Post 14: Legal and compliance testing">14</a>
+    <a href="15-cmsseries-staging-release-testing.html" class="phase-pip" title="Post 15: Staging, preview and release testing">15</a>
+    <a href="16-cmsseries-migration-testing.html" class="phase-pip" title="Post 16: Migration testing">16</a>
+    <a href="17-cmsseries-testing-strategy-capstone.html" class="phase-pip" title="Post 17: The CMS testing strategy">17</a>
+  </div>
+
+  <div class="takeaways">
+    <span class="takeaways-label">Key takeaways</span>
+    <ul>
+      <li>A template's accessibility is a one-time developer concern. Content's accessibility, alt text, heading structure, link wording, is a per-edit concern that never stops.</li>
+      <li>Automated scanners (Lighthouse, axe, WAVE) reliably catch roughly 30-40% of real WCAG issues. The rest need a human, deliberately.</li>
+      <li>A missing form label doesn't look broken. A screen reader announces it as an unlabeled field with no clue what to type.</li>
+      <li>Cross-check at least two automated tools, since they don't all catch the same things, then do one manual pass: keyboard-only, no mouse.</li>
+    </ul>
+  </div>
+
+  <h2>Two accessibility problems, on two different schedules</h2>
+  <p>A template's accessibility, semantic HTML, ARIA where needed, logical tab order, gets built once and reviewed once. An editor's accessibility choices, whether they fill in alt text, whether they use headings in order, whether a link says "read more" or something that means anything out of context, happen every single time content is published, by someone who's rarely thought about screen readers at all.</p>
+
+  <div class="why-box">
+    <span class="why-label">Why this matters more here than a generic accessibility checklist</span>
+    <p>Testing a CMS site's accessibility once, at launch, only covers the template. The content layer needs the same ongoing attention Post 1 described for every other kind of content risk, because a perfectly accessible template still produces an inaccessible page the moment an editor uploads an image without alt text.</p>
+  </div>
+
+  <h2>What automated tools actually catch</h2>
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" role="img" aria-label="Diagram: automated tools reliably catch missing alt text, missing form labels, low color contrast, and missing page language. They cannot catch whether alt text is actually meaningful, whether reading order makes sense, or whether keyboard navigation is usable, those need a human.">
+      <text x="20" y="24" font-family="DM Sans, sans-serif" font-size="12" font-weight="700" fill="#1A7A3A">AUTOMATED TOOLS RELIABLY CATCH</text>
+      <rect x="20" y="38" width="300" height="130" rx="8" fill="#D8F0E0" stroke="#1A7A3A"/>
+      <text x="40" y="62" font-family="DM Sans, sans-serif" font-size="10.5" fill="#0F5A26">&#8226; Missing alt attribute</text>
+      <text x="40" y="84" font-family="DM Sans, sans-serif" font-size="10.5" fill="#0F5A26">&#8226; Missing form label</text>
+      <text x="40" y="106" font-family="DM Sans, sans-serif" font-size="10.5" fill="#0F5A26">&#8226; Insufficient color contrast</text>
+      <text x="40" y="128" font-family="DM Sans, sans-serif" font-size="10.5" fill="#0F5A26">&#8226; Missing page language</text>
+      <text x="40" y="150" font-family="DM Sans, sans-serif" font-size="10.5" fill="#0F5A26">&#8226; Empty links or buttons</text>
+
+      <text x="380" y="24" font-family="DM Sans, sans-serif" font-size="12" font-weight="700" fill="#9A2A4A">ONLY A HUMAN CATCHES</text>
+      <rect x="380" y="38" width="300" height="130" rx="8" fill="#F5DDE5" stroke="#9A2A4A"/>
+      <text x="400" y="62" font-family="DM Sans, sans-serif" font-size="10.5" fill="#7A1A38">&#8226; Whether alt text is meaningful</text>
+      <text x="400" y="84" font-family="DM Sans, sans-serif" font-size="10.5" fill="#7A1A38">&#8226; Whether reading order makes sense</text>
+      <text x="400" y="106" font-family="DM Sans, sans-serif" font-size="10.5" fill="#7A1A38">&#8226; Whether keyboard nav is usable</text>
+      <text x="400" y="128" font-family="DM Sans, sans-serif" font-size="10.5" fill="#7A1A38">&#8226; Whether focus order is logical</text>
+      <text x="400" y="150" font-family="DM Sans, sans-serif" font-size="10.5" fill="#7A1A38">&#8226; Whether link text means anything</text>
+    </svg>
+  </div>
+
+  <div class="callout gold">
+    <p><strong>Automated tools catch roughly 30-40% of real WCAG issues.</strong> That's a strong first pass, not a pass/fail gate. Treat a clean automated scan as "nothing obvious," not "accessible."</p>
+  </div>
+
+  <h2>The core checks</h2>
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>Check</th><th>What breaks without it</th><th>Seeded on Grove &amp; Bean</th></tr></thead>
+      <tbody>
+        <tr><td>Alt text on images</td><td>A screen reader announces "image" with no description, or skips it entirely</td><td><code>A11Y-1</code>, <code>A11Y-2</code></td></tr>
+        <tr><td>Form field labels</td><td>A screen reader announces an unlabeled field with no clue what to enter</td><td><code>A11Y-3</code></td></tr>
+        <tr><td>Color contrast</td><td>Low-vision users can't read text against its background</td><td><code>A11Y-4</code></td></tr>
+        <tr><td>Heading hierarchy</td><td>Screen reader users navigate by heading level; a skipped level breaks that structure</td><td><code>A11Y-5</code></td></tr>
+        <tr><td>Visible keyboard focus</td><td>Keyboard-only users can't see where they are on the page</td><td><code>A11Y-6</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>What a missing label actually sounds like</h2>
+  <p>It's easy to read "missing form label" as a minor technicality. It isn't, once you hear what it actually does to someone using a screen reader.</p>
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>Field</th><th>With a proper label</th><th>Without one (Grove &amp; Bean's contact form)</th></tr></thead>
+      <tbody>
+        <tr><td>Email field</td><td>"Your email, edit text"</td><td>"Edit text, blank"</td></tr>
+        <tr><td>Message field</td><td>"Your message, edit text"</td><td>"Edit text, blank"</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Placeholder text disappears the moment someone starts typing, and most screen readers don't reliably announce it as a label in the first place. A sighted user glances at the greyed-out hint text and moves on. A screen reader user gets three identical, contentless "edit text, blank" announcements in a row and has to guess.</p>
+
+  <h2>Try it: audit the demo site with two tools</h2>
+  <div class="practical">
+    <span class="practical-label">Try it</span>
+    <p>Install the <a href="https://www.deque.com/axe/devtools/" target="_blank">axe DevTools</a> browser extension, and separately try <a href="https://wave.webaim.org/" target="_blank">WAVE</a>. Run both against the <a href="demo-site/contact.html">Grove &amp; Bean contact page</a> and compare what each one flags.</p>
+    <p>Then close the mouse entirely. Using only Tab, Shift+Tab, and Enter, try to navigate from the homepage to the contact form and fill it in. Notice whether you can ever tell which element currently has focus.</p>
+    <p>Check your findings against <code>demo-site/seeded-issues.md</code>, the A11Y-1 through A11Y-6 entries.</p>
+  </div>
+
+  <h2>Your deliverable</h2>
+  <p>A short comparison: which of the six A11Y issues axe caught, which WAVE caught, and which one only showed up during the keyboard-only pass. Note any issue neither automated tool flagged.</p>
+  <p><strong>Time:</strong> ~25 minutes.</p>
+
+  <div class="nav-row">
+    <a href="06-cmsseries-seo-testing.html" class="nav-cta secondary">&larr; Post 6: SEO testing</a>
+    <a href="08-cmsseries-performance-caching-testing.html" class="nav-cta primary">Post 8: Performance &amp; caching testing &rarr;</a>
+  </div>
+
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; CMS Testing for QA</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+</body>
+</html>

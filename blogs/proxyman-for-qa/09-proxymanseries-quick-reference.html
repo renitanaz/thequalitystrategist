@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Post 9: Quick Reference | Proxyman for QA</title>
+<meta name="description" content="A condensed, scannable cheat sheet for the whole series: which tool for which job, a checklist of API test case categories to run through Proxyman, and quick setup and troubleshooting lookups.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:#6B7C3A; --olive-dark:#4A5828; --olive-deep:#2E3A18;
+    --cream:#F5F7F0; --warm-white:#FAFCF5;
+    --ink:#1A1F14; --ink2:#3D4235; --ink3:#6B7060; --ink4:#9A9E90;
+    --border:rgba(26,31,20,0.1); --border2:rgba(26,31,20,0.06);
+    --purple:#7A4A9A; --purple-l:#EDE0F5;
+    --gold:#9A6E1A; --gold-l:#F5EDD6;
+    --blue:#2A5C9A; --blue-l:#DDE8F5;
+    --teal:#1A6B54; --teal-l:#D8EEE8;
+    --terra:#8A4A2A; --terra-l:#F5E4D8;
+    --green:#1A7A3A; --green-l:#D8F0E0;
+    --rose:#9A2A4A; --rose-l:#F5DDE5;
+    --ff-serif:'Lora',Georgia,serif;
+    --ff-sans:'DM Sans',system-ui,sans-serif;
+    --ease:cubic-bezier(0.22,1,0.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--ff-sans);background:var(--warm-white);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  header.site-header{border-bottom:1px solid var(--border);padding:1.1rem 1.5rem;background:var(--warm-white);}
+  .site-header-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+  .site-name{font-family:var(--ff-serif);font-weight:600;font-size:1.05rem;text-decoration:none;}
+  main{max-width:880px;margin:0 auto;padding:2.6rem 1.5rem 5rem;}
+  .breadcrumb{font-size:.82rem;color:var(--ink3);margin-bottom:1.3rem;}
+  .breadcrumb a{text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+  .series-tag{display:inline-block;font-size:.76rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--gold);background:var(--gold-l);padding:.3rem .7rem;border-radius:999px;margin-bottom:1.1rem;}
+  h1{font-family:var(--ff-serif);font-size:2.1rem;font-weight:700;line-height:1.2;margin-bottom:.8rem;}
+  .subtitle{font-size:1.08rem;color:var(--ink2);margin-bottom:1.6rem;max-width:680px;}
+  .meta-row{display:flex;gap:1.1rem;font-size:.82rem;color:var(--ink3);margin-bottom:1.6rem;border-bottom:1px solid var(--border);padding-bottom:1.3rem;flex-wrap:wrap;}
+  .phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem;}
+  .phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--ink4);background:var(--warm-white);text-decoration:none;}
+  .phase-pip.active{background:var(--gold);color:var(--warm-white);border-color:transparent;}
+  .phase-pip.done{background:var(--green-l);color:var(--green);border-color:var(--green);}
+  h2{font-family:var(--ff-serif);font-size:1.35rem;font-weight:700;margin-top:2.2rem;margin-bottom:.8rem;}
+  h3{font-family:var(--ff-serif);font-size:1.1rem;font-weight:700;margin-top:1.6rem;margin-bottom:.6rem;}
+  p{margin-bottom:.9rem;color:var(--ink2);font-size:.97rem;}
+  strong{color:var(--ink);font-weight:700;}
+  ul,ol{margin:0 0 1rem 1.3rem;color:var(--ink2);}
+  li{margin-bottom:.4rem;font-size:.97rem;}
+  code{background:var(--cream);padding:.15rem .4rem;border-radius:5px;font-size:.87em;color:var(--olive-deep);}
+  .callout{border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.91rem;}
+  .callout p{margin-bottom:0;}
+  .callout.green{background:var(--green-l);border-left:3px solid var(--green);}.callout.green p{color:var(--olive-deep);}
+  .callout.gold{background:var(--gold-l);border-left:3px solid var(--gold);}.callout.gold p{color:var(--gold);}
+  .fw-table-wrap{overflow-x:auto;margin:1rem 0 1.5rem;}
+  table.fw-table{width:100%;border-collapse:collapse;font-size:.84rem;line-height:1.4;}
+  table.fw-table th,table.fw-table td{border:1px solid var(--border);padding:.5rem .65rem;text-align:left;vertical-align:top;}
+  table.fw-table th{background:var(--cream);font-weight:700;font-size:.78rem;}
+  table.fw-table td{color:var(--ink2);}
+  table.fw-table tr:nth-child(odd) td{background:var(--warm-white);}
+  table.fw-table tr:nth-child(even) td{background:var(--cream);}
+  .checklist{list-style:none;margin:0 0 1.2rem 0;}
+  .checklist li{padding-left:1.6rem;position:relative;margin-bottom:.55rem;font-size:.94rem;}
+  .checklist li::before{content:"\2610";position:absolute;left:0;color:var(--olive);font-size:1rem;}
+  .series-complete{background:var(--cream);border-radius:10px;padding:1.2rem 1.4rem;margin:1.4rem 0;}
+  .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:1.8rem;flex-wrap:wrap;}
+  .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:700;font-size:.9rem;padding:.7rem 1.2rem;border-radius:8px;transition:background .2s var(--ease);}
+  .nav-cta.primary{background:var(--olive);color:var(--warm-white);}
+  .nav-cta.primary:hover{background:var(--olive-dark);}
+  .nav-cta.secondary{background:var(--cream);color:var(--ink2);border:1px solid var(--border);}
+  footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.85rem;color:var(--ink3);}
+  footer a{text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+  @media(max-width:600px){
+    h1{font-size:1.65rem;}
+    .meta-row{flex-wrap:wrap;gap:.5rem;}
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+
+<main>
+
+  <p class="breadcrumb">
+    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    <a href="00-proxymanseries-landing.html">Proxyman for QA</a> &nbsp;/&nbsp;
+    Post 9
+  </p>
+
+  <span class="series-tag">Post 9 of 9 &middot; Quick Reference</span>
+
+  <h1>Quick reference</h1>
+  <p class="subtitle">Everything from posts 1 through 8, condensed. This page assumes you've already read the "why" behind each of these, it's here for when you already know why and just need the steps.</p>
+
+  <div class="meta-row">
+    <span>By RN</span>
+    <span>~5 min read</span>
+    <span>Demo: PeakAndPack</span>
+  </div>
+
+  <div class="phase-strip" aria-label="Series progress">
+    <a href="00-proxymanseries-landing.html" class="phase-pip" title="Series overview">0</a>
+    <a href="01-proxymanseries-setup.html" class="phase-pip done" title="Post 1: Setup">1</a>
+    <a href="02-proxymanseries-troubleshooting.html" class="phase-pip done" title="Post 2: Troubleshooting">2</a>
+    <a href="03-proxymanseries-reading-traffic.html" class="phase-pip done" title="Post 3: Reading traffic">3</a>
+    <a href="04-proxymanseries-breakpoints.html" class="phase-pip done" title="Post 4: Breakpoints">4</a>
+    <a href="05-proxymanseries-map-local-remote.html" class="phase-pip done" title="Post 5: Map Local/Remote">5</a>
+    <a href="06-proxymanseries-network-conditions.html" class="phase-pip done" title="Post 6: Network conditions">6</a>
+    <a href="07-proxymanseries-composer.html" class="phase-pip done" title="Post 7: Composer">7</a>
+    <a href="08-proxymanseries-bug-evidence.html" class="phase-pip done" title="Post 8: Bug evidence">8</a>
+    <span class="phase-pip active" title="Post 9: Quick reference">9</span>
+  </div>
+
+  <h2>Which tool for which job</h2>
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>You want to&hellip;</th><th>Use</th><th>Post</th></tr></thead>
+      <tbody>
+        <tr><td>See what a request/response actually contains</td><td>Flow list &rarr; Flow Content panes, filter by domain/URL/status</td><td><a href="03-proxymanseries-reading-traffic.html">3</a></td></tr>
+        <tr><td>Send input the UI would never let you send</td><td>Breakpoint (right-click &rarr; Breakpoint &rarr; Request/Response)</td><td><a href="04-proxymanseries-breakpoints.html">4</a></td></tr>
+        <tr><td>Simulate an error, empty, or malformed response every time</td><td>Map Local (right-click &rarr; Map Local)</td><td><a href="05-proxymanseries-map-local-remote.html">5</a></td></tr>
+        <tr><td>Point the app at staging/a different server</td><td>Map Remote</td><td><a href="05-proxymanseries-map-local-remote.html">5</a></td></tr>
+        <tr><td>Test on a slow, unstable, or dropped connection</td><td>Network Conditions (right-click domain &rarr; Tools)</td><td><a href="06-proxymanseries-network-conditions.html">6</a></td></tr>
+        <tr><td>Resend a captured request with one thing changed</td><td>Edit &amp; Repeat</td><td><a href="07-proxymanseries-composer.html">7</a></td></tr>
+        <tr><td>Send a request the app has never made at all</td><td>Compose (blank template or pasted curl)</td><td><a href="07-proxymanseries-composer.html">7</a></td></tr>
+        <tr><td>Hand a finding to a developer</td><td>Export as HAR, or Copy as curl</td><td><a href="08-proxymanseries-bug-evidence.html">8</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>API test case categories to run through Proxyman</h2>
+  <p>Not every category below got its own dedicated exercise earlier in the series, but every one is directly reachable with the tools covered. Treat this as a checklist for a new endpoint, not just a recap.</p>
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>Category</th><th>What you're checking</th><th>Tool</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Status code correctness</strong></td><td>Not just success vs. failure, the <em>right</em> status for the <em>right</em> condition: a missing required field is a 400, not a 500. A missing search query on PeakAndPack has been exactly this kind of mismatch.</td><td>Reading traffic, Breakpoints</td></tr>
+        <tr><td><strong>Boundary and invalid input</strong></td><td>Negative numbers, zero, empty strings, values far outside any sane range, wrong data types in a field the server should validate.</td><td>Breakpoints, Composer</td></tr>
+        <tr><td><strong>Authorization, not just authentication</strong></td><td>Being logged in and being allowed to see this specific resource are different checks. Strip or swap the <code>Authorization</code> header on a request for another user's data, one bug in this exact category is real and confirmed on PeakAndPack's orders endpoint.</td><td>Breakpoints (edit headers), Edit &amp; Repeat</td></tr>
+        <tr><td><strong>Error response data leakage</strong></td><td>Does an error response ever include a stack trace, an internal file path, or other implementation detail that shouldn't reach a client?</td><td>Reading traffic, Composer</td></tr>
+        <tr><td><strong>Idempotency</strong></td><td>Does submitting the same request twice, on purpose or from a slow-network double click, create a duplicate side effect, or is the second one safely a no-op?</td><td>Network Conditions, Repeat</td></tr>
+        <tr><td><strong>Empty and missing-data states</strong></td><td>Zero results, a null field, a missing optional parameter, all realistic states a fast connection to a full database rarely produces on its own.</td><td>Map Local</td></tr>
+        <tr><td><strong>Degraded network behaviour</strong></td><td>Loading states, timeout handling, and whether the UI gives any feedback at all when a response is slow rather than absent.</td><td>Network Conditions</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout gold">
+    <p><strong>The Authorization row is the one worth re-reading.</strong> It's the single highest-value category on this list and the easiest to skip, since a UI that only ever shows you your own data will never accidentally demonstrate the bug for you. It has to be deliberately tested by editing the request, which is exactly what a proxy tool is for and a UI-only test plan structurally cannot do.</p>
+  </div>
+
+  <h2>Setup, condensed</h2>
+  <ul class="checklist">
+    <li>Install Proxyman, install the helper tool when prompted</li>
+    <li>Trust the certificate (macOS: Keychain, "Always Trust" for SSL; Windows: Certificate Manager)</li>
+    <li>Enable SSL Proxying, scoped to the domains under test, not everything</li>
+    <li>Mobile: same WiFi network, manual proxy config pointing at your computer's IP and port 9090, then visit <code>cert.proxyman.io</code> on-device and trust it (two separate steps on iOS)</li>
+    <li>Verify: open the app, confirm traffic appears with a readable body, not ciphertext</li>
+  </ul>
+
+  <h2>Troubleshooting, condensed</h2>
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>Symptom</th><th>Likely cause</th></tr></thead>
+      <tbody>
+        <tr><td>Nothing shows up at all</td><td>Different network, wrong IP/port, firewall, or a VPN silently taking the traffic first</td></tr>
+        <tr><td>Shows up, body unreadable</td><td>Certificate installed but not trusted (check "Always Trust for SSL" on macOS)</td></tr>
+        <tr><td>One specific app errors or crashes, others work fine</td><td>SSL pinning, not fixable from Proxyman's side for an app you don't own</td></tr>
+        <tr><td>Android app won't decrypt even with the cert installed</td><td>The app's own <code>network_security_config.xml</code> doesn't opt in to trusting user certificates</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="series-complete">
+    <h3>What this series covered</h3>
+    <p>Nine posts, one real app, moving from "can I even see the traffic" to "here's a formal bug report with a developer-runnable repro attached." The throughline: everything after Post 2 depends on traffic actually being readable, and everything after Post 3 depends on being able to read what's in it. Skipping ahead to breakpoints or mocking without those two solid tends to produce confusing, hard-to-debug results.</p>
+  </div>
+
+  <div class="nav-row">
+    <a href="08-proxymanseries-bug-evidence.html" class="nav-cta secondary">&larr; Post 8: Bug evidence</a>
+    <a href="00-proxymanseries-landing.html" class="nav-cta primary">Series overview &rarr;</a>
+  </div>
+
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; Proxyman for QA</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+</body>
+</html>

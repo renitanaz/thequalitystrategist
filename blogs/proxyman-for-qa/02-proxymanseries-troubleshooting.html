@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Post 2: Troubleshooting | Proxyman for QA</title>
+<meta name="description" content="The specific reasons Proxyman setup fails: nothing shows up, traffic is unreadable, SSL pinning blocks decryption entirely, and what to actually check for each, verified against Proxyman's own docs.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:#6B7C3A; --olive-dark:#4A5828; --olive-deep:#2E3A18;
+    --cream:#F5F7F0; --warm-white:#FAFCF5;
+    --ink:#1A1F14; --ink2:#3D4235; --ink3:#6B7060; --ink4:#9A9E90;
+    --border:rgba(26,31,20,0.1); --border2:rgba(26,31,20,0.06);
+    --purple:#7A4A9A; --purple-l:#EDE0F5;
+    --gold:#9A6E1A; --gold-l:#F5EDD6;
+    --blue:#2A5C9A; --blue-l:#DDE8F5;
+    --teal:#1A6B54; --teal-l:#D8EEE8;
+    --terra:#8A4A2A; --terra-l:#F5E4D8;
+    --green:#1A7A3A; --green-l:#D8F0E0;
+    --rose:#9A2A4A; --rose-l:#F5DDE5;
+    --ff-serif:'Lora',Georgia,serif;
+    --ff-sans:'DM Sans',system-ui,sans-serif;
+    --ease:cubic-bezier(0.22,1,0.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--ff-sans);background:var(--warm-white);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  header.site-header{border-bottom:1px solid var(--border);padding:1.1rem 1.5rem;background:var(--warm-white);}
+  .site-header-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+  .site-name{font-family:var(--ff-serif);font-weight:600;font-size:1.05rem;text-decoration:none;}
+  main{max-width:880px;margin:0 auto;padding:2.6rem 1.5rem 5rem;}
+  .breadcrumb{font-size:.82rem;color:var(--ink3);margin-bottom:1.3rem;}
+  .breadcrumb a{text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+  .series-tag{display:inline-block;font-size:.76rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--gold);background:var(--gold-l);padding:.3rem .7rem;border-radius:999px;margin-bottom:1.1rem;}
+  h1{font-family:var(--ff-serif);font-size:2.1rem;font-weight:700;line-height:1.2;margin-bottom:.8rem;}
+  .subtitle{font-size:1.08rem;color:var(--ink2);margin-bottom:1.6rem;max-width:680px;}
+  .meta-row{display:flex;gap:1.1rem;font-size:.82rem;color:var(--ink3);margin-bottom:1.6rem;border-bottom:1px solid var(--border);padding-bottom:1.3rem;flex-wrap:wrap;}
+  .phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem;}
+  .phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--ink4);background:var(--warm-white);text-decoration:none;}
+  .phase-pip.active{background:var(--gold);color:var(--warm-white);border-color:transparent;}
+  .phase-pip.done{background:var(--green-l);color:var(--green);border-color:var(--green);}
+  .phase-pip.soon{cursor:default;opacity:.55;}
+  h2{font-family:var(--ff-serif);font-size:1.35rem;font-weight:700;margin-top:2.2rem;margin-bottom:.8rem;}
+  h3{font-family:var(--ff-serif);font-size:1.1rem;font-weight:700;margin-top:1.6rem;margin-bottom:.6rem;}
+  p{margin-bottom:.9rem;color:var(--ink2);font-size:.97rem;}
+  strong{color:var(--ink);font-weight:700;}
+  ul,ol{margin:0 0 1rem 1.3rem;color:var(--ink2);}
+  li{margin-bottom:.4rem;font-size:.97rem;}
+  code{background:var(--cream);padding:.15rem .4rem;border-radius:5px;font-size:.87em;color:var(--olive-deep);}
+  .diagram-wrap{margin:1.4rem 0 1.7rem;background:var(--cream);border:1px solid var(--border);border-radius:12px;padding:1.1rem;}
+  .callout{border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.91rem;}
+  .callout p{margin-bottom:0;}
+  .callout.green{background:var(--green-l);border-left:3px solid var(--green);}.callout.green p{color:var(--olive-deep);}
+  .callout.blue{background:var(--blue-l);border-left:3px solid var(--blue);}.callout.blue p{color:var(--blue);}
+  .callout.gold{background:var(--gold-l);border-left:3px solid var(--gold);}.callout.gold p{color:var(--gold);}
+  .callout.warn{background:var(--terra-l);border-left:3px solid var(--terra);}.callout.warn p{color:var(--terra);}
+  .fw-table-wrap{overflow-x:auto;margin:1rem 0 1.5rem;}
+  table.fw-table{width:100%;border-collapse:collapse;font-size:.85rem;line-height:1.45;}
+  table.fw-table th,table.fw-table td{border:1px solid var(--border);padding:.5rem .7rem;text-align:left;vertical-align:top;}
+  table.fw-table th{background:var(--cream);font-weight:700;font-size:.8rem;}
+  table.fw-table td{color:var(--ink2);}
+  table.fw-table tr:nth-child(odd) td{background:var(--warm-white);}
+  table.fw-table tr:nth-child(even) td{background:var(--cream);}
+  .why-box{background:var(--cream);border-radius:8px;padding:.85rem 1.05rem;margin:.7rem 0 1.2rem;font-size:.89rem;}
+  .why-box .why-label{font-weight:700;color:var(--olive-dark);font-size:.76rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.3rem;}
+  .why-box p{margin-bottom:0;color:var(--ink2);}
+  .practical{background:var(--blue-l);border-radius:8px;padding:.9rem 1.1rem;margin:1.1rem 0 1.4rem;font-size:.91rem;border-left:3px solid var(--blue);}
+  .practical .practical-label{font-weight:700;color:var(--blue);font-size:.76rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.4rem;}
+  .practical p{margin-bottom:.5rem;color:var(--ink2);}
+  .practical p:last-child{margin-bottom:0;}
+  .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:1.8rem;flex-wrap:wrap;}
+  .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:700;font-size:.9rem;padding:.7rem 1.2rem;border-radius:8px;transition:background .2s var(--ease);}
+  .nav-cta.primary{background:var(--olive);color:var(--warm-white);}
+  .nav-cta.primary:hover{background:var(--olive-dark);}
+  .nav-cta.secondary{background:var(--cream);color:var(--ink2);border:1px solid var(--border);}
+  footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.85rem;color:var(--ink3);}
+  footer a{text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+  @media(max-width:600px){
+    h1{font-size:1.65rem;}
+    .meta-row{flex-wrap:wrap;gap:.5rem;}
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+
+<main>
+
+  <p class="breadcrumb">
+    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    <a href="00-proxymanseries-landing.html">Proxyman for QA</a> &nbsp;/&nbsp;
+    Post 2
+  </p>
+
+  <span class="series-tag">Post 2 of 9 &middot; Troubleshooting</span>
+
+  <h1>Troubleshooting</h1>
+  <p class="subtitle">Almost every Proxyman problem is one of three things: traffic isn't reaching Proxyman at all, traffic is reaching it but can't be decrypted, or the app itself refuses to be intercepted. Knowing which of the three you're looking at cuts the guessing out immediately.</p>
+
+  <div class="meta-row">
+    <span>By RN</span>
+    <span>~9 min read</span>
+    <span>Demo: PeakAndPack</span>
+  </div>
+
+  <div class="phase-strip" aria-label="Series progress">
+    <a href="00-proxymanseries-landing.html" class="phase-pip" title="Series overview">0</a>
+    <a href="01-proxymanseries-setup.html" class="phase-pip done" title="Post 1: Setup">1</a>
+    <span class="phase-pip active" title="Post 2: Troubleshooting">2</span>
+    <a href="03-proxymanseries-reading-traffic.html" class="phase-pip" title="Post 3: Reading traffic">3</a>
+    <a href="04-proxymanseries-breakpoints.html" class="phase-pip" title="Post 4: Breakpoints">4</a>
+    <a href="05-proxymanseries-map-local-remote.html" class="phase-pip" title="Post 5: Map Local/Remote">5</a>
+    <a href="06-proxymanseries-network-conditions.html" class="phase-pip" title="Post 6: Network conditions">6</a>
+    <a href="07-proxymanseries-composer.html" class="phase-pip" title="Post 7: Composer">7</a>
+    <a href="08-proxymanseries-bug-evidence.html" class="phase-pip" title="Post 8: Bug evidence">8</a>
+    <a href="09-proxymanseries-quick-reference.html" class="phase-pip" title="Post 9: Quick reference">9</a>
+  </div>
+
+  <h2>Which of the three problems is it?</h2>
+  <p>Before checking anything specific, place the symptom in one of three buckets. Each has a completely different set of fixes, and mixing them up wastes time.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 700 300" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" role="img" aria-label="Decision tree: does traffic appear in Proxyman's list at all? If no, it is a routing problem, check network, IP and port, firewall, and VPN. If traffic appears but the body is unreadable, it is a certificate trust problem. If the app shows its own error or crashes, it is likely SSL pinning blocking interception entirely.">
+      <rect x="270" y="16" width="160" height="46" rx="8" fill="#F5EDD6" stroke="#9A6E1A"/>
+      <text x="350" y="44" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="12" font-weight="700" fill="#9A6E1A">Something's wrong</text>
+
+      <path d="M330,62 L120,110" stroke="#8A8A8A" stroke-width="1.5" marker-end="url(#a1)"/>
+      <path d="M350,62 L350,110" stroke="#8A8A8A" stroke-width="1.5" marker-end="url(#a1)"/>
+      <path d="M370,62 L580,110" stroke="#8A8A8A" stroke-width="1.5" marker-end="url(#a1)"/>
+
+      <rect x="20" y="112" width="200" height="40" rx="8" fill="#FAFCF5" stroke="#D8C8B8"/>
+      <text x="120" y="137" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" fill="#3D4235">Nothing shows up at all</text>
+
+      <rect x="250" y="112" width="200" height="40" rx="8" fill="#FAFCF5" stroke="#D8C8B8"/>
+      <text x="350" y="137" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" fill="#3D4235">Shows up, body unreadable</text>
+
+      <rect x="480" y="112" width="200" height="40" rx="8" fill="#FAFCF5" stroke="#D8C8B8"/>
+      <text x="580" y="137" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" fill="#3D4235">App errors or crashes</text>
+
+      <path d="M120,152 L120,178" stroke="#8A4A2A" stroke-width="1.5" marker-end="url(#a2)"/>
+      <rect x="20" y="180" width="200" height="60" rx="8" fill="#F5E4D8" stroke="#8A4A2A"/>
+      <text x="120" y="200" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" font-weight="700" fill="#8A4A2A">Routing problem</text>
+      <text x="120" y="216" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#8A4A2A">network, IP/port,</text>
+      <text x="120" y="230" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#8A4A2A">firewall, or VPN</text>
+
+      <path d="M350,152 L350,178" stroke="#2A5C9A" stroke-width="1.5" marker-end="url(#a3)"/>
+      <rect x="250" y="180" width="200" height="60" rx="8" fill="#DDE8F5" stroke="#2A5C9A"/>
+      <text x="350" y="200" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" font-weight="700" fill="#2A5C9A">Trust problem</text>
+      <text x="350" y="216" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#2A5C9A">certificate not marked</text>
+      <text x="350" y="230" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#2A5C9A">trusted, see Post 1</text>
+
+      <path d="M580,152 L580,178" stroke="#9A2A4A" stroke-width="1.5" marker-end="url(#a4)"/>
+      <rect x="480" y="180" width="200" height="60" rx="8" fill="#F5DDE5" stroke="#9A2A4A"/>
+      <text x="580" y="200" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" font-weight="700" fill="#9A2A4A">Likely SSL pinning</text>
+      <text x="580" y="216" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#9A2A4A">the app itself refuses</text>
+      <text x="580" y="230" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#9A2A4A">any non-pinned cert</text>
+
+      <defs>
+        <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8A8A8A"/></marker>
+        <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8A4A2A"/></marker>
+        <marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2A5C9A"/></marker>
+        <marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9A2A4A"/></marker>
+      </defs>
+    </svg>
+  </div>
+
+  <h2>Bucket 1: nothing shows up at all</h2>
+  <p>This is a routing problem: traffic never reached Proxyman in the first place, so there's nothing to decrypt yet. Check these in order, since later ones only matter if earlier ones are already ruled out.</p>
+
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>Check</th><th>What it catches</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Same network</strong></td><td>Device and computer must be on the same WiFi network. Public and guest networks often isolate clients from each other by design, which looks identical to a misconfigured proxy.</td></tr>
+        <tr><td><strong>IP and port match exactly</strong></td><td>The proxy server address on the device has to be the computer's current network IP, which changes when you switch networks, and the port has to match Proxyman's (9090 by default).</td></tr>
+        <tr><td><strong>Firewall isn't blocking it</strong></td><td>macOS: System Settings &rarr; Firewall &rarr; confirm "Block all incoming connections" is off and Proxyman has permission. Windows: confirm an inbound rule allows Proxyman through Windows Defender Firewall.</td></tr>
+        <tr><td><strong>Corporate network isn't blocking the port</strong></td><td>Some corporate networks block non-standard ports outright, port 9090 included. If you're on a managed network and nothing above explains it, this is worth asking IT about directly.</td></tr>
+        <tr><td><strong>VPN isn't quietly eating the traffic</strong></td><td>Covered in full in Post 1: a VPN forces traffic through its own tunnel by default, bypassing the proxy setting entirely, even though the proxy config itself is correct.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="practical">
+    <span class="practical-label">Try it: see the VPN failure mode on purpose</span>
+    <p>With your device already set up and working from Post 1 (traffic visible, bodies readable), turn on any VPN app on the device and reload PeakAndPack.</p>
+    <p>Watch Proxyman's traffic list. New requests won't appear at all, not garbled, just absent, which is exactly the signature described above. Turn the VPN back off and confirm traffic returns, so you've now seen this failure mode once for real instead of only reading about it.</p>
+  </div>
+
+  <h2>Bucket 2: it shows up, but the body is unreadable</h2>
+  <p>Routing is working, since Proxyman can see that a request happened. What's missing is certificate trust. Post 1 covers the iOS two-step (install the profile, then separately trust it) and the macOS Keychain "Always Trust for SSL" setting, both of which are the fix here. One more cause worth knowing about:</p>
+  <div class="why-box">
+    <span class="why-label">A cause specific to non-browser tools</span>
+    <p>If the unreadable traffic is coming from a script or an API testing tool rather than a browser, the underlying language runtime (Node, Python, Ruby, Go) often maintains its own separate list of trusted certificates and doesn't automatically pick up what your OS trusts. Each ecosystem has its own way to point at Proxyman's certificate explicitly, searching "[language] trust self-signed certificate" gets you there faster than guessing.</p>
+  </div>
+
+  <h2>Bucket 3: the app itself errors out or crashes</h2>
+  <p>This is the one setup steps can't fix. Some apps ship with <strong>SSL pinning</strong>: the app carries its own hardcoded list of certificates it will accept, and rejects everything else outright, including a certificate your OS considers fully trusted.</p>
+  <div class="callout warn">
+    <p><strong>The tell: a normal HTTPS site works fine through Proxyman, but this one app doesn't.</strong> If general browsing decrypts correctly and only one specific app throws an SSL error or an unexplained "Internal Error" on every request, pinning is the likely cause, not a setup mistake. Proxyman's own docs are blunt about this: well-known consumer apps like Facebook, Instagram, and WhatsApp pin their certificates specifically to prevent this kind of interception, and there's no supported way around that from Proxyman's side.</p>
+  </div>
+  <p>If it's an app your own team builds, the real fix isn't a Proxyman setting at all: it's a debug build with pinning temporarily disabled, so ask the developers for one rather than spending hours trying to configure around it.</p>
+
+  <h2>Android's extra step</h2>
+  <p>Android apps targeting a reasonably current SDK version don't trust user-installed certificates by default, Proxyman's included, even after you've installed it in device settings. The app itself has to explicitly opt in.</p>
+  <div class="why-box">
+    <span class="why-label">Why this is a separate step from installing the certificate</span>
+    <p>This is an Android platform decision, not a Proxyman limitation: since Android 7, an app only trusts user-added certificate authorities if its own <code>network_security_config.xml</code> says so. For an app you control, add the config file under <code>res/xml/</code> and reference it from <code>AndroidManifest.xml</code>. For an app you don't control, this isn't fixable from the outside, which makes it functionally similar to pinning from a QA perspective.</p>
+  </div>
+
+  <h2>Your deliverable</h2>
+  <p>Add a "Troubleshooting" section to the <code>proxyman-setup-notes.md</code> file from Post 1. For each failure you actually hit, and the practical exercise above guarantees at least one, log the exact symptom you saw and which bucket it belonged to. Six months from now, "traffic disappeared the moment I turned on the VPN" will mean something to you immediately instead of triggering another half hour of re-reading setup guides.</p>
+  <p><strong>Time:</strong> ~10 minutes to work through the checks, plus however long the practical exercise's VPN toggle takes on your device.</p>
+
+  <div class="nav-row">
+    <a href="01-proxymanseries-setup.html" class="nav-cta secondary">&larr; Post 1: Setup</a>
+    <a href="03-proxymanseries-reading-traffic.html" class="nav-cta primary">Post 3: Reading traffic &rarr;</a>
+  </div>
+
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; Proxyman for QA</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Post 17: The CMS Testing Strategy | CMS Testing for QA</title>
+<meta name="description" content="Every post in this series mapped onto the SDLC into one strategy checklist: Plan, Build, Pre-release, and Post-release, for any CMS you're handed.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:#6B7C3A; --olive-dark:#4A5828; --olive-deep:#2E3A18;
+    --cream:#F5F7F0; --warm-white:#FAFCF5;
+    --ink:#1A1F14; --ink2:#3D4235; --ink3:#6B7060; --ink4:#9A9E90;
+    --border:rgba(26,31,20,0.1); --border2:rgba(26,31,20,0.06);
+    --purple:#7A4A9A; --purple-l:#EDE0F5;
+    --gold:#9A6E1A; --gold-l:#F5EDD6;
+    --blue:#2A5C9A; --blue-l:#DDE8F5;
+    --teal:#1A6B54; --teal-l:#D8EEE8;
+    --terra:#8A4A2A; --terra-l:#F5E4D8;
+    --green:#1A7A3A; --green-l:#D8F0E0;
+    --rose:#9A2A4A; --rose-l:#F5DDE5;
+    --ff-serif:'Lora',Georgia,serif;
+    --ff-sans:'DM Sans',system-ui,sans-serif;
+    --ease:cubic-bezier(0.22,1,0.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--ff-sans);background:var(--warm-white);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  header.site-header{border-bottom:1px solid var(--border);padding:1.1rem 1.5rem;background:var(--warm-white);}
+  .site-header-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+  .site-name{font-family:var(--ff-serif);font-weight:600;font-size:1.05rem;text-decoration:none;}
+  main{max-width:880px;margin:0 auto;padding:2.6rem 1.5rem 5rem;}
+  .breadcrumb{font-size:.82rem;color:var(--ink3);margin-bottom:1.3rem;}
+  .breadcrumb a{text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+  .series-tag{display:inline-block;font-size:.76rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--gold);background:var(--gold-l);padding:.3rem .7rem;border-radius:999px;margin-bottom:1.1rem;}
+  h1{font-family:var(--ff-serif);font-size:2.1rem;font-weight:700;line-height:1.2;margin-bottom:.8rem;}
+  .subtitle{font-size:1.08rem;color:var(--ink2);margin-bottom:1.6rem;max-width:680px;}
+  .meta-row{display:flex;gap:1.1rem;font-size:.82rem;color:var(--ink3);margin-bottom:1.6rem;border-bottom:1px solid var(--border);padding-bottom:1.3rem;flex-wrap:wrap;}
+  .phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem;}
+  .phase-pip{display:inline-flex;align-items:center;justify-content:center;width:1.9rem;height:1.9rem;border-radius:50%;font-size:.68rem;font-weight:700;border:1.5px solid var(--border);color:var(--ink4);background:var(--warm-white);text-decoration:none;}
+  .phase-pip.active{background:var(--gold);color:var(--warm-white);border-color:transparent;}
+  .phase-pip.done{background:var(--green-l);color:var(--green);border-color:var(--green);}
+  .phase-pip.soon{cursor:default;opacity:.55;}
+  h2{font-family:var(--ff-serif);font-size:1.35rem;font-weight:700;margin-top:2.2rem;margin-bottom:.8rem;}
+  h3{font-family:var(--ff-serif);font-size:1.1rem;font-weight:700;margin-top:1.6rem;margin-bottom:.6rem;}
+  p{margin-bottom:.9rem;color:var(--ink2);font-size:.97rem;}
+  strong{color:var(--green);font-weight:700;}
+  ul,ol{margin:0 0 1rem 1.3rem;color:var(--ink2);}
+  li{margin-bottom:.4rem;font-size:.97rem;}
+  code{background:var(--cream);padding:.15rem .4rem;border-radius:5px;font-size:.87em;color:var(--olive-deep);}
+  .callout{border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.91rem;}
+  .callout p{margin-bottom:0;}
+  .callout.green{background:var(--green-l);border-left:3px solid var(--green);}.callout.green p{color:var(--olive-deep);}
+  .callout.blue{background:var(--blue-l);border-left:3px solid var(--blue);}.callout.blue p{color:var(--blue);}
+  .callout.gold{background:var(--gold-l);border-left:3px solid var(--gold);}.callout.gold p{color:var(--gold);}
+  .callout.warn{background:var(--terra-l);border-left:3px solid var(--terra);}.callout.warn p{color:var(--terra);}
+  .fw-table-wrap{overflow-x:auto;margin:1rem 0 1.5rem;}
+  table.fw-table{width:100%;border-collapse:collapse;font-size:.85rem;line-height:1.45;}
+  table.fw-table th,table.fw-table td{border:1px solid var(--border);padding:.5rem .7rem;text-align:left;vertical-align:top;}
+  table.fw-table th{background:var(--cream);font-weight:700;font-size:.8rem;}
+  table.fw-table td{color:var(--ink2);}
+  table.fw-table tr:nth-child(odd) td{background:var(--warm-white);}
+  table.fw-table tr:nth-child(even) td{background:var(--cream);}
+  .diagram-wrap{margin:1.4rem 0 1.7rem;background:var(--cream);border:1px solid var(--border);border-radius:12px;padding:1.1rem;}
+  .why-box{background:var(--cream);border-radius:8px;padding:.85rem 1.05rem;margin:.7rem 0 1.2rem;font-size:.89rem;}
+  .why-box .why-label{font-weight:700;color:var(--olive-dark);font-size:.76rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.3rem;}
+  .why-box p{margin-bottom:.5rem;color:var(--ink2);}
+  .why-box p:last-child{margin-bottom:0;}
+  .takeaways{background:var(--teal-l);border:1px solid var(--teal);border-radius:10px;padding:1.1rem 1.3rem;margin:1.5rem 0 2rem;}
+  .takeaways .takeaways-label{font-weight:700;color:var(--teal);font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.6rem;}
+  .takeaways ul{margin:0 0 0 1.2rem;}
+  .takeaways li{color:var(--ink2);font-size:.93rem;margin-bottom:.4rem;}
+  .takeaways li:last-child{margin-bottom:0;}
+  .phase-block{border:1px solid var(--border);border-radius:12px;padding:1.2rem 1.4rem;margin:1.2rem 0;}
+  .phase-block.plan{border-left:4px solid var(--purple);}
+  .phase-block.build{border-left:4px solid var(--blue);}
+  .phase-block.pre{border-left:4px solid var(--gold);}
+  .phase-block.post{border-left:4px solid var(--green);}
+  .phase-block h3{margin-top:0;}
+  .checklist{list-style:none;margin:0 0 0 .2rem;}
+  .checklist li{position:relative;padding-left:1.6rem;margin-bottom:.55rem;font-size:.93rem;}
+  .checklist li::before{content:"\2610";position:absolute;left:0;color:var(--ink4);font-size:1rem;}
+  .checklist li a{color:var(--olive-dark);text-decoration:none;font-weight:600;}
+  .checklist li a:hover{text-decoration:underline;}
+  .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:1.8rem;flex-wrap:wrap;}
+  .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:700;font-size:.9rem;padding:.7rem 1.2rem;border-radius:8px;transition:background .2s var(--ease);}
+  .nav-cta.primary{background:var(--olive);color:var(--warm-white);}
+  .nav-cta.primary:hover{background:var(--olive-dark);}
+  .nav-cta.secondary{background:var(--cream);color:var(--ink2);border:1px solid var(--border);}
+  footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.85rem;color:var(--ink3);}
+  footer a{text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+  @media(max-width:600px){
+    h1{font-size:1.65rem;}
+    .meta-row{flex-wrap:wrap;gap:.5rem;}
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+
+<main>
+
+  <p class="breadcrumb">
+    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    <a href="00-cmsseries-landing.html">CMS Testing for QA</a> &nbsp;/&nbsp;
+    Post 17
+  </p>
+
+  <span class="series-tag">Post 17 of 17 &middot; Capstone</span>
+
+  <h1>Bringing it together: the CMS testing strategy</h1>
+  <p class="subtitle">Post 1 promised this diagram would turn into a full checklist by the end. Sixteen posts later, here it is: every check from this series, mapped onto the four SDLC phases where it actually has to happen to catch something before it matters.</p>
+
+  <div class="meta-row">
+    <span>By RN</span>
+    <span>~8 min read</span>
+    <span>Capstone reference</span>
+  </div>
+
+  <div class="phase-strip" aria-label="Series progress">
+    <a href="00-cmsseries-landing.html" class="phase-pip" title="Series overview">0</a>
+    <a href="01-cmsseries-what-makes-different.html" class="phase-pip" title="Post 1: What makes CMS testing different">1</a>
+    <a href="02-cmsseries-content-editorial-workflow.html" class="phase-pip" title="Post 2: Content and editorial workflow">2</a>
+    <a href="03-cmsseries-functional-template-testing.html" class="phase-pip" title="Post 3: Functional and template testing">3</a>
+    <a href="04-cmsseries-api-integration-testing.html" class="phase-pip" title="Post 4: API and integration testing">4</a>
+    <a href="05-cmsseries-headless-cms-considerations.html" class="phase-pip" title="Post 5: Headless CMS considerations">5</a>
+    <a href="06-cmsseries-seo-testing.html" class="phase-pip" title="Post 6: SEO testing">6</a>
+    <a href="07-cmsseries-accessibility-testing.html" class="phase-pip" title="Post 7: Accessibility testing">7</a>
+    <a href="08-cmsseries-performance-caching-testing.html" class="phase-pip" title="Post 8: Performance and caching testing">8</a>
+    <a href="09-cmsseries-analytics-tracking-testing.html" class="phase-pip" title="Post 9: Analytics and tracking validation">9</a>
+    <a href="10-cmsseries-security-testing.html" class="phase-pip" title="Post 10: Security testing">10</a>
+    <a href="11-cmsseries-crossbrowser-visual-testing.html" class="phase-pip" title="Post 11: Cross-browser and visual testing">11</a>
+    <a href="12-cmsseries-forms-lead-capture-testing.html" class="phase-pip" title="Post 12: Forms and lead-capture testing">12</a>
+    <a href="13-cmsseries-localization-testing.html" class="phase-pip" title="Post 13: Localization testing">13</a>
+    <a href="14-cmsseries-legal-compliance-testing.html" class="phase-pip" title="Post 14: Legal and compliance testing">14</a>
+    <a href="15-cmsseries-staging-release-testing.html" class="phase-pip" title="Post 15: Staging, preview and release testing">15</a>
+    <a href="16-cmsseries-migration-testing.html" class="phase-pip" title="Post 16: Migration testing">16</a>
+    <span class="phase-pip active" title="Post 17: The CMS testing strategy">17</span>
+  </div>
+
+  <div class="takeaways">
+    <span class="takeaways-label">Key takeaways</span>
+    <ul>
+      <li>Content-layer risk concentrates in Pre-release and Post-release, exactly the phases a code-only test plan is least likely to cover on a recurring basis.</li>
+      <li>Plan and Build checks differ by CMS. Pre-release checks are close to identical regardless of what generated the page, that's what makes this strategy transferable.</li>
+      <li>This checklist isn't meant to be run once. Pre-release and Post-release checks recur every time meaningful content changes, not just at launch.</li>
+      <li>The underlying idea to keep, beyond any individual checklist item: a CMS site is two layers on two schedules, and most testing gaps live in the seam between them.</li>
+    </ul>
+  </div>
+
+  <h2>The strategy, by SDLC phase</h2>
+
+  <div class="phase-block plan">
+    <h3 style="color:var(--purple);">Plan</h3>
+    <ul class="checklist">
+      <li>Content model reviewed for required fields, especially ones that feed SEO and accessibility (alt text, meta description) &mdash; <a href="02-cmsseries-content-editorial-workflow.html">Post 2</a></li>
+      <li>Roles and permissions defined and verified by logging in as each role, not read off a chart &mdash; <a href="02-cmsseries-content-editorial-workflow.html">Post 2</a></li>
+      <li>URL structure and SEO strategy decided before content exists, redirect policy included &mdash; <a href="06-cmsseries-seo-testing.html">Post 6</a></li>
+    </ul>
+  </div>
+
+  <div class="phase-block build">
+    <h3 style="color:var(--blue);">Build</h3>
+    <ul class="checklist">
+      <li>Templates tested against content edge cases: empty fields, long text, special characters, zero and single-item lists &mdash; <a href="03-cmsseries-functional-template-testing.html">Post 3</a></li>
+      <li>Shared components tested once, thoroughly, not once per page they appear on &mdash; <a href="03-cmsseries-functional-template-testing.html">Post 3</a></li>
+      <li>Content API tested directly: status codes, response shape, pagination, auth on write endpoints &mdash; <a href="04-cmsseries-api-integration-testing.html">Post 4</a></li>
+      <li>Webhooks tested for the receiver-down case, not just the happy path &mdash; <a href="04-cmsseries-api-integration-testing.html">Post 4</a></li>
+      <li>Headless setups: preview integration verified, multi-channel content constraints checked, contract tested by changing a field and observing the front end &mdash; <a href="05-cmsseries-headless-cms-considerations.html">Post 5</a></li>
+      <li>Access control tested at the endpoint level, not just the UI level; content fields tested for injection &mdash; <a href="10-cmsseries-security-testing.html">Post 10</a></li>
+    </ul>
+  </div>
+
+  <div class="phase-block pre">
+    <h3 style="color:var(--gold);">Pre-release</h3>
+    <ul class="checklist">
+      <li>Title uniqueness, meta descriptions, canonical tags, structured data &mdash; <a href="06-cmsseries-seo-testing.html">Post 6</a></li>
+      <li><code>robots.txt</code> and <code>sitemap.xml</code> checked directly, broken links crawled, favicon and social-share preview confirmed &mdash; <a href="06-cmsseries-seo-testing.html">Post 6</a></li>
+      <li>Alt text, form labels, contrast, heading hierarchy, keyboard focus, cross-checked with two automated tools plus a manual keyboard pass &mdash; <a href="07-cmsseries-accessibility-testing.html">Post 7</a></li>
+      <li>Core Web Vitals (LCP, INP, CLS), image dimensions set, third-party scripts reviewed for blocking behavior, load capacity considered separately from single-visitor speed &mdash; <a href="08-cmsseries-performance-caching-testing.html">Post 8</a></li>
+      <li>Analytics verified with DebugView or a network-request check, not just visual snippet presence; event tracking checked separately from page-view tracking &mdash; <a href="09-cmsseries-analytics-tracking-testing.html">Post 9</a></li>
+      <li>HTTP security headers scanned before launch &mdash; <a href="10-cmsseries-security-testing.html">Post 10</a></li>
+      <li>Layout checked at mobile, tablet, and desktop widths backed by real usage-share data, not just desktop &mdash; <a href="11-cmsseries-crossbrowser-visual-testing.html">Post 11</a></li>
+      <li>Forms tested for validation, spam handling, delivery, and error states, specifically what happens after submit &mdash; <a href="12-cmsseries-forms-lead-capture-testing.html">Post 12</a></li>
+      <li>RTL and translation fallback tested on the actual front end; dates and times checked under a timezone override, not just the local one &mdash; <a href="13-cmsseries-localization-testing.html">Post 13</a></li>
+      <li>Consent gates verified to block scripts before consent, not just display a banner; Privacy Policy link reachability checked &mdash; <a href="14-cmsseries-legal-compliance-testing.html">Post 14</a></li>
+    </ul>
+  </div>
+
+  <div class="phase-block post">
+    <h3 style="color:var(--green);">Post-release</h3>
+    <ul class="checklist">
+      <li>Staging environments matched on representative content, not just code; content freeze observed during sign-off windows &mdash; <a href="15-cmsseries-staging-release-testing.html">Post 15</a></li>
+      <li>Live URL checked directly before calling anything released, preview isn't proof &mdash; <a href="15-cmsseries-staging-release-testing.html">Post 15</a></li>
+      <li>Old-domain URLs audited with an extractor before migrating, not just the CMS's own page list &mdash; <a href="16-cmsseries-migration-testing.html">Post 16</a></li>
+      <li>Migrations reconciled by count, sampled across content age and type, not just the newest content &mdash; <a href="16-cmsseries-migration-testing.html">Post 16</a></li>
+    </ul>
+  </div>
+
+  <h2>Why the phases carry unequal weight</h2>
+  <p>Plan and Build differ meaningfully depending on the CMS: WordPress, a headless setup, and something in-house each carry different Plan and Build risks. Pre-release is where this strategy earns its platform-agnostic claim, SEO, accessibility, performance, analytics, and the rest are close to identical regardless of what generated the page.</p>
+
+  <div class="callout gold">
+    <p><strong>Pre-release and Post-release deserve the most recurring attention.</strong> They're where content-layer risk concentrates, and they're the two phases a code-only test plan is least likely to cover on an ongoing basis, since nothing about a content edit triggers a build or a deploy.</p>
+  </div>
+
+  <h2>The environments and tools, one last time</h2>
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>Environment / tool</th><th>Used for</th></tr></thead>
+      <tbody>
+        <tr><td>Grove &amp; Bean demo site</td><td>SEO, accessibility, performance, analytics, cross-browser/visual, forms, legal (Posts 6-9, 11, 12, 14)</td></tr>
+        <tr><td>WordPress Playground</td><td>Editorial workflow, functional/template testing, security, localization, staging/release, migration (Posts 2, 3, 10, 13, 15, 16)</td></tr>
+        <tr><td>Strapi</td><td>API/integration and headless CMS testing (Posts 4, 5)</td></tr>
+        <tr><td>Lighthouse, axe, WAVE, Accessibility Insights</td><td>Accessibility and performance auditing (Posts 7, 8)</td></tr>
+        <tr><td>GTmetrix</td><td>Multi-region performance testing (Post 8)</td></tr>
+        <tr><td>GA4 DebugView, Tag Assistant</td><td>Analytics verification (Post 9)</td></tr>
+        <tr><td>securityheaders.com</td><td>HTTP security header scanning (Post 10)</td></tr>
+        <tr><td>gs.statcounter.com</td><td>Real usage-share data for browser/version policy (Post 11)</td></tr>
+        <tr><td>httpstatus.io, Dead Link Checker</td><td>Redirect and broken-link checking (Post 6)</td></tr>
+        <tr><td>DevTools Sensors panel</td><td>Timezone override for date/time testing (Post 13)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>One operational note worth carrying into how a team actually works, not just what gets tested: accessibility and analytics checks land more reliably when they're written into a user story's acceptance criteria up front, rather than treated as a separate audit bolted on after a feature is already built.</p>
+
+  <h2>The one idea worth keeping</h2>
+  <p>Every specific check in this series traces back to the same root idea from Post 1: a CMS splits a website into a code layer and a content layer, on two different schedules, owned by two different kinds of people, with no shared review gate between them.</p>
+  <p>A checklist goes stale. A new CMS feature, a new plugin category, a new regulation will eventually add a check this series didn't anticipate. The content/code split, and the SDLC map built on top of it, won't. Handed a CMS this series never mentioned, that's the framework that still tells you where to look first.</p>
+
+  <div class="nav-row">
+    <a href="16-cmsseries-migration-testing.html" class="nav-cta secondary">&larr; Post 16: Migration testing</a>
+    <a href="00-cmsseries-landing.html" class="nav-cta primary">Series overview &rarr;</a>
+  </div>
+
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; CMS Testing for QA</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+</body>
+</html>

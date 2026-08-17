@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proxyman for QA | The Quality Strategist</title>
+<meta name="description" content="A hands-on Proxyman series for QA: setup for web and mobile, troubleshooting, and the traffic-level testing techniques DevTools can't reach, built against a real app, PeakAndPack.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:#6B7C3A; --olive-dark:#4A5828; --olive-deep:#2E3A18;
+    --cream:#F5F7F0; --warm-white:#FAFCF5;
+    --ink:#1A1F14; --ink2:#3D4235; --ink3:#6B7060; --ink4:#9A9E90;
+    --border:rgba(26,31,20,0.1); --border2:rgba(26,31,20,0.06);
+    --purple:#7A4A9A; --purple-l:#EDE0F5;
+    --gold:#9A6E1A; --gold-l:#F5EDD6;
+    --blue:#2A5C9A; --blue-l:#DDE8F5;
+    --teal:#1A6B54; --teal-l:#D8EEE8;
+    --terra:#8A4A2A; --terra-l:#F5E4D8;
+    --green:#1A7A3A; --green-l:#D8F0E0;
+    --rose:#9A2A4A; --rose-l:#F5DDE5;
+    --ff-serif:'Lora',Georgia,serif;
+    --ff-sans:'DM Sans',system-ui,sans-serif;
+    --ease:cubic-bezier(0.22,1,0.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--ff-sans);background:var(--warm-white);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  header.site-header{border-bottom:1px solid var(--border);padding:1.1rem 1.5rem;background:var(--warm-white);}
+  .site-header-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+  .site-name{font-family:var(--ff-serif);font-weight:600;font-size:1.05rem;text-decoration:none;}
+  main{max-width:880px;margin:0 auto;padding:2.6rem 1.5rem 5rem;}
+  .breadcrumb{font-size:.82rem;color:var(--ink3);margin-bottom:1.3rem;}
+  .breadcrumb a{text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+  .series-tag{display:inline-block;font-size:.76rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--gold);background:var(--gold-l);padding:.3rem .7rem;border-radius:999px;margin-bottom:1.1rem;}
+  h1{font-family:var(--ff-serif);font-size:2.1rem;font-weight:700;line-height:1.2;margin-bottom:.8rem;}
+  .subtitle{font-size:1.08rem;color:var(--ink2);margin-bottom:1.6rem;max-width:680px;}
+  .meta-row{display:flex;gap:1.1rem;font-size:.82rem;color:var(--ink3);margin-bottom:1.6rem;border-bottom:1px solid var(--border);padding-bottom:1.3rem;flex-wrap:wrap;}
+  h2{font-family:var(--ff-serif);font-size:1.35rem;font-weight:700;margin-top:2.2rem;margin-bottom:.8rem;}
+  h3{font-family:var(--ff-serif);font-size:1.1rem;font-weight:700;margin-top:1.6rem;margin-bottom:.6rem;}
+  p{margin-bottom:.9rem;color:var(--ink2);font-size:.97rem;}
+  strong{color:var(--ink);font-weight:700;}
+  ul,ol{margin:0 0 1rem 1.3rem;color:var(--ink2);}
+  li{margin-bottom:.4rem;font-size:.97rem;}
+  code{background:var(--cream);padding:.15rem .4rem;border-radius:5px;font-size:.87em;color:var(--olive-deep);}
+  .callout{border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.91rem;}
+  .callout p{margin-bottom:0;}
+  .callout.green{background:var(--green-l);border-left:3px solid var(--green);}.callout.green p{color:var(--olive-deep);}
+  .callout.blue{background:var(--blue-l);border-left:3px solid var(--blue);}.callout.blue p{color:var(--blue);}
+  .callout.gold{background:var(--gold-l);border-left:3px solid var(--gold);}.callout.gold p{color:var(--gold);}
+  .fw-table-wrap{overflow-x:auto;margin:1rem 0 1.5rem;}
+  table.fw-table{width:100%;border-collapse:collapse;font-size:.82rem;line-height:1.45;}
+  table.fw-table th,table.fw-table td{border:1px solid var(--border);padding:.5rem .7rem;text-align:left;vertical-align:top;}
+  table.fw-table th{background:var(--cream);font-weight:700;font-size:.77rem;}
+  table.fw-table td{color:var(--ink2);}
+  table.fw-table tr:nth-child(odd) td{background:var(--warm-white);}
+  table.fw-table tr:nth-child(even) td{background:var(--cream);}
+  .module-status{display:flex;justify-content:space-between;align-items:center;font-size:.8rem;color:var(--ink3);}
+  .module-status a{color:var(--olive-dark);font-weight:700;text-decoration:none;}
+  .module-status a:hover{text-decoration:underline;}
+  .module-status .soon-badge{color:var(--ink4);font-style:italic;}
+  .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:1.8rem;flex-wrap:wrap;}
+  .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:700;font-size:.9rem;padding:.7rem 1.2rem;border-radius:8px;transition:background .2s var(--ease);}
+  .nav-cta.primary{background:var(--olive);color:var(--warm-white);}
+  .nav-cta.primary:hover{background:var(--olive-dark);}
+  .nav-cta.secondary{background:var(--cream);color:var(--ink2);border:1px solid var(--border);}
+  footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.85rem;color:var(--ink3);}
+  footer a{text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+  @media(max-width:600px){
+    h1{font-size:1.65rem;}
+    .meta-row{flex-wrap:wrap;gap:.5rem;}
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+
+<main>
+
+  <p class="breadcrumb">
+    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    Proxyman for QA
+  </p>
+
+  <span class="series-tag">Series Overview &middot; 9 Posts</span>
+
+  <h1>Proxyman for QA</h1>
+  <p class="subtitle">Browser DevTools shows you what one tab did. Proxyman shows you what's actually crossing the network, from any app on the machine or device, including the requests DevTools never sees. This series is the traffic-level half of testing that most QA workflows skip.</p>
+
+  <div class="meta-row">
+    <span>By RN</span>
+    <span>9 posts</span>
+    <span>Demo: PeakAndPack</span>
+    <span>Prerequisite: None</span>
+  </div>
+
+  <h2>Why a proxy tool, when DevTools already shows network requests</h2>
+  <p>The Network tab in browser DevTools only sees traffic from that one tab, in that one browser. It can't see a native mobile app's traffic, a background sync call, or a request made by a tool outside the browser entirely. It also can't <em>change</em> anything: you can watch a request happen, but you can't pause it mid-flight, edit the body before it reaches the server, or swap in a fake response to see how the UI reacts to an error state that's hard to trigger for real.</p>
+  <p>A proxy tool sits below the browser, at the network layer, so it sees every app's traffic on the machine or device, and it can intercept and modify that traffic, not just observe it. That's the difference this series is about: reading traffic is step one, but the real testing value is in the tools that let you shape what the app under test actually receives.</p>
+
+  <h2>What the series covers</h2>
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>Post</th><th>Topic</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><strong>Setup, web and mobile.</strong> Installing Proxyman, enabling SSL proxying, trusting the certificate, connecting a browser, a mobile device, or a mobile simulator, and what changes when the app under test needs a VPN.</td><td><div class="module-status"><span>Published</span><a href="01-proxymanseries-setup.html">Read &rarr;</a></div></td></tr>
+        <tr><td>2</td><td><strong>Troubleshooting.</strong> The specific failure modes that eat an afternoon: certificate installed but not trusted, nothing shows up at all, SSL pinning silently blocking decryption, VPN conflicts, corporate network restrictions.</td><td><div class="module-status"><span>Published</span><a href="02-proxymanseries-troubleshooting.html">Read &rarr;</a></div></td></tr>
+        <tr><td>3</td><td><strong>Reading traffic.</strong> The request list, headers, body, timing, and status for a request, filtering by domain, method, and status, walked through on a real PeakAndPack checkout flow.</td><td><div class="module-status"><span>Published</span><a href="03-proxymanseries-reading-traffic.html">Read &rarr;</a></div></td></tr>
+        <tr><td>4</td><td><strong>Breakpoints.</strong> Pausing a request before it reaches the server, editing the payload, and forwarding it, so you can test what the API actually does with input the UI would never normally send.</td><td><div class="module-status"><span>Published</span><a href="04-proxymanseries-breakpoints.html">Read &rarr;</a></div></td></tr>
+        <tr><td>5</td><td><strong>Map Local and Map Remote.</strong> Serving a canned response for an endpoint, out-of-stock, a 500 error, an empty result set, so you can test how the UI handles states that are hard to trigger for real.</td><td><div class="module-status"><span>Published</span><a href="05-proxymanseries-map-local-remote.html">Read &rarr;</a></div></td></tr>
+        <tr><td>6</td><td><strong>Network conditions.</strong> Simulating a slow connection, a dropped connection mid-request, and a timeout, and checking whether the UI's actual behaviour matches what it's supposed to do.</td><td><div class="module-status"><span>Published</span><a href="06-proxymanseries-network-conditions.html">Read &rarr;</a></div></td></tr>
+        <tr><td>7</td><td><strong>Composer.</strong> Building and replaying a request independently of the app, for quick exploratory API testing without writing a script.</td><td><div class="module-status"><span>Published</span><a href="07-proxymanseries-composer.html">Read &rarr;</a></div></td></tr>
+        <tr><td>8</td><td><strong>Capturing evidence for bug reports.</strong> Exporting a HAR file or curl command from a captured request, what to include when a proxy capture is the actual evidence, and using AI to draft the report from it.</td><td><div class="module-status"><span>Published</span><a href="08-proxymanseries-bug-evidence.html">Read &rarr;</a></div></td></tr>
+        <tr><td>9</td><td><strong>Quick reference.</strong> A single scannable page condensing posts 1 through 8 into a checklist, including a full API test case category checklist, for when you already know why and just need the steps.</td><td><div class="module-status"><span>Published</span><a href="09-proxymanseries-quick-reference.html">Read &rarr;</a></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout gold">
+    <p><strong>Every step comes with a reason.</strong> This series doesn't just say "turn on SSL proxying" or "set the proxy port to 9090." It explains what that setting actually does, why it's off by default, and what breaks if you skip it. The goal is that by the end you understand Proxyman well enough to solve a problem it doesn't have a tutorial for, not just repeat the steps in one.</p>
+  </div>
+
+  <h2>The demo app: PeakAndPack</h2>
+  <p>Where a technique needs a real app to demonstrate against, this series uses PeakAndPack, the same demo app used across the Playwright and AI-Augmented QA series on this site: a live e-commerce app with login, a product listing, a cart, and a checkout flow, at <a href="https://peakandpack-ui.onrender.com" target="_blank"><code>peakandpack-ui.onrender.com</code></a>. It's web-only, so the mobile-specific parts of this series (device setup, mobile troubleshooting) use a generic target rather than force PeakAndPack into a context it doesn't have. A dedicated native mobile testing series, with its own demo app, is planned separately.</p>
+
+  <h2>Who this is for</h2>
+  <ul>
+    <li>QA engineers who test through the browser or app UI today and have never looked at what's actually crossing the network underneath it.</li>
+    <li>Anyone who's hit a bug that "only happens sometimes" and suspects it's network-related but doesn't have a way to prove it.</li>
+    <li>Testers who want to simulate error states, slow networks, or malformed responses without needing a developer to change the backend first.</li>
+  </ul>
+  <p>No prerequisite series, though a basic sense of HTTP (requests, responses, status codes) will make posts 3 onward easier. The <a href="../Mind_On_QA_WithAI/phase5/05-phase5-api-basics.html">API basics primer</a> from the AI-Augmented QA series covers everything needed.</p>
+
+  <div class="nav-row">
+    <a href="../../blogs.html" class="nav-cta secondary">&larr; All series</a>
+    <a href="01-proxymanseries-setup.html" class="nav-cta primary">Start with Post 1 &rarr;</a>
+  </div>
+
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; Proxyman for QA</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+</body>
+</html>

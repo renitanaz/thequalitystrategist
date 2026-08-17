@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Post 16: Migration and Platform-Change Testing | CMS Testing for QA</title>
+<meta name="description" content="Why a CMS migration is a one-shot event with no second chance, and how to test URL structure, field mapping, media, and account migration before the old system is gone.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:#6B7C3A; --olive-dark:#4A5828; --olive-deep:#2E3A18;
+    --cream:#F5F7F0; --warm-white:#FAFCF5;
+    --ink:#1A1F14; --ink2:#3D4235; --ink3:#6B7060; --ink4:#9A9E90;
+    --border:rgba(26,31,20,0.1); --border2:rgba(26,31,20,0.06);
+    --purple:#7A4A9A; --purple-l:#EDE0F5;
+    --gold:#9A6E1A; --gold-l:#F5EDD6;
+    --blue:#2A5C9A; --blue-l:#DDE8F5;
+    --teal:#1A6B54; --teal-l:#D8EEE8;
+    --terra:#8A4A2A; --terra-l:#F5E4D8;
+    --green:#1A7A3A; --green-l:#D8F0E0;
+    --rose:#9A2A4A; --rose-l:#F5DDE5;
+    --ff-serif:'Lora',Georgia,serif;
+    --ff-sans:'DM Sans',system-ui,sans-serif;
+    --ease:cubic-bezier(0.22,1,0.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--ff-sans);background:var(--warm-white);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  header.site-header{border-bottom:1px solid var(--border);padding:1.1rem 1.5rem;background:var(--warm-white);}
+  .site-header-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+  .site-name{font-family:var(--ff-serif);font-weight:600;font-size:1.05rem;text-decoration:none;}
+  main{max-width:880px;margin:0 auto;padding:2.6rem 1.5rem 5rem;}
+  .breadcrumb{font-size:.82rem;color:var(--ink3);margin-bottom:1.3rem;}
+  .breadcrumb a{text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+  .series-tag{display:inline-block;font-size:.76rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--gold);background:var(--gold-l);padding:.3rem .7rem;border-radius:999px;margin-bottom:1.1rem;}
+  h1{font-family:var(--ff-serif);font-size:2.1rem;font-weight:700;line-height:1.2;margin-bottom:.8rem;}
+  .subtitle{font-size:1.08rem;color:var(--ink2);margin-bottom:1.6rem;max-width:680px;}
+  .meta-row{display:flex;gap:1.1rem;font-size:.82rem;color:var(--ink3);margin-bottom:1.6rem;border-bottom:1px solid var(--border);padding-bottom:1.3rem;flex-wrap:wrap;}
+  .phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem;}
+  .phase-pip{display:inline-flex;align-items:center;justify-content:center;width:1.9rem;height:1.9rem;border-radius:50%;font-size:.68rem;font-weight:700;border:1.5px solid var(--border);color:var(--ink4);background:var(--warm-white);text-decoration:none;}
+  .phase-pip.active{background:var(--gold);color:var(--warm-white);border-color:transparent;}
+  .phase-pip.done{background:var(--green-l);color:var(--green);border-color:var(--green);}
+  .phase-pip.soon{cursor:default;opacity:.55;}
+  h2{font-family:var(--ff-serif);font-size:1.35rem;font-weight:700;margin-top:2.2rem;margin-bottom:.8rem;}
+  h3{font-family:var(--ff-serif);font-size:1.1rem;font-weight:700;margin-top:1.6rem;margin-bottom:.6rem;}
+  p{margin-bottom:.9rem;color:var(--ink2);font-size:.97rem;}
+  strong{color:var(--green);font-weight:700;}
+  ul,ol{margin:0 0 1rem 1.3rem;color:var(--ink2);}
+  li{margin-bottom:.4rem;font-size:.97rem;}
+  code{background:var(--cream);padding:.15rem .4rem;border-radius:5px;font-size:.87em;color:var(--olive-deep);}
+  .callout{border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.91rem;}
+  .callout p{margin-bottom:0;}
+  .callout.green{background:var(--green-l);border-left:3px solid var(--green);}.callout.green p{color:var(--olive-deep);}
+  .callout.blue{background:var(--blue-l);border-left:3px solid var(--blue);}.callout.blue p{color:var(--blue);}
+  .callout.gold{background:var(--gold-l);border-left:3px solid var(--gold);}.callout.gold p{color:var(--gold);}
+  .callout.warn{background:var(--terra-l);border-left:3px solid var(--terra);}.callout.warn p{color:var(--terra);}
+  .fw-table-wrap{overflow-x:auto;margin:1rem 0 1.5rem;}
+  table.fw-table{width:100%;border-collapse:collapse;font-size:.85rem;line-height:1.45;}
+  table.fw-table th,table.fw-table td{border:1px solid var(--border);padding:.5rem .7rem;text-align:left;vertical-align:top;}
+  table.fw-table th{background:var(--cream);font-weight:700;font-size:.8rem;}
+  table.fw-table td{color:var(--ink2);}
+  table.fw-table tr:nth-child(odd) td{background:var(--warm-white);}
+  table.fw-table tr:nth-child(even) td{background:var(--cream);}
+  .diagram-wrap{margin:1.4rem 0 1.7rem;background:var(--cream);border:1px solid var(--border);border-radius:12px;padding:1.1rem;}
+  .why-box{background:var(--cream);border-radius:8px;padding:.85rem 1.05rem;margin:.7rem 0 1.2rem;font-size:.89rem;}
+  .why-box .why-label{font-weight:700;color:var(--olive-dark);font-size:.76rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.3rem;}
+  .why-box p{margin-bottom:.5rem;color:var(--ink2);}
+  .why-box p:last-child{margin-bottom:0;}
+  .practical{background:var(--blue-l);border-radius:8px;padding:.9rem 1.1rem;margin:1.1rem 0 1.4rem;font-size:.91rem;border-left:3px solid var(--blue);}
+  .practical .practical-label{font-weight:700;color:var(--blue);font-size:.76rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.4rem;}
+  .practical p{margin-bottom:.5rem;color:var(--ink2);}
+  .practical p:last-child{margin-bottom:0;}
+  .takeaways{background:var(--teal-l);border:1px solid var(--teal);border-radius:10px;padding:1.1rem 1.3rem;margin:1.5rem 0 2rem;}
+  .takeaways .takeaways-label{font-weight:700;color:var(--teal);font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.6rem;}
+  .takeaways ul{margin:0 0 0 1.2rem;}
+  .takeaways li{color:var(--ink2);font-size:.93rem;margin-bottom:.4rem;}
+  .takeaways li:last-child{margin-bottom:0;}
+  .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:1.8rem;flex-wrap:wrap;}
+  .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:700;font-size:.9rem;padding:.7rem 1.2rem;border-radius:8px;transition:background .2s var(--ease);}
+  .nav-cta.primary{background:var(--olive);color:var(--warm-white);}
+  .nav-cta.primary:hover{background:var(--olive-dark);}
+  .nav-cta.secondary{background:var(--cream);color:var(--ink2);border:1px solid var(--border);}
+  footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.85rem;color:var(--ink3);}
+  footer a{text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+  @media(max-width:600px){
+    h1{font-size:1.65rem;}
+    .meta-row{flex-wrap:wrap;gap:.5rem;}
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+
+<main>
+
+  <p class="breadcrumb">
+    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    <a href="00-cmsseries-landing.html">CMS Testing for QA</a> &nbsp;/&nbsp;
+    Post 16
+  </p>
+
+  <span class="series-tag">Post 16 of 17 &middot; Lifecycle</span>
+
+  <h1>Migration and platform-change testing</h1>
+  <p class="subtitle">A migration moves years of content, created under one system's assumptions, into a different system with different ones, all at once, with no dress rehearsal against the real thing. Every other post in this series describes an ongoing risk. This one describes a single, largely irreversible event.</p>
+
+  <div class="meta-row">
+    <span>By RN</span>
+    <span>~9 min read</span>
+    <span>Demo: WordPress Playground</span>
+  </div>
+
+  <div class="phase-strip" aria-label="Series progress">
+    <a href="00-cmsseries-landing.html" class="phase-pip" title="Series overview">0</a>
+    <a href="01-cmsseries-what-makes-different.html" class="phase-pip" title="Post 1: What makes CMS testing different">1</a>
+    <a href="02-cmsseries-content-editorial-workflow.html" class="phase-pip" title="Post 2: Content and editorial workflow">2</a>
+    <a href="03-cmsseries-functional-template-testing.html" class="phase-pip" title="Post 3: Functional and template testing">3</a>
+    <a href="04-cmsseries-api-integration-testing.html" class="phase-pip" title="Post 4: API and integration testing">4</a>
+    <a href="05-cmsseries-headless-cms-considerations.html" class="phase-pip" title="Post 5: Headless CMS considerations">5</a>
+    <a href="06-cmsseries-seo-testing.html" class="phase-pip" title="Post 6: SEO testing">6</a>
+    <a href="07-cmsseries-accessibility-testing.html" class="phase-pip" title="Post 7: Accessibility testing">7</a>
+    <a href="08-cmsseries-performance-caching-testing.html" class="phase-pip" title="Post 8: Performance and caching testing">8</a>
+    <a href="09-cmsseries-analytics-tracking-testing.html" class="phase-pip" title="Post 9: Analytics and tracking validation">9</a>
+    <a href="10-cmsseries-security-testing.html" class="phase-pip" title="Post 10: Security testing">10</a>
+    <a href="11-cmsseries-crossbrowser-visual-testing.html" class="phase-pip" title="Post 11: Cross-browser and visual testing">11</a>
+    <a href="12-cmsseries-forms-lead-capture-testing.html" class="phase-pip" title="Post 12: Forms and lead-capture testing">12</a>
+    <a href="13-cmsseries-localization-testing.html" class="phase-pip" title="Post 13: Localization testing">13</a>
+    <a href="14-cmsseries-legal-compliance-testing.html" class="phase-pip" title="Post 14: Legal and compliance testing">14</a>
+    <a href="15-cmsseries-staging-release-testing.html" class="phase-pip" title="Post 15: Staging, preview and release testing">15</a>
+    <span class="phase-pip active" title="Post 16: Migration testing">16</span>
+    <a href="17-cmsseries-testing-strategy-capstone.html" class="phase-pip" title="Post 17: The CMS testing strategy">17</a>
+  </div>
+
+  <div class="takeaways">
+    <span class="takeaways-label">Key takeaways</span>
+    <ul>
+      <li>A migration is largely one-shot: once the old system is decommissioned, there's rarely a clean way to go back and recheck what didn't transfer.</li>
+      <li>Four things break most often: URL structure, content field mapping, media and asset links, and user account or role mapping.</li>
+      <li>Spot-checking a handful of recent posts proves nothing about the years of older, differently-shaped content sitting underneath them.</li>
+      <li>Reconciliation, comparing exact counts before and after, catches silent data loss that a visual spot-check never would.</li>
+      <li>A URL extractor run against the old domain before migrating gives a real list of every discoverable URL, catching pages a sitemap or the CMS's own page list would miss.</li>
+    </ul>
+  </div>
+
+  <h2>What actually breaks in a migration</h2>
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>Area</th><th>What goes wrong</th></tr></thead>
+      <tbody>
+        <tr><td>URL structure</td><td>The new system generates different URLs, no redirects, every external link and search ranking pointing at the old URLs breaks (the same risk from Post 6, at migration scale)</td></tr>
+        <tr><td>Content field mapping</td><td>A field that existed in the old content model has no equivalent in the new one, and either gets dropped or dumped into the wrong field</td></tr>
+        <tr><td>Media and assets</td><td>Images and files referenced by old URLs that don't exist in the new system's storage, leaving broken image links across old content</td></tr>
+        <tr><td>User accounts and roles</td><td>Roles don't map one-to-one between platforms; an old "Editor" might land as something with more or fewer permissions in the new system</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Old content doesn't always fit the new shape</h2>
+  <p>A content model designed years ago, for a platform being replaced, was built around that platform's assumptions. The new platform has its own, and they rarely match exactly.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 700 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" role="img" aria-label="Diagram: the old content model has fields for title, body, and a custom field called sidebar note. The new content model has title and body, but nothing equivalent to sidebar note. During migration, title and body map cleanly across, while sidebar note has nowhere to go and is silently dropped unless someone explicitly accounts for it.">
+      <text x="20" y="24" font-family="DM Sans, sans-serif" font-size="12" font-weight="700" fill="#3D4235">OLD CONTENT MODEL</text>
+      <rect x="20" y="38" width="140" height="36" rx="6" fill="#FAFCF5" stroke="#D8C8B8"/>
+      <text x="90" y="60" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#3D4235">Title</text>
+      <rect x="20" y="82" width="140" height="36" rx="6" fill="#FAFCF5" stroke="#D8C8B8"/>
+      <text x="90" y="104" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#3D4235">Body</text>
+      <rect x="20" y="126" width="140" height="36" rx="6" fill="#F5DDE5" stroke="#9A2A4A"/>
+      <text x="90" y="148" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#7A1A38">Sidebar note</text>
+
+      <text x="380" y="24" font-family="DM Sans, sans-serif" font-size="12" font-weight="700" fill="#3D4235">NEW CONTENT MODEL</text>
+      <rect x="380" y="38" width="140" height="36" rx="6" fill="#D8F0E0" stroke="#1A7A3A"/>
+      <text x="450" y="60" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#0F5A26">Title</text>
+      <rect x="380" y="82" width="140" height="36" rx="6" fill="#D8F0E0" stroke="#1A7A3A"/>
+      <text x="450" y="104" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#0F5A26">Body</text>
+
+      <path d="M160,56 L378,56" stroke="#1A7A3A" stroke-width="1.5" fill="none" marker-end="url(#arrowMg)"/>
+      <path d="M160,100 L378,100" stroke="#1A7A3A" stroke-width="1.5" fill="none" marker-end="url(#arrowMg)"/>
+      <path d="M160,144 L200,144" stroke="#9A2A4A" stroke-width="1.5" fill="none" marker-end="url(#arrowMgR)"/>
+      <text x="280" y="140" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#7A1A38">no equivalent field,</text>
+      <text x="280" y="154" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#7A1A38">silently dropped</text>
+
+      <defs>
+        <marker id="arrowMg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1A7A3A"/></marker>
+        <marker id="arrowMgR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9A2A4A"/></marker>
+      </defs>
+    </svg>
+  </div>
+
+  <div class="why-box">
+    <span class="why-label">Why spot-checking is the wrong strategy for a migration</span>
+    <p>Checking the ten most recent posts after a migration mostly proves recent content, created closest to the migration date and most likely to already fit modern assumptions, came through fine. It says nothing about the years of older content underneath, created under content models and conventions that changed multiple times before the migration ever happened.</p>
+    <p>The fix isn't checking more recent posts, it's deliberately sampling across the full age range and every distinct content type, plus running a reconciliation count: the same number of posts, pages, and media items before and after, so silent drops surface as a number mismatch instead of staying invisible.</p>
+  </div>
+
+  <h2>Before migrating: audit what URLs actually exist</h2>
+  <p>The redirect plan from Post 6 depends on knowing every URL the old site actually has, not just the ones in a sitemap or a CMS's own page list. Old sites frequently have URLs that predate the current sitemap, or pages a previous redesign left orphaned but still live and indexed.</p>
+  <div class="callout gold">
+    <p><strong>A URL extractor closes that gap.</strong> A tool like <a href="https://yourgpt.ai/tools/url-extractor" target="_blank">yourgpt.ai's URL extractor</a> pulls every discoverable URL from a domain, giving a real list to reconcile against the new site's redirect map, rather than trusting whatever the old CMS's own admin panel claims exists.</p>
+  </div>
+
+  <h2>Try it: run a small migration and check what survived</h2>
+  <div class="practical">
+    <span class="practical-label">Try it</span>
+    <p>In your <a href="https://wordpress.org/playground/" target="_blank">WordPress Playground</a> instance, go to <strong>Tools &rarr; Export</strong> and export All Content. This produces a WXR file, WordPress's own migration format.</p>
+    <p>Before importing anywhere, note the exact count of posts, pages, and media items in the current site (visible under Posts, Pages, and Media in the sidebar).</p>
+    <p>Go to <strong>Tools &rarr; Import</strong>, run the WordPress importer against the file you just exported, and re-check the same counts. Confirm they match, then open the imported version of a post with a featured image specifically, and confirm the image actually came through rather than just a broken reference.</p>
+  </div>
+
+  <h2>Your deliverable</h2>
+  <p>A short reconciliation table: content type, count before, count after, and whether the featured image on the post you checked survived the round trip intact.</p>
+  <p><strong>Time:</strong> ~20 minutes.</p>
+
+  <div class="nav-row">
+    <a href="15-cmsseries-staging-release-testing.html" class="nav-cta secondary">&larr; Post 15: Staging, preview &amp; release testing</a>
+    <a href="17-cmsseries-testing-strategy-capstone.html" class="nav-cta primary">Post 17: The CMS testing strategy &rarr;</a>
+  </div>
+
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; CMS Testing for QA</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+</body>
+</html>

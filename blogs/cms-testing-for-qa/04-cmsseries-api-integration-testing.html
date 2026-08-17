@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Post 4: API and Integration Testing | CMS Testing for QA</title>
+<meta name="description" content="Content APIs, webhooks, and third-party integrations: what a CMS's REST or GraphQL API actually needs tested, and why webhooks fail silently when nobody checks.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:#6B7C3A; --olive-dark:#4A5828; --olive-deep:#2E3A18;
+    --cream:#F5F7F0; --warm-white:#FAFCF5;
+    --ink:#1A1F14; --ink2:#3D4235; --ink3:#6B7060; --ink4:#9A9E90;
+    --border:rgba(26,31,20,0.1); --border2:rgba(26,31,20,0.06);
+    --purple:#7A4A9A; --purple-l:#EDE0F5;
+    --gold:#9A6E1A; --gold-l:#F5EDD6;
+    --blue:#2A5C9A; --blue-l:#DDE8F5;
+    --teal:#1A6B54; --teal-l:#D8EEE8;
+    --terra:#8A4A2A; --terra-l:#F5E4D8;
+    --green:#1A7A3A; --green-l:#D8F0E0;
+    --rose:#9A2A4A; --rose-l:#F5DDE5;
+    --ff-serif:'Lora',Georgia,serif;
+    --ff-sans:'DM Sans',system-ui,sans-serif;
+    --ease:cubic-bezier(0.22,1,0.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--ff-sans);background:var(--warm-white);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  header.site-header{border-bottom:1px solid var(--border);padding:1.1rem 1.5rem;background:var(--warm-white);}
+  .site-header-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+  .site-name{font-family:var(--ff-serif);font-weight:600;font-size:1.05rem;text-decoration:none;}
+  main{max-width:880px;margin:0 auto;padding:2.6rem 1.5rem 5rem;}
+  .breadcrumb{font-size:.82rem;color:var(--ink3);margin-bottom:1.3rem;}
+  .breadcrumb a{text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+  .series-tag{display:inline-block;font-size:.76rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--gold);background:var(--gold-l);padding:.3rem .7rem;border-radius:999px;margin-bottom:1.1rem;}
+  h1{font-family:var(--ff-serif);font-size:2.1rem;font-weight:700;line-height:1.2;margin-bottom:.8rem;}
+  .subtitle{font-size:1.08rem;color:var(--ink2);margin-bottom:1.6rem;max-width:680px;}
+  .meta-row{display:flex;gap:1.1rem;font-size:.82rem;color:var(--ink3);margin-bottom:1.6rem;border-bottom:1px solid var(--border);padding-bottom:1.3rem;flex-wrap:wrap;}
+  .phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem;}
+  .phase-pip{display:inline-flex;align-items:center;justify-content:center;width:1.9rem;height:1.9rem;border-radius:50%;font-size:.68rem;font-weight:700;border:1.5px solid var(--border);color:var(--ink4);background:var(--warm-white);text-decoration:none;}
+  .phase-pip.active{background:var(--gold);color:var(--warm-white);border-color:transparent;}
+  .phase-pip.done{background:var(--green-l);color:var(--green);border-color:var(--green);}
+  .phase-pip.soon{cursor:default;opacity:.55;}
+  h2{font-family:var(--ff-serif);font-size:1.35rem;font-weight:700;margin-top:2.2rem;margin-bottom:.8rem;}
+  h3{font-family:var(--ff-serif);font-size:1.1rem;font-weight:700;margin-top:1.6rem;margin-bottom:.6rem;}
+  p{margin-bottom:.9rem;color:var(--ink2);font-size:.97rem;}
+  strong{color:var(--green);font-weight:700;}
+  ul,ol{margin:0 0 1rem 1.3rem;color:var(--ink2);}
+  li{margin-bottom:.4rem;font-size:.97rem;}
+  code{background:var(--cream);padding:.15rem .4rem;border-radius:5px;font-size:.87em;color:var(--olive-deep);}
+  pre{background:var(--ink);color:var(--cream);padding:1rem 1.1rem;border-radius:10px;overflow-x:auto;font-size:.82rem;margin:1rem 0;line-height:1.55;}
+  pre code{background:none;color:inherit;padding:0;}
+  .callout{border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.91rem;}
+  .callout p{margin-bottom:0;}
+  .callout.green{background:var(--green-l);border-left:3px solid var(--green);}.callout.green p{color:var(--olive-deep);}
+  .callout.blue{background:var(--blue-l);border-left:3px solid var(--blue);}.callout.blue p{color:var(--blue);}
+  .callout.gold{background:var(--gold-l);border-left:3px solid var(--gold);}.callout.gold p{color:var(--gold);}
+  .callout.warn{background:var(--terra-l);border-left:3px solid var(--terra);}.callout.warn p{color:var(--terra);}
+  .fw-table-wrap{overflow-x:auto;margin:1rem 0 1.5rem;}
+  table.fw-table{width:100%;border-collapse:collapse;font-size:.85rem;line-height:1.45;}
+  table.fw-table th,table.fw-table td{border:1px solid var(--border);padding:.5rem .7rem;text-align:left;vertical-align:top;}
+  table.fw-table th{background:var(--cream);font-weight:700;font-size:.8rem;}
+  table.fw-table td{color:var(--ink2);}
+  table.fw-table tr:nth-child(odd) td{background:var(--warm-white);}
+  table.fw-table tr:nth-child(even) td{background:var(--cream);}
+  .diagram-wrap{margin:1.4rem 0 1.7rem;background:var(--cream);border:1px solid var(--border);border-radius:12px;padding:1.1rem;}
+  .why-box{background:var(--cream);border-radius:8px;padding:.85rem 1.05rem;margin:.7rem 0 1.2rem;font-size:.89rem;}
+  .why-box .why-label{font-weight:700;color:var(--olive-dark);font-size:.76rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.3rem;}
+  .why-box p{margin-bottom:.5rem;color:var(--ink2);}
+  .why-box p:last-child{margin-bottom:0;}
+  .practical{background:var(--blue-l);border-radius:8px;padding:.9rem 1.1rem;margin:1.1rem 0 1.4rem;font-size:.91rem;border-left:3px solid var(--blue);}
+  .practical .practical-label{font-weight:700;color:var(--blue);font-size:.76rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.4rem;}
+  .practical p{margin-bottom:.5rem;color:var(--ink2);}
+  .practical p:last-child{margin-bottom:0;}
+  .takeaways{background:var(--teal-l);border:1px solid var(--teal);border-radius:10px;padding:1.1rem 1.3rem;margin:1.5rem 0 2rem;}
+  .takeaways .takeaways-label{font-weight:700;color:var(--teal);font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.6rem;}
+  .takeaways ul{margin:0 0 0 1.2rem;}
+  .takeaways li{color:var(--ink2);font-size:.93rem;margin-bottom:.4rem;}
+  .takeaways li:last-child{margin-bottom:0;}
+  .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:1.8rem;flex-wrap:wrap;}
+  .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:700;font-size:.9rem;padding:.7rem 1.2rem;border-radius:8px;transition:background .2s var(--ease);}
+  .nav-cta.primary{background:var(--olive);color:var(--warm-white);}
+  .nav-cta.primary:hover{background:var(--olive-dark);}
+  .nav-cta.secondary{background:var(--cream);color:var(--ink2);border:1px solid var(--border);}
+  footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.85rem;color:var(--ink3);}
+  footer a{text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+  .stickman{overflow:visible;flex-shrink:0;}
+  .stickman .sm-figure{animation:sm-bob 2.4s ease-in-out infinite;}
+  @keyframes sm-bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-3px);}}
+  .stickman.shrug .sm-arm1{transform-origin:26px 30px;animation:sm-shrugL 1.6s ease-in-out infinite;}
+  .stickman.shrug .sm-arm2{transform-origin:34px 30px;animation:sm-shrugR 1.6s ease-in-out infinite;}
+  @keyframes sm-shrugL{0%,40%,100%{transform:rotate(0deg);}55%{transform:rotate(-22deg);}}
+  @keyframes sm-shrugR{0%,40%,100%{transform:rotate(0deg);}55%{transform:rotate(22deg);}}
+  @media (prefers-reduced-motion: reduce){
+    .stickman *{animation:none !important;}
+  }
+  @media(max-width:600px){
+    h1{font-size:1.65rem;}
+    .meta-row{flex-wrap:wrap;gap:.5rem;}
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+
+<main>
+
+  <p class="breadcrumb">
+    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    <a href="00-cmsseries-landing.html">CMS Testing for QA</a> &nbsp;/&nbsp;
+    Post 4
+  </p>
+
+  <span class="series-tag">Post 4 of 17 &middot; Integration</span>
+
+  <h1>API and integration testing</h1>
+  <p class="subtitle">A CMS's content isn't only consumed by the page you're looking at. The same data usually reaches a mobile app, a partner integration, or a marketing tool through an API most testers never open. This post is about testing that contract directly, instead of only the one page that happens to render it.</p>
+
+  <div class="meta-row">
+    <span>By RN</span>
+    <span>~9 min read</span>
+    <span>Demo: Strapi</span>
+  </div>
+
+  <div class="phase-strip" aria-label="Series progress">
+    <a href="00-cmsseries-landing.html" class="phase-pip" title="Series overview">0</a>
+    <a href="01-cmsseries-what-makes-different.html" class="phase-pip" title="Post 1: What makes CMS testing different">1</a>
+    <a href="02-cmsseries-content-editorial-workflow.html" class="phase-pip" title="Post 2: Content and editorial workflow">2</a>
+    <a href="03-cmsseries-functional-template-testing.html" class="phase-pip" title="Post 3: Functional and template testing">3</a>
+    <span class="phase-pip active" title="Post 4: API and integration testing">4</span>
+    <a href="05-cmsseries-headless-cms-considerations.html" class="phase-pip" title="Post 5: Headless CMS considerations">5</a>
+    <a href="06-cmsseries-seo-testing.html" class="phase-pip" title="Post 6: SEO testing">6</a>
+    <a href="07-cmsseries-accessibility-testing.html" class="phase-pip" title="Post 7: Accessibility testing">7</a>
+    <a href="08-cmsseries-performance-caching-testing.html" class="phase-pip" title="Post 8: Performance and caching testing">8</a>
+    <a href="09-cmsseries-analytics-tracking-testing.html" class="phase-pip" title="Post 9: Analytics and tracking validation">9</a>
+    <a href="10-cmsseries-security-testing.html" class="phase-pip" title="Post 10: Security testing">10</a>
+    <a href="11-cmsseries-crossbrowser-visual-testing.html" class="phase-pip" title="Post 11: Cross-browser and visual testing">11</a>
+    <a href="12-cmsseries-forms-lead-capture-testing.html" class="phase-pip" title="Post 12: Forms and lead-capture testing">12</a>
+    <a href="13-cmsseries-localization-testing.html" class="phase-pip" title="Post 13: Localization testing">13</a>
+    <a href="14-cmsseries-legal-compliance-testing.html" class="phase-pip" title="Post 14: Legal and compliance testing">14</a>
+    <a href="15-cmsseries-staging-release-testing.html" class="phase-pip" title="Post 15: Staging, preview and release testing">15</a>
+    <a href="16-cmsseries-migration-testing.html" class="phase-pip" title="Post 16: Migration testing">16</a>
+    <a href="17-cmsseries-testing-strategy-capstone.html" class="phase-pip" title="Post 17: The CMS testing strategy">17</a>
+  </div>
+
+  <div class="takeaways">
+    <span class="takeaways-label">Key takeaways</span>
+    <ul>
+      <li>A CMS's content API is a separate contract from its rendered pages, consumed by mobile apps, integrations, and other front ends that a UI test never touches.</li>
+      <li>Test status codes, response shape, field types against the content model, pagination, and auth on write endpoints, directly against the API.</li>
+      <li>Webhooks are fire-and-forget by default: if the receiver is down, the event is often silently lost unless retries are explicitly configured.</li>
+      <li>An integration usually breaks from a content-side change, a renamed field or altered response shape, not from the integration's own code.</li>
+    </ul>
+  </div>
+
+  <h2>The page is not the only consumer</h2>
+  <p>It's easy to test a CMS by testing the pages it renders and stop there. But most CMS platforms, headless or not, expose a content API alongside the pages: WordPress ships a REST API by default, Strapi's entire purpose is the API, and even a hand-built site often has a mobile app or a partner feed pulling the same content a different way.</p>
+  <p>Each of those consumers gets data straight from the API, with no template to catch or mask a problem. A bug that a page's CSS quietly hides can be a hard crash in a mobile app reading the raw JSON.</p>
+
+  <div class="meet-row" style="display:flex;gap:1.2rem;flex-wrap:wrap;margin:1.3rem 0 1.6rem;background:var(--cream);border-radius:12px;padding:1.1rem 1.3rem;align-items:center;">
+    <svg class="stickman shrug" viewBox="0 0 60 80" width="50" height="66" role="img" aria-label="Illustrated tester unsure what else consumes this content">
+      <g class="sm-figure">
+        <circle cx="30" cy="14" r="9" fill="#DDE8F5" stroke="#2A5C9A" stroke-width="2.5"/>
+        <line x1="30" y1="23" x2="30" y2="48" stroke="#2A5C9A" stroke-width="3" stroke-linecap="round"/>
+        <g class="sm-arm1"><line x1="30" y1="30" x2="16" y2="26" stroke="#2A5C9A" stroke-width="3" stroke-linecap="round"/></g>
+        <g class="sm-arm2"><line x1="30" y1="30" x2="44" y2="26" stroke="#2A5C9A" stroke-width="3" stroke-linecap="round"/></g>
+        <line x1="30" y1="48" x2="21" y2="70" stroke="#2A5C9A" stroke-width="3" stroke-linecap="round"/>
+        <line x1="30" y1="48" x2="39" y2="70" stroke="#2A5C9A" stroke-width="3" stroke-linecap="round"/>
+      </g>
+    </svg>
+    <p style="margin:0;flex:1;min-width:220px;font-size:.91rem;color:var(--ink2);">"Who else reads this API?" is worth asking before testing starts. A mobile app, a partner feed, and an internal dashboard can all depend on the same endpoint without any of them appearing in a sitemap.</p>
+  </div>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 700 230" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" role="img" aria-label="Diagram: one content repository at the center, with four separate consumers around it. Website frontend via REST. Mobile app via REST. Marketing site via GraphQL. Third party integration via webhook. A bug in the content repository reaches all four.">
+      <rect x="275" y="90" width="150" height="50" rx="8" fill="#F5EDD6" stroke="#9A6E1A"/>
+      <text x="350" y="112" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11.5" font-weight="700" fill="#7A5410">Content repository</text>
+      <text x="350" y="128" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#7A5410">one source, many readers</text>
+
+      <path d="M330,90 L130,45" stroke="#9A9E90" stroke-width="1.3" fill="none" marker-end="url(#arrowI)"/>
+      <rect x="30" y="18" width="140" height="42" rx="8" fill="#FAFCF5" stroke="#D8C8B8"/>
+      <text x="100" y="36" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#3D4235">Website frontend</text>
+      <text x="100" y="50" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#6B7060">REST</text>
+
+      <path d="M345,90 L345,45" stroke="#9A9E90" stroke-width="1.3" fill="none" marker-end="url(#arrowI)"/>
+      <rect x="275" y="18" width="140" height="42" rx="8" fill="#FAFCF5" stroke="#D8C8B8"/>
+      <text x="345" y="36" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#3D4235">Mobile app</text>
+      <text x="345" y="50" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#6B7060">REST</text>
+
+      <path d="M375,90 L560,45" stroke="#9A9E90" stroke-width="1.3" fill="none" marker-end="url(#arrowI)"/>
+      <rect x="500" y="18" width="150" height="42" rx="8" fill="#FAFCF5" stroke="#D8C8B8"/>
+      <text x="575" y="36" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#3D4235">Marketing site</text>
+      <text x="575" y="50" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#6B7060">GraphQL</text>
+
+      <path d="M375,140 L560,185" stroke="#9A9E90" stroke-width="1.3" fill="none" marker-end="url(#arrowI)"/>
+      <rect x="490" y="188" width="170" height="42" rx="8" fill="#FAFCF5" stroke="#D8C8B8"/>
+      <text x="575" y="206" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#3D4235">Third-party integration</text>
+      <text x="575" y="220" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#6B7060">Webhook</text>
+
+      <defs>
+        <marker id="arrowI" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9A9E90"/></marker>
+      </defs>
+    </svg>
+  </div>
+
+  <h2>What to test directly against the API</h2>
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>Check</th><th>What it catches</th></tr></thead>
+      <tbody>
+        <tr><td>Status codes</td><td>A 200 with an error message in the body, instead of an actual 4xx/5xx, breaks any consumer that checks status before parsing</td></tr>
+        <tr><td>Response shape</td><td>A field that's sometimes a string and sometimes an array (common when a field is optional) crashes strictly-typed consumers</td></tr>
+        <tr><td>Field types match the content model</td><td>A "required" field the model promises but the API returns as null anyway</td></tr>
+        <tr><td>Pagination</td><td>An endpoint that silently caps results at a default page size, with a consumer that assumed it got everything</td></tr>
+        <tr><td>Auth on write endpoints</td><td>A create, update, or delete endpoint reachable without a valid token, or reachable with a token scoped for something else</td></tr>
+        <tr><td>Error response shape</td><td>Whether a 400 or 500 returns a consistent, parseable error body, or an inconsistent one depending on what failed</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="why-box">
+    <span class="why-label">Why this needs its own test, not just a page-level check</span>
+    <p>A page that renders correctly proves the template handled whatever the API returned. It doesn't prove the API returned the right thing, only that the template was defensive enough to cover for it.</p>
+    <p>Testing the API directly, with a tool like Postman, curl, or Strapi's own admin panel, removes the template as a variable and shows exactly what every consumer actually receives.</p>
+  </div>
+
+  <h2>Webhooks: fire, and rarely check what happened</h2>
+  <p>A webhook is the CMS notifying another system the moment something happens, a post published, an entry updated, by sending it an HTTP request. It's how a CMS pushes data out instead of waiting for something to pull it.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 700 190" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" role="img" aria-label="Diagram: content is published, the CMS sends a webhook POST request. Two outcomes. Receiver is up, request succeeds, everything looks fine. Receiver is down or slow, the CMS logs nothing and moves on, the event is silently lost unless retries were explicitly configured.">
+      <rect x="20" y="70" width="130" height="46" rx="8" fill="#FAFCF5" stroke="#D8C8B8"/>
+      <text x="85" y="98" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11.5" fill="#3D4235">Content published</text>
+      <path d="M150,93 L208,93" stroke="#9A6E1A" stroke-width="1.5" fill="none" marker-end="url(#arrowW)"/>
+      <rect x="210" y="70" width="120" height="46" rx="8" fill="#F5EDD6" stroke="#9A6E1A"/>
+      <text x="270" y="98" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11.5" font-weight="700" fill="#7A5410">Webhook POST</text>
+
+      <path d="M330,85 L470,40" stroke="#1A7A3A" stroke-width="1.5" fill="none" marker-end="url(#arrowGr)"/>
+      <rect x="470" y="16" width="180" height="46" rx="8" fill="#D8F0E0" stroke="#1A7A3A"/>
+      <text x="560" y="38" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="#0F5A26">Receiver is up</text>
+      <text x="560" y="53" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#0F5A26">200 OK, looks fine</text>
+
+      <path d="M330,101 L470,146" stroke="#9A2A4A" stroke-width="1.5" fill="none" marker-end="url(#arrowRd)"/>
+      <rect x="470" y="128" width="180" height="50" rx="8" fill="#F5DDE5" stroke="#9A2A4A"/>
+      <text x="560" y="148" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="#7A1A38">Receiver down or slow</text>
+      <text x="560" y="163" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#7A1A38">event lost, nothing logged</text>
+      <text x="560" y="176" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#7A1A38">unless retries are configured</text>
+
+      <defs>
+        <marker id="arrowW" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9A6E1A"/></marker>
+        <marker id="arrowGr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1A7A3A"/></marker>
+        <marker id="arrowRd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9A2A4A"/></marker>
+      </defs>
+    </svg>
+  </div>
+
+  <div class="why-box">
+    <span class="why-label">Why "it worked when I tested it" doesn't cover webhooks</span>
+    <p>A webhook demo almost always tests the happy path: receiver is up, request succeeds, done. That proves the webhook fires. It says nothing about what happens the one time the receiving system is deploying, rate-limiting, or simply down.</p>
+    <p>Whether that failure is retried, logged anywhere visible, or silently dropped is a configuration detail, not a given, and it's usually the actual root cause when "the integration randomly misses events" gets reported weeks later.</p>
+  </div>
+
+  <h2>Third-party integrations: what actually breaks them</h2>
+  <p>An integration rarely breaks because its own code changed. It breaks because something upstream, in the content side, changed underneath it.</p>
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>Change on the content side</th><th>How the integration breaks</th></tr></thead>
+      <tbody>
+        <tr><td>A field gets renamed in the content model</td><td>The integration's mapping still references the old field name and silently gets null</td></tr>
+        <tr><td>A field's type changes (single value to a list)</td><td>The integration's parser expects the old shape and throws, or worse, half-processes it</td></tr>
+        <tr><td>An API token expires or is regenerated</td><td>Every request from that integration starts failing auth, often without a clear error surfaced to anyone</td></tr>
+        <tr><td>Rate limits are added or tightened</td><td>An integration that used to sync fine starts silently dropping requests during high-traffic periods</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout gold">
+    <p><strong>Test integrations from the content side, not just the integration's side.</strong> Change a field name or type in a test environment and watch what happens downstream, rather than only testing the integration in isolation with data that never changes.</p>
+  </div>
+
+  <h2>Try it: test a real content API</h2>
+  <div class="practical">
+    <span class="practical-label">Try it</span>
+    <p>Install Strapi locally with its quickstart command, it sets up a free, self-hosted instance with a SQLite database, no separate server needed:</p>
+    <pre><code>npx create-strapi-app@latest my-project --quickstart</code></pre>
+    <p>In the admin panel, create a content type called "Article" with a title, a body, and a required featured image field. Publish two or three entries, then in Settings, enable public read access for the Article API under Roles.</p>
+    <p>Hit the REST endpoint directly in your browser or curl: <code>http://localhost:1337/api/articles</code>. Check the response against the table above: does the status code make sense, does every field match what the content type defines, and what happens if you request a page number past the last one?</p>
+  </div>
+
+  <h2>Your deliverable</h2>
+  <p>A short list of the real consumers (mobile app, partner feed, internal tool, or hypothetical ones if none exist yet) that would read a CMS's content API, and one specific thing each would break on if the API's response shape changed unexpectedly.</p>
+  <p><strong>Time:</strong> ~25 to 35 minutes, most of it the Strapi setup.</p>
+
+  <div class="nav-row">
+    <a href="03-cmsseries-functional-template-testing.html" class="nav-cta secondary">&larr; Post 3: Functional &amp; template testing</a>
+    <a href="05-cmsseries-headless-cms-considerations.html" class="nav-cta primary">Post 5: Headless CMS considerations &rarr;</a>
+  </div>
+
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; CMS Testing for QA</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+</body>
+</html>

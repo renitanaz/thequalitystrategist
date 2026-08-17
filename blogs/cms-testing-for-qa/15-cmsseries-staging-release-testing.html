@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Post 15: Staging, Preview and Release Testing | CMS Testing for QA</title>
+<meta name="description" content="Environment parity, content freeze windows, and pre-go-live checks: why release testing on a CMS has to cover content, not just code.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:#6B7C3A; --olive-dark:#4A5828; --olive-deep:#2E3A18;
+    --cream:#F5F7F0; --warm-white:#FAFCF5;
+    --ink:#1A1F14; --ink2:#3D4235; --ink3:#6B7060; --ink4:#9A9E90;
+    --border:rgba(26,31,20,0.1); --border2:rgba(26,31,20,0.06);
+    --purple:#7A4A9A; --purple-l:#EDE0F5;
+    --gold:#9A6E1A; --gold-l:#F5EDD6;
+    --blue:#2A5C9A; --blue-l:#DDE8F5;
+    --teal:#1A6B54; --teal-l:#D8EEE8;
+    --terra:#8A4A2A; --terra-l:#F5E4D8;
+    --green:#1A7A3A; --green-l:#D8F0E0;
+    --rose:#9A2A4A; --rose-l:#F5DDE5;
+    --ff-serif:'Lora',Georgia,serif;
+    --ff-sans:'DM Sans',system-ui,sans-serif;
+    --ease:cubic-bezier(0.22,1,0.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--ff-sans);background:var(--warm-white);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  header.site-header{border-bottom:1px solid var(--border);padding:1.1rem 1.5rem;background:var(--warm-white);}
+  .site-header-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+  .site-name{font-family:var(--ff-serif);font-weight:600;font-size:1.05rem;text-decoration:none;}
+  main{max-width:880px;margin:0 auto;padding:2.6rem 1.5rem 5rem;}
+  .breadcrumb{font-size:.82rem;color:var(--ink3);margin-bottom:1.3rem;}
+  .breadcrumb a{text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+  .series-tag{display:inline-block;font-size:.76rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--gold);background:var(--gold-l);padding:.3rem .7rem;border-radius:999px;margin-bottom:1.1rem;}
+  h1{font-family:var(--ff-serif);font-size:2.1rem;font-weight:700;line-height:1.2;margin-bottom:.8rem;}
+  .subtitle{font-size:1.08rem;color:var(--ink2);margin-bottom:1.6rem;max-width:680px;}
+  .meta-row{display:flex;gap:1.1rem;font-size:.82rem;color:var(--ink3);margin-bottom:1.6rem;border-bottom:1px solid var(--border);padding-bottom:1.3rem;flex-wrap:wrap;}
+  .phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem;}
+  .phase-pip{display:inline-flex;align-items:center;justify-content:center;width:1.9rem;height:1.9rem;border-radius:50%;font-size:.68rem;font-weight:700;border:1.5px solid var(--border);color:var(--ink4);background:var(--warm-white);text-decoration:none;}
+  .phase-pip.active{background:var(--gold);color:var(--warm-white);border-color:transparent;}
+  .phase-pip.done{background:var(--green-l);color:var(--green);border-color:var(--green);}
+  .phase-pip.soon{cursor:default;opacity:.55;}
+  h2{font-family:var(--ff-serif);font-size:1.35rem;font-weight:700;margin-top:2.2rem;margin-bottom:.8rem;}
+  h3{font-family:var(--ff-serif);font-size:1.1rem;font-weight:700;margin-top:1.6rem;margin-bottom:.6rem;}
+  p{margin-bottom:.9rem;color:var(--ink2);font-size:.97rem;}
+  strong{color:var(--green);font-weight:700;}
+  ul,ol{margin:0 0 1rem 1.3rem;color:var(--ink2);}
+  li{margin-bottom:.4rem;font-size:.97rem;}
+  code{background:var(--cream);padding:.15rem .4rem;border-radius:5px;font-size:.87em;color:var(--olive-deep);}
+  .callout{border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.91rem;}
+  .callout p{margin-bottom:0;}
+  .callout.green{background:var(--green-l);border-left:3px solid var(--green);}.callout.green p{color:var(--olive-deep);}
+  .callout.blue{background:var(--blue-l);border-left:3px solid var(--blue);}.callout.blue p{color:var(--blue);}
+  .callout.gold{background:var(--gold-l);border-left:3px solid var(--gold);}.callout.gold p{color:var(--gold);}
+  .callout.warn{background:var(--terra-l);border-left:3px solid var(--terra);}.callout.warn p{color:var(--terra);}
+  .fw-table-wrap{overflow-x:auto;margin:1rem 0 1.5rem;}
+  table.fw-table{width:100%;border-collapse:collapse;font-size:.85rem;line-height:1.45;}
+  table.fw-table th,table.fw-table td{border:1px solid var(--border);padding:.5rem .7rem;text-align:left;vertical-align:top;}
+  table.fw-table th{background:var(--cream);font-weight:700;font-size:.8rem;}
+  table.fw-table td{color:var(--ink2);}
+  table.fw-table tr:nth-child(odd) td{background:var(--warm-white);}
+  table.fw-table tr:nth-child(even) td{background:var(--cream);}
+  .diagram-wrap{margin:1.4rem 0 1.7rem;background:var(--cream);border:1px solid var(--border);border-radius:12px;padding:1.1rem;}
+  .why-box{background:var(--cream);border-radius:8px;padding:.85rem 1.05rem;margin:.7rem 0 1.2rem;font-size:.89rem;}
+  .why-box .why-label{font-weight:700;color:var(--olive-dark);font-size:.76rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.3rem;}
+  .why-box p{margin-bottom:.5rem;color:var(--ink2);}
+  .why-box p:last-child{margin-bottom:0;}
+  .practical{background:var(--blue-l);border-radius:8px;padding:.9rem 1.1rem;margin:1.1rem 0 1.4rem;font-size:.91rem;border-left:3px solid var(--blue);}
+  .practical .practical-label{font-weight:700;color:var(--blue);font-size:.76rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.4rem;}
+  .practical p{margin-bottom:.5rem;color:var(--ink2);}
+  .practical p:last-child{margin-bottom:0;}
+  .takeaways{background:var(--teal-l);border:1px solid var(--teal);border-radius:10px;padding:1.1rem 1.3rem;margin:1.5rem 0 2rem;}
+  .takeaways .takeaways-label{font-weight:700;color:var(--teal);font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.6rem;}
+  .takeaways ul{margin:0 0 0 1.2rem;}
+  .takeaways li{color:var(--ink2);font-size:.93rem;margin-bottom:.4rem;}
+  .takeaways li:last-child{margin-bottom:0;}
+  .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:1.8rem;flex-wrap:wrap;}
+  .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:700;font-size:.9rem;padding:.7rem 1.2rem;border-radius:8px;transition:background .2s var(--ease);}
+  .nav-cta.primary{background:var(--olive);color:var(--warm-white);}
+  .nav-cta.primary:hover{background:var(--olive-dark);}
+  .nav-cta.secondary{background:var(--cream);color:var(--ink2);border:1px solid var(--border);}
+  footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.85rem;color:var(--ink3);}
+  footer a{text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+  @media(max-width:600px){
+    h1{font-size:1.65rem;}
+    .meta-row{flex-wrap:wrap;gap:.5rem;}
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+
+<main>
+
+  <p class="breadcrumb">
+    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    <a href="00-cmsseries-landing.html">CMS Testing for QA</a> &nbsp;/&nbsp;
+    Post 15
+  </p>
+
+  <span class="series-tag">Post 15 of 17 &middot; Lifecycle</span>
+
+  <h1>Staging, preview and release testing</h1>
+  <p class="subtitle">Staging and release testing on a CMS has a problem a hand-coded site doesn't: content can diverge between what a tester sees, what's staged, and what actually goes live, independently of any code deploy. "Release" isn't one event, it's an ongoing stream of content changes that keeps happening after the code ships.</p>
+
+  <div class="meta-row">
+    <span>By RN</span>
+    <span>~9 min read</span>
+    <span>Demo: WordPress Playground</span>
+  </div>
+
+  <div class="phase-strip" aria-label="Series progress">
+    <a href="00-cmsseries-landing.html" class="phase-pip" title="Series overview">0</a>
+    <a href="01-cmsseries-what-makes-different.html" class="phase-pip" title="Post 1: What makes CMS testing different">1</a>
+    <a href="02-cmsseries-content-editorial-workflow.html" class="phase-pip" title="Post 2: Content and editorial workflow">2</a>
+    <a href="03-cmsseries-functional-template-testing.html" class="phase-pip" title="Post 3: Functional and template testing">3</a>
+    <a href="04-cmsseries-api-integration-testing.html" class="phase-pip" title="Post 4: API and integration testing">4</a>
+    <a href="05-cmsseries-headless-cms-considerations.html" class="phase-pip" title="Post 5: Headless CMS considerations">5</a>
+    <a href="06-cmsseries-seo-testing.html" class="phase-pip" title="Post 6: SEO testing">6</a>
+    <a href="07-cmsseries-accessibility-testing.html" class="phase-pip" title="Post 7: Accessibility testing">7</a>
+    <a href="08-cmsseries-performance-caching-testing.html" class="phase-pip" title="Post 8: Performance and caching testing">8</a>
+    <a href="09-cmsseries-analytics-tracking-testing.html" class="phase-pip" title="Post 9: Analytics and tracking validation">9</a>
+    <a href="10-cmsseries-security-testing.html" class="phase-pip" title="Post 10: Security testing">10</a>
+    <a href="11-cmsseries-crossbrowser-visual-testing.html" class="phase-pip" title="Post 11: Cross-browser and visual testing">11</a>
+    <a href="12-cmsseries-forms-lead-capture-testing.html" class="phase-pip" title="Post 12: Forms and lead-capture testing">12</a>
+    <a href="13-cmsseries-localization-testing.html" class="phase-pip" title="Post 13: Localization testing">13</a>
+    <a href="14-cmsseries-legal-compliance-testing.html" class="phase-pip" title="Post 14: Legal and compliance testing">14</a>
+    <span class="phase-pip active" title="Post 15: Staging, preview and release testing">15</span>
+    <a href="16-cmsseries-migration-testing.html" class="phase-pip" title="Post 16: Migration testing">16</a>
+    <a href="17-cmsseries-testing-strategy-capstone.html" class="phase-pip" title="Post 17: The CMS testing strategy">17</a>
+  </div>
+
+  <div class="takeaways">
+    <span class="takeaways-label">Key takeaways</span>
+    <ul>
+      <li>Environment parity for a CMS means matching code (plugins, theme, version) and representative content, staging seeded with trivial content hides the exact bugs Post 3 covers.</li>
+      <li>A content freeze window exists so the thing being tested stops changing underneath the tester during a sign-off window.</li>
+      <li>A "preview" of pending changes and the actual live page are two different things. Confirm what's live, not just what previews correctly.</li>
+      <li>Release testing on a CMS doesn't end at go-live. Every future content edit is a small, ongoing release with no dedicated test pass unless someone builds one.</li>
+    </ul>
+  </div>
+
+  <h2>Environment parity means content, not just code</h2>
+  <p>Staging environments are usually built to match production's code: same plugin versions, same theme, same configuration. Content parity gets skipped far more often, staging often runs on stripped-down or placeholder content instead of anything resembling what's actually live.</p>
+
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>Parity dimension</th><th>Usually handled well</th><th>Usually neglected</th></tr></thead>
+      <tbody>
+        <tr><td>Code (plugins, theme, core version)</td><td>&#10003;</td><td></td></tr>
+        <tr><td>Configuration (settings, environment variables)</td><td>&#10003;</td><td></td></tr>
+        <tr><td>Representative content (real-shaped, edge-case content)</td><td></td><td>&#10003;</td></tr>
+        <tr><td>Content volume (enough entries to test pagination, lists)</td><td></td><td>&#10003;</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="why-box">
+    <span class="why-label">Why content parity matters as much as code parity</span>
+    <p>A staging environment with three tidy sample posts will never surface the edge cases from Post 3: the very long title, the missing featured image, the empty category list. If staging's content doesn't resemble production's actual variety, testing against it only proves the template works for content nobody will really publish.</p>
+  </div>
+
+  <h2>Content freeze: stopping the target from moving mid-test</h2>
+  <p>A content freeze is a window, usually right before a major push or a high-traffic event, where editors hold non-critical publishing so the site's state stays stable long enough for a test pass to mean something.</p>
+  <div class="callout gold">
+    <p><strong>Testing against a moving target isn't really testing.</strong> If content keeps changing while a QA pass is in progress, a pass that finds nothing wrong doesn't mean nothing's wrong, it might mean the bug was introduced after the check already happened. A freeze window exists specifically to make sign-off mean something.</p>
+  </div>
+
+  <h2>Preview is not the same thing as live</h2>
+  <p>A CMS's preview feature shows what a draft or a pending edit would look like. It is not, itself, proof of what's actually reachable by a real visitor right now. Those are two different states that a release check has to verify separately.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 700 150" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" role="img" aria-label="Diagram: an editor makes a pending change and opens preview, which correctly shows the new content. Separately, the live public URL, opened without saving, still shows the old content. Both are true at the same time, and a release check needs to confirm the live URL specifically, not just trust the preview.">
+      <rect x="20" y="20" width="300" height="50" rx="8" fill="#D8F0E0" stroke="#1A7A3A"/>
+      <text x="170" y="42" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="#0F5A26">Preview link</text>
+      <text x="170" y="58" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#0F5A26">shows the pending edit correctly</text>
+
+      <rect x="380" y="20" width="300" height="50" rx="8" fill="#F5DDE5" stroke="#9A2A4A"/>
+      <text x="530" y="42" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="#7A1A38">Live public URL</text>
+      <text x="530" y="58" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#7A1A38">still shows the old content, unchanged</text>
+
+      <text x="350" y="105" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#6B7060">Both true at the same time. A release check confirms the live URL,</text>
+      <text x="350" y="122" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#6B7060">not the preview link, before calling it done.</text>
+    </svg>
+  </div>
+
+  <h2>Try it: separate preview from live</h2>
+  <div class="practical">
+    <span class="practical-label">Try it</span>
+    <p>In your <a href="https://wordpress.org/playground/" target="_blank">WordPress Playground</a> instance, open the already-published sample post and note the live URL in a separate tab, don't touch it yet.</p>
+    <p>Back in the editor, change the title, but don't click Update. Click <strong>Preview Changes</strong> instead, and confirm the preview shows the new title.</p>
+    <p>Switch to the live URL tab you opened earlier and refresh it. It should still show the old title, proving the preview and the live page are genuinely separate states, not the same check performed twice.</p>
+  </div>
+
+  <h2>Your deliverable</h2>
+  <p>A short pre-go-live checklist, five items, for a hypothetical content push on a real CMS site you know: the specific checks you'd run against the live URL, not the preview, before calling it released.</p>
+  <p><strong>Time:</strong> ~15 minutes.</p>
+
+  <div class="nav-row">
+    <a href="14-cmsseries-legal-compliance-testing.html" class="nav-cta secondary">&larr; Post 14: Legal &amp; compliance testing</a>
+    <a href="16-cmsseries-migration-testing.html" class="nav-cta primary">Post 16: Migration testing &rarr;</a>
+  </div>
+
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; CMS Testing for QA</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Post 5: Headless CMS Considerations | CMS Testing for QA</title>
+<meta name="description" content="What's genuinely different about testing a headless CMS: no default preview, multi-channel content modeling, and contract testing between the CMS and its front ends.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:#6B7C3A; --olive-dark:#4A5828; --olive-deep:#2E3A18;
+    --cream:#F5F7F0; --warm-white:#FAFCF5;
+    --ink:#1A1F14; --ink2:#3D4235; --ink3:#6B7060; --ink4:#9A9E90;
+    --border:rgba(26,31,20,0.1); --border2:rgba(26,31,20,0.06);
+    --purple:#7A4A9A; --purple-l:#EDE0F5;
+    --gold:#9A6E1A; --gold-l:#F5EDD6;
+    --blue:#2A5C9A; --blue-l:#DDE8F5;
+    --teal:#1A6B54; --teal-l:#D8EEE8;
+    --terra:#8A4A2A; --terra-l:#F5E4D8;
+    --green:#1A7A3A; --green-l:#D8F0E0;
+    --rose:#9A2A4A; --rose-l:#F5DDE5;
+    --ff-serif:'Lora',Georgia,serif;
+    --ff-sans:'DM Sans',system-ui,sans-serif;
+    --ease:cubic-bezier(0.22,1,0.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--ff-sans);background:var(--warm-white);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  header.site-header{border-bottom:1px solid var(--border);padding:1.1rem 1.5rem;background:var(--warm-white);}
+  .site-header-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+  .site-name{font-family:var(--ff-serif);font-weight:600;font-size:1.05rem;text-decoration:none;}
+  main{max-width:880px;margin:0 auto;padding:2.6rem 1.5rem 5rem;}
+  .breadcrumb{font-size:.82rem;color:var(--ink3);margin-bottom:1.3rem;}
+  .breadcrumb a{text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+  .series-tag{display:inline-block;font-size:.76rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--gold);background:var(--gold-l);padding:.3rem .7rem;border-radius:999px;margin-bottom:1.1rem;}
+  h1{font-family:var(--ff-serif);font-size:2.1rem;font-weight:700;line-height:1.2;margin-bottom:.8rem;}
+  .subtitle{font-size:1.08rem;color:var(--ink2);margin-bottom:1.6rem;max-width:680px;}
+  .meta-row{display:flex;gap:1.1rem;font-size:.82rem;color:var(--ink3);margin-bottom:1.6rem;border-bottom:1px solid var(--border);padding-bottom:1.3rem;flex-wrap:wrap;}
+  .phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem;}
+  .phase-pip{display:inline-flex;align-items:center;justify-content:center;width:1.9rem;height:1.9rem;border-radius:50%;font-size:.68rem;font-weight:700;border:1.5px solid var(--border);color:var(--ink4);background:var(--warm-white);text-decoration:none;}
+  .phase-pip.active{background:var(--gold);color:var(--warm-white);border-color:transparent;}
+  .phase-pip.done{background:var(--green-l);color:var(--green);border-color:var(--green);}
+  .phase-pip.soon{cursor:default;opacity:.55;}
+  h2{font-family:var(--ff-serif);font-size:1.35rem;font-weight:700;margin-top:2.2rem;margin-bottom:.8rem;}
+  h3{font-family:var(--ff-serif);font-size:1.1rem;font-weight:700;margin-top:1.6rem;margin-bottom:.6rem;}
+  p{margin-bottom:.9rem;color:var(--ink2);font-size:.97rem;}
+  strong{color:var(--green);font-weight:700;}
+  ul,ol{margin:0 0 1rem 1.3rem;color:var(--ink2);}
+  li{margin-bottom:.4rem;font-size:.97rem;}
+  code{background:var(--cream);padding:.15rem .4rem;border-radius:5px;font-size:.87em;color:var(--olive-deep);}
+  .callout{border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.91rem;}
+  .callout p{margin-bottom:0;}
+  .callout.green{background:var(--green-l);border-left:3px solid var(--green);}.callout.green p{color:var(--olive-deep);}
+  .callout.blue{background:var(--blue-l);border-left:3px solid var(--blue);}.callout.blue p{color:var(--blue);}
+  .callout.gold{background:var(--gold-l);border-left:3px solid var(--gold);}.callout.gold p{color:var(--gold);}
+  .callout.warn{background:var(--terra-l);border-left:3px solid var(--terra);}.callout.warn p{color:var(--terra);}
+  .fw-table-wrap{overflow-x:auto;margin:1rem 0 1.5rem;}
+  table.fw-table{width:100%;border-collapse:collapse;font-size:.85rem;line-height:1.45;}
+  table.fw-table th,table.fw-table td{border:1px solid var(--border);padding:.5rem .7rem;text-align:left;vertical-align:top;}
+  table.fw-table th{background:var(--cream);font-weight:700;font-size:.8rem;}
+  table.fw-table td{color:var(--ink2);}
+  table.fw-table tr:nth-child(odd) td{background:var(--warm-white);}
+  table.fw-table tr:nth-child(even) td{background:var(--cream);}
+  .diagram-wrap{margin:1.4rem 0 1.7rem;background:var(--cream);border:1px solid var(--border);border-radius:12px;padding:1.1rem;}
+  .why-box{background:var(--cream);border-radius:8px;padding:.85rem 1.05rem;margin:.7rem 0 1.2rem;font-size:.89rem;}
+  .why-box .why-label{font-weight:700;color:var(--olive-dark);font-size:.76rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.3rem;}
+  .why-box p{margin-bottom:.5rem;color:var(--ink2);}
+  .why-box p:last-child{margin-bottom:0;}
+  .practical{background:var(--blue-l);border-radius:8px;padding:.9rem 1.1rem;margin:1.1rem 0 1.4rem;font-size:.91rem;border-left:3px solid var(--blue);}
+  .practical .practical-label{font-weight:700;color:var(--blue);font-size:.76rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.4rem;}
+  .practical p{margin-bottom:.5rem;color:var(--ink2);}
+  .practical p:last-child{margin-bottom:0;}
+  .takeaways{background:var(--teal-l);border:1px solid var(--teal);border-radius:10px;padding:1.1rem 1.3rem;margin:1.5rem 0 2rem;}
+  .takeaways .takeaways-label{font-weight:700;color:var(--teal);font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.6rem;}
+  .takeaways ul{margin:0 0 0 1.2rem;}
+  .takeaways li{color:var(--ink2);font-size:.93rem;margin-bottom:.4rem;}
+  .takeaways li:last-child{margin-bottom:0;}
+  .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:1.8rem;flex-wrap:wrap;}
+  .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:700;font-size:.9rem;padding:.7rem 1.2rem;border-radius:8px;transition:background .2s var(--ease);}
+  .nav-cta.primary{background:var(--olive);color:var(--warm-white);}
+  .nav-cta.primary:hover{background:var(--olive-dark);}
+  .nav-cta.secondary{background:var(--cream);color:var(--ink2);border:1px solid var(--border);}
+  footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.85rem;color:var(--ink3);}
+  footer a{text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+  @media(max-width:600px){
+    h1{font-size:1.65rem;}
+    .meta-row{flex-wrap:wrap;gap:.5rem;}
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+
+<main>
+
+  <p class="breadcrumb">
+    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    <a href="00-cmsseries-landing.html">CMS Testing for QA</a> &nbsp;/&nbsp;
+    Post 5
+  </p>
+
+  <span class="series-tag">Post 5 of 17 &middot; Integration</span>
+
+  <h1>Headless CMS considerations</h1>
+  <p class="subtitle">Post 4 covered API testing that applies to any CMS with an API, headless or not. This post is about the three things that are genuinely different once there's no built-in rendering layer at all: no default preview, content that has to work across channels nobody designed a single layout for, and a contract between CMS and front end that can break without either side's code changing.</p>
+
+  <div class="meta-row">
+    <span>By RN</span>
+    <span>~9 min read</span>
+    <span>Demo: Strapi</span>
+  </div>
+
+  <div class="phase-strip" aria-label="Series progress">
+    <a href="00-cmsseries-landing.html" class="phase-pip" title="Series overview">0</a>
+    <a href="01-cmsseries-what-makes-different.html" class="phase-pip" title="Post 1: What makes CMS testing different">1</a>
+    <a href="02-cmsseries-content-editorial-workflow.html" class="phase-pip" title="Post 2: Content and editorial workflow">2</a>
+    <a href="03-cmsseries-functional-template-testing.html" class="phase-pip" title="Post 3: Functional and template testing">3</a>
+    <a href="04-cmsseries-api-integration-testing.html" class="phase-pip" title="Post 4: API and integration testing">4</a>
+    <span class="phase-pip active" title="Post 5: Headless CMS considerations">5</span>
+    <a href="06-cmsseries-seo-testing.html" class="phase-pip" title="Post 6: SEO testing">6</a>
+    <a href="07-cmsseries-accessibility-testing.html" class="phase-pip" title="Post 7: Accessibility testing">7</a>
+    <a href="08-cmsseries-performance-caching-testing.html" class="phase-pip" title="Post 8: Performance and caching testing">8</a>
+    <a href="09-cmsseries-analytics-tracking-testing.html" class="phase-pip" title="Post 9: Analytics and tracking validation">9</a>
+    <a href="10-cmsseries-security-testing.html" class="phase-pip" title="Post 10: Security testing">10</a>
+    <a href="11-cmsseries-crossbrowser-visual-testing.html" class="phase-pip" title="Post 11: Cross-browser and visual testing">11</a>
+    <a href="12-cmsseries-forms-lead-capture-testing.html" class="phase-pip" title="Post 12: Forms and lead-capture testing">12</a>
+    <a href="13-cmsseries-localization-testing.html" class="phase-pip" title="Post 13: Localization testing">13</a>
+    <a href="14-cmsseries-legal-compliance-testing.html" class="phase-pip" title="Post 14: Legal and compliance testing">14</a>
+    <a href="15-cmsseries-staging-release-testing.html" class="phase-pip" title="Post 15: Staging, preview and release testing">15</a>
+    <a href="16-cmsseries-migration-testing.html" class="phase-pip" title="Post 16: Migration testing">16</a>
+    <a href="17-cmsseries-testing-strategy-capstone.html" class="phase-pip" title="Post 17: The CMS testing strategy">17</a>
+  </div>
+
+  <div class="takeaways">
+    <span class="takeaways-label">Key takeaways</span>
+    <ul>
+      <li>A headless CMS has no built-in rendering layer, so there's no default preview. What an editor saves and what a reader eventually sees are validated by two completely separate systems.</li>
+      <li>The same content often has to work across channels with very different constraints: a full webpage, a compact mobile screen, a voice assistant with no visuals at all.</li>
+      <li>The CMS and its front end are usually deployed independently. A content model change can break the front end's build without a single line of front-end code changing.</li>
+      <li>Contract testing, checking that what the CMS promises still matches what the front end expects, catches this class of bug before a release does.</li>
+    </ul>
+  </div>
+
+  <h2>No template means no default preview</h2>
+  <p>A classic CMS ships a preview button because it owns the template: it can render a draft the same way it renders the live page, before anything is published. A headless CMS has no template to render with. Content is just structured data until some separate front end decides what to do with it.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 700 210" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" role="img" aria-label="Diagram: classic CMS, editor saves a draft, clicks preview, sees the actual template rendering immediately. Headless CMS, editor saves a draft, there is no preview button by default, the only way to see it rendered is a separately built and maintained preview integration.">
+      <text x="20" y="24" font-family="DM Sans, sans-serif" font-size="12" font-weight="700" fill="#6B7C3A">CLASSIC CMS</text>
+      <rect x="20" y="38" width="140" height="46" rx="8" fill="#FAFCF5" stroke="#D8C8B8"/>
+      <text x="90" y="66" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" fill="#3D4235">Editor saves draft</text>
+      <path d="M160,61 L218,61" stroke="#6B7C3A" stroke-width="1.5" fill="none" marker-end="url(#arrowH1)"/>
+      <rect x="220" y="38" width="140" height="46" rx="8" fill="#E8EEDA" stroke="#6B7C3A"/>
+      <text x="290" y="61" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="#4A5828">Preview button</text>
+      <text x="290" y="75" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#4A5828">same template as live</text>
+      <path d="M360,61 L418,61" stroke="#6B7C3A" stroke-width="1.5" fill="none" marker-end="url(#arrowH1)"/>
+      <rect x="420" y="38" width="150" height="46" rx="8" fill="#FAFCF5" stroke="#D8C8B8"/>
+      <text x="495" y="61" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" fill="#3D4235">Rendered preview</text>
+      <text x="495" y="75" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#6B7060">seen immediately</text>
+
+      <text x="20" y="124" font-family="DM Sans, sans-serif" font-size="12" font-weight="700" fill="#9A2A4A">HEADLESS CMS</text>
+      <rect x="20" y="138" width="140" height="46" rx="8" fill="#FAFCF5" stroke="#D8C8B8"/>
+      <text x="90" y="166" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" fill="#3D4235">Editor saves draft</text>
+      <path d="M160,161 L218,161" stroke="#9A2A4A" stroke-width="1.5" fill="none" stroke-dasharray="4 3" marker-end="url(#arrowH2)"/>
+      <rect x="220" y="138" width="150" height="46" rx="8" fill="#F5DDE5" stroke="#9A2A4A"/>
+      <text x="295" y="158" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" font-weight="700" fill="#7A1A38">No preview by default</text>
+      <text x="295" y="172" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#7A1A38">just structured data</text>
+      <path d="M370,161 L428,161" stroke="#9A2A4A" stroke-width="1.5" fill="none" stroke-dasharray="4 3" marker-end="url(#arrowH2)"/>
+      <rect x="430" y="138" width="220" height="46" rx="8" fill="#FAFCF5" stroke="#D8C8B8"/>
+      <text x="540" y="158" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#3D4235">Separately built preview app</text>
+      <text x="540" y="172" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#6B7060">only if someone built and maintains one</text>
+
+      <defs>
+        <marker id="arrowH1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7C3A"/></marker>
+        <marker id="arrowH2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9A2A4A"/></marker>
+      </defs>
+    </svg>
+  </div>
+
+  <div class="why-box">
+    <span class="why-label">Why this is a real QA gap, not just an inconvenience</span>
+    <p>Without a working preview, an editor's only way to check a draft is to trust the raw content form, or to publish it and check the live front end, which defeats the point of a draft.</p>
+    <p>If a preview integration exists, it's testable like anything else: does it show the same content model an editor filled in, does it update when the draft changes, and does it actually match what the production front end renders, or a simplified stand-in that quietly diverges over time.</p>
+  </div>
+
+  <h2>The same content, rendered nowhere the same way twice</h2>
+  <p>Headless architecture exists specifically so one piece of content can feed multiple channels: a website, a mobile app, a kiosk, a voice assistant. Each of those channels has different constraints the content itself has to survive.</p>
+
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>Channel</th><th>Constraint content has to survive</th></tr></thead>
+      <tbody>
+        <tr><td>Website</td><td>Full formatting, images, embedded HTML generally safe</td></tr>
+        <tr><td>Mobile app</td><td>Smaller screen, often a stricter subset of rich-text formatting the app's renderer actually supports</td></tr>
+        <tr><td>Voice assistant / smart display</td><td>No visuals at all. Content authored assuming an image or a table conveys meaning breaks completely</td></tr>
+        <tr><td>Third-party feed (RSS, partner API)</td><td>Consumer has no relationship with your CMS's specific formatting choices, only the raw structured fields</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout warn">
+    <p><strong>Rich text is the most common multi-channel trap.</strong> A rich-text field that lets an editor embed a raw HTML table or an inline image renders fine on the website. The same field, read by a mobile app or a voice assistant, either strips it silently or crashes trying to parse markup it was never built to handle.</p>
+  </div>
+
+  <h2>The contract between CMS and front end</h2>
+  <p>In a headless setup, the CMS and its front end are usually separate codebases, deployed independently, often by different teams. The content model is the contract between them: the front end is built assuming certain fields exist, with certain types, and nothing enforces that assumption stays true.</p>
+  <div class="why-box">
+    <span class="why-label">Why this breaks without anyone touching the front end's code</span>
+    <p>A content editor renaming a field, or a CMS admin changing a field from single-value to a list, is a content-model change, not a code change. It ships the moment it's saved, the same zero-review path from Post 1, except now the "content layer" includes the shape of the data itself, not just its values.</p>
+    <p>The front end, built against the old shape, doesn't get rebuilt just because the model changed. It keeps running against a contract that no longer matches, and the failure shows up as a broken page with no corresponding code change to point at.</p>
+  </div>
+
+  <h2>Try it: break the contract on purpose</h2>
+  <div class="practical">
+    <span class="practical-label">Try it</span>
+    <p>Using the Strapi instance from Post 4, fetch <code>http://localhost:1337/api/articles</code> and note the exact shape of one entry's response.</p>
+    <p>In the admin panel, rename the "title" field to "headline" on the Article content type. Fetch the same endpoint again without changing anything else.</p>
+    <p>Compare the two responses. Anything that read the old field name, a front end, a script, another integration, now silently gets nothing back for that field instead of an error, which is exactly the kind of contract break that ships invisibly in a real system.</p>
+  </div>
+
+  <h2>Your deliverable</h2>
+  <p>A short note: for a headless (or API-driven) setup you know of or can imagine, name one content-model change, a rename, a type change, a field removal, that would break its front end, and whether that break would be obvious immediately or only show up later.</p>
+  <p><strong>Time:</strong> ~20 minutes, using the Strapi instance from Post 4.</p>
+
+  <div class="nav-row">
+    <a href="04-cmsseries-api-integration-testing.html" class="nav-cta secondary">&larr; Post 4: API &amp; integration testing</a>
+    <a href="06-cmsseries-seo-testing.html" class="nav-cta primary">Post 6: SEO testing &rarr;</a>
+  </div>
+
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; CMS Testing for QA</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+</body>
+</html>

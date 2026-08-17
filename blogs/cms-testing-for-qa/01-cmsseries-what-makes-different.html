@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Post 1: What Makes CMS Testing Different | CMS Testing for QA</title>
+<meta name="description" content="Content vs. code separation, the risk surface unique to a CMS-driven site, and the SDLC map this series uses to organize every kind of CMS testing.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:#6B7C3A; --olive-dark:#4A5828; --olive-deep:#2E3A18;
+    --cream:#F5F7F0; --warm-white:#FAFCF5;
+    --ink:#1A1F14; --ink2:#3D4235; --ink3:#6B7060; --ink4:#9A9E90;
+    --border:rgba(26,31,20,0.1); --border2:rgba(26,31,20,0.06);
+    --purple:#7A4A9A; --purple-l:#EDE0F5;
+    --gold:#9A6E1A; --gold-l:#F5EDD6;
+    --blue:#2A5C9A; --blue-l:#DDE8F5;
+    --teal:#1A6B54; --teal-l:#D8EEE8;
+    --terra:#8A4A2A; --terra-l:#F5E4D8;
+    --green:#1A7A3A; --green-l:#D8F0E0;
+    --rose:#9A2A4A; --rose-l:#F5DDE5;
+    --ff-serif:'Lora',Georgia,serif;
+    --ff-sans:'DM Sans',system-ui,sans-serif;
+    --ease:cubic-bezier(0.22,1,0.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--ff-sans);background:var(--warm-white);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  header.site-header{border-bottom:1px solid var(--border);padding:1.1rem 1.5rem;background:var(--warm-white);}
+  .site-header-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+  .site-name{font-family:var(--ff-serif);font-weight:600;font-size:1.05rem;text-decoration:none;}
+  main{max-width:880px;margin:0 auto;padding:2.6rem 1.5rem 5rem;}
+  .breadcrumb{font-size:.82rem;color:var(--ink3);margin-bottom:1.3rem;}
+  .breadcrumb a{text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+  .series-tag{display:inline-block;font-size:.76rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--gold);background:var(--gold-l);padding:.3rem .7rem;border-radius:999px;margin-bottom:1.1rem;}
+  h1{font-family:var(--ff-serif);font-size:2.1rem;font-weight:700;line-height:1.2;margin-bottom:.8rem;}
+  .subtitle{font-size:1.08rem;color:var(--ink2);margin-bottom:1.6rem;max-width:680px;}
+  .meta-row{display:flex;gap:1.1rem;font-size:.82rem;color:var(--ink3);margin-bottom:1.6rem;border-bottom:1px solid var(--border);padding-bottom:1.3rem;flex-wrap:wrap;}
+  .phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem;}
+  .phase-pip{display:inline-flex;align-items:center;justify-content:center;width:1.9rem;height:1.9rem;border-radius:50%;font-size:.68rem;font-weight:700;border:1.5px solid var(--border);color:var(--ink4);background:var(--warm-white);text-decoration:none;}
+  .phase-pip.active{background:var(--gold);color:var(--warm-white);border-color:transparent;}
+  .phase-pip.done{background:var(--green-l);color:var(--green);border-color:var(--green);}
+  .phase-pip.soon{cursor:default;opacity:.55;}
+  h2{font-family:var(--ff-serif);font-size:1.35rem;font-weight:700;margin-top:2.2rem;margin-bottom:.8rem;}
+  h3{font-family:var(--ff-serif);font-size:1.1rem;font-weight:700;margin-top:1.6rem;margin-bottom:.6rem;}
+  p{margin-bottom:.9rem;color:var(--ink2);font-size:.97rem;}
+  strong{color:var(--green);font-weight:700;}
+  ul,ol{margin:0 0 1rem 1.3rem;color:var(--ink2);}
+  li{margin-bottom:.4rem;font-size:.97rem;}
+  code{background:var(--cream);padding:.15rem .4rem;border-radius:5px;font-size:.87em;color:var(--olive-deep);}
+  .callout{border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.91rem;}
+  .callout p{margin-bottom:0;}
+  .callout.green{background:var(--green-l);border-left:3px solid var(--green);}.callout.green p{color:var(--olive-deep);}
+  .callout.blue{background:var(--blue-l);border-left:3px solid var(--blue);}.callout.blue p{color:var(--blue);}
+  .callout.gold{background:var(--gold-l);border-left:3px solid var(--gold);}.callout.gold p{color:var(--gold);}
+  .callout.warn{background:var(--terra-l);border-left:3px solid var(--terra);}.callout.warn p{color:var(--terra);}
+  .fw-table-wrap{overflow-x:auto;margin:1rem 0 1.5rem;}
+  table.fw-table{width:100%;border-collapse:collapse;font-size:.85rem;line-height:1.45;}
+  table.fw-table th,table.fw-table td{border:1px solid var(--border);padding:.5rem .7rem;text-align:left;vertical-align:top;}
+  table.fw-table th{background:var(--cream);font-weight:700;font-size:.8rem;}
+  table.fw-table td{color:var(--ink2);}
+  table.fw-table tr:nth-child(odd) td{background:var(--warm-white);}
+  table.fw-table tr:nth-child(even) td{background:var(--cream);}
+  .diagram-wrap{margin:1.4rem 0 1.7rem;background:var(--cream);border:1px solid var(--border);border-radius:12px;padding:1.1rem;}
+  .why-box{background:var(--cream);border-radius:8px;padding:.85rem 1.05rem;margin:.7rem 0 1.2rem;font-size:.89rem;}
+  .why-box .why-label{font-weight:700;color:var(--olive-dark);font-size:.76rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.3rem;}
+  .why-box p{margin-bottom:.5rem;color:var(--ink2);}
+  .why-box p:last-child{margin-bottom:0;}
+  .practical{background:var(--blue-l);border-radius:8px;padding:.9rem 1.1rem;margin:1.1rem 0 1.4rem;font-size:.91rem;border-left:3px solid var(--blue);}
+  .practical .practical-label{font-weight:700;color:var(--blue);font-size:.76rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.4rem;}
+  .practical p{margin-bottom:.5rem;color:var(--ink2);}
+  .practical p:last-child{margin-bottom:0;}
+  .takeaways{background:var(--teal-l);border:1px solid var(--teal);border-radius:10px;padding:1.1rem 1.3rem;margin:1.5rem 0 2rem;}
+  .takeaways .takeaways-label{font-weight:700;color:var(--teal);font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.6rem;}
+  .takeaways ul{margin:0 0 0 1.2rem;}
+  .takeaways li{color:var(--ink2);font-size:.93rem;margin-bottom:.4rem;}
+  .takeaways li:last-child{margin-bottom:0;}
+  .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:1.8rem;flex-wrap:wrap;}
+  .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:700;font-size:.9rem;padding:.7rem 1.2rem;border-radius:8px;transition:background .2s var(--ease);}
+  .nav-cta.primary{background:var(--olive);color:var(--warm-white);}
+  .nav-cta.primary:hover{background:var(--olive-dark);}
+  .nav-cta.secondary{background:var(--cream);color:var(--ink2);border:1px solid var(--border);}
+  footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.85rem;color:var(--ink3);}
+  footer a{text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+  /* Stick-figure characters */
+  .stickman{overflow:visible;flex-shrink:0;}
+  .stickman .sm-figure{animation:sm-bob 2.4s ease-in-out infinite;}
+  @keyframes sm-bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-3px);}}
+  .stickman.type .sm-arm2{transform-origin:26px 30px;animation:sm-type .5s ease-in-out infinite alternate;}
+  @keyframes sm-type{0%{transform:rotate(-6deg);}100%{transform:rotate(8deg);}}
+  .stickman.click .sm-arm2{transform-origin:26px 30px;animation:sm-click 1.4s ease-in-out infinite;}
+  @keyframes sm-click{0%,65%,100%{transform:rotate(0deg);}75%{transform:rotate(-12deg);}}
+  .stickman .sm-click-pulse{animation:sm-pulse 1.4s ease-in-out infinite;transform-origin:40px 52px;}
+  @keyframes sm-pulse{0%,65%{opacity:0;transform:scale(.5);}75%{opacity:1;transform:scale(1);}100%{opacity:0;transform:scale(1.8);}}
+  .meet-row{display:flex;gap:1.6rem;flex-wrap:wrap;margin:1.3rem 0 1.6rem;background:var(--cream);border-radius:12px;padding:1.1rem 1.3rem;}
+  .meet-card{display:flex;align-items:center;gap:.8rem;flex:1;min-width:220px;}
+  .meet-card .meet-label{font-size:.86rem;}
+  .meet-card .meet-label strong{display:block;font-size:.92rem;margin-bottom:.15rem;}
+  .walker-lane{position:relative;height:76px;margin:0 0 .6rem;overflow:hidden;background:linear-gradient(to bottom, transparent 88%, var(--border) 88%, var(--border) 90%, transparent 90%);}
+  .walker-lane .walker{position:absolute;left:-60px;bottom:6px;animation:sm-walkacross 8s linear infinite;}
+  @keyframes sm-walkacross{0%{left:-60px;}100%{left:100%;}}
+  .stickman.walk .sm-legL{transform-origin:22px 50px;animation:sm-legL .5s ease-in-out infinite;}
+  .stickman.walk .sm-legR{transform-origin:22px 50px;animation:sm-legR .5s ease-in-out infinite;}
+  @keyframes sm-legL{0%,100%{transform:rotate(20deg);}50%{transform:rotate(-20deg);}}
+  @keyframes sm-legR{0%,100%{transform:rotate(-20deg);}50%{transform:rotate(20deg);}}
+  .stickman.walk .sm-arm1{transform-origin:22px 30px;animation:sm-armSwingR .5s ease-in-out infinite;}
+  .stickman.walk .sm-arm2{transform-origin:22px 30px;animation:sm-armSwingL .5s ease-in-out infinite;}
+  @keyframes sm-armSwingR{0%,100%{transform:rotate(-18deg);}50%{transform:rotate(18deg);}}
+  @keyframes sm-armSwingL{0%,100%{transform:rotate(18deg);}50%{transform:rotate(-18deg);}}
+  @media (prefers-reduced-motion: reduce){
+    .stickman *, .walker-lane .walker{animation:none !important;}
+  }
+  @media(max-width:600px){
+    h1{font-size:1.65rem;}
+    .meta-row{flex-wrap:wrap;gap:.5rem;}
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+
+<main>
+
+  <p class="breadcrumb">
+    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    <a href="00-cmsseries-landing.html">CMS Testing for QA</a> &nbsp;/&nbsp;
+    Post 1
+  </p>
+
+  <span class="series-tag">Post 1 of 17 &middot; Foundations</span>
+
+  <h1>What makes CMS testing different</h1>
+  <p class="subtitle">Everything else in this series assumes you understand one thing first: a CMS-driven website isn't one thing changing on one schedule, it's two things changing on two different schedules, by two different kinds of people, and most of what goes wrong lives in the gap between them.</p>
+
+  <div class="meta-row">
+    <span>By RN</span>
+    <span>~9 min read</span>
+    <span>Demo: WordPress Playground</span>
+  </div>
+
+  <div class="phase-strip" aria-label="Series progress">
+    <a href="00-cmsseries-landing.html" class="phase-pip" title="Series overview">0</a>
+    <span class="phase-pip active" title="Post 1: What makes CMS testing different">1</span>
+    <a href="02-cmsseries-content-editorial-workflow.html" class="phase-pip" title="Post 2: Content and editorial workflow">2</a>
+    <a href="03-cmsseries-functional-template-testing.html" class="phase-pip" title="Post 3: Functional and template testing">3</a>
+    <a href="04-cmsseries-api-integration-testing.html" class="phase-pip" title="Post 4: API and integration testing">4</a>
+    <a href="05-cmsseries-headless-cms-considerations.html" class="phase-pip" title="Post 5: Headless CMS considerations">5</a>
+    <a href="06-cmsseries-seo-testing.html" class="phase-pip" title="Post 6: SEO testing">6</a>
+    <a href="07-cmsseries-accessibility-testing.html" class="phase-pip" title="Post 7: Accessibility testing">7</a>
+    <a href="08-cmsseries-performance-caching-testing.html" class="phase-pip" title="Post 8: Performance and caching testing">8</a>
+    <a href="09-cmsseries-analytics-tracking-testing.html" class="phase-pip" title="Post 9: Analytics and tracking validation">9</a>
+    <a href="10-cmsseries-security-testing.html" class="phase-pip" title="Post 10: Security testing">10</a>
+    <a href="11-cmsseries-crossbrowser-visual-testing.html" class="phase-pip" title="Post 11: Cross-browser and visual testing">11</a>
+    <a href="12-cmsseries-forms-lead-capture-testing.html" class="phase-pip" title="Post 12: Forms and lead-capture testing">12</a>
+    <a href="13-cmsseries-localization-testing.html" class="phase-pip" title="Post 13: Localization testing">13</a>
+    <a href="14-cmsseries-legal-compliance-testing.html" class="phase-pip" title="Post 14: Legal and compliance testing">14</a>
+    <a href="15-cmsseries-staging-release-testing.html" class="phase-pip" title="Post 15: Staging, preview and release testing">15</a>
+    <a href="16-cmsseries-migration-testing.html" class="phase-pip" title="Post 16: Migration testing">16</a>
+    <a href="17-cmsseries-testing-strategy-capstone.html" class="phase-pip" title="Post 17: The CMS testing strategy">17</a>
+  </div>
+
+  <div class="takeaways">
+    <span class="takeaways-label">Key takeaways</span>
+    <ul>
+      <li>A CMS splits a website into two layers: code (developer-owned, deployed through review) and content (editor-owned, published with one click, no review).</li>
+      <li>Content ships with zero code review, zero deploy step, and zero automatic test run, by design, not by accident.</li>
+      <li>This series is organized by SDLC phase, Plan, Build, Pre-release, Post-release, because that's where each kind of risk actually surfaces, not by CMS feature.</li>
+      <li>Content-layer risk mostly lives in Pre-release and Post-release, exactly the two phases a code-only test plan is least likely to cover.</li>
+    </ul>
+  </div>
+
+  <h2>Most of the web isn't hand-coded</h2>
+  <p>Around 70% of all websites run on a content management system rather than hand-built pages. WordPress alone accounts for roughly 42% of every website on the internet, about 60% of the CMS market. If you test websites at all, odds are you're already testing a CMS, whether or not anyone called it that.</p>
+  <p>That matters because a CMS changes what "the website" actually is. It's not one artifact that a developer builds and ships. It's two artifacts, built by different people on different schedules, that only combine into a page at the moment someone requests it.</p>
+
+  <h2>Two layers, two schedules, two owners</h2>
+
+  <div class="meet-row">
+    <div class="meet-card">
+      <svg class="stickman type" viewBox="0 0 60 80" width="50" height="66" role="img" aria-label="Illustrated developer typing at a keyboard">
+        <g class="sm-figure">
+          <line x1="26" y1="23" x2="26" y2="48" stroke="#8A4A2A" stroke-width="3" stroke-linecap="round"/>
+          <line class="sm-arm1" x1="26" y1="30" x2="14" y2="40" stroke="#8A4A2A" stroke-width="3" stroke-linecap="round"/>
+          <g class="sm-arm2"><line x1="26" y1="30" x2="38" y2="40" stroke="#8A4A2A" stroke-width="3" stroke-linecap="round"/></g>
+          <line x1="26" y1="48" x2="17" y2="70" stroke="#8A4A2A" stroke-width="3" stroke-linecap="round"/>
+          <line x1="26" y1="48" x2="35" y2="70" stroke="#8A4A2A" stroke-width="3" stroke-linecap="round"/>
+          <rect x="10" y="42" width="32" height="6" rx="2" fill="none" stroke="#8A4A2A" stroke-width="2"/>
+          <circle cx="26" cy="14" r="9" fill="#F5E4D8" stroke="#8A4A2A" stroke-width="2.5"/>
+        </g>
+      </svg>
+      <div class="meet-label"><strong style="color:var(--terra);">The developer</strong>Ships the code layer through review and a deploy pipeline.</div>
+    </div>
+    <div class="meet-card">
+      <svg class="stickman click" viewBox="0 0 60 80" width="50" height="66" role="img" aria-label="Illustrated editor clicking publish">
+        <g class="sm-figure">
+          <line x1="26" y1="23" x2="26" y2="48" stroke="#4A5828" stroke-width="3" stroke-linecap="round"/>
+          <line class="sm-arm1" x1="26" y1="30" x2="14" y2="24" stroke="#4A5828" stroke-width="3" stroke-linecap="round"/>
+          <g class="sm-arm2"><line x1="26" y1="30" x2="40" y2="48" stroke="#4A5828" stroke-width="3" stroke-linecap="round"/><circle class="sm-click-pulse" cx="40" cy="52" r="5" fill="none" stroke="#4A5828" stroke-width="2"/></g>
+          <line x1="26" y1="48" x2="17" y2="70" stroke="#4A5828" stroke-width="3" stroke-linecap="round"/>
+          <line x1="26" y1="48" x2="35" y2="70" stroke="#4A5828" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="26" cy="14" r="9" fill="#E8EEDA" stroke="#4A5828" stroke-width="2.5"/>
+        </g>
+      </svg>
+      <div class="meet-label"><strong style="color:var(--olive-dark);">The editor</strong>Ships the content layer with one click. No review, no pipeline.</div>
+    </div>
+  </div>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 700 260" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" role="img" aria-label="Diagram: the code layer, template theme and plugins, changes through developer edit, code review, and a deploy pipeline before going live. The content layer, pages posts and media, changes through an editor edit and a publish button straight to live, with no code review and no deploy pipeline. Both layers combine into the same rendered page.">
+      <text x="20" y="24" font-family="DM Sans, sans-serif" font-size="12" font-weight="700" fill="#8A4A2A" letter-spacing=".5">CODE LAYER &middot; owned by developers</text>
+      <rect x="20" y="38" width="150" height="50" rx="8" fill="#FAFCF5" stroke="#D8C8B8"/>
+      <text x="95" y="60" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11.5" fill="#3D4235">Developer edits</text>
+      <text x="95" y="76" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="#6B7060">template / theme / plugin</text>
+      <path d="M170,63 L228,63" stroke="#8A4A2A" stroke-width="1.5" marker-end="url(#arrowT)"/>
+      <rect x="230" y="38" width="150" height="50" rx="8" fill="#F5E4D8" stroke="#8A4A2A"/>
+      <text x="305" y="58" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="#8A4A2A">Code review +</text>
+      <text x="305" y="74" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="#8A4A2A">deploy pipeline</text>
+      <path d="M380,63 L438,63" stroke="#8A4A2A" stroke-width="1.5" marker-end="url(#arrowT)"/>
+      <rect x="440" y="38" width="110" height="50" rx="8" fill="#FAFCF5" stroke="#D8C8B8"/>
+      <text x="495" y="68" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="12" fill="#3D4235">Live</text>
+
+      <text x="20" y="128" font-family="DM Sans, sans-serif" font-size="12" font-weight="700" fill="#6B7C3A" letter-spacing=".5">CONTENT LAYER &middot; owned by editors</text>
+      <rect x="20" y="142" width="150" height="50" rx="8" fill="#FAFCF5" stroke="#D8C8B8"/>
+      <text x="95" y="164" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11.5" fill="#3D4235">Editor edits</text>
+      <text x="95" y="180" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="#6B7060">page / post / media</text>
+      <path d="M170,167 L228,167" stroke="#6B7C3A" stroke-width="1.5" marker-end="url(#arrowG)"/>
+      <rect x="230" y="142" width="150" height="50" rx="8" fill="#E8EEDA" stroke="#6B7C3A"/>
+      <text x="305" y="172" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="#4A5828">Publish button</text>
+      <path d="M380,167 L438,167" stroke="#6B7C3A" stroke-width="1.5" marker-end="url(#arrowG)"/>
+      <rect x="440" y="142" width="110" height="50" rx="8" fill="#FAFCF5" stroke="#D8C8B8"/>
+      <text x="495" y="172" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="12" fill="#3D4235">Live</text>
+      <text x="230" y="210" font-family="DM Sans, sans-serif" font-size="9.5" fill="#6B7060" font-style="italic">no code review, no deploy pipeline, no QA gate by default</text>
+
+      <path d="M495,88 L495,220 L620,220" stroke="#9A6E1A" stroke-width="1.5" fill="none" marker-end="url(#arrowY)"/>
+      <path d="M495,192 L495,220" stroke="#9A6E1A" stroke-width="1.5" fill="none"/>
+      <rect x="560" y="196" width="120" height="48" rx="8" fill="#F5EDD6" stroke="#9A6E1A"/>
+      <text x="620" y="216" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" font-weight="700" fill="#9A6E1A">Same rendered</text>
+      <text x="620" y="230" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" font-weight="700" fill="#9A6E1A">page, either way</text>
+
+      <defs>
+        <marker id="arrowT" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8A4A2A"/></marker>
+        <marker id="arrowG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7C3A"/></marker>
+        <marker id="arrowY" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9A6E1A"/></marker>
+      </defs>
+    </svg>
+  </div>
+
+  <div class="why-box">
+    <span class="why-label">Why this is the single most important idea in this series</span>
+    <p>A test plan written only for the code layer schedules testing around deploys and pull requests, exactly the moments a CMS lets editors bypass.</p>
+    <p>An editor can publish a broken page, an unoptimized image, or an unvalidated form on a Tuesday afternoon with zero code involved and zero automatic test run. A testing strategy that only triggers on code changes leaves that entire content layer untested, every time, by default.</p>
+    <p>Every post after this one exists because of that gap.</p>
+  </div>
+
+  <h2>Where the CMS-specific risk actually comes from</h2>
+  <p>None of this means the code layer stops mattering, plugins, themes, and templates carry their own real risk. It means the risk surface is wider than a typical test plan assumes, because it spans both layers plus the places they interact.</p>
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>Layer</th><th>Typical risk</th><th>Who introduces it</th><th>When it ships</th></tr></thead>
+      <tbody>
+        <tr><td>Code</td><td>A plugin update changes markup structure, a theme change breaks a template, a third-party script slows every page</td><td>Developers, or a plugin's own maintainers</td><td>On deploy, or silently on plugin auto-update</td></tr>
+        <tr><td>Content</td><td>Missing alt text, no meta description, a broken internal link, an image uploaded at full resolution, a form field left unvalidated by the template so bad input goes straight through</td><td>Editors, marketers, anyone with publish access</td><td>The moment someone clicks Publish</td></tr>
+        <tr><td>Where they meet</td><td>A template assumes content will always be short, a plugin exposes a field the content model didn't anticipate, an integration breaks because a field an editor renamed was referenced by exact name elsewhere</td><td>Nobody, deliberately, it's an interaction neither side tested for alone</td><td>Whenever the specific combination first occurs, often long after both pieces individually shipped fine</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>The SDLC map this series follows</h2>
+  <p>Rather than organize this series by CMS feature, it's organized by where in a project's lifecycle each kind of testing actually has to happen to catch something before it matters. That's the map every later post slots into.</p>
+
+  <div class="walker-lane" role="img" aria-label="An illustrated tester walking across the page, representing the QA journey through the SDLC">
+    <div class="walker">
+      <svg class="stickman walk" viewBox="0 0 60 80" width="42" height="56">
+        <g class="sm-figure">
+          <line x1="22" y1="23" x2="22" y2="50" stroke="#9A6E1A" stroke-width="3" stroke-linecap="round"/>
+          <g class="sm-arm1"><line x1="22" y1="30" x2="10" y2="42" stroke="#9A6E1A" stroke-width="3" stroke-linecap="round"/></g>
+          <g class="sm-arm2"><line x1="22" y1="30" x2="34" y2="42" stroke="#9A6E1A" stroke-width="3" stroke-linecap="round"/></g>
+          <g class="sm-legL"><line x1="22" y1="50" x2="13" y2="72" stroke="#9A6E1A" stroke-width="3" stroke-linecap="round"/></g>
+          <g class="sm-legR"><line x1="22" y1="50" x2="31" y2="72" stroke="#9A6E1A" stroke-width="3" stroke-linecap="round"/></g>
+          <circle cx="22" cy="14" r="9" fill="#F5EDD6" stroke="#9A6E1A" stroke-width="2.5"/>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" role="img" aria-label="Diagram: four SDLC phases in sequence. Plan covers content modeling and roles. Build covers templates, APIs, headless delivery, and security baked in. Pre-release covers SEO, accessibility, performance, analytics, cross-browser, forms, legal, and staging parity. Post-release covers ongoing content edits, migrations, and monitoring.">
+      <rect x="10" y="30" width="160" height="150" rx="10" fill="#EDE0F5" stroke="#7A4A9A"/>
+      <text x="90" y="54" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="12.5" font-weight="700" fill="#5A2A7A">PLAN</text>
+      <text x="90" y="76" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#5A2A7A">Content modeling</text>
+      <text x="90" y="92" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#5A2A7A">Roles &amp; permissions</text>
+      <text x="90" y="108" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#5A2A7A">URL / SEO strategy</text>
+      <text x="90" y="160" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#7A4A9A" font-style="italic">Post 2</text>
+
+      <path d="M175,105 L188,105" stroke="#9A9E90" stroke-width="1.5" marker-end="url(#arrowP)"/>
+
+      <rect x="190" y="30" width="160" height="150" rx="10" fill="#DDE8F5" stroke="#2A5C9A"/>
+      <text x="270" y="54" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="12.5" font-weight="700" fill="#1A3D6A">BUILD</text>
+      <text x="270" y="76" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#1A3D6A">Templates &amp; components</text>
+      <text x="270" y="92" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#1A3D6A">APIs &amp; integrations</text>
+      <text x="270" y="108" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#1A3D6A">Headless delivery</text>
+      <text x="270" y="124" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#1A3D6A">Security baked in</text>
+      <text x="270" y="160" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#2A5C9A" font-style="italic">Posts 3, 4, 5, 10</text>
+
+      <path d="M355,105 L368,105" stroke="#9A9E90" stroke-width="1.5" marker-end="url(#arrowP)"/>
+
+      <rect x="370" y="10" width="160" height="190" rx="10" fill="#F5EDD6" stroke="#9A6E1A"/>
+      <text x="450" y="34" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="12.5" font-weight="700" fill="#7A5410">PRE-RELEASE</text>
+      <text x="450" y="56" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#7A5410">SEO &middot; Accessibility</text>
+      <text x="450" y="72" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#7A5410">Performance &middot; Analytics</text>
+      <text x="450" y="88" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#7A5410">Cross-browser &middot; Forms</text>
+      <text x="450" y="104" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#7A5410">Localization &middot; Legal</text>
+      <text x="450" y="120" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#7A5410">Staging parity</text>
+      <text x="450" y="180" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#9A6E1A" font-style="italic">Posts 6-9, 11-15</text>
+
+      <path d="M535,105 L548,105" stroke="#9A9E90" stroke-width="1.5" marker-end="url(#arrowP)"/>
+
+      <rect x="550" y="30" width="150" height="150" rx="10" fill="#D8F0E0" stroke="#1A7A3A"/>
+      <text x="625" y="54" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="12.5" font-weight="700" fill="#0F5A26">POST-RELEASE</text>
+      <text x="625" y="76" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#0F5A26">Ongoing edits</text>
+      <text x="625" y="92" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#0F5A26">Migrations</text>
+      <text x="625" y="108" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#0F5A26">Monitoring</text>
+      <text x="625" y="160" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#1A7A3A" font-style="italic">Post 16</text>
+
+      <defs>
+        <marker id="arrowP" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9A9E90"/></marker>
+      </defs>
+    </svg>
+  </div>
+  <p>Post 17, the capstone, turns this diagram into a full checklist with every post's specific checks slotted into its phase. For now, the point is simpler: <strong>content-layer risk mostly lives in Pre-release and Post-release</strong>, the two phases a code-only test plan is least likely to cover on a recurring basis, because nothing about a content edit triggers a build.</p>
+
+  <div class="callout gold">
+    <p><strong>This is why the series doesn't anchor to one CMS.</strong> The Plan and Build risks differ meaningfully between WordPress, a headless setup, and something in-house. The Pre-release risks, SEO, accessibility, performance, analytics, and the rest, are close to identical regardless of what generated the page. Structuring the series this way is what makes the strategy transferable instead of a product tutorial.</p>
+  </div>
+
+  <h2>See the split for yourself</h2>
+  <p>The fastest way to feel the content/code separation, rather than just read about it, is to watch a content change go live with no deploy step at all.</p>
+  <div class="practical">
+    <span class="practical-label">Try it</span>
+    <p>Open <a href="https://wordpress.org/playground/" target="_blank">wordpress.org/playground</a> and click through to launch a fresh WordPress instance, it runs entirely in your browser, no install, no account, live in seconds.</p>
+    <p>Open the default sample post from the dashboard, edit its content directly: add a paragraph, insert an image without filling in alt text, bold some text. Click <strong>Update</strong>, then view the post on the live site.</p>
+    <p>Notice what didn't happen: no code review, no build step, no deploy pipeline, no test suite ran. The missing alt text you just added is live, immediately, exactly as if it were correct. That gap is what the rest of this series tests for.</p>
+  </div>
+
+  <h2>Your deliverable</h2>
+  <p>A short note, two or three sentences, on one CMS-driven site you already know (a company site, a blog, anything), naming one thing that could go wrong purely at the content layer, something an editor could break without touching any code. Keep it, Post 2 builds directly on this kind of thinking.</p>
+  <p><strong>Time:</strong> ~15 minutes, most of it the WordPress Playground walkthrough above.</p>
+
+  <div class="nav-row">
+    <a href="00-cmsseries-landing.html" class="nav-cta secondary">&larr; Series overview</a>
+    <a href="02-cmsseries-content-editorial-workflow.html" class="nav-cta primary">Post 2: Content &amp; editorial workflow &rarr;</a>
+  </div>
+
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; CMS Testing for QA</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+</body>
+</html>

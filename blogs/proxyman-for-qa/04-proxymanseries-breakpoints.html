@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Post 4: Breakpoints | Proxyman for QA</title>
+<meta name="description" content="Pausing a request or response mid-flight and editing it before it continues, so you can test what an API actually does with input the UI would never send, walked through on PeakAndPack.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:#6B7C3A; --olive-dark:#4A5828; --olive-deep:#2E3A18;
+    --cream:#F5F7F0; --warm-white:#FAFCF5;
+    --ink:#1A1F14; --ink2:#3D4235; --ink3:#6B7060; --ink4:#9A9E90;
+    --border:rgba(26,31,20,0.1); --border2:rgba(26,31,20,0.06);
+    --purple:#7A4A9A; --purple-l:#EDE0F5;
+    --gold:#9A6E1A; --gold-l:#F5EDD6;
+    --blue:#2A5C9A; --blue-l:#DDE8F5;
+    --teal:#1A6B54; --teal-l:#D8EEE8;
+    --terra:#8A4A2A; --terra-l:#F5E4D8;
+    --green:#1A7A3A; --green-l:#D8F0E0;
+    --rose:#9A2A4A; --rose-l:#F5DDE5;
+    --ff-serif:'Lora',Georgia,serif;
+    --ff-sans:'DM Sans',system-ui,sans-serif;
+    --ease:cubic-bezier(0.22,1,0.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--ff-sans);background:var(--warm-white);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  header.site-header{border-bottom:1px solid var(--border);padding:1.1rem 1.5rem;background:var(--warm-white);}
+  .site-header-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+  .site-name{font-family:var(--ff-serif);font-weight:600;font-size:1.05rem;text-decoration:none;}
+  main{max-width:880px;margin:0 auto;padding:2.6rem 1.5rem 5rem;}
+  .breadcrumb{font-size:.82rem;color:var(--ink3);margin-bottom:1.3rem;}
+  .breadcrumb a{text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+  .series-tag{display:inline-block;font-size:.76rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--gold);background:var(--gold-l);padding:.3rem .7rem;border-radius:999px;margin-bottom:1.1rem;}
+  h1{font-family:var(--ff-serif);font-size:2.1rem;font-weight:700;line-height:1.2;margin-bottom:.8rem;}
+  .subtitle{font-size:1.08rem;color:var(--ink2);margin-bottom:1.6rem;max-width:680px;}
+  .meta-row{display:flex;gap:1.1rem;font-size:.82rem;color:var(--ink3);margin-bottom:1.6rem;border-bottom:1px solid var(--border);padding-bottom:1.3rem;flex-wrap:wrap;}
+  .phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem;}
+  .phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--ink4);background:var(--warm-white);text-decoration:none;}
+  .phase-pip.active{background:var(--gold);color:var(--warm-white);border-color:transparent;}
+  .phase-pip.done{background:var(--green-l);color:var(--green);border-color:var(--green);}
+  .phase-pip.soon{cursor:default;opacity:.55;}
+  h2{font-family:var(--ff-serif);font-size:1.35rem;font-weight:700;margin-top:2.2rem;margin-bottom:.8rem;}
+  h3{font-family:var(--ff-serif);font-size:1.1rem;font-weight:700;margin-top:1.6rem;margin-bottom:.6rem;}
+  p{margin-bottom:.9rem;color:var(--ink2);font-size:.97rem;}
+  strong{color:var(--ink);font-weight:700;}
+  ul,ol{margin:0 0 1rem 1.3rem;color:var(--ink2);}
+  li{margin-bottom:.4rem;font-size:.97rem;}
+  code{background:var(--cream);padding:.15rem .4rem;border-radius:5px;font-size:.87em;color:var(--olive-deep);}
+  pre{background:var(--ink);color:var(--cream);padding:1rem 1.1rem;border-radius:10px;overflow-x:auto;font-size:.82rem;margin:1rem 0;line-height:1.55;}
+  pre code{background:none;color:inherit;padding:0;}
+  .diagram-wrap{margin:1.4rem 0 1.7rem;background:var(--cream);border:1px solid var(--border);border-radius:12px;padding:1.1rem;}
+  .callout{border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.91rem;}
+  .callout p{margin-bottom:0;}
+  .callout.green{background:var(--green-l);border-left:3px solid var(--green);}.callout.green p{color:var(--olive-deep);}
+  .callout.blue{background:var(--blue-l);border-left:3px solid var(--blue);}.callout.blue p{color:var(--blue);}
+  .callout.gold{background:var(--gold-l);border-left:3px solid var(--gold);}.callout.gold p{color:var(--gold);}
+  .fw-table-wrap{overflow-x:auto;margin:1rem 0 1.5rem;}
+  table.fw-table{width:100%;border-collapse:collapse;font-size:.85rem;line-height:1.45;}
+  table.fw-table th,table.fw-table td{border:1px solid var(--border);padding:.5rem .7rem;text-align:left;vertical-align:top;}
+  table.fw-table th{background:var(--cream);font-weight:700;font-size:.8rem;}
+  table.fw-table td{color:var(--ink2);}
+  table.fw-table tr:nth-child(odd) td{background:var(--warm-white);}
+  table.fw-table tr:nth-child(even) td{background:var(--cream);}
+  .why-box{background:var(--cream);border-radius:8px;padding:.85rem 1.05rem;margin:.7rem 0 1.2rem;font-size:.89rem;}
+  .why-box .why-label{font-weight:700;color:var(--olive-dark);font-size:.76rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.3rem;}
+  .why-box p{margin-bottom:0;color:var(--ink2);}
+  .practical{background:var(--blue-l);border-radius:8px;padding:.9rem 1.1rem;margin:1.1rem 0 1.4rem;font-size:.91rem;border-left:3px solid var(--blue);}
+  .practical .practical-label{font-weight:700;color:var(--blue);font-size:.76rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.4rem;}
+  .practical p{margin-bottom:.5rem;color:var(--ink2);}
+  .practical p:last-child{margin-bottom:0;}
+  .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:1.8rem;flex-wrap:wrap;}
+  .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:700;font-size:.9rem;padding:.7rem 1.2rem;border-radius:8px;transition:background .2s var(--ease);}
+  .nav-cta.primary{background:var(--olive);color:var(--warm-white);}
+  .nav-cta.primary:hover{background:var(--olive-dark);}
+  .nav-cta.secondary{background:var(--cream);color:var(--ink2);border:1px solid var(--border);}
+  footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.85rem;color:var(--ink3);}
+  footer a{text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+  @media(max-width:600px){
+    h1{font-size:1.65rem;}
+    .meta-row{flex-wrap:wrap;gap:.5rem;}
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+
+<main>
+
+  <p class="breadcrumb">
+    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    <a href="00-proxymanseries-landing.html">Proxyman for QA</a> &nbsp;/&nbsp;
+    Post 4
+  </p>
+
+  <span class="series-tag">Post 4 of 9 &middot; Breakpoints</span>
+
+  <h1>Breakpoints</h1>
+  <p class="subtitle">Reading traffic in Post 3 was passive: watch what happened, after it happened. A breakpoint is the first tool in this series that changes what happens, by pausing a request or response mid-flight and letting you edit it before it continues.</p>
+
+  <div class="meta-row">
+    <span>By RN</span>
+    <span>~8 min read</span>
+    <span>Demo: PeakAndPack</span>
+  </div>
+
+  <div class="phase-strip" aria-label="Series progress">
+    <a href="00-proxymanseries-landing.html" class="phase-pip" title="Series overview">0</a>
+    <a href="01-proxymanseries-setup.html" class="phase-pip done" title="Post 1: Setup">1</a>
+    <a href="02-proxymanseries-troubleshooting.html" class="phase-pip done" title="Post 2: Troubleshooting">2</a>
+    <a href="03-proxymanseries-reading-traffic.html" class="phase-pip done" title="Post 3: Reading traffic">3</a>
+    <span class="phase-pip active" title="Post 4: Breakpoints">4</span>
+    <a href="05-proxymanseries-map-local-remote.html" class="phase-pip" title="Post 5: Map Local/Remote">5</a>
+    <a href="06-proxymanseries-network-conditions.html" class="phase-pip" title="Post 6: Network conditions">6</a>
+    <a href="07-proxymanseries-composer.html" class="phase-pip" title="Post 7: Composer">7</a>
+    <a href="08-proxymanseries-bug-evidence.html" class="phase-pip" title="Post 8: Bug evidence">8</a>
+    <a href="09-proxymanseries-quick-reference.html" class="phase-pip" title="Post 9: Quick reference">9</a>
+  </div>
+
+  <h2>Why the UI isn't the only way to send a request</h2>
+  <p>The PeakAndPack UI only ever sends the requests its own code is written to send: a valid product ID, a quantity that's a positive number, a discount code typed into the one field that accepts it. That's a narrow slice of what the API actually has to handle in production, where clients misbehave, retry logic double-sends, and old app versions send payloads the current UI never would.</p>
+  <p>A breakpoint lets you send the request the UI would send, then change it before it reaches the server, so you're testing the API's own handling, not just the UI's restraint.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" role="img" aria-label="Sequence: the app sends a request, Proxyman pauses it because a breakpoint rule matches, you edit the body in the breakpoint editor, then click Execute to send the edited version on to the server, whose response can also be paused and edited on the way back.">
+      <rect x="16" y="20" width="120" height="40" rx="8" fill="#FAFCF5" stroke="#D8C8B8"/>
+      <text x="76" y="45" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" fill="#3D4235">PeakAndPack UI</text>
+      <path d="M136,40 L214,40" stroke="#8A8A8A" stroke-width="1.5" marker-end="url(#b1)"/>
+      <text x="176" y="32" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#8A8A8A">sends request</text>
+
+      <rect x="216" y="14" width="180" height="80" rx="8" fill="#F5DDE5" stroke="#9A2A4A" stroke-dasharray="4 3"/>
+      <text x="306" y="34" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" font-weight="700" fill="#9A2A4A">Paused: breakpoint editor</text>
+      <text x="306" y="52" text-anchor="middle" font-family="monospace" font-size="8.5" fill="#9A2A4A">"discount_code": "SAVE10"</text>
+      <text x="306" y="66" text-anchor="middle" font-family="monospace" font-size="8.5" fill="#7A2038">"discount_code": "FAKE99"</text>
+      <text x="306" y="82" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="8" fill="#9A2A4A">Cancel &middot; Abort &middot; Execute</text>
+
+      <path d="M396,40 L474,40" stroke="#6B7C3A" stroke-width="1.5" marker-end="url(#b2)"/>
+      <text x="435" y="32" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#6B7C3A">Execute sends edit</text>
+      <rect x="476" y="20" width="120" height="40" rx="8" fill="#FAFCF5" stroke="#D8C8B8"/>
+      <text x="536" y="45" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" fill="#3D4235">PeakAndPack API</text>
+
+      <path d="M536,60 L536,110 L136,110 L136,90" fill="none" stroke="#8A8A8A" stroke-width="1.5" marker-end="url(#b3)"/>
+      <text x="336" y="126" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#8A8A8A">response can be paused and edited the same way, on the way back</text>
+
+      <defs>
+        <marker id="b1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8A8A8A"/></marker>
+        <marker id="b2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7C3A"/></marker>
+        <marker id="b3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8A8A8A"/></marker>
+      </defs>
+    </svg>
+  </div>
+
+  <h2>Setting one up</h2>
+  <ol>
+    <li>Right-click the request you want to intercept in the flow list, and choose Breakpoint from the menu. Proxyman fills in the matching rule from the request you clicked, so you're not writing a URL pattern from scratch.</li>
+    <li>Choose whether to pause the <strong>request</strong>, the <strong>response</strong>, or both. A request breakpoint edits what the app sends before the server sees it; a response breakpoint edits what the server sent before the app sees it.</li>
+    <li>Save the rule. Nothing happens yet, this only arms it for the next matching request.</li>
+    <li>Trigger the action in the app. The matching request now pauses, and the breakpoint editor opens with the URL, headers, and body all editable.</li>
+  </ol>
+
+  <div class="why-box">
+    <span class="why-label">Why three exit options instead of just "send it"</span>
+    <p><strong>Execute</strong> sends your edited version on, exactly the point of the exercise. <strong>Cancel</strong> lets the original through untouched, useful when you paused it just to look, not to change anything. <strong>Abort</strong> kills it and returns a 503 to the app, which is its own useful test: does the UI handle a request that never got a real response at all, distinct from one that got an error response?</p>
+  </div>
+
+  <h2>Practical: send a discount code the UI would never let you type</h2>
+  <div class="practical">
+    <span class="practical-label">Try it</span>
+    <p>Set a request breakpoint on <code>POST /api/orders/checkout</code>. Add an item to cart, go to checkout, and submit with the valid <code>SAVE10</code> code, but before it reaches the server, edit the body in the breakpoint editor to something absurd: a negative quantity, a discount code with a SQL-looking string in it, or a <code>productId</code> that doesn't exist. Click Execute.</p>
+    <p>Read the response. Does the API reject it cleanly with a 400 and a clear message, or does it accept it, or does it return a 500 that leaks something it shouldn't? Whatever comes back is the API's real behavior under input the UI's own validation would have silently blocked, which is exactly the scenario a UI-only test suite never exercises.</p>
+  </div>
+
+  <div class="callout blue">
+    <p><strong>A breakpoint left armed is a trap for your next test run.</strong> Once a rule is saved, it fires on every matching request from then on, including the next time you're just trying to click through the app normally, and you'll be stuck at a paused request wondering why nothing's loading. Disable or delete the rule as soon as you're done with it.</p>
+  </div>
+
+  <h2>Your deliverable</h2>
+  <p>One finding, written up like the checkout trace from Post 3: the exact edited payload you sent, the response you got back, and whether that response was correct behavior or a gap worth a bug report. Save it as <code>peakandpack-breakpoint-findings.md</code>. If the response reveals a real gap, Post 8 covers turning this into a proper bug report with the capture as evidence.</p>
+  <p><strong>Time:</strong> ~15 minutes, most of it spent trying more than one edited payload once you see how easy the first one was.</p>
+
+  <div class="nav-row">
+    <a href="03-proxymanseries-reading-traffic.html" class="nav-cta secondary">&larr; Post 3: Reading traffic</a>
+    <a href="05-proxymanseries-map-local-remote.html" class="nav-cta primary">Post 5: Map Local/Remote &rarr;</a>
+  </div>
+
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; Proxyman for QA</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+</body>
+</html>

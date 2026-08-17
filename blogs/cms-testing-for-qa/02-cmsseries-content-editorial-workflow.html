@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Post 2: Content and Editorial Workflow Testing | CMS Testing for QA</title>
+<meta name="description" content="Content modeling, publishing workflow and states, roles and permissions, and versioning and rollback, tested hands-on with WordPress Playground.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:#6B7C3A; --olive-dark:#4A5828; --olive-deep:#2E3A18;
+    --cream:#F5F7F0; --warm-white:#FAFCF5;
+    --ink:#1A1F14; --ink2:#3D4235; --ink3:#6B7060; --ink4:#9A9E90;
+    --border:rgba(26,31,20,0.1); --border2:rgba(26,31,20,0.06);
+    --purple:#7A4A9A; --purple-l:#EDE0F5;
+    --gold:#9A6E1A; --gold-l:#F5EDD6;
+    --blue:#2A5C9A; --blue-l:#DDE8F5;
+    --teal:#1A6B54; --teal-l:#D8EEE8;
+    --terra:#8A4A2A; --terra-l:#F5E4D8;
+    --green:#1A7A3A; --green-l:#D8F0E0;
+    --rose:#9A2A4A; --rose-l:#F5DDE5;
+    --ff-serif:'Lora',Georgia,serif;
+    --ff-sans:'DM Sans',system-ui,sans-serif;
+    --ease:cubic-bezier(0.22,1,0.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--ff-sans);background:var(--warm-white);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  header.site-header{border-bottom:1px solid var(--border);padding:1.1rem 1.5rem;background:var(--warm-white);}
+  .site-header-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+  .site-name{font-family:var(--ff-serif);font-weight:600;font-size:1.05rem;text-decoration:none;}
+  main{max-width:880px;margin:0 auto;padding:2.6rem 1.5rem 5rem;}
+  .breadcrumb{font-size:.82rem;color:var(--ink3);margin-bottom:1.3rem;}
+  .breadcrumb a{text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+  .series-tag{display:inline-block;font-size:.76rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--gold);background:var(--gold-l);padding:.3rem .7rem;border-radius:999px;margin-bottom:1.1rem;}
+  h1{font-family:var(--ff-serif);font-size:2.1rem;font-weight:700;line-height:1.2;margin-bottom:.8rem;}
+  .subtitle{font-size:1.08rem;color:var(--ink2);margin-bottom:1.6rem;max-width:680px;}
+  .meta-row{display:flex;gap:1.1rem;font-size:.82rem;color:var(--ink3);margin-bottom:1.6rem;border-bottom:1px solid var(--border);padding-bottom:1.3rem;flex-wrap:wrap;}
+  .phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem;}
+  .phase-pip{display:inline-flex;align-items:center;justify-content:center;width:1.9rem;height:1.9rem;border-radius:50%;font-size:.68rem;font-weight:700;border:1.5px solid var(--border);color:var(--ink4);background:var(--warm-white);text-decoration:none;}
+  .phase-pip.active{background:var(--gold);color:var(--warm-white);border-color:transparent;}
+  .phase-pip.done{background:var(--green-l);color:var(--green);border-color:var(--green);}
+  .phase-pip.soon{cursor:default;opacity:.55;}
+  h2{font-family:var(--ff-serif);font-size:1.35rem;font-weight:700;margin-top:2.2rem;margin-bottom:.8rem;}
+  h3{font-family:var(--ff-serif);font-size:1.1rem;font-weight:700;margin-top:1.6rem;margin-bottom:.6rem;}
+  p{margin-bottom:.9rem;color:var(--ink2);font-size:.97rem;}
+  strong{color:var(--green);font-weight:700;}
+  ul,ol{margin:0 0 1rem 1.3rem;color:var(--ink2);}
+  li{margin-bottom:.4rem;font-size:.97rem;}
+  code{background:var(--cream);padding:.15rem .4rem;border-radius:5px;font-size:.87em;color:var(--olive-deep);}
+  .callout{border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.91rem;}
+  .callout p{margin-bottom:0;}
+  .callout.green{background:var(--green-l);border-left:3px solid var(--green);}.callout.green p{color:var(--olive-deep);}
+  .callout.blue{background:var(--blue-l);border-left:3px solid var(--blue);}.callout.blue p{color:var(--blue);}
+  .callout.gold{background:var(--gold-l);border-left:3px solid var(--gold);}.callout.gold p{color:var(--gold);}
+  .callout.warn{background:var(--terra-l);border-left:3px solid var(--terra);}.callout.warn p{color:var(--terra);}
+  .fw-table-wrap{overflow-x:auto;margin:1rem 0 1.5rem;}
+  table.fw-table{width:100%;border-collapse:collapse;font-size:.85rem;line-height:1.45;}
+  table.fw-table th,table.fw-table td{border:1px solid var(--border);padding:.5rem .7rem;text-align:left;vertical-align:top;}
+  table.fw-table th{background:var(--cream);font-weight:700;font-size:.8rem;}
+  table.fw-table td{color:var(--ink2);}
+  table.fw-table tr:nth-child(odd) td{background:var(--warm-white);}
+  table.fw-table tr:nth-child(even) td{background:var(--cream);}
+  .diagram-wrap{margin:1.4rem 0 1.7rem;background:var(--cream);border:1px solid var(--border);border-radius:12px;padding:1.1rem;}
+  .why-box{background:var(--cream);border-radius:8px;padding:.85rem 1.05rem;margin:.7rem 0 1.2rem;font-size:.89rem;}
+  .why-box .why-label{font-weight:700;color:var(--olive-dark);font-size:.76rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.3rem;}
+  .why-box p{margin-bottom:.5rem;color:var(--ink2);}
+  .why-box p:last-child{margin-bottom:0;}
+  .practical{background:var(--blue-l);border-radius:8px;padding:.9rem 1.1rem;margin:1.1rem 0 1.4rem;font-size:.91rem;border-left:3px solid var(--blue);}
+  .practical .practical-label{font-weight:700;color:var(--blue);font-size:.76rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.4rem;}
+  .practical p{margin-bottom:.5rem;color:var(--ink2);}
+  .practical p:last-child{margin-bottom:0;}
+  .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:1.8rem;flex-wrap:wrap;}
+  .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:700;font-size:.9rem;padding:.7rem 1.2rem;border-radius:8px;transition:background .2s var(--ease);}
+  .nav-cta.primary{background:var(--olive);color:var(--warm-white);}
+  .nav-cta.primary:hover{background:var(--olive-dark);}
+  .nav-cta.secondary{background:var(--cream);color:var(--ink2);border:1px solid var(--border);}
+  footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.85rem;color:var(--ink3);}
+  footer a{text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+  /* Stick-figure characters */
+  .stickman{overflow:visible;flex-shrink:0;}
+  .stickman .sm-figure{animation:sm-bob 2.4s ease-in-out infinite;}
+  @keyframes sm-bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-3px);}}
+  .stickman.click .sm-arm2{transform-origin:26px 30px;animation:sm-click 1.4s ease-in-out infinite;}
+  @keyframes sm-click{0%,65%,100%{transform:rotate(0deg);}75%{transform:rotate(-12deg);}}
+  .stickman .sm-click-pulse{animation:sm-pulse 1.4s ease-in-out infinite;transform-origin:40px 52px;}
+  @keyframes sm-pulse{0%,65%{opacity:0;transform:scale(.5);}75%{opacity:1;transform:scale(1);}100%{opacity:0;transform:scale(1.8);}}
+  .stickman.approve .sm-arm2{transform-origin:26px 30px;animation:sm-approve 1.6s ease-in-out infinite;}
+  @keyframes sm-approve{0%,55%,100%{transform:rotate(0deg);}65%{transform:rotate(-16deg);}}
+  .stickman .sm-check-pop{transform-origin:46px 16px;animation:sm-checkpop 1.6s ease-in-out infinite;}
+  @keyframes sm-checkpop{0%,55%{opacity:0;transform:scale(.4);}68%{opacity:1;transform:scale(1.2);}80%{transform:scale(1);}100%{opacity:1;transform:scale(1);}}
+  .meet-row{display:flex;gap:1.6rem;flex-wrap:wrap;margin:1.3rem 0 1.6rem;background:var(--cream);border-radius:12px;padding:1.1rem 1.3rem;align-items:center;}
+  .meet-card{display:flex;align-items:center;gap:.8rem;flex:1;min-width:200px;}
+  .meet-card .meet-label{font-size:.86rem;}
+  .meet-card .meet-label strong{display:block;font-size:.92rem;margin-bottom:.15rem;}
+  .flow-arrow{font-size:1.3rem;color:var(--ink4);flex-shrink:0;}
+  .takeaways{background:var(--teal-l);border:1px solid var(--teal);border-radius:10px;padding:1.1rem 1.3rem;margin:1.5rem 0 2rem;}
+  .takeaways .takeaways-label{font-weight:700;color:var(--teal);font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.6rem;}
+  .takeaways ul{margin:0 0 0 1.2rem;}
+  .takeaways li{color:var(--ink2);font-size:.93rem;margin-bottom:.4rem;}
+  .takeaways li:last-child{margin-bottom:0;}
+  @media (prefers-reduced-motion: reduce){
+    .stickman *{animation:none !important;}
+  }
+  @media(max-width:600px){
+    h1{font-size:1.65rem;}
+    .meta-row{flex-wrap:wrap;gap:.5rem;}
+    .flow-arrow{transform:rotate(90deg);}
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+
+<main>
+
+  <p class="breadcrumb">
+    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    <a href="00-cmsseries-landing.html">CMS Testing for QA</a> &nbsp;/&nbsp;
+    Post 2
+  </p>
+
+  <span class="series-tag">Post 2 of 17 &middot; Foundations</span>
+
+  <h1>Content and editorial workflow testing</h1>
+  <p class="subtitle">Post 1 established that content ships with no code review, no deploy pipeline, no automatic QA gate. This post is about the four things a CMS uses instead to keep that unreviewed process from being reckless: a content model that constrains what an editor can enter, a workflow that gates who can publish what, roles that draw the boundary, and version history that undoes a mistake after the fact.</p>
+
+  <div class="meta-row">
+    <span>By RN</span>
+    <span>~11 min read</span>
+    <span>Demo: WordPress Playground</span>
+  </div>
+
+  <div class="phase-strip" aria-label="Series progress">
+    <a href="00-cmsseries-landing.html" class="phase-pip" title="Series overview">0</a>
+    <a href="01-cmsseries-what-makes-different.html" class="phase-pip" title="Post 1: What makes CMS testing different">1</a>
+    <span class="phase-pip active" title="Post 2: Content and editorial workflow">2</span>
+    <a href="03-cmsseries-functional-template-testing.html" class="phase-pip" title="Post 3: Functional and template testing">3</a>
+    <a href="04-cmsseries-api-integration-testing.html" class="phase-pip" title="Post 4: API and integration testing">4</a>
+    <a href="05-cmsseries-headless-cms-considerations.html" class="phase-pip" title="Post 5: Headless CMS considerations">5</a>
+    <a href="06-cmsseries-seo-testing.html" class="phase-pip" title="Post 6: SEO testing">6</a>
+    <a href="07-cmsseries-accessibility-testing.html" class="phase-pip" title="Post 7: Accessibility testing">7</a>
+    <a href="08-cmsseries-performance-caching-testing.html" class="phase-pip" title="Post 8: Performance and caching testing">8</a>
+    <a href="09-cmsseries-analytics-tracking-testing.html" class="phase-pip" title="Post 9: Analytics and tracking validation">9</a>
+    <a href="10-cmsseries-security-testing.html" class="phase-pip" title="Post 10: Security testing">10</a>
+    <a href="11-cmsseries-crossbrowser-visual-testing.html" class="phase-pip" title="Post 11: Cross-browser and visual testing">11</a>
+    <a href="12-cmsseries-forms-lead-capture-testing.html" class="phase-pip" title="Post 12: Forms and lead-capture testing">12</a>
+    <a href="13-cmsseries-localization-testing.html" class="phase-pip" title="Post 13: Localization testing">13</a>
+    <a href="14-cmsseries-legal-compliance-testing.html" class="phase-pip" title="Post 14: Legal and compliance testing">14</a>
+    <a href="15-cmsseries-staging-release-testing.html" class="phase-pip" title="Post 15: Staging, preview and release testing">15</a>
+    <a href="16-cmsseries-migration-testing.html" class="phase-pip" title="Post 16: Migration testing">16</a>
+    <a href="17-cmsseries-testing-strategy-capstone.html" class="phase-pip" title="Post 17: The CMS testing strategy">17</a>
+  </div>
+
+  <div class="takeaways">
+    <span class="takeaways-label">Key takeaways</span>
+    <ul>
+      <li>Four mechanisms replace code review for content: the content model (what fields exist), the publishing workflow (who can move content between states), roles (who can do what), and version history (undoing a mistake).</li>
+      <li>A gap in the content model, like a missing alt-text field, ships silently on every piece of content created after it.</li>
+      <li>A permission chart describes what's supposed to happen, not what a specific plugin actually does. Log in as the role and test it directly.</li>
+      <li>A "rollback" can restore the body text while leaving a changed featured image or SEO field in place. Test multi-field changes, not just one.</li>
+    </ul>
+  </div>
+
+  <h2>Content modeling: the shape editors are allowed to fill in</h2>
+  <p>A content model is the schema behind every page: which fields exist for a given content type, whether each one is required, what type of data it accepts, and what an editor sees in the editing screen. It's decided once, during Plan, by whoever sets up the CMS, and every piece of content of that type is stuck inside the shape it defines from then on.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 700 190" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" role="img" aria-label="Diagram: a Blog Post content model with five fields. Title, required, text. Featured image, required, media, no alt text field present. Body, required, rich text. Category, required, single select. Publish date, required, date. An arrow shows this model constraining what every blog post editor can create.">
+      <text x="20" y="24" font-family="DM Sans, sans-serif" font-size="12" font-weight="700" fill="#3D4235">CONTENT MODEL: "Blog Post"</text>
+      <g font-family="DM Sans, sans-serif" font-size="10.5">
+        <rect x="20" y="38" width="128" height="34" rx="6" fill="#FAFCF5" stroke="#D8C8B8"/>
+        <text x="30" y="56" fill="#1A1F14" font-weight="700">Title</text>
+        <text x="30" y="68" fill="#6B7060" font-size="9">required &middot; text</text>
+
+        <rect x="158" y="38" width="128" height="34" rx="6" fill="#F5DDE5" stroke="#9A2A4A"/>
+        <text x="168" y="56" fill="#7A1A38" font-weight="700">Featured image</text>
+        <text x="168" y="68" fill="#9A2A4A" font-size="9">required &middot; media, no alt field</text>
+
+        <rect x="296" y="38" width="128" height="34" rx="6" fill="#FAFCF5" stroke="#D8C8B8"/>
+        <text x="306" y="56" fill="#1A1F14" font-weight="700">Body</text>
+        <text x="306" y="68" fill="#6B7060" font-size="9">required &middot; rich text</text>
+
+        <rect x="434" y="38" width="118" height="34" rx="6" fill="#FAFCF5" stroke="#D8C8B8"/>
+        <text x="444" y="56" fill="#1A1F14" font-weight="700">Category</text>
+        <text x="444" y="68" fill="#6B7060" font-size="9">required &middot; single select</text>
+
+        <rect x="562" y="38" width="118" height="34" rx="6" fill="#FAFCF5" stroke="#D8C8B8"/>
+        <text x="572" y="56" fill="#1A1F14" font-weight="700">Publish date</text>
+        <text x="572" y="68" fill="#6B7060" font-size="9">required &middot; date</text>
+      </g>
+      <path d="M350,90 L350,112" stroke="#9A9E90" stroke-width="1.5" fill="none" marker-end="url(#arrowM)"/>
+      <text x="350" y="132" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" fill="#6B7060">Every editor creating a Blog Post is stuck inside this shape</text>
+      <text x="350" y="150" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="#9A2A4A">including whatever the model forgot to require, like alt text</text>
+      <defs>
+        <marker id="arrowM" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9A9E90"/></marker>
+      </defs>
+    </svg>
+  </div>
+
+  <div class="why-box">
+    <span class="why-label">Why content modeling is a QA concern, not just a setup task</span>
+    <p>A missing or wrongly-typed field in the content model ships silently in every piece of content created after it. Nothing in the editing screen tells an editor a field is missing, only that it isn't there to fill in.</p>
+    <p>The "Featured image" field above has no alt text field at all. Accessibility testing later in this series (Post 7) will keep finding that same missing-alt-text issue on every post, because the real defect lives here, in the model, not in any individual editor's choices.</p>
+  </div>
+
+  <h2>Publishing workflow: the states content moves through</h2>
+  <p>Most CMS platforms give content a status beyond just "saved," typically Draft, Pending Review, Published, and often Scheduled. The workflow is which roles can move content between which statuses, and it's the actual QA gate a CMS has, if it's configured at all.</p>
+
+  <div class="meet-row">
+    <div class="meet-card">
+      <svg class="stickman click" viewBox="0 0 60 80" width="46" height="60" role="img" aria-label="Illustrated contributor submitting a draft for review">
+        <g class="sm-figure">
+          <line x1="26" y1="23" x2="26" y2="48" stroke="#2A5C9A" stroke-width="3" stroke-linecap="round"/>
+          <line class="sm-arm1" x1="26" y1="30" x2="14" y2="24" stroke="#2A5C9A" stroke-width="3" stroke-linecap="round"/>
+          <g class="sm-arm2"><line x1="26" y1="30" x2="40" y2="48" stroke="#2A5C9A" stroke-width="3" stroke-linecap="round"/><circle class="sm-click-pulse" cx="40" cy="52" r="5" fill="none" stroke="#2A5C9A" stroke-width="2"/></g>
+          <line x1="26" y1="48" x2="17" y2="70" stroke="#2A5C9A" stroke-width="3" stroke-linecap="round"/>
+          <line x1="26" y1="48" x2="35" y2="70" stroke="#2A5C9A" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="26" cy="14" r="9" fill="#DDE8F5" stroke="#2A5C9A" stroke-width="2.5"/>
+        </g>
+      </svg>
+      <div class="meet-label"><strong style="color:var(--blue);">Contributor</strong>Writes a draft, submits for review. Can't publish directly.</div>
+    </div>
+    <span class="flow-arrow">&rarr;</span>
+    <div class="meet-card">
+      <svg class="stickman approve" viewBox="0 0 60 80" width="46" height="60" role="img" aria-label="Illustrated editor approving and publishing">
+        <g class="sm-figure">
+          <line x1="26" y1="23" x2="26" y2="48" stroke="#4A5828" stroke-width="3" stroke-linecap="round"/>
+          <line class="sm-arm1" x1="26" y1="30" x2="14" y2="40" stroke="#4A5828" stroke-width="3" stroke-linecap="round"/>
+          <g class="sm-arm2">
+            <line x1="26" y1="30" x2="38" y2="22" stroke="#4A5828" stroke-width="3" stroke-linecap="round"/>
+            <path class="sm-check-pop" d="M42,20 l3,4 l7,-9" stroke="#4A5828" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </g>
+          <line x1="26" y1="48" x2="17" y2="70" stroke="#4A5828" stroke-width="3" stroke-linecap="round"/>
+          <line x1="26" y1="48" x2="35" y2="70" stroke="#4A5828" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="26" cy="14" r="9" fill="#E8EEDA" stroke="#4A5828" stroke-width="2.5"/>
+        </g>
+      </svg>
+      <div class="meet-label"><strong style="color:var(--olive-dark);">Editor</strong>Reviews the pending draft, approves, publishes.</div>
+    </div>
+  </div>
+
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>Status</th><th>Visible where</th><th>What to test</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Draft</strong></td><td>Only to the author and roles with edit access, never on the live site</td><td>A draft URL should not be publicly reachable or indexed. Try loading it logged out.</td></tr>
+        <tr><td><strong>Pending review</strong></td><td>Same as draft, plus visible in a reviewer's queue</td><td>A Contributor account should not be able to skip this and publish directly, verify the publish control is actually absent, not just hidden by the UI.</td></tr>
+        <tr><td><strong>Scheduled</strong></td><td>Not yet live, holds a future publish time</td><td>The exact moment it goes live, and whether that time is evaluated in the server's timezone or the editor's, a common source of a post going live an hour early or late.</td></tr>
+        <tr><td><strong>Published</strong></td><td>Live, publicly reachable</td><td>Whether unpublishing (back to Draft) actually removes it from cache, search index, and any API consumers, not just the CMS's own front end.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout warn">
+    <p><strong>"Hidden from the menu" is not the same as "not publicly reachable."</strong> A common CMS misconfiguration is a draft or unpublished page that isn't linked from anywhere, but is still reachable if someone has or guesses the direct URL. Test the URL directly, logged out, don't just check whether a link to it exists.</p>
+  </div>
+
+  <h2>Roles and permissions: who can do what</h2>
+  <p>WordPress ships with five default roles, and the same shape, a small number of tiers with increasing publish and admin rights, appears across most CMS platforms under different names.</p>
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>Role</th><th>Can publish own content</th><th>Can edit others' content</th><th>Can manage plugins/theme</th></tr></thead>
+      <tbody>
+        <tr><td>Administrator</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+        <tr><td>Editor</td><td>Yes</td><td>Yes</td><td>No</td></tr>
+        <tr><td>Author</td><td>Yes</td><td>No</td><td>No</td></tr>
+        <tr><td>Contributor</td><td>No, submits for review only</td><td>No</td><td>No</td></tr>
+        <tr><td>Subscriber</td><td>No</td><td>No</td><td>No</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="why-box">
+    <span class="why-label">Why permission boundaries need to be tested, not just read off a chart</span>
+    <p>A role matrix like the one above describes what's supposed to happen. What actually happens depends on every plugin installed, since a plugin can add its own capabilities, or forget to check the current user's role before showing an admin control.</p>
+    <p>The only way to know a Contributor account truly can't publish, edit someone else's post, or reach an admin screen is to log in as that role and try, not to trust the chart.</p>
+  </div>
+
+  <h2>Versioning and rollback</h2>
+  <p>Every reasonable CMS keeps a revision history: a snapshot saved at intervals or on every save, that can restore a previous version of a piece of content. The QA question isn't whether the feature exists, it's whether restoring actually restores everything an editor would expect.</p>
+  <div class="why-box">
+    <span class="why-label">Why "restore" is easy to get partially wrong</span>
+    <p>Rich content usually has more attached to it than the body text: a featured image, SEO fields, category assignments, custom fields a plugin added. A rollback that only restores the body text while leaving a since-changed featured image or SEO field in place isn't really a rollback, it's a half-restore that looks correct until someone checks the parts that didn't revert.</p>
+    <p>That gap only shows up when you deliberately change more than one field, then roll back and check all of them, not just the one you expect to have changed.</p>
+  </div>
+
+  <h2>Try the whole workflow yourself</h2>
+  <div class="practical">
+    <span class="practical-label">Try it</span>
+    <p>Launch a fresh instance at <a href="https://wordpress.org/playground/" target="_blank">wordpress.org/playground</a>.</p>
+    <p>Under <strong>Users &rarr; Add New</strong>, create a second account with the Contributor role. Log in as that user and confirm there's genuinely no publish button, only "Submit for Review."</p>
+    <p>Back in the admin account, edit the sample post three times, changing the title, then the featured image, then a category, saving each time. Open <strong>Revisions</strong> from the post editor, restore the earliest version, and check all three fields, not just the one that changed first, to see whether the rollback was actually complete.</p>
+  </div>
+
+  <h2>Your deliverable</h2>
+  <p>A short table: the roles that exist in a real CMS you have access to (or the WordPress Playground defaults if not), and one specific action each role should not be able to do. Actually verify each row by logging in as that role, don't just write down what the docs claim.</p>
+  <p><strong>Time:</strong> ~20 to 30 minutes.</p>
+
+  <div class="nav-row">
+    <a href="01-cmsseries-what-makes-different.html" class="nav-cta secondary">&larr; Post 1: What makes CMS testing different</a>
+    <a href="03-cmsseries-functional-template-testing.html" class="nav-cta primary">Post 3: Functional &amp; template testing &rarr;</a>
+  </div>
+
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; CMS Testing for QA</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+</body>
+</html>

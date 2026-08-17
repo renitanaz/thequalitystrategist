@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Post 1: Setup, Web and Mobile | Proxyman for QA</title>
+<meta name="description" content="Installing Proxyman, enabling SSL proxying, trusting the certificate, connecting a browser and a mobile device or simulator, and what changes when the app under test needs a VPN.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:#6B7C3A; --olive-dark:#4A5828; --olive-deep:#2E3A18;
+    --cream:#F5F7F0; --warm-white:#FAFCF5;
+    --ink:#1A1F14; --ink2:#3D4235; --ink3:#6B7060; --ink4:#9A9E90;
+    --border:rgba(26,31,20,0.1); --border2:rgba(26,31,20,0.06);
+    --purple:#7A4A9A; --purple-l:#EDE0F5;
+    --gold:#9A6E1A; --gold-l:#F5EDD6;
+    --blue:#2A5C9A; --blue-l:#DDE8F5;
+    --teal:#1A6B54; --teal-l:#D8EEE8;
+    --terra:#8A4A2A; --terra-l:#F5E4D8;
+    --green:#1A7A3A; --green-l:#D8F0E0;
+    --rose:#9A2A4A; --rose-l:#F5DDE5;
+    --ff-serif:'Lora',Georgia,serif;
+    --ff-sans:'DM Sans',system-ui,sans-serif;
+    --ease:cubic-bezier(0.22,1,0.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--ff-sans);background:var(--warm-white);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  header.site-header{border-bottom:1px solid var(--border);padding:1.1rem 1.5rem;background:var(--warm-white);}
+  .site-header-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+  .site-name{font-family:var(--ff-serif);font-weight:600;font-size:1.05rem;text-decoration:none;}
+  main{max-width:880px;margin:0 auto;padding:2.6rem 1.5rem 5rem;}
+  .breadcrumb{font-size:.82rem;color:var(--ink3);margin-bottom:1.3rem;}
+  .breadcrumb a{text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+  .series-tag{display:inline-block;font-size:.76rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--gold);background:var(--gold-l);padding:.3rem .7rem;border-radius:999px;margin-bottom:1.1rem;}
+  h1{font-family:var(--ff-serif);font-size:2.1rem;font-weight:700;line-height:1.2;margin-bottom:.8rem;}
+  .subtitle{font-size:1.08rem;color:var(--ink2);margin-bottom:1.6rem;max-width:680px;}
+  .meta-row{display:flex;gap:1.1rem;font-size:.82rem;color:var(--ink3);margin-bottom:1.6rem;border-bottom:1px solid var(--border);padding-bottom:1.3rem;flex-wrap:wrap;}
+  /* Series progress strip */
+  .phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem;}
+  .phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--ink4);background:var(--warm-white);text-decoration:none;}
+  .phase-pip.active{background:var(--gold);color:var(--warm-white);border-color:transparent;}
+  .phase-pip.done{background:var(--green-l);color:var(--green);border-color:var(--green);}
+  .phase-pip.soon{cursor:default;opacity:.55;}
+  h2{font-family:var(--ff-serif);font-size:1.35rem;font-weight:700;margin-top:2.2rem;margin-bottom:.8rem;}
+  h3{font-family:var(--ff-serif);font-size:1.1rem;font-weight:700;margin-top:1.6rem;margin-bottom:.6rem;}
+  p{margin-bottom:.9rem;color:var(--ink2);font-size:.97rem;}
+  strong{color:var(--ink);font-weight:700;}
+  ul,ol{margin:0 0 1rem 1.3rem;color:var(--ink2);}
+  li{margin-bottom:.4rem;font-size:.97rem;}
+  code{background:var(--cream);padding:.15rem .4rem;border-radius:5px;font-size:.87em;color:var(--olive-deep);}
+  pre{background:var(--ink);color:var(--cream);padding:1rem 1.1rem;border-radius:10px;overflow-x:auto;font-size:.82rem;margin:1rem 0;line-height:1.55;}
+  pre code{background:none;color:inherit;padding:0;}
+  .callout{border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.91rem;}
+  .callout p{margin-bottom:0;}
+  .callout.green{background:var(--green-l);border-left:3px solid var(--green);}.callout.green p{color:var(--olive-deep);}
+  .callout.blue{background:var(--blue-l);border-left:3px solid var(--blue);}.callout.blue p{color:var(--blue);}
+  .callout.gold{background:var(--gold-l);border-left:3px solid var(--gold);}.callout.gold p{color:var(--gold);}
+  .callout.warn{background:var(--terra-l);border-left:3px solid var(--terra);}.callout.warn p{color:var(--terra);}
+  .fw-table-wrap{overflow-x:auto;margin:1rem 0 1.5rem;}
+  table.fw-table{width:100%;border-collapse:collapse;font-size:.85rem;line-height:1.45;}
+  table.fw-table th,table.fw-table td{border:1px solid var(--border);padding:.5rem .7rem;text-align:left;vertical-align:top;}
+  table.fw-table th{background:var(--cream);font-weight:700;font-size:.8rem;}
+  table.fw-table td{color:var(--ink2);}
+  table.fw-table tr:nth-child(odd) td{background:var(--warm-white);}
+  table.fw-table tr:nth-child(even) td{background:var(--cream);}
+  .diagram-wrap{margin:1.4rem 0 1.7rem;background:var(--cream);border:1px solid var(--border);border-radius:12px;padding:1.1rem;}
+  .why-box{background:var(--cream);border-radius:8px;padding:.85rem 1.05rem;margin:.7rem 0 1.2rem;font-size:.89rem;}
+  .why-box .why-label{font-weight:700;color:var(--olive-dark);font-size:.76rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.3rem;}
+  .why-box p{margin-bottom:0;color:var(--ink2);}
+  .practical{background:var(--blue-l);border-radius:8px;padding:.9rem 1.1rem;margin:1.1rem 0 1.4rem;font-size:.91rem;border-left:3px solid var(--blue);}
+  .practical .practical-label{font-weight:700;color:var(--blue);font-size:.76rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.4rem;}
+  .practical p{margin-bottom:.5rem;color:var(--ink2);}
+  .practical p:last-child{margin-bottom:0;}
+  .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:1.8rem;flex-wrap:wrap;}
+  .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:700;font-size:.9rem;padding:.7rem 1.2rem;border-radius:8px;transition:background .2s var(--ease);}
+  .nav-cta.primary{background:var(--olive);color:var(--warm-white);}
+  .nav-cta.primary:hover{background:var(--olive-dark);}
+  .nav-cta.secondary{background:var(--cream);color:var(--ink2);border:1px solid var(--border);}
+  footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.85rem;color:var(--ink3);}
+  footer a{text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+  @media(max-width:600px){
+    h1{font-size:1.65rem;}
+    .meta-row{flex-wrap:wrap;gap:.5rem;}
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+
+<main>
+
+  <p class="breadcrumb">
+    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    <a href="00-proxymanseries-landing.html">Proxyman for QA</a> &nbsp;/&nbsp;
+    Post 1
+  </p>
+
+  <span class="series-tag">Post 1 of 9 &middot; Setup</span>
+
+  <h1>Setup, web and mobile</h1>
+  <p class="subtitle">Everything after this post assumes Proxyman is installed, HTTPS traffic is readable, and at least one target, a browser or a device, is actually sending its traffic through it. This post gets you there, and explains what each step is actually doing so the next post's troubleshooting makes sense instead of feeling like magic.</p>
+
+  <div class="meta-row">
+    <span>By RN</span>
+    <span>~10 min read</span>
+    <span>Demo: PeakAndPack</span>
+  </div>
+
+  <div class="phase-strip" aria-label="Series progress">
+    <a href="00-proxymanseries-landing.html" class="phase-pip" title="Series overview">0</a>
+    <span class="phase-pip active" title="Post 1: Setup">1</span>
+    <a href="02-proxymanseries-troubleshooting.html" class="phase-pip" title="Post 2: Troubleshooting">2</a>
+    <a href="03-proxymanseries-reading-traffic.html" class="phase-pip" title="Post 3: Reading traffic">3</a>
+    <a href="04-proxymanseries-breakpoints.html" class="phase-pip" title="Post 4: Breakpoints">4</a>
+    <a href="05-proxymanseries-map-local-remote.html" class="phase-pip" title="Post 5: Map Local/Remote">5</a>
+    <a href="06-proxymanseries-network-conditions.html" class="phase-pip" title="Post 6: Network conditions">6</a>
+    <a href="07-proxymanseries-composer.html" class="phase-pip" title="Post 7: Composer">7</a>
+    <a href="08-proxymanseries-bug-evidence.html" class="phase-pip" title="Post 8: Bug evidence">8</a>
+    <a href="09-proxymanseries-quick-reference.html" class="phase-pip" title="Post 9: Quick reference">9</a>
+  </div>
+
+  <h2>Why HTTPS traffic needs a certificate before it's readable at all</h2>
+  <p>Every request PeakAndPack's UI makes to its API travels over HTTPS, encrypted end to end between the browser and the server. By default, a proxy sitting between the two sees only ciphertext: a request happened, roughly when, to which host, but not what was actually in it.</p>
+  <p>Proxyman gets around this the only way any tool can: by sitting in the middle as a trusted party to both sides.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 700 240" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" role="img" aria-label="Diagram: without Proxyman, browser and server exchange encrypted traffic directly, unreadable to anyone in between. With Proxyman's certificate trusted, the browser talks to Proxyman, which decrypts and shows the plaintext, then re-encrypts and forwards to the server, and the same happens in reverse for the response.">
+      <text x="20" y="24" font-family="DM Sans, sans-serif" font-size="12" font-weight="700" fill="#8A4A2A" letter-spacing=".5">WITHOUT PROXYMAN</text>
+      <rect x="20" y="38" width="130" height="46" rx="8" fill="#FAFCF5" stroke="#D8C8B8"/>
+      <text x="85" y="66" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="12" fill="#3D4235">Browser</text>
+      <path d="M150,55 L330,55" stroke="#8A4A2A" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arrowA)"/>
+      <text x="240" y="46" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="#8A4A2A">encrypted, unreadable</text>
+      <rect x="330" y="38" width="130" height="46" rx="8" fill="#FAFCF5" stroke="#D8C8B8"/>
+      <text x="395" y="66" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="12" fill="#3D4235">Server</text>
+
+      <text x="20" y="128" font-family="DM Sans, sans-serif" font-size="12" font-weight="700" fill="#6B7C3A" letter-spacing=".5">WITH PROXYMAN, CERTIFICATE TRUSTED</text>
+      <rect x="20" y="142" width="130" height="46" rx="8" fill="#FAFCF5" stroke="#D8C8B8"/>
+      <text x="85" y="170" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="12" fill="#3D4235">Browser</text>
+      <path d="M150,165 L228,165" stroke="#6B7C3A" stroke-width="1.5" marker-end="url(#arrowB)"/>
+      <rect x="230" y="142" width="180" height="46" rx="8" fill="#F5EDD6" stroke="#9A6E1A"/>
+      <text x="320" y="163" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11.5" font-weight="700" fill="#9A6E1A">Proxyman</text>
+      <text x="320" y="178" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#9A6E1A">decrypts, shows plaintext</text>
+      <path d="M410,165 L488,165" stroke="#6B7C3A" stroke-width="1.5" marker-end="url(#arrowB)"/>
+      <rect x="490" y="142" width="130" height="46" rx="8" fill="#FAFCF5" stroke="#D8C8B8"/>
+      <text x="555" y="170" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="12" fill="#3D4235">Server</text>
+      <path d="M488,196 L152,196" stroke="#6B7C3A" stroke-width="1.5" marker-end="url(#arrowB)"/>
+      <text x="320" y="212" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#6B7C3A">response re-encrypted before forwarding back</text>
+
+      <defs>
+        <marker id="arrowA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8A4A2A"/></marker>
+        <marker id="arrowB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7C3A"/></marker>
+      </defs>
+    </svg>
+  </div>
+
+  <p>Nothing about this is a vulnerability in HTTPS, it's exactly what a company's own network security tools do to inspect employee traffic. It only works because you explicitly told your machine to trust Proxyman's certificate, which is also why every setup guide makes a point of having you remove that trust when you're done debugging.</p>
+
+  <div class="why-box">
+    <span class="why-label">Why this matters before you touch a single setting</span>
+    <p>Every install step below exists to satisfy one of two requirements: get your traffic routed through Proxyman in the first place, and get your browser or device to trust Proxyman's certificate so HTTPS traffic isn't just ciphertext. If a later step doesn't work, it's almost always because one of those two things didn't actually happen, not because of something exotic.</p>
+  </div>
+
+  <h2>Install Proxyman</h2>
+  <p>Download it from <a href="https://proxyman.com" target="_blank">proxyman.com</a> for macOS, Windows, or Linux. On first launch it asks to install a small helper tool.</p>
+  <div class="why-box">
+    <span class="why-label">Why the helper tool</span>
+    <p>The helper is what lets Proxyman automatically set itself as your machine's system HTTP/HTTPS proxy the moment it opens, and cleanly revert that setting if Proxyman quits or crashes. Without it you'd have to manually point your OS's proxy settings at Proxyman every time, and manually undo it after, which is exactly the kind of step that gets forgotten and leaves your machine routed through a proxy that isn't running anymore.</p>
+  </div>
+  <p>On macOS, the certificate installs into the System Keychain, and the automatic option installs and trusts it in one step (it will ask for your password, since trusting a new certificate authority is a system-level, admin-privileged change). On Windows, the same certificate installs via Proxyman's Certificate menu into Windows' own Certificate Manager, with an equivalent automatic script available. Either platform also offers a manual, step-by-step install for anyone who wants to see exactly what's being added instead of running the one-click option.</p>
+
+  <h2>Turn on SSL proxying, scoped to what you're testing</h2>
+  <p>SSL proxying is not on for every domain by default. You choose what to decrypt, by app or by domain (including wildcards like <code>*.onrender.com</code>), in Proxyman's Include/Exclude list, then enable it for that scope.</p>
+  <div class="why-box">
+    <span class="why-label">Why it's opt-in instead of everything, all the time</span>
+    <p>Your machine talks to dozens of domains you have no interest in testing: OS update checks, other apps phoning home, browser telemetry. Decrypting all of it by default would bury PeakAndPack's traffic in noise, and would mean Proxyman is silently intercepting HTTPS traffic for things you never intended to inspect, including anything sensitive unrelated to your testing. Scoping SSL proxying to just the domains under test keeps the traffic list readable and keeps interception deliberate.</p>
+  </div>
+  <p>For this series, scope it to <code>peakandpack-ui.onrender.com</code> and <code>peakandpackshopdemo.onrender.com</code>, the UI and API PeakAndPack runs on.</p>
+
+  <h2>Verify it's actually working, before moving on</h2>
+  <div class="practical">
+    <span class="practical-label">Try it: 60-second check</span>
+    <p>Open <a href="https://peakandpack-ui.onrender.com" target="_blank"><code>peakandpack-ui.onrender.com</code></a> in a browser on the same machine Proxyman is running on.</p>
+    <p>Watch the traffic list as the page loads. You should see requests appear in real time, and clicking one should show readable headers and a JSON body, not a wall of encrypted-looking bytes.</p>
+  </div>
+  <div class="callout blue">
+    <p><strong>Requests show up, but the body looks like garbage, not readable JSON?</strong> That's the certificate-trust step, not the proxy-routing step. Traffic is reaching Proxyman (routing works), but Proxyman can't decrypt it (trust doesn't). Re-run the certificate install, and confirm on macOS specifically that the certificate isn't just present in Keychain Access but marked "Always Trust" for SSL, since installed and trusted are two different states. Post 2 goes into this failure mode and several others in more depth.</p>
+  </div>
+
+  <h2>Connect a device: WiFi or USB</h2>
+  <p>Everything above covers traffic from the same machine Proxyman is running on. Testing a mobile app, or a mobile browser, means getting a separate device's traffic routed through Proxyman instead, and that has more than one path depending on what you're testing and how much control you have over the app.</p>
+
+  <h3>WiFi: the one that works on any app, any device</h3>
+  <p>This is the standard path, and it works regardless of whether you have the app's source code, because it operates at the network level rather than inside the app.</p>
+  <ol>
+    <li>Put the device on the <strong>same WiFi network</strong> as the computer running Proxyman.</li>
+    <li>On the device, open WiFi settings for that network and manually configure an HTTP proxy: the server is your computer's IP address on that network, the port is Proxyman's (9090 by default).</li>
+    <li>With that proxy config in place, open a browser on the device and visit <code>http://proxy.man/ssl</code> or <code>http://cert.proxyman.io</code> to download Proxyman's certificate.</li>
+    <li>Install and trust it. This step differs by platform and version: on iOS 12.2 and later it's a two-part process, install the downloaded profile under Settings &rarr; Profiles Downloaded, then separately flip it on under Settings &rarr; General &rarr; About &rarr; Certificate Trust Settings, since profile installation and certificate trust are handled by two different iOS settings screens. On Android 11 and later, you install it manually under Settings &rarr; Security &rarr; Encryption & Credentials &rarr; Install a Certificate; on Android 10 and earlier, visiting the certificate URL installs it automatically.</li>
+  </ol>
+  <div class="why-box">
+    <span class="why-label">Why two separate certificate steps on iOS</span>
+    <p>Installing a configuration profile and trusting a certificate as a root authority are different levels of access on iOS, by design, so that a profile can't silently grant itself full certificate authority just by being installed. Skipping the second step is the single most common reason "I installed the certificate" still doesn't produce readable HTTPS traffic on an iPhone.</p>
+  </div>
+
+  <h3>USB and no-WiFi-config alternatives: real, but narrower than they sound</h3>
+  <p>Proxyman also offers ways to capture traffic without manually configuring a device's WiFi proxy, but it's worth being precise about what these actually are, since "USB setup" undersells how different they are from the WiFi path above.</p>
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>Option</th><th>What it actually is</th><th>When it applies</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Atlantis (iOS)</strong></td><td>An SDK you add to an iOS app's own source code, then launch the app via Xcode. It captures the app's traffic over USB or WiFi with no manual proxy or certificate setup on the device.</td><td>Only when you (or your dev team) have the app's source and build it yourself. Not usable against a third-party app, or an already-built app you only have as an installed binary, which is most black-box QA testing.</td></tr>
+        <tr><td><strong>Proxyman for iOS</strong></td><td>A standalone app, installed on the device itself from the App Store, that runs a local VPN to capture the device's traffic without needing a Mac or Proxyman desktop at all.</td><td>Useful when you want on-device capture independent of a computer, but it's a genuinely different tool with its own setup, not an extension of the desktop app's USB support.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>For most QA work, testing an app you didn't build, against a device you control, the WiFi path is the one that actually applies. Treat Atlantis and Proxyman for iOS as options worth knowing exist, not defaults to reach for first.</p>
+
+  <h2>When the app under test needs a VPN</h2>
+  <div class="callout warn">
+    <p><strong>VPN and Proxyman's proxy fight for the same job.</strong> By default, a VPN app forces all of a device's traffic through the VPN's own tunnel, which happens at a lower network layer than the HTTP proxy setting you just configured. That means the WiFi proxy setup above can be completely correct and Proxyman can still see nothing, because the VPN took the traffic first. Proxyman's own documentation is direct about this: disable VPN apps on both the device and the computer while debugging.</p>
+  </div>
+  <p>If the app you're testing genuinely requires a VPN to reach its backend at all, for instance an internal corporate app that isn't reachable from the open internet, there's no clean way to run both at once through the standard setup. The practical options are: use a test device or account that reaches the target over a network that doesn't require VPN in the first place, or ask whoever manages the VPN whether it supports split-tunneling in a way that leaves the app's traffic on the untunneled path where Proxyman's proxy can still see it. Neither is a Proxyman setting, they're network-architecture questions worth raising with IT or platform engineering before you sink time into a setup that can't work as configured.</p>
+
+  <h2>Your deliverable</h2>
+  <p>A short setup log, not a script: which platform you set up (browser, iOS device, Android device, or more than one), the exact steps that worked, and anything that didn't work on the first try. Save it as <code>proxyman-setup-notes.md</code>. This isn't busywork, it's the thing you'll actually reach for the next time you set up a new machine or device, faster than re-reading this post.</p>
+  <p><strong>Time:</strong> ~15 to 30 minutes for a browser on the same machine; add 10 to 15 minutes per mobile device for the certificate trust steps.</p>
+
+  <div class="nav-row">
+    <a href="00-proxymanseries-landing.html" class="nav-cta secondary">&larr; Series overview</a>
+    <a href="02-proxymanseries-troubleshooting.html" class="nav-cta primary">Post 2: Troubleshooting &rarr;</a>
+  </div>
+
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; Proxyman for QA</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+</body>
+</html>

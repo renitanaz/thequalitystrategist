@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Post 9: Analytics and Tracking Validation | CMS Testing for QA</title>
+<meta name="description" content="Why a syntactically correct analytics snippet can still collect zero data, and how to verify tracking actually works instead of just being present.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:#6B7C3A; --olive-dark:#4A5828; --olive-deep:#2E3A18;
+    --cream:#F5F7F0; --warm-white:#FAFCF5;
+    --ink:#1A1F14; --ink2:#3D4235; --ink3:#6B7060; --ink4:#9A9E90;
+    --border:rgba(26,31,20,0.1); --border2:rgba(26,31,20,0.06);
+    --purple:#7A4A9A; --purple-l:#EDE0F5;
+    --gold:#9A6E1A; --gold-l:#F5EDD6;
+    --blue:#2A5C9A; --blue-l:#DDE8F5;
+    --teal:#1A6B54; --teal-l:#D8EEE8;
+    --terra:#8A4A2A; --terra-l:#F5E4D8;
+    --green:#1A7A3A; --green-l:#D8F0E0;
+    --rose:#9A2A4A; --rose-l:#F5DDE5;
+    --ff-serif:'Lora',Georgia,serif;
+    --ff-sans:'DM Sans',system-ui,sans-serif;
+    --ease:cubic-bezier(0.22,1,0.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--ff-sans);background:var(--warm-white);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  header.site-header{border-bottom:1px solid var(--border);padding:1.1rem 1.5rem;background:var(--warm-white);}
+  .site-header-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+  .site-name{font-family:var(--ff-serif);font-weight:600;font-size:1.05rem;text-decoration:none;}
+  main{max-width:880px;margin:0 auto;padding:2.6rem 1.5rem 5rem;}
+  .breadcrumb{font-size:.82rem;color:var(--ink3);margin-bottom:1.3rem;}
+  .breadcrumb a{text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+  .series-tag{display:inline-block;font-size:.76rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--gold);background:var(--gold-l);padding:.3rem .7rem;border-radius:999px;margin-bottom:1.1rem;}
+  h1{font-family:var(--ff-serif);font-size:2.1rem;font-weight:700;line-height:1.2;margin-bottom:.8rem;}
+  .subtitle{font-size:1.08rem;color:var(--ink2);margin-bottom:1.6rem;max-width:680px;}
+  .meta-row{display:flex;gap:1.1rem;font-size:.82rem;color:var(--ink3);margin-bottom:1.6rem;border-bottom:1px solid var(--border);padding-bottom:1.3rem;flex-wrap:wrap;}
+  .phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem;}
+  .phase-pip{display:inline-flex;align-items:center;justify-content:center;width:1.9rem;height:1.9rem;border-radius:50%;font-size:.68rem;font-weight:700;border:1.5px solid var(--border);color:var(--ink4);background:var(--warm-white);text-decoration:none;}
+  .phase-pip.active{background:var(--gold);color:var(--warm-white);border-color:transparent;}
+  .phase-pip.done{background:var(--green-l);color:var(--green);border-color:var(--green);}
+  .phase-pip.soon{cursor:default;opacity:.55;}
+  h2{font-family:var(--ff-serif);font-size:1.35rem;font-weight:700;margin-top:2.2rem;margin-bottom:.8rem;}
+  h3{font-family:var(--ff-serif);font-size:1.1rem;font-weight:700;margin-top:1.6rem;margin-bottom:.6rem;}
+  p{margin-bottom:.9rem;color:var(--ink2);font-size:.97rem;}
+  strong{color:var(--green);font-weight:700;}
+  ul,ol{margin:0 0 1rem 1.3rem;color:var(--ink2);}
+  li{margin-bottom:.4rem;font-size:.97rem;}
+  code{background:var(--cream);padding:.15rem .4rem;border-radius:5px;font-size:.87em;color:var(--olive-deep);}
+  .callout{border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.91rem;}
+  .callout p{margin-bottom:0;}
+  .callout.green{background:var(--green-l);border-left:3px solid var(--green);}.callout.green p{color:var(--olive-deep);}
+  .callout.blue{background:var(--blue-l);border-left:3px solid var(--blue);}.callout.blue p{color:var(--blue);}
+  .callout.gold{background:var(--gold-l);border-left:3px solid var(--gold);}.callout.gold p{color:var(--gold);}
+  .callout.warn{background:var(--terra-l);border-left:3px solid var(--terra);}.callout.warn p{color:var(--terra);}
+  .fw-table-wrap{overflow-x:auto;margin:1rem 0 1.5rem;}
+  table.fw-table{width:100%;border-collapse:collapse;font-size:.85rem;line-height:1.45;}
+  table.fw-table th,table.fw-table td{border:1px solid var(--border);padding:.5rem .7rem;text-align:left;vertical-align:top;}
+  table.fw-table th{background:var(--cream);font-weight:700;font-size:.8rem;}
+  table.fw-table td{color:var(--ink2);}
+  table.fw-table tr:nth-child(odd) td{background:var(--warm-white);}
+  table.fw-table tr:nth-child(even) td{background:var(--cream);}
+  .diagram-wrap{margin:1.4rem 0 1.7rem;background:var(--cream);border:1px solid var(--border);border-radius:12px;padding:1.1rem;}
+  .why-box{background:var(--cream);border-radius:8px;padding:.85rem 1.05rem;margin:.7rem 0 1.2rem;font-size:.89rem;}
+  .why-box .why-label{font-weight:700;color:var(--olive-dark);font-size:.76rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.3rem;}
+  .why-box p{margin-bottom:.5rem;color:var(--ink2);}
+  .why-box p:last-child{margin-bottom:0;}
+  .practical{background:var(--blue-l);border-radius:8px;padding:.9rem 1.1rem;margin:1.1rem 0 1.4rem;font-size:.91rem;border-left:3px solid var(--blue);}
+  .practical .practical-label{font-weight:700;color:var(--blue);font-size:.76rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.4rem;}
+  .practical p{margin-bottom:.5rem;color:var(--ink2);}
+  .practical p:last-child{margin-bottom:0;}
+  .takeaways{background:var(--teal-l);border:1px solid var(--teal);border-radius:10px;padding:1.1rem 1.3rem;margin:1.5rem 0 2rem;}
+  .takeaways .takeaways-label{font-weight:700;color:var(--teal);font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.6rem;}
+  .takeaways ul{margin:0 0 0 1.2rem;}
+  .takeaways li{color:var(--ink2);font-size:.93rem;margin-bottom:.4rem;}
+  .takeaways li:last-child{margin-bottom:0;}
+  .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:1.8rem;flex-wrap:wrap;}
+  .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:700;font-size:.9rem;padding:.7rem 1.2rem;border-radius:8px;transition:background .2s var(--ease);}
+  .nav-cta.primary{background:var(--olive);color:var(--warm-white);}
+  .nav-cta.primary:hover{background:var(--olive-dark);}
+  .nav-cta.secondary{background:var(--cream);color:var(--ink2);border:1px solid var(--border);}
+  footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.85rem;color:var(--ink3);}
+  footer a{text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+  @media(max-width:600px){
+    h1{font-size:1.65rem;}
+    .meta-row{flex-wrap:wrap;gap:.5rem;}
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-name" href="../../index.html">The Quality Strategist</a>
+  </div>
+</header>
+
+<main>
+
+  <p class="breadcrumb">
+    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
+    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
+    <a href="00-cmsseries-landing.html">CMS Testing for QA</a> &nbsp;/&nbsp;
+    Post 9
+  </p>
+
+  <span class="series-tag">Post 9 of 17 &middot; Quality pillars</span>
+
+  <h1>Analytics and tracking validation</h1>
+  <p class="subtitle">An analytics snippet can be syntactically perfect, present on every page, loading with no console errors, and still collect zero real data. It's one of the only categories of bug on this entire site where everything looks completely fine and is completely broken at the same time.</p>
+
+  <div class="meta-row">
+    <span>By RN</span>
+    <span>~9 min read</span>
+    <span>Demo: Grove &amp; Bean</span>
+  </div>
+
+  <div class="phase-strip" aria-label="Series progress">
+    <a href="00-cmsseries-landing.html" class="phase-pip" title="Series overview">0</a>
+    <a href="01-cmsseries-what-makes-different.html" class="phase-pip" title="Post 1: What makes CMS testing different">1</a>
+    <a href="02-cmsseries-content-editorial-workflow.html" class="phase-pip" title="Post 2: Content and editorial workflow">2</a>
+    <a href="03-cmsseries-functional-template-testing.html" class="phase-pip" title="Post 3: Functional and template testing">3</a>
+    <a href="04-cmsseries-api-integration-testing.html" class="phase-pip" title="Post 4: API and integration testing">4</a>
+    <a href="05-cmsseries-headless-cms-considerations.html" class="phase-pip" title="Post 5: Headless CMS considerations">5</a>
+    <a href="06-cmsseries-seo-testing.html" class="phase-pip" title="Post 6: SEO testing">6</a>
+    <a href="07-cmsseries-accessibility-testing.html" class="phase-pip" title="Post 7: Accessibility testing">7</a>
+    <a href="08-cmsseries-performance-caching-testing.html" class="phase-pip" title="Post 8: Performance and caching testing">8</a>
+    <span class="phase-pip active" title="Post 9: Analytics and tracking validation">9</span>
+    <a href="10-cmsseries-security-testing.html" class="phase-pip" title="Post 10: Security testing">10</a>
+    <a href="11-cmsseries-crossbrowser-visual-testing.html" class="phase-pip" title="Post 11: Cross-browser and visual testing">11</a>
+    <a href="12-cmsseries-forms-lead-capture-testing.html" class="phase-pip" title="Post 12: Forms and lead-capture testing">12</a>
+    <a href="13-cmsseries-localization-testing.html" class="phase-pip" title="Post 13: Localization testing">13</a>
+    <a href="14-cmsseries-legal-compliance-testing.html" class="phase-pip" title="Post 14: Legal and compliance testing">14</a>
+    <a href="15-cmsseries-staging-release-testing.html" class="phase-pip" title="Post 15: Staging, preview and release testing">15</a>
+    <a href="16-cmsseries-migration-testing.html" class="phase-pip" title="Post 16: Migration testing">16</a>
+    <a href="17-cmsseries-testing-strategy-capstone.html" class="phase-pip" title="Post 17: The CMS testing strategy">17</a>
+  </div>
+
+  <div class="takeaways">
+    <span class="takeaways-label">Key takeaways</span>
+    <ul>
+      <li>A present, syntactically valid tracking snippet is not proof it's collecting data. A wrong or placeholder ID produces zero errors and zero visible symptoms.</li>
+      <li>Verify with GA4 DebugView or a network-request inspection, checking the actual measurement ID in outgoing requests, not just that a request fired.</li>
+      <li>An event that's supposed to fire on a specific action, like a form submission, needs its own explicit check. Page-load tracking working proves nothing about it.</li>
+      <li>Analytics scripts that load unconditionally, with no consent gate, are both a tracking-accuracy problem and a legal-compliance problem (Post 14).</li>
+    </ul>
+  </div>
+
+  <h2>Looks right and is right are two different checks</h2>
+  <p>Open view-source on almost any page and a tracking snippet either exists or it doesn't. That's a five-second check. Whether it's sending data to the correct property, under the correct ID, is a completely different question that view-source can't answer.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 700 170" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" role="img" aria-label="Diagram: two identical-looking pages, both with a tracking snippet present in the page source, no console errors either way. Page one has a valid measurement ID and data flows to the real analytics property. Page two has a placeholder ID that was never replaced, the snippet still loads with no errors, but no usable data is ever collected. The two are indistinguishable from view-source alone.">
+      <rect x="20" y="20" width="300" height="46" rx="8" fill="#FAFCF5" stroke="#D8C8B8"/>
+      <text x="170" y="42" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" fill="#3D4235">Page with valid measurement ID</text>
+      <text x="170" y="58" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#6B7060">snippet present, no console errors</text>
+      <path d="M170,66 L170,94" stroke="#1A7A3A" stroke-width="1.5" fill="none" marker-end="url(#arrowAn1)"/>
+      <rect x="60" y="96" width="220" height="40" rx="8" fill="#D8F0E0" stroke="#1A7A3A"/>
+      <text x="170" y="120" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" font-weight="700" fill="#0F5A26">Real data collected</text>
+
+      <rect x="380" y="20" width="300" height="46" rx="8" fill="#FAFCF5" stroke="#D8C8B8"/>
+      <text x="530" y="42" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" fill="#3D4235">Page with placeholder ID</text>
+      <text x="530" y="58" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#6B7060">snippet present, no console errors</text>
+      <path d="M530,66 L530,94" stroke="#9A2A4A" stroke-width="1.5" fill="none" marker-end="url(#arrowAn2)"/>
+      <rect x="420" y="96" width="220" height="40" rx="8" fill="#F5DDE5" stroke="#9A2A4A"/>
+      <text x="530" y="120" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" font-weight="700" fill="#7A1A38">Zero usable data</text>
+
+      <text x="350" y="155" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="#6B7060" font-style="italic">indistinguishable from view-source alone</text>
+
+      <defs>
+        <marker id="arrowAn1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1A7A3A"/></marker>
+        <marker id="arrowAn2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9A2A4A"/></marker>
+      </defs>
+    </svg>
+  </div>
+
+  <div class="why-box">
+    <span class="why-label">Why this specific bug survives so long in real CMS sites</span>
+    <p>A placeholder measurement ID left in a template, or copied from a staging environment and never swapped for production, breaks nothing visible. The site works, forms submit, pages load. The only symptom is a marketing dashboard quietly showing far less traffic than the site actually gets, and that discrepancy is usually blamed on the marketing channels, not the tracking code, until someone checks the code directly.</p>
+  </div>
+
+  <h2>Verifying it actually works</h2>
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>Method</th><th>What it confirms</th></tr></thead>
+      <tbody>
+        <tr><td>View-source / DevTools Elements</td><td>The snippet exists and is syntactically present. Nothing about whether it works.</td></tr>
+        <tr><td>GA4 DebugView</td><td>Events arriving in real time at the actual property, with full parameter detail, confirming the ID is correct and connected</td></tr>
+        <tr><td>Network tab, filtered to the collect request</td><td>The exact measurement ID being sent in the live request payload, catching a wrong or placeholder ID directly</td></tr>
+        <tr><td>Google Tag Assistant</td><td>A guided, official check of which tags fire on a given page and whether they're configured correctly</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Event tracking needs its own check, separate from page-load tracking</h2>
+  <p>Confirming that a page-view event fires proves the base snippet works. It proves nothing about whether a specific action, like a form submission or a button click, has its own tracking wired up.</p>
+  <div class="callout gold">
+    <p><strong>Grove &amp; Bean's contact form has no submit-event tracking at all.</strong> Even with a corrected measurement ID, a marketing team relying on "form submissions" as a conversion metric would see zero, forever, because nothing on that form ever fires an event. This has to be tested as its own case, not assumed from page-view tracking working.</p>
+  </div>
+
+  <h2>Try it: catch both bugs on the demo site</h2>
+  <div class="practical">
+    <span class="practical-label">Try it</span>
+    <p>Open <a href="demo-site/index.html">the Grove &amp; Bean homepage</a>, open DevTools &rarr; Network, and filter for <code>collect</code>. Reload the page and look at the request that fires.</p>
+    <p>Find the <code>tid</code> parameter in that request's payload. It reads <code>G-XXXXXXX</code>, exactly the literal placeholder, never replaced with a real property ID.</p>
+    <p>Then go to <a href="demo-site/contact.html">the contact page</a>, fill in the form, and submit it. Watch the Network tab again: no new tracking request fires at all on submit.</p>
+    <p>Check your findings against <code>demo-site/seeded-issues.md</code>, <code>ANALYTICS-1</code> and <code>ANALYTICS-2</code>.</p>
+  </div>
+
+  <h2>Your deliverable</h2>
+  <p>A short note: the exact value you found in the <code>tid</code> parameter, and one sentence on what a marketing team would see in their dashboard as a result of this specific bug (not "broken analytics," the actual visible symptom).</p>
+  <p><strong>Time:</strong> ~15 minutes.</p>
+
+  <div class="nav-row">
+    <a href="08-cmsseries-performance-caching-testing.html" class="nav-cta secondary">&larr; Post 8: Performance &amp; caching testing</a>
+    <a href="10-cmsseries-security-testing.html" class="nav-cta primary">Post 10: Security testing &rarr;</a>
+  </div>
+
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; CMS Testing for QA</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+</body>
+</html>
