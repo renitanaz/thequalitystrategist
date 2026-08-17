@@ -37,7 +37,7 @@
   Checkout (both)   Highest risk         →     Confirmed  ✓
   Orders (API)      Rank 2               →     Confirmed  ✓
   Cart (both)       Mid risk             →     Kept as-is ✓
-  Auth (API)        Rank 4               →     DISAGREE — raised to rank 2  ✗
+  Auth (API)        Rank 4               →     DISAGREE: raised to rank 2  ✗
 ```
 
 The Auth disagreement is the one that matters most. The agent ranked Auth fourth on the API side because the requirements describe it in fewer words than checkout or orders. But fewer words in a spec doesn't mean lower risk, auth boundaries are exactly where a quiet mistake becomes a data leak. Length of description is not a proxy for risk, and treating it that way is the kind of shortcut the review pass exists to catch.

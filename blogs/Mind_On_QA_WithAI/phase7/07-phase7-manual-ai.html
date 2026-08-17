@@ -192,7 +192,7 @@
     <a href="07-phase7-ai-agent.html" class="switch-btn c-agent">AI QA Agent</a>
   </div>
 
-  <p>Same seven confirmed bugs, but this time the heavy lifting of the write-up goes to Claude. You provide the evidence — a screenshot, an API response, a failing test output — and Claude drafts the structured bug report. Your job is to review, correct severity, and confirm the steps actually reproduce the issue before anything is filed. This pass also produced one false positive that the review step should have caught, see below.</p>
+  <p>Same seven confirmed bugs, but this time the heavy lifting of the write-up goes to Claude. You provide the evidence (a screenshot, an API response, a failing test output) and Claude drafts the structured bug report. Your job is to review, correct severity, and confirm the steps actually reproduce the issue before anything is filed. This pass also produced one false positive that the review step should have caught, see below.</p>
 
   <div class="callout gold">
     <p><strong>The prompt that works.</strong> Paste the evidence and say: "This is the output of a test/screenshot/API call for PeakAndPack. Write a structured bug report with: Steps to reproduce, Expected, Actual, Severity (Critical/High/Medium/Low with justification), and Evidence. Base severity on user and business impact, not just technical severity."</p>
@@ -202,11 +202,11 @@
   <div class="fw-table-wrap"><table class="fw-table">
     <thead><tr><th>Bug</th><th>What the AI draft added</th><th>What needed human correction</th></tr></thead>
     <tbody>
-      <tr><td>BUG-009 (discount)</td><td>Named the business impact clearly: "every SAVE10 transaction results in $0 revenue". The manual draft said "incorrect discount".</td><td>Nothing — the AI draft was kept as written.</td></tr>
+      <tr><td>BUG-009 (discount)</td><td>Named the business impact clearly: "every SAVE10 transaction results in $0 revenue". The manual draft said "incorrect discount".</td><td>Nothing: the AI draft was kept as written.</td></tr>
       <tr><td>BUG-010 (orders leak)</td><td>Flagged a second impact the manual report missed: "a malicious user could enumerate all customer order histories by iterating user IDs".</td><td>Severity confirmed Critical. The enumeration risk was added to the manual report too.</td></tr>
       <tr><td>BUG-011 (search 500)</td><td>Identified two separate issues: the wrong status code AND the stack trace leakage. The manual report had combined them into one vague finding.</td><td>Split into two sub-findings as the AI suggested. Both kept.</td></tr>
       <tr><td>BUG-002 (blank title)</td><td>Suggested the fallback should show the SKU, not just "Unnamed product", because the SKU is searchable and useful in a support context.</td><td>Suggestion kept. It's a better expected value than the manual version.</td></tr>
-      <tr><td>BUG-008, BUG-001</td><td>Produced clean, accurate drafts matching the manual versions closely.</td><td>Nothing — both drafts were kept as written.</td></tr>
+      <tr><td>BUG-008, BUG-001</td><td>Produced clean, accurate drafts matching the manual versions closely.</td><td>Nothing: both drafts were kept as written.</td></tr>
       <tr><td>BUG-003 (price $9,999.99)</td><td>Flagged the price as overflowing its card on mobile.</td><td>Wrong on review: checked against the live UI at 375px and it does not overflow. The underlying data bug (the $9,999.99 price itself) is real; the overflow claim was not. Corrected before filing.</td></tr>
     </tbody>
   </table></div>
@@ -215,7 +215,7 @@
   <p>AI bug reports sound authoritative whether or not they are accurate. The one thing to always check: <strong>do the steps to reproduce actually reproduce the issue?</strong> Claude writes plausible steps from the evidence it sees. If the evidence is a screenshot, it cannot know exactly which user account or data state produced it. Read the steps and ask whether a developer following them will see the same bug. If not, fix the steps before filing.</p>
 
   <div class="callout blue">
-    <p><strong>Severity is yours, not the AI's.</strong> Claude will reason about severity from the description, and it is usually in the right ballpark. But severity has business context the AI does not have — a "Low" cosmetic bug on the checkout page might be "High" for a specific client. Always confirm severity against your own understanding of the business, not just the AI's reasoning.</p>
+    <p><strong>Severity is yours, not the AI's.</strong> Claude will reason about severity from the description, and it is usually in the right ballpark. But severity has business context the AI does not have: a "Low" cosmetic bug on the checkout page might be "High" for a specific client. Always confirm severity against your own understanding of the business, not just the AI's reasoning.</p>
   </div>
 
   <h2>Time comparison</h2>

@@ -7,7 +7,7 @@ paths: ["tests/**/*.spec.ts"]
 Loaded only when Claude is editing a file matching tests/**/*.spec.ts,
 not when it's touching the API code, the UI components, or anything else
 in the repo. Task Statement 3.3: this is the reason a glob-scoped rule
-file beats a directory-level CLAUDE.md here — PeakAndPack's tests aren't
+file beats a directory-level CLAUDE.md here; PeakAndPack's tests aren't
 confined to one directory, they sit wherever the flow they cover lives.
 
 - Page objects live in tests/pages/, one class per page. No inline

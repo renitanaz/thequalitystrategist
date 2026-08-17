@@ -192,7 +192,7 @@
     <a href="07-phase7-ai-agent.html" class="switch-btn c-agent">AI QA Agent</a>
   </div>
 
-  <p>7 of the 11 seeded bugs, documented by hand. No AI, no automation — just the live site, the API, and a structured bug report format. The goal is thorough, actionable documentation that a developer can pick up and act on without follow-up questions.</p>
+  <p>7 of the 11 seeded bugs, documented by hand. No AI, no automation: just the live site, the API, and a structured bug report format. The goal is thorough, actionable documentation that a developer can pick up and act on without follow-up questions.</p>
 
   <div class="callout blue">
     <p><strong>What a good bug report contains.</strong> Five fields, no more: <strong>Steps to reproduce</strong> (exact, numbered, reproducible by anyone), <strong>Expected</strong> (what the requirements or common sense say should happen), <strong>Actual</strong> (what actually happened, specific), <strong>Severity</strong> (Critical/High/Medium/Low based on user and business impact), and <strong>Evidence</strong> (screenshot, API response, or test output). A bug report missing any of these will bounce back from a developer.</p>
@@ -200,66 +200,66 @@
 
   <h2>Seven bug reports (of 11 seeded bugs)</h2>
 
-  <h3>BUG-008 — No stock check before checkout</h3>
+  <h3>BUG-008: No stock check before checkout</h3>
   <div class="fw-table-wrap"><table class="fw-table">
     <tr><td><strong>Steps</strong></td><td>1. Find a product with stock = 0. 2. Add it to cart via POST /api/cart. 3. Submit checkout via POST /api/orders/checkout.</td></tr>
     <tr><td><strong>Expected</strong></td><td>400, order rejected, clear message: "item out of stock".</td></tr>
     <tr><td><strong>Actual</strong></td><td>201, order created. The out-of-stock item is sold.</td></tr>
-    <tr><td><strong>Severity</strong></td><td>High — an order is created for stock that does not exist. Fulfillment fails downstream.</td></tr>
+    <tr><td><strong>Severity</strong></td><td>High: an order is created for stock that does not exist. Fulfillment fails downstream.</td></tr>
     <tr><td><strong>Evidence</strong></td><td>TC-104 in checkout.spec.ts (designed to fail). POST /api/orders/checkout returns 201 with item quantity = 0 in stock.</td></tr>
   </table></div>
 
-  <h3>BUG-009 — SAVE10 applies 100% off instead of 10%</h3>
+  <h3>BUG-009: SAVE10 applies 100% off instead of 10%</h3>
   <div class="fw-table-wrap"><table class="fw-table">
     <tr><td><strong>Steps</strong></td><td>1. Add any in-stock item to cart. 2. POST /api/orders/checkout with body <code>{"discount_code":"SAVE10"}</code>.</td></tr>
     <tr><td><strong>Expected</strong></td><td>201, total is 90% of the cart value. A $100 cart becomes $90.00.</td></tr>
     <tr><td><strong>Actual</strong></td><td>201, total is $0.00. The full price is discounted.</td></tr>
-    <tr><td><strong>Severity</strong></td><td>Critical — the store gives products away for free. Every checkout using SAVE10 results in $0 revenue.</td></tr>
+    <tr><td><strong>Severity</strong></td><td>Critical: the store gives products away for free. Every checkout using SAVE10 results in $0 revenue.</td></tr>
     <tr><td><strong>Evidence</strong></td><td>TC-101 in checkout.spec.ts. API response: <code>{"total":0.00,"discountApplied":true}</code>.</td></tr>
   </table></div>
 
-  <h3>BUG-002 — Product card renders blank title</h3>
+  <h3>BUG-002: Product card renders blank title</h3>
   <div class="fw-table-wrap"><table class="fw-table">
     <tr><td><strong>Steps</strong></td><td>1. Open <a href="https://peakandpack-ui.onrender.com/" target="_blank">peakandpack-ui.onrender.com</a>. 2. Find the product card whose name field is empty in the database.</td></tr>
     <tr><td><strong>Expected</strong></td><td>A fallback label (for example "Unnamed product" or the product SKU) so the card never appears broken.</td></tr>
     <tr><td><strong>Actual</strong></td><td>The card renders with an empty gap where the product name should be.</td></tr>
-    <tr><td><strong>Severity</strong></td><td>Medium — visible to customers. Looks broken. Does not prevent purchase but erodes trust.</td></tr>
+    <tr><td><strong>Severity</strong></td><td>Medium: visible to customers. Looks broken. Does not prevent purchase but erodes trust.</td></tr>
     <tr><td><strong>Evidence</strong></td><td>Screenshot: product-empty-name.png. Visual baseline diff in Phase 4.</td></tr>
   </table></div>
 
-  <h3>BUG-001 — Negative price displays as "-$89.00"</h3>
+  <h3>BUG-001: Negative price displays as "-$89.00"</h3>
   <div class="fw-table-wrap"><table class="fw-table">
     <tr><td><strong>Steps</strong></td><td>1. Open the product listing page. 2. Find the product card with a negative price in the database.</td></tr>
     <tr><td><strong>Expected</strong></td><td>A valid price or a hidden/flagged product. A negative price should never reach the customer-facing UI.</td></tr>
     <tr><td><strong>Actual</strong></td><td>The price renders as "-$89.00" in red. The store appears to be paying customers to take the product.</td></tr>
-    <tr><td><strong>Severity</strong></td><td>High — visible to all customers on the listing page. Undermines trust in pricing across the store.</td></tr>
+    <tr><td><strong>Severity</strong></td><td>High: visible to all customers on the listing page. Undermines trust in pricing across the store.</td></tr>
     <tr><td><strong>Evidence</strong></td><td>Screenshot: product-negative-price.png. Visual baseline diff in Phase 4.</td></tr>
   </table></div>
 
-  <h3>BUG-003 — Price set at $9,999.99, no upper bound validation</h3>
+  <h3>BUG-003: Price set at $9,999.99, no upper bound validation</h3>
   <div class="fw-table-wrap"><table class="fw-table">
     <tr><td><strong>Steps</strong></td><td>1. Open the product listing. 2. Find "Insulated Water Bottle," priced at $9,999.99.</td></tr>
     <tr><td><strong>Expected</strong></td><td>Product prices are validated against a sane upper bound before they reach the catalog.</td></tr>
     <tr><td><strong>Actual</strong></td><td>The price renders correctly, this is not a display defect. The data value itself is the problem: nothing stopped an absurd price from being seeded. Checked at 375px viewport width in case it also clipped visually, it does not, renders fully on one line.</td></tr>
-    <tr><td><strong>Severity</strong></td><td>Low — low likelihood of customer impact on its own, but the same missing validation is the general case behind BUG-004 (no price validation on the products endpoint).</td></tr>
+    <tr><td><strong>Severity</strong></td><td>Low: low likelihood of customer impact on its own, but the same missing validation is the general case behind BUG-004 (no price validation on the products endpoint).</td></tr>
     <tr><td><strong>Evidence</strong></td><td>Screenshot: product-price-overflow.png (kept as evidence that it does not overflow, not that it does).</td></tr>
   </table></div>
 
-  <h3>BUG-010 — Orders endpoint returns all users' orders</h3>
+  <h3>BUG-010: Orders endpoint returns all users' orders</h3>
   <div class="fw-table-wrap"><table class="fw-table">
     <tr><td><strong>Steps</strong></td><td>1. Log in as User A. 2. GET /api/orders with User A's token. 3. Inspect the response body.</td></tr>
     <tr><td><strong>Expected</strong></td><td>Only User A's orders appear. Orders belonging to other users are never returned.</td></tr>
     <tr><td><strong>Actual</strong></td><td>Orders from all users appear in the response. User A can see User B's order history.</td></tr>
-    <tr><td><strong>Severity</strong></td><td>Critical — a data privacy violation. A customer can see another customer's purchase history. In a regulated context this would be a reportable incident.</td></tr>
+    <tr><td><strong>Severity</strong></td><td>Critical: a data privacy violation. A customer can see another customer's purchase history. In a regulated context this would be a reportable incident.</td></tr>
     <tr><td><strong>Evidence</strong></td><td>GET /api/orders response contains orders with multiple distinct userId values. Orders isolation test in Phase 5 and Phase 6 both designed to fail on this.</td></tr>
   </table></div>
 
-  <h3>BUG-011 — Search returns 500 on missing query parameter</h3>
+  <h3>BUG-011: Search returns 500 on missing query parameter</h3>
   <div class="fw-table-wrap"><table class="fw-table">
     <tr><td><strong>Steps</strong></td><td>1. GET https://peakandpackshopdemo.onrender.com/api/search (no <code>?q=</code> parameter).</td></tr>
     <tr><td><strong>Expected</strong></td><td>400, clear validation error: "q parameter is required".</td></tr>
     <tr><td><strong>Actual</strong></td><td>500, unhandled exception. Response body exposes an internal stack trace with file paths and line numbers.</td></tr>
-    <tr><td><strong>Severity</strong></td><td>High — two issues in one: the wrong status code (server fault vs client fault), and a stack trace leaking internal implementation details to any caller.</td></tr>
+    <tr><td><strong>Severity</strong></td><td>High: two issues in one: the wrong status code (server fault vs client fault), and a stack trace leaking internal implementation details to any caller.</td></tr>
     <tr><td><strong>Evidence</strong></td><td>curl -i https://peakandpackshopdemo.onrender.com/api/search returns HTTP/1.1 500. Body contains a Node.js stack trace. Phase 5 search contract test designed to fail on this.</td></tr>
   </table></div>
 
@@ -267,10 +267,10 @@
   <div class="fw-table-wrap"><table class="fw-table">
     <thead><tr><th>Severity</th><th>Bugs</th><th>Fix first because</th></tr></thead>
     <tbody>
-      <tr><td><strong>Critical</strong></td><td>BUG-009 (discount), BUG-010 (orders leak)</td><td>Revenue loss and data privacy — both cause immediate, serious harm</td></tr>
+      <tr><td><strong>Critical</strong></td><td>BUG-009 (discount), BUG-010 (orders leak)</td><td>Revenue loss and data privacy: both cause immediate, serious harm</td></tr>
       <tr><td><strong>High</strong></td><td>BUG-008 (stock), BUG-001 (negative price), BUG-011 (search 500)</td><td>Operational failures and trust damage visible to customers</td></tr>
-      <tr><td><strong>Medium</strong></td><td>BUG-002 (blank title)</td><td>Visible but not blocking — cosmetic damage to store credibility</td></tr>
-      <tr><td><strong>Low</strong></td><td>BUG-003 (price $9,999.99)</td><td>Edge case — one unvalidated price, low customer impact</td></tr>
+      <tr><td><strong>Medium</strong></td><td>BUG-002 (blank title)</td><td>Visible but not blocking: cosmetic damage to store credibility</td></tr>
+      <tr><td><strong>Low</strong></td><td>BUG-003 (price $9,999.99)</td><td>Edge case: one unvalidated price, low customer impact</td></tr>
     </tbody>
   </table></div>
 

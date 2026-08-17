@@ -1,6 +1,6 @@
 # PeakAndPack Bug Detection Report
 
-**Phase:** 7 — Bug Detection
+**Phase:** 7 (Bug Detection)
 **Generated from:** Playwright CI output (Phases 3–6), visual diffs (Phase 4), API contract tests (Phase 5)
 **Author:** RN
 **Date:** Phase 7
@@ -13,7 +13,7 @@
 
 ---
 
-## BUG-009 — SAVE10 applies 100% off instead of 10%
+## BUG-009: SAVE10 applies 100% off instead of 10%
 
 **Severity:** Critical
 **Steps to reproduce:**
@@ -29,7 +29,7 @@
 
 ---
 
-## BUG-010 — Orders endpoint returns all users' order histories
+## BUG-010: Orders endpoint returns all users' order histories
 
 **Severity:** Critical
 **Steps to reproduce:**
@@ -46,7 +46,7 @@
 
 ---
 
-## BUG-008 — No stock check before checkout
+## BUG-008: No stock check before checkout
 
 **Severity:** High
 **Steps to reproduce:**
@@ -62,7 +62,7 @@
 
 ---
 
-## BUG-011 — GET /api/search returns 500 and leaks stack trace when q param is missing
+## BUG-011: GET /api/search returns 500 and leaks stack trace when q param is missing
 
 **Severity:** High
 **Steps to reproduce:**
@@ -78,7 +78,7 @@
 
 ---
 
-## BUG-001 — Negative price renders as "-$89.00" on product card
+## BUG-001: Negative price renders as "-$89.00" on product card
 
 **Severity:** High
 **Steps to reproduce:**
@@ -93,7 +93,7 @@
 
 ---
 
-## BUG-002 — Product card renders blank title when name field is empty
+## BUG-002: Product card renders blank title when name field is empty
 
 **Severity:** Medium
 **Steps to reproduce:**
@@ -109,7 +109,7 @@
 
 ---
 
-## BUG-003 — Price set at $9,999.99, no upper bound validation
+## BUG-003: Price set at $9,999.99, no upper bound validation
 
 **Severity:** Low
 **Steps to reproduce:**
@@ -120,7 +120,7 @@
 **Actual:** The price renders correctly on the card, this is not a display defect, the underlying data value itself is the problem: no validation stopped an absurd price from being seeded.
 **Evidence:** `visual-testing-checklist.md` (Manual), confirmed independently by `visual-review-output.md` (AI Agent).
 **First surfaced:** Phase 4, visual checklist
-**Production cost:** Low likelihood of customer impact on its own, but the same missing validation is the general case behind BUG-004 (no price validation on the products endpoint) — this is one instance of that broader gap made visible.
+**Production cost:** Low likelihood of customer impact on its own, but the same missing validation is the general case behind BUG-004 (no price validation on the products endpoint); this is one instance of that broader gap made visible.
 
 **Ruled out alongside this:** both Manual+AI and Automated initially flagged this same price as *overflowing or clipping its card* below ~400px viewport width. Manual and AI Agent both checked the same product at 375px and found it renders fully on one line, no clipping, re-verified directly against the live UI for this report. The overflow claim was corrected in `visual-testing-ai-assisted.md` and the assertion was removed from `visual.spec.ts`. Two of four approaches produced a false positive on the *display* symptom while all four correctly agreed on the *data* problem, a reminder that a screenshot-based finding is a lead, not a verdict, until it's confirmed against the live app.
 
@@ -140,7 +140,7 @@
 
 ### Key observation
 
-The two most expensive bugs to reach production (BUG-009 and BUG-010 — revenue loss and data privacy) were catchable in Phase 3 and Phase 5 respectively, long before any user sees the UI. The visual bugs (BUG-001, 002, 003) required Phase 4's screenshot-based approach to surface formally. BUG-010 specifically requires reading the response body — a status-code-only check would have passed it.
+The two most expensive bugs to reach production (BUG-009 and BUG-010: revenue loss and data privacy) were catchable in Phase 3 and Phase 5 respectively, long before any user sees the UI. The visual bugs (BUG-001, 002, 003) required Phase 4's screenshot-based approach to surface formally. BUG-010 specifically requires reading the response body; a status-code-only check would have passed it.
 
 ### Not caught in this pass
 

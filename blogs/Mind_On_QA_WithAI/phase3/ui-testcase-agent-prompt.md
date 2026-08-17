@@ -1,4 +1,4 @@
-# UI Test Case Generator — Prompt Only
+# UI Test Case Generator: Prompt Only
 
 No API key and no code needed. Paste the prompt below as your **first message** in any Claude chat. Then paste the full text of `peakandpack-requirements.md` (or attach the file) as your **second message**. Claude replies with the test case table.
 

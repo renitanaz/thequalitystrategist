@@ -1,4 +1,4 @@
-# PeakAndPack — CLAUDE.md
+# PeakAndPack: CLAUDE.md
 #
 # Intended location: .claude/CLAUDE.md at the project root. Project-scoped,
 # version-controlled, shared with every teammate who pulls this repo.
@@ -22,7 +22,7 @@
 BUG-001 through BUG-011 are the canonical catalog. Full descriptions live
 in the Series 1 intro page. Search it before treating a failure as new.
 
-## Review criteria (for CI-invoked reviews — see d3-ci-review.sh)
+## Review criteria (for CI-invoked reviews, see d3-ci-review.sh)
 Flag: broken assertions, missing awaits, hardcoded credentials, price or
 currency handled as float instead of integer cents.
 Do not flag: naming style, import order, arrow functions vs function

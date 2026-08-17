@@ -13,10 +13,10 @@
   src/checkout/total.ts, src/checkout/discounts.ts
 
 ## Call sites (verified, with line numbers)
-- src/cart/pricing.ts:42 — computeSubtotal(), sums line items
-- src/checkout/total.ts:18 — applyDiscount(), calls computeSubtotal()
+- src/cart/pricing.ts:42: computeSubtotal(), sums line items
+- src/checkout/total.ts:18: applyDiscount(), calls computeSubtotal()
   then subtracts discount.amount
-- src/checkout/discounts.ts:7 — SAVE10 hardcoded at 1.0 not 0.10, this
+- src/checkout/discounts.ts:7: SAVE10 hardcoded at 1.0 not 0.10, this
   is BUG-009 from the known catalog, already filed, not the drift
 
 ## What's confirmed
