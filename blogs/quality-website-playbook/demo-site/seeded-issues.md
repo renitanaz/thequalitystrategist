@@ -1,6 +1,6 @@
 # Grove & Bean demo site: seeded issues (answer key)
 
-This is the canonical list of intentionally seeded issues on the Grove & Bean demo site (`blogs/cms-testing-for-qa/demo-site/`). Posts 6, 7, 8, 9, 11, 12, and 14 reference specific IDs from this list. Open the pages directly in a browser to work through them; nothing here needs a server.
+This is the canonical list of intentionally seeded issues on the Grove & Bean demo site (`blogs/quality-website-playbook/demo-site/`). Posts 6, 7, 8, 9, 11, 12, and 14 reference specific IDs from this list. Open the pages directly in a browser to work through them; nothing here needs a server.
 
 Pages: `index.html` (Home), `about.html`, `blog.html` (Journal listing), `blog-post.html` (single article), `contact.html`.
 
