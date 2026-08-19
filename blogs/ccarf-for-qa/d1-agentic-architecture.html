@@ -80,23 +80,6 @@
     .verdict-label{font-size:.9rem;color:var(--text)}
     .verdict-sub{font-size:.8rem;color:var(--text-3)}
 
-    .not-solve{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.3rem 1.5rem;margin-top:2.5rem}
-    .not-solve .ns-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);font-weight:600;margin-bottom:.6rem}
-
-    .quiz-block{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.3rem 1.4rem;margin:1.75rem 0}
-    .quiz-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--teal);font-weight:600;margin-bottom:.7rem}
-    .quiz-stem{color:var(--text);font-size:.95rem;margin-bottom:1rem;font-weight:400}
-    .quiz-options{display:flex;flex-direction:column;gap:.6rem}
-    .quiz-opt{display:block;width:100%;text-align:left;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:.7rem .9rem;color:var(--text-2);font-family:'DM Sans',sans-serif;font-size:.86rem;line-height:1.5;cursor:pointer;transition:border-color .15s,background .15s}
-    .quiz-opt:hover:not(:disabled){border-color:var(--text-3)}
-    .quiz-opt:disabled{cursor:default}
-    .quiz-opt.correct{border-color:var(--green);background:var(--green-bg);color:var(--text)}
-    .quiz-opt.incorrect{border-color:var(--red);background:var(--red-bg);color:var(--text)}
-    .quiz-feedback{margin-top:1rem;padding-top:1rem;border-top:1px dashed var(--border)}
-    .quiz-verdict{font-weight:600;margin-bottom:.5rem;font-size:.9rem}
-    .quiz-verdict.ok{color:var(--green)}
-    .quiz-verdict.miss{color:var(--red)}
-    .quiz-explain{color:var(--text-2);font-size:.88rem;margin-bottom:0}
 
     .reveal-box{background:var(--bg2);border:1px solid var(--border);border-radius:12px;margin:1.75rem 0;overflow:hidden}
     .reveal-box summary{cursor:pointer;padding:1rem 1.3rem;font-size:.88rem;font-weight:500;color:var(--text);list-style:none;display:flex;align-items:center;justify-content:space-between;gap:1rem}
@@ -292,21 +275,6 @@
     <p><strong>The failure this catches:</strong> one agent juggling live-checks and report-search in a single context can conflate "found in the catalog" with "confirmed still true," the exact BUG-011 mistake from Part 1, at a scale that gets worse past three tools.</p>
   </div>
 
-  <div class="quiz-block" aria-live="polite">
-    <div class="quiz-label">Exam sample question &middot; Scenario: Multi-Agent Research System</div>
-    <p class="quiz-stem">Each subagent completes successfully, but the final report on "impact of AI on creative industries" covers only visual arts, completely missing music, writing, and film. The coordinator's logs show it decomposed the topic into three subtasks: "AI in digital art creation," "AI in graphic design," and "AI in photography." What is the most likely root cause?</p>
-    <div class="quiz-options">
-      <button class="quiz-opt">A. The synthesis agent lacks instructions for identifying coverage gaps in the findings it receives.</button>
-      <button class="quiz-opt" data-correct="true">B. The coordinator agent's task decomposition is too narrow, resulting in subagent assignments that don't cover all relevant domains of the topic.</button>
-      <button class="quiz-opt">C. The web search agent's queries aren't comprehensive enough and need to be expanded.</button>
-      <button class="quiz-opt">D. The document analysis agent is filtering out sources related to non-visual creative industries.</button>
-    </div>
-    <div class="quiz-feedback" hidden>
-      <p class="quiz-verdict"></p>
-      <p class="quiz-explain">The coordinator's logs reveal the root cause directly: it decomposed the topic into only visual-arts subtasks, completely omitting music, writing, and film. Every subagent executed its assigned task correctly, the problem is what they were assigned. A, C, and D all blame downstream agents that were working correctly within their assigned scope.</p>
-    </div>
-  </div>
-
   <h2>Part 3: the hook is the guarantee the prompt isn't</h2>
   <p>Task Statement 1.5, plainly: hooks exist for the cases where "the model probably will" isn't good enough.</p>
 
@@ -344,23 +312,6 @@
     <div class="axis-card"><div class="a-title">Interception: gate</div><p>Same shape as the exam's own example: <code>process_refund</code> blocked until <code>get_customer</code> confirms an ID.</p></div>
   </div>
 
-  <p>The exam's own first sample question is built on this exact tradeoff. Try it before reading the explanation:</p>
-
-  <div class="quiz-block" aria-live="polite">
-    <div class="quiz-label">Exam sample question &middot; Scenario: Customer Support Resolution Agent</div>
-    <p class="quiz-stem">Production data shows that in 12% of cases, your agent skips <code>get_customer</code> entirely and calls <code>lookup_order</code> using only the customer's stated name, occasionally leading to misidentified accounts and incorrect refunds. What change would most effectively address this reliability issue?</p>
-    <div class="quiz-options">
-      <button class="quiz-opt" data-correct="true">A. Add a programmatic prerequisite that blocks <code>lookup_order</code> and <code>process_refund</code> calls until <code>get_customer</code> has returned a verified customer ID.</button>
-      <button class="quiz-opt">B. Enhance the system prompt to state that customer verification via <code>get_customer</code> is mandatory before any order operations.</button>
-      <button class="quiz-opt">C. Add few-shot examples showing the agent always calling <code>get_customer</code> first, even when customers volunteer order details.</button>
-      <button class="quiz-opt">D. Implement a routing classifier that analyzes each request and enables only the subset of tools appropriate for that request type.</button>
-    </div>
-    <div class="quiz-feedback" hidden>
-      <p class="quiz-verdict"></p>
-      <p class="quiz-explain">When a specific tool sequence is required for critical business logic, programmatic enforcement provides deterministic guarantees that prompt-based approaches cannot. B and C rely on probabilistic LLM compliance, insufficient when errors have financial consequences. D addresses tool availability, not tool ordering, which isn't the actual problem.</p>
-    </div>
-  </div>
-
   <div class="deliverable-box">
     <div class="d-label">Deliverable, Parts 2 &amp; 3</div>
     <ul>
@@ -382,11 +333,6 @@
     <p>D1 is the heaviest domain on the exam, and it's tested at the level of specific mechanisms, not general philosophy: does your loop check <code>stop_reason</code> or something weaker (1.1), does your coordinator delegate through the <code>Task</code> tool with isolated subagent context instead of one overloaded agent (1.2, 1.3), and do your business-critical rules live in a hook or in a hopeful sentence in the system prompt (1.4, 1.5). All three showed up as real, checkable choices in this one triage task.</p>
   </div>
 
-  <div class="not-solve">
-    <div class="ns-label">What this does not solve</div>
-    <p style="color:var(--text-2);font-weight:300;margin-bottom:0">This post doesn't cover Task Statements 1.6 (task decomposition strategy: fixed pipeline vs. adaptive) or 1.7 (session resumption, <code>fork_session</code>) with a worked example, the triage task is too small a problem to need either. It doesn't measure real token cost or latency, since the scripts weren't executed against a live key. It doesn't test genuinely ambiguous input, all six scenarios have a clear right answer once enough information is available, which won't always be true in production triage. And it doesn't address what happens when a tool's result is itself wrong or stale, trusting a tool's output is D2's problem, not this post's.</p>
-  </div>
-
   <div class="nav-row">
     <a href="index.html" class="nav-cta secondary">&larr; Back to CCAR-F for QA</a>
   </div>
@@ -400,27 +346,5 @@
 <footer>
   <p><a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
 </footer>
-<script>
-document.querySelectorAll('.quiz-block').forEach(function (block) {
-  var opts = block.querySelectorAll('.quiz-opt');
-  var feedback = block.querySelector('.quiz-feedback');
-  var verdict = block.querySelector('.quiz-verdict');
-  opts.forEach(function (opt) {
-    opt.addEventListener('click', function () {
-      if (block.classList.contains('answered')) return;
-      block.classList.add('answered');
-      var isCorrect = opt.getAttribute('data-correct') === 'true';
-      opts.forEach(function (o) {
-        o.disabled = true;
-        if (o.getAttribute('data-correct') === 'true') o.classList.add('correct');
-        else if (o === opt) o.classList.add('incorrect');
-      });
-      verdict.textContent = isCorrect ? 'Correct.' : 'Not quite, here is why:';
-      verdict.className = 'quiz-verdict ' + (isCorrect ? 'ok' : 'miss');
-      feedback.hidden = false;
-    });
-  });
-});
-</script>
 </body>
 </html>

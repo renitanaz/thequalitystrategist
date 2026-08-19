@@ -60,29 +60,12 @@
 
     .pull-quote{font-family:'DM Serif Display',serif;font-style:italic;font-size:1.25rem;line-height:1.5;color:var(--text);border-left:3px solid var(--teal);padding:.3rem 0 .3rem 1.3rem;margin:2rem 0}
 
-    .not-solve{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.3rem 1.5rem;margin-top:2.5rem}
-    .not-solve .ns-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);font-weight:600;margin-bottom:.6rem}
 
     .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:2.5rem;flex-wrap:wrap}
     .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:500;font-size:.88rem;padding:.7rem 1.2rem;border-radius:8px}
     .nav-cta.secondary{background:var(--bg3);color:var(--text-2);border:1px solid var(--border)}
 
     footer{border-top:1px solid var(--border);padding:2rem;text-align:center;font-size:.78rem;color:var(--text-3)}footer a{color:var(--text-3);text-decoration:none}
-
-    .quiz-block{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.3rem 1.4rem;margin:1.75rem 0}
-    .quiz-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--teal);font-weight:600;margin-bottom:.7rem}
-    .quiz-stem{color:var(--text);font-size:.95rem;margin-bottom:1rem;font-weight:400}
-    .quiz-options{display:flex;flex-direction:column;gap:.6rem}
-    .quiz-opt{display:block;width:100%;text-align:left;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:.7rem .9rem;color:var(--text-2);font-family:'DM Sans',sans-serif;font-size:.86rem;line-height:1.5;cursor:pointer;transition:border-color .15s,background .15s}
-    .quiz-opt:hover:not(:disabled){border-color:var(--text-3)}
-    .quiz-opt:disabled{cursor:default}
-    .quiz-opt.correct{border-color:var(--green);background:var(--green-bg);color:var(--text)}
-    .quiz-opt.incorrect{border-color:var(--red);background:var(--red-bg);color:var(--text)}
-    .quiz-feedback{margin-top:1rem;padding-top:1rem;border-top:1px dashed var(--border)}
-    .quiz-verdict{font-weight:600;margin-bottom:.5rem;font-size:.9rem}
-    .quiz-verdict.ok{color:var(--green)}
-    .quiz-verdict.miss{color:var(--red)}
-    .quiz-explain{color:var(--text-2);font-size:.88rem;margin-bottom:0}
 
     .reveal-box{background:var(--bg2);border:1px solid var(--border);border-radius:12px;margin:1.75rem 0;overflow:hidden}
     .reveal-box summary{cursor:pointer;padding:1rem 1.3rem;font-size:.88rem;font-weight:500;color:var(--text);list-style:none;display:flex;align-items:center;justify-content:space-between;gap:1rem}
@@ -168,23 +151,6 @@
     </svg>
   </div>
 
-  <p>The exam's first Customer Support sample question tests exactly this. Try it before reading the explanation:</p>
-
-  <div class="quiz-block" aria-live="polite">
-    <div class="quiz-label">Exam sample question &middot; Scenario: Customer Support Resolution Agent</div>
-    <p class="quiz-stem">Production logs show the agent frequently calls <code>get_customer</code> when users ask about orders (e.g., "check my order #12345"), instead of calling <code>lookup_order</code>. Both tools have minimal descriptions ("Retrieves customer information" / "Retrieves order details") and accept similar identifier formats. What's the most effective first step to improve tool selection reliability?</p>
-    <div class="quiz-options">
-      <button class="quiz-opt">A. Add few-shot examples to the system prompt demonstrating correct tool selection patterns, with 5-8 examples showing order-related queries routing to <code>lookup_order</code>.</button>
-      <button class="quiz-opt" data-correct="true">B. Expand each tool's description to include input formats it handles, example queries, edge cases, and boundaries explaining when to use it versus similar tools.</button>
-      <button class="quiz-opt">C. Implement a routing layer that parses user input before each turn and pre-selects the appropriate tool based on detected keywords and identifier patterns.</button>
-      <button class="quiz-opt">D. Consolidate both tools into a single <code>lookup_entity</code> tool that accepts any identifier and internally determines which backend to query.</button>
-    </div>
-    <div class="quiz-feedback" hidden>
-      <p class="quiz-verdict"></p>
-      <p class="quiz-explain">Tool descriptions are the primary mechanism LLMs use for selection. When descriptions are minimal, the model lacks the context to differentiate similar tools, B fixes the root cause directly, with the least effort. A adds token overhead without fixing the underlying issue. C is over-engineered and bypasses the model's own language understanding. D is a valid architectural choice, but it's more effort than a "first step" warrants when the immediate problem is just inadequate descriptions.</p>
-    </div>
-  </div>
-
   <div class="deliverable-box">
     <div class="d-label">Deliverable, Part 1</div>
     <ul>
@@ -232,23 +198,6 @@
   <div class="axis-grid">
     <div class="axis-card"><div class="a-title">Why scoped, not shared</div><p>An agent with tools outside its specialization tends to misuse them. Post 01's two subagents get 1 and 2 tools each, never the full three.</p></div>
     <div class="axis-card"><div class="a-title">Why 18 tools degrade reliability</div><p>The guide's own number: 18 tools instead of 4-5 measurably worsens selection accuracy, not because the model gets confused, because the decision space grew.</p></div>
-  </div>
-
-  <p>The exam's Multi-Agent Research scenario asks this exact question about a synthesis agent needing occasional verification. Try it:</p>
-
-  <div class="quiz-block" aria-live="polite">
-    <div class="quiz-label">Exam sample question &middot; Scenario: Multi-Agent Research System</div>
-    <p class="quiz-stem">The synthesis agent frequently needs to verify specific claims while combining findings. Currently it returns control to the coordinator, which invokes the web search agent, then re-invokes synthesis, adding 2-3 round trips per task. 85% of these verifications are simple fact-checks, 15% require deeper investigation. What's the most effective approach to reduce overhead while maintaining reliability?</p>
-    <div class="quiz-options">
-      <button class="quiz-opt" data-correct="true">A. Give the synthesis agent a scoped <code>verify_fact</code> tool for simple lookups, while complex verifications continue delegating to the web search agent through the coordinator.</button>
-      <button class="quiz-opt">B. Have the synthesis agent accumulate all verification needs and return them as a batch to the coordinator at the end of its pass.</button>
-      <button class="quiz-opt">C. Give the synthesis agent access to all web search tools so it can handle any verification need directly, no round-trips.</button>
-      <button class="quiz-opt">D. Have the web search agent proactively cache extra context around each source, anticipating what synthesis might need to verify.</button>
-    </div>
-    <div class="quiz-feedback" hidden>
-      <p class="quiz-verdict"></p>
-      <p class="quiz-explain">A gives the synthesis agent only what it needs for the 85% common case, while preserving the existing coordination path for the harder 15%, least privilege applied correctly. B creates blocking dependencies, later synthesis steps may depend on earlier verified facts. C over-provisions the agent and violates separation of concerns, the exact anti-pattern 2.3 warns against. D relies on speculative caching that can't reliably predict what will actually need verification.</p>
-    </div>
   </div>
 
   <div class="deliverable-box">
@@ -307,11 +256,6 @@
     <p>D2 tests the boundary between an agent and the tools it calls, at the level of what the model can actually perceive: a description it reads, an error object it receives, a tool list it's scoped to, a server it discovers. Every one of those showed up as a real, checkable artifact in this post, not a description of a best practice.</p>
   </div>
 
-  <div class="not-solve">
-    <div class="ns-label">What this does not solve</div>
-    <p style="color:var(--text-2);font-weight:300;margin-bottom:0">None of this post's code has run against a live key or a real MCP server connection, same methodology limits as every post in this capsule. It doesn't cover what happens when a tool description is accurate but the tool itself is buggy, that's closer to D5's error-propagation territory than D2's interface-design one. And the MCP server config here is illustrative, a real <code>@example/peakandpack-mcp-server</code> package doesn't exist, the shape of the config is what's real and adaptable.</p>
-  </div>
-
   <div class="nav-row">
     <a href="index.html" class="nav-cta secondary">&larr; Back to CCAR-F for QA</a>
   </div>
@@ -325,27 +269,5 @@
 <footer>
   <p><a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
 </footer>
-<script>
-document.querySelectorAll('.quiz-block').forEach(function (block) {
-  var opts = block.querySelectorAll('.quiz-opt');
-  var feedback = block.querySelector('.quiz-feedback');
-  var verdict = block.querySelector('.quiz-verdict');
-  opts.forEach(function (opt) {
-    opt.addEventListener('click', function () {
-      if (block.classList.contains('answered')) return;
-      block.classList.add('answered');
-      var isCorrect = opt.getAttribute('data-correct') === 'true';
-      opts.forEach(function (o) {
-        o.disabled = true;
-        if (o.getAttribute('data-correct') === 'true') o.classList.add('correct');
-        else if (o === opt) o.classList.add('incorrect');
-      });
-      verdict.textContent = isCorrect ? 'Correct.' : 'Not quite, here is why:';
-      verdict.className = 'quiz-verdict ' + (isCorrect ? 'ok' : 'miss');
-      feedback.hidden = false;
-    });
-  });
-});
-</script>
 </body>
 </html>

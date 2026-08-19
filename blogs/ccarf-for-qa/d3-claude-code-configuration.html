@@ -68,23 +68,6 @@
     .verdict-label{font-size:.9rem;color:var(--text)}
     .verdict-sub{font-size:.8rem;color:var(--text-3)}
 
-    .not-solve{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.3rem 1.5rem;margin-top:2.5rem}
-    .not-solve .ns-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);font-weight:600;margin-bottom:.6rem}
-
-    .quiz-block{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.3rem 1.4rem;margin:1.75rem 0}
-    .quiz-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--teal);font-weight:600;margin-bottom:.7rem}
-    .quiz-stem{color:var(--text);font-size:.95rem;margin-bottom:1rem;font-weight:400}
-    .quiz-options{display:flex;flex-direction:column;gap:.6rem}
-    .quiz-opt{display:block;width:100%;text-align:left;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:.7rem .9rem;color:var(--text-2);font-family:'DM Sans',sans-serif;font-size:.86rem;line-height:1.5;cursor:pointer;transition:border-color .15s,background .15s}
-    .quiz-opt:hover:not(:disabled){border-color:var(--text-3)}
-    .quiz-opt:disabled{cursor:default}
-    .quiz-opt.correct{border-color:var(--green);background:var(--green-bg);color:var(--text)}
-    .quiz-opt.incorrect{border-color:var(--red);background:var(--red-bg);color:var(--text)}
-    .quiz-feedback{margin-top:1rem;padding-top:1rem;border-top:1px dashed var(--border)}
-    .quiz-verdict{font-weight:600;margin-bottom:.5rem;font-size:.9rem}
-    .quiz-verdict.ok{color:var(--green)}
-    .quiz-verdict.miss{color:var(--red)}
-    .quiz-explain{color:var(--text-2);font-size:.88rem;margin-bottom:0}
 
     .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:2.5rem;flex-wrap:wrap}
     .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:500;font-size:.88rem;padding:.7rem 1.2rem;border-radius:8px}
@@ -136,6 +119,32 @@
     <div class="axis-card"><div class="a-title">3.6 &middot; CI/CD</div><p><code>-p</code> for non-interactive mode, <code>--output-format json</code> with <code>--json-schema</code> for machine-parseable output a pipeline can act on.</p></div>
   </div>
 
+  <h2>Setting up a sandbox for this post</h2>
+  <p>Every deliverable below assumes a repo with Claude Code running in it, but not necessarily a real project. A throwaway folder works exactly the same, since nothing here depends on PeakAndPack's actual source code, which isn't something you can clone anyway, it's a live hosted demo (<code>environment-facts.md</code> below has the URLs). If this is your first post in this capsule, start here rather than guessing at where each file goes.</p>
+
+  <pre><code>mkdir ccarf-d3-sandbox && cd ccarf-d3-sandbox
+git init
+mkdir -p .claude/rules .claude/commands .claude/skills/reproduce-bug</code></pre>
+
+  <p>If Claude Code isn't installed yet, <a href="https://docs.claude.com/en/docs/claude-code/overview" target="_blank" rel="noopener noreferrer">the official docs</a> cover that in a few minutes. Once it's installed, run <code>claude</code> from inside this folder, then everything below is a file you save into place and a command you run to confirm it worked, not a description to take on faith.</p>
+
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead><tr><th>File on this page</th><th>Save it to</th><th>Verify with</th></tr></thead>
+      <tbody>
+        <tr><td>d3-claude-md/CLAUDE.md</td><td><code>.claude/CLAUDE.md</code></td><td><code>/memory</code></td></tr>
+        <tr><td>d3-claude-md/environment-facts.md</td><td><code>.claude/environment-facts.md</code></td><td><code>/memory</code></td></tr>
+        <tr><td>d3-claude-md/rules/playwright-tests.md</td><td><code>.claude/rules/playwright-tests.md</code></td><td><code>/memory</code></td></tr>
+        <tr><td>d3-claude-md/rules/bug-reports.md</td><td><code>.claude/rules/bug-reports.md</code></td><td><code>/memory</code></td></tr>
+        <tr><td>d3-triage-command.md</td><td><code>.claude/commands/triage-bug.md</code></td><td><code>/triage-bug</code></td></tr>
+        <tr><td>d3-reproduce-skill/SKILL.md</td><td><code>.claude/skills/reproduce-bug/SKILL.md</code></td><td><code>/reproduce-bug BUG-007</code></td></tr>
+        <tr><td>d3-plan-vs-direct.md</td><td>anywhere, it's a reasoning doc to read, not a file Claude Code loads</td><td>n/a</td></tr>
+        <tr><td>d3-ci-review.sh</td><td>anywhere in the repo, e.g. <code>scripts/d3-ci-review.sh</code></td><td><code>chmod +x</code>, then run manually or wire into CI</td></tr>
+        <tr><td>d3-review-schema.json</td><td>same folder as d3-ci-review.sh</td><td>used automatically via the script's <code>--json-schema</code> flag</td></tr>
+      </tbody>
+    </table>
+  </div>
+
   <h2>Part 1: config that a new teammate actually inherits</h2>
   <p>The failure mode Task Statement 3.1 names directly: a developer isn't getting your instructions because they live in your personal <code>~/.claude/CLAUDE.md</code>, not the project's. It works for you and nobody else, and the gap is invisible until someone's output quietly stops matching the standard.</p>
 
@@ -171,6 +180,57 @@
     </svg>
   </div>
 
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 700 300" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" role="img" aria-label="Diagram of two developers' machines, each with a user-level CLAUDE.md folder shown dashed and grey to mean it never leaves that machine, and a project-plus-subdirectory-level folder shown in blue, connected by dashed sync lines through a central Git repository icon to mean that folder is pushed and pulled between both machines.">
+      <rect x="290" y="14" width="120" height="44" rx="10" fill="#0f1f30" stroke="#60a5fa" stroke-width="1.5"/>
+      <text x="350" y="34" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="#60a5fa">Git repository</text>
+      <text x="350" y="50" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#8a8a8a">single source of truth</text>
+
+      <path d="M300,58 C 230,100 180,150 148,232" fill="none" stroke="#60a5fa" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrowD3h)"/>
+      <text x="205" y="120" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="8.5" fill="#60a5fa">push / pull</text>
+
+      <path d="M400,58 C 470,100 520,150 552,232" fill="none" stroke="#60a5fa" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrowD3i)"/>
+      <text x="495" y="120" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="8.5" fill="#60a5fa">push / pull</text>
+
+      <rect x="45" y="70" width="200" height="90" rx="8" fill="#1e1e1e" stroke="#2e2e2e" stroke-width="1.5"/>
+      <rect x="55" y="80" width="180" height="70" rx="4" fill="#161616"/>
+      <text x="145" y="112" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="12" font-weight="700" fill="#f0f0f0">Developer A</text>
+      <text x="145" y="129" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#8a8a8a">local machine</text>
+      <rect x="125" y="160" width="40" height="10" fill="#2e2e2e"/>
+      <rect x="95" y="170" width="100" height="6" rx="3" fill="#2e2e2e"/>
+
+      <rect x="20" y="190" width="250" height="38" rx="6" fill="none" stroke="#8a8a8a" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <text x="145" y="206" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="#c8c8c8">~/.claude/CLAUDE.md</text>
+      <text x="145" y="221" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="8.5" fill="#8a8a8a">user-level, never leaves this machine</text>
+
+      <rect x="20" y="236" width="250" height="38" rx="6" fill="#0f1f30" stroke="#60a5fa" stroke-width="1.5"/>
+      <text x="145" y="252" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#60a5fa">.claude/CLAUDE.md + subdir/CLAUDE.md</text>
+      <text x="145" y="267" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="8.5" fill="#8a8a8a">project + subdir level, lives in the repo</text>
+
+      <rect x="455" y="70" width="200" height="90" rx="8" fill="#1e1e1e" stroke="#2e2e2e" stroke-width="1.5"/>
+      <rect x="465" y="80" width="180" height="70" rx="4" fill="#161616"/>
+      <text x="555" y="112" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="12" font-weight="700" fill="#f0f0f0">Developer B</text>
+      <text x="555" y="129" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#8a8a8a">local machine</text>
+      <rect x="535" y="160" width="40" height="10" fill="#2e2e2e"/>
+      <rect x="505" y="170" width="100" height="6" rx="3" fill="#2e2e2e"/>
+
+      <rect x="430" y="190" width="250" height="38" rx="6" fill="none" stroke="#8a8a8a" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <text x="555" y="206" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="#c8c8c8">~/.claude/CLAUDE.md</text>
+      <text x="555" y="221" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="8.5" fill="#8a8a8a">user-level, never leaves this machine</text>
+
+      <rect x="430" y="236" width="250" height="38" rx="6" fill="#0f1f30" stroke="#60a5fa" stroke-width="1.5"/>
+      <text x="555" y="252" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#60a5fa">.claude/CLAUDE.md + subdir/CLAUDE.md</text>
+      <text x="555" y="267" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="8.5" fill="#8a8a8a">project + subdir level, lives in the repo</text>
+
+      <text x="350" y="292" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#8a8a8a">Only what's inside the repo travels between machines. Home-directory config never does.</text>
+
+      <defs>
+        <marker id="arrowD3h" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#60a5fa"/></marker>
+        <marker id="arrowD3i" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#60a5fa"/></marker>
+      </defs>
+    </svg>
+  </div>
+
   <div class="axis-grid">
     <div class="axis-card"><div class="a-title">Why project-level, not user-level</div><p>Only project-scoped config is in version control. A rule that lives in someone's home directory is a rule that exists for an audience of one.</p></div>
     <div class="axis-card"><div class="a-title">Why path-scoped rules, not more CLAUDE.md files</div><p>PeakAndPack's tests aren't confined to one directory. A glob like <code>tests/**/*.spec.ts</code> reaches all of them, a directory-bound file can't.</p></div>
@@ -178,21 +238,6 @@
 
   <div class="callout blue">
     <p><strong>Diagnosing this in practice:</strong> the exam guide's own skill point for 3.1 is running <code>/memory</code> to see which files actually loaded. If a teammate's output doesn't match the standard, that's the first thing to check, not a longer prompt.</p>
-  </div>
-
-  <div class="quiz-block" aria-live="polite">
-    <div class="quiz-label">Exam sample question &middot; Scenario: Code Generation with Claude Code</div>
-    <p class="quiz-stem">Your codebase has distinct areas with different coding conventions: React components use functional style with hooks, API handlers use async/await with specific error handling, and database models follow a repository pattern. Test files are spread throughout the codebase alongside the code they test (e.g., <code>Button.test.tsx</code> next to <code>Button.tsx</code>), and you want all tests to follow the same conventions regardless of location. What's the most maintainable way to ensure Claude automatically applies the correct conventions when generating code?</p>
-    <div class="quiz-options">
-      <button class="quiz-opt" data-correct="true">A. Create rule files in <code>.claude/rules/</code> with YAML frontmatter specifying glob patterns to conditionally apply conventions based on file paths.</button>
-      <button class="quiz-opt">B. Consolidate all conventions in the root CLAUDE.md file under headers for each area, relying on Claude to infer which section applies.</button>
-      <button class="quiz-opt">C. Create skills in <code>.claude/skills/</code> for each code type that include the relevant conventions in their SKILL.md files.</button>
-      <button class="quiz-opt">D. Place a separate CLAUDE.md file in each subdirectory containing that area's specific conventions.</button>
-    </div>
-    <div class="quiz-feedback" hidden>
-      <p class="quiz-verdict"></p>
-      <p class="quiz-explain"><code>.claude/rules/</code> with glob patterns (e.g. <code>**/*.test.tsx</code>) applies conventions by file path regardless of directory location, essential for test files spread throughout the codebase. B relies on inference, not explicit matching. C requires manual invocation or Claude choosing to load the skill, the opposite of deterministic automatic application. D can't handle files spread across many directories, CLAUDE.md files are directory-bound.</p>
-    </div>
   </div>
 
   <div class="deliverable-box">
@@ -245,21 +290,6 @@
 
   <p class="pull-quote">Choosing between skills and CLAUDE.md is choosing between on-demand invocation for a task-specific workflow, and an always-loaded standard nobody has to remember to run.</p>
 
-  <div class="quiz-block" aria-live="polite">
-    <div class="quiz-label">Exam sample question &middot; Scenario: Code Generation with Claude Code</div>
-    <p class="quiz-stem">You want to create a custom <code>/review</code> slash command that runs your team's standard code review checklist. This command should be available to every developer when they clone or pull the repository. Where should you create this command file?</p>
-    <div class="quiz-options">
-      <button class="quiz-opt" data-correct="true">A. In the <code>.claude/commands/</code> directory in the project repository.</button>
-      <button class="quiz-opt">B. In <code>~/.claude/commands/</code> in each developer's home directory.</button>
-      <button class="quiz-opt">C. In the CLAUDE.md file at the project root.</button>
-      <button class="quiz-opt">D. In a <code>.claude/config.json</code> file with a commands array.</button>
-    </div>
-    <div class="quiz-feedback" hidden>
-      <p class="quiz-verdict"></p>
-      <p class="quiz-explain">Project-scoped slash commands live in <code>.claude/commands/</code>, version-controlled and automatically available the moment a developer clones or pulls the repo. B is for personal commands not shared via version control. C is for project instructions and context, not command definitions. D describes a configuration mechanism that doesn't exist in Claude Code.</p>
-    </div>
-  </div>
-
   <div class="deliverable-box">
     <div class="d-label">Deliverable, Part 2</div>
     <ul>
@@ -279,21 +309,6 @@
 
   <div class="callout amber">
     <p><strong>The same bug, either side of the line:</strong> BUG-004 and BUG-007 could each be fixed alone as a Task-B-shaped change. What moves them into plan-mode territory is the decision to fix them <em>together</em>, because that turns a validation fix into a decision about where validation lives project-wide. Scope decides this, not bug severity or how the fix reads in isolation.</p>
-  </div>
-
-  <div class="quiz-block" aria-live="polite">
-    <div class="quiz-label">Exam sample question &middot; Scenario: Code Generation with Claude Code</div>
-    <p class="quiz-stem">You've been assigned to restructure the team's monolithic application into microservices. This will involve changes across dozens of files and requires decisions about service boundaries and module dependencies. Which approach should you take?</p>
-    <div class="quiz-options">
-      <button class="quiz-opt" data-correct="true">A. Enter plan mode to explore the codebase, understand dependencies, and design an implementation approach before making changes.</button>
-      <button class="quiz-opt">B. Start with direct execution and make changes incrementally, letting the implementation reveal the natural service boundaries.</button>
-      <button class="quiz-opt">C. Use direct execution with comprehensive upfront instructions detailing exactly how each service should be structured.</button>
-      <button class="quiz-opt">D. Begin in direct execution mode and only switch to plan mode if you encounter unexpected complexity.</button>
-    </div>
-    <div class="quiz-feedback" hidden>
-      <p class="quiz-verdict"></p>
-      <p class="quiz-explain">Plan mode is built for large-scale changes, multiple valid approaches, and architectural decisions, exactly what monolith-to-microservices restructuring requires. B risks costly rework when dependencies surface late. C assumes the right structure without exploring the code first. D ignores that the complexity is already known upfront, not something that might emerge later.</p>
-    </div>
   </div>
 
   <div class="deliverable-box">
@@ -340,21 +355,6 @@
     <div class="axis-card"><div class="a-title">Structured, not prose</div><p>A JSON schema turns findings into something a script can post inline, instead of a paragraph a script can only forward whole.</p></div>
   </div>
 
-  <div class="quiz-block" aria-live="polite">
-    <div class="quiz-label">Exam sample question &middot; Scenario: Claude Code for Continuous Integration</div>
-    <p class="quiz-stem">Your pipeline script runs <code>claude "Analyze this pull request for security issues"</code> but the job hangs indefinitely. Logs indicate Claude Code is waiting for interactive input. What's the correct approach to run Claude Code in an automated pipeline?</p>
-    <div class="quiz-options">
-      <button class="quiz-opt" data-correct="true">A. Add the -p flag: <code>claude -p "Analyze this pull request for security issues"</code></button>
-      <button class="quiz-opt">B. Set the environment variable <code>CLAUDE_HEADLESS=true</code> before running the command.</button>
-      <button class="quiz-opt">C. Redirect stdin from /dev/null: <code>claude "..." &lt; /dev/null</code></button>
-      <button class="quiz-opt">D. Add the --batch flag: <code>claude --batch "Analyze this pull request for security issues"</code></button>
-    </div>
-    <div class="quiz-feedback" hidden>
-      <p class="quiz-verdict"></p>
-      <p class="quiz-explain">The <code>-p</code> (or <code>--print</code>) flag is the documented way to run Claude Code non-interactively: it processes the prompt, outputs to stdout, and exits without waiting for input, exactly what a CI pipeline needs. B and D reference flags and environment variables that don't exist in Claude Code. C is a Unix workaround that doesn't address the actual command syntax.</p>
-    </div>
-  </div>
-
   <div class="deliverable-box">
     <div class="d-label">Deliverable, Part 4</div>
     <ul>
@@ -373,11 +373,6 @@
     <p>D3 tests configuration as a set of concrete choices, not a vague "set things up well": project-level versus user-level CLAUDE.md (3.1), glob-scoped rules versus directory-bound ones (3.3), a shared command versus an isolated skill (3.2), plan mode versus direct execution against stated criteria (3.4), and a CI pipeline that runs non-interactively with structured output (3.6). Every one of those showed up as a real file in this post, not a description of one.</p>
   </div>
 
-  <div class="not-solve">
-    <div class="ns-label">What this does not solve</div>
-    <p style="color:var(--text-2);font-weight:300;margin-bottom:0">This post doesn't cover Task Statement 3.5 (iterative refinement: concrete input/output examples, test-driven iteration, the interview pattern) with a worked example, none of this post's tasks needed enough back-and-forth to demonstrate it honestly. The CI script hasn't run inside an actual GitHub Actions pipeline, this writing environment has no CI runner to execute it against, though the script itself is complete and matches the documented flags. And none of Part 2's command or skill has been invoked inside a live interactive Claude Code session here, they're written correctly against the documented frontmatter, not demonstrated running.</p>
-  </div>
-
   <div class="nav-row">
     <a href="index.html" class="nav-cta secondary">&larr; Back to CCAR-F for QA</a>
   </div>
@@ -391,27 +386,5 @@
 <footer>
   <p><a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
 </footer>
-<script>
-document.querySelectorAll('.quiz-block').forEach(function (block) {
-  var opts = block.querySelectorAll('.quiz-opt');
-  var feedback = block.querySelector('.quiz-feedback');
-  var verdict = block.querySelector('.quiz-verdict');
-  opts.forEach(function (opt) {
-    opt.addEventListener('click', function () {
-      if (block.classList.contains('answered')) return;
-      block.classList.add('answered');
-      var isCorrect = opt.getAttribute('data-correct') === 'true';
-      opts.forEach(function (o) {
-        o.disabled = true;
-        if (o.getAttribute('data-correct') === 'true') o.classList.add('correct');
-        else if (o === opt) o.classList.add('incorrect');
-      });
-      verdict.textContent = isCorrect ? 'Correct.' : 'Not quite, here is why:';
-      verdict.className = 'quiz-verdict ' + (isCorrect ? 'ok' : 'miss');
-      feedback.hidden = false;
-    });
-  });
-});
-</script>
 </body>
 </html>

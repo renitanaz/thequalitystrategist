@@ -60,29 +60,12 @@
 
     .pull-quote{font-family:'DM Serif Display',serif;font-style:italic;font-size:1.25rem;line-height:1.5;color:var(--text);border-left:3px solid var(--teal);padding:.3rem 0 .3rem 1.3rem;margin:2rem 0}
 
-    .not-solve{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.3rem 1.5rem;margin-top:2.5rem}
-    .not-solve .ns-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);font-weight:600;margin-bottom:.6rem}
 
     .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:2.5rem;flex-wrap:wrap}
     .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:500;font-size:.88rem;padding:.7rem 1.2rem;border-radius:8px}
     .nav-cta.secondary{background:var(--bg3);color:var(--text-2);border:1px solid var(--border)}
 
     footer{border-top:1px solid var(--border);padding:2rem;text-align:center;font-size:.78rem;color:var(--text-3)}footer a{color:var(--text-3);text-decoration:none}
-
-    .quiz-block{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.3rem 1.4rem;margin:1.75rem 0}
-    .quiz-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--teal);font-weight:600;margin-bottom:.7rem}
-    .quiz-stem{color:var(--text);font-size:.95rem;margin-bottom:1rem;font-weight:400}
-    .quiz-options{display:flex;flex-direction:column;gap:.6rem}
-    .quiz-opt{display:block;width:100%;text-align:left;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:.7rem .9rem;color:var(--text-2);font-family:'DM Sans',sans-serif;font-size:.86rem;line-height:1.5;cursor:pointer;transition:border-color .15s,background .15s}
-    .quiz-opt:hover:not(:disabled){border-color:var(--text-3)}
-    .quiz-opt:disabled{cursor:default}
-    .quiz-opt.correct{border-color:var(--green);background:var(--green-bg);color:var(--text)}
-    .quiz-opt.incorrect{border-color:var(--red);background:var(--red-bg);color:var(--text)}
-    .quiz-feedback{margin-top:1rem;padding-top:1rem;border-top:1px dashed var(--border)}
-    .quiz-verdict{font-weight:600;margin-bottom:.5rem;font-size:.9rem}
-    .quiz-verdict.ok{color:var(--green)}
-    .quiz-verdict.miss{color:var(--red)}
-    .quiz-explain{color:var(--text-2);font-size:.88rem;margin-bottom:0}
 
     .reveal-box{background:var(--bg2);border:1px solid var(--border);border-radius:12px;margin:1.75rem 0;overflow:hidden}
     .reveal-box summary{cursor:pointer;padding:1rem 1.3rem;font-size:.88rem;font-weight:500;color:var(--text);list-style:none;display:flex;align-items:center;justify-content:space-between;gap:1rem}
@@ -217,42 +200,8 @@
   <h2>Part 4: overnight batches, and a reviewer who wasn't there</h2>
   <p>4.5 and 4.6 both come down to matching the tool to what the task actually tolerates: latency for batching, independence for reviewing.</p>
 
-  <p>Try the exam's own version of the batch question first:</p>
-
-  <div class="quiz-block" aria-live="polite">
-    <div class="quiz-label">Exam sample question &middot; Scenario: Claude Code for Continuous Integration</div>
-    <p class="quiz-stem">Your team wants to reduce API costs for automated analysis. Real-time Claude calls power two workflows: a blocking pre-merge check that must complete before developers can merge, and a technical debt report generated overnight for review the next morning. Your manager proposes switching both to the Message Batches API for its 50% cost savings. How should you evaluate this proposal?</p>
-    <div class="quiz-options">
-      <button class="quiz-opt" data-correct="true">A. Use batch processing for the technical debt reports only; keep real-time calls for pre-merge checks.</button>
-      <button class="quiz-opt">B. Switch both workflows to batch processing with status polling to check for completion.</button>
-      <button class="quiz-opt">C. Keep real-time calls for both workflows to avoid batch result ordering issues.</button>
-      <button class="quiz-opt">D. Switch both to batch processing with a timeout fallback to real-time if batches take too long.</button>
-    </div>
-    <div class="quiz-feedback" hidden>
-      <p class="quiz-verdict"></p>
-      <p class="quiz-explain">The Batch API's up-to-24-hour window with no guaranteed SLA is unsuitable for a blocking pre-merge check where a developer is waiting, but ideal for an overnight report already reviewed the next morning. B wrongly treats "often faster" as acceptable for a blocking workflow. C reflects a misconception, batch results correlate cleanly via custom_id. D adds complexity the simpler per-workflow split doesn't need.</p>
-    </div>
-  </div>
-
   <div class="callout blue">
     <p><strong>PeakAndPack's version:</strong> d1-triage-agent.ts's live, tool-calling triage cannot batch at all, the Batch API doesn't support mid-request tool calls. Only a nightly sweep using the simpler <code>d1-triage-workflow.ts</code> shape, no tools, one call in, one verdict out, actually qualifies.</p>
-  </div>
-
-  <p>Now the multi-pass review question, extending Post 02's <code>d3-ci-review.sh</code>:</p>
-
-  <div class="quiz-block" aria-live="polite">
-    <div class="quiz-label">Exam sample question &middot; Scenario: Claude Code for Continuous Integration</div>
-    <p class="quiz-stem">A pull request modifies 14 files. Your single-pass review analyzing all files together produces inconsistent results: detailed feedback for some files but superficial comments for others, and contradictory feedback, flagging a pattern as problematic in one file while approving identical code elsewhere in the same PR. How should you restructure the review?</p>
-    <div class="quiz-options">
-      <button class="quiz-opt" data-correct="true">A. Split into focused passes: analyze each file individually for local issues, then run a separate integration-focused pass examining cross-file data flow.</button>
-      <button class="quiz-opt">B. Require developers to split large PRs into smaller submissions of 3-4 files before the automated review runs.</button>
-      <button class="quiz-opt">C. Switch to a higher-tier model with a larger context window to give all 14 files adequate attention in one pass.</button>
-      <button class="quiz-opt">D. Run three independent review passes on the full PR and only flag issues that appear in at least two of the three runs.</button>
-    </div>
-    <div class="quiz-feedback" hidden>
-      <p class="quiz-verdict"></p>
-      <p class="quiz-explain">Splitting into focused passes directly addresses the root cause, attention dilution across many files at once, while a separate integration pass still catches cross-file issues a local view can't see. B shifts the burden to developers without fixing the review system. C misunderstands that a larger context window doesn't fix attention quality. D would actually suppress real bugs caught only intermittently by requiring consensus across runs.</p>
-    </div>
   </div>
 
   <div class="deliverable-box">
@@ -272,11 +221,6 @@
     <p>D4 is tied for the second-heaviest domain on the exam, and every task statement in it resolves to the same question asked six ways: does this system's output survive being checked, by a specific criterion, a schema, a validator, or a second, independent instance, or does it only survive being read once and sounding plausible.</p>
   </div>
 
-  <div class="not-solve">
-    <div class="ns-label">What this does not solve</div>
-    <p style="color:var(--text-2);font-weight:300;margin-bottom:0">None of this post's code has run against a live key, same methodology limits as the rest of this capsule. It doesn't measure whether the explicit criteria in Part 1 actually reduce false positives in practice, that requires production data this environment doesn't have. And it doesn't build a real Batch API submission end to end, the shape and constraints described are real and documented, the 500-report sweep is illustrative, not executed.</p>
-  </div>
-
   <div class="nav-row">
     <a href="index.html" class="nav-cta secondary">&larr; Back to CCAR-F for QA</a>
   </div>
@@ -290,27 +234,5 @@
 <footer>
   <p><a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
 </footer>
-<script>
-document.querySelectorAll('.quiz-block').forEach(function (block) {
-  var opts = block.querySelectorAll('.quiz-opt');
-  var feedback = block.querySelector('.quiz-feedback');
-  var verdict = block.querySelector('.quiz-verdict');
-  opts.forEach(function (opt) {
-    opt.addEventListener('click', function () {
-      if (block.classList.contains('answered')) return;
-      block.classList.add('answered');
-      var isCorrect = opt.getAttribute('data-correct') === 'true';
-      opts.forEach(function (o) {
-        o.disabled = true;
-        if (o.getAttribute('data-correct') === 'true') o.classList.add('correct');
-        else if (o === opt) o.classList.add('incorrect');
-      });
-      verdict.textContent = isCorrect ? 'Correct.' : 'Not quite, here is why:';
-      verdict.className = 'quiz-verdict ' + (isCorrect ? 'ok' : 'miss');
-      feedback.hidden = false;
-    });
-  });
-});
-</script>
 </body>
 </html>
