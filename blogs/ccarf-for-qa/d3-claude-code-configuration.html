@@ -22,6 +22,8 @@
     .blog-tags{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.25rem}
     .tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
     .tag.accent{background:var(--blue-bg);color:var(--blue);border-color:rgba(96,165,250,.25)}
+    a.tag{text-decoration:none;display:inline-block;cursor:pointer;transition:background .15s}
+    a.tag:hover{background:var(--blue-bg);color:var(--blue);border-color:rgba(96,165,250,.25)}
     .blog-header h1{font-family:'DM Serif Display',serif;font-size:clamp(1.7rem,4vw,2.5rem);line-height:1.25;color:var(--text);margin-bottom:.75rem}
     .blog-subtitle{font-family:'DM Serif Display',serif;font-size:1.05rem;font-style:italic;color:var(--text-3);margin-bottom:1.25rem}
     .blog-meta{display:flex;align-items:center;gap:1.25rem;font-size:.82rem;color:var(--text-3);flex-wrap:wrap}.blog-meta .series{color:var(--text-2);font-weight:500}
@@ -74,6 +76,18 @@
     .nav-cta.secondary{background:var(--bg3);color:var(--text-2);border:1px solid var(--border)}
 
     footer{border-top:1px solid var(--border);padding:2rem;text-align:center;font-size:.78rem;color:var(--text-3)}footer a{color:var(--text-3);text-decoration:none}
+
+    .reveal-box{background:var(--bg2);border:1px solid var(--border);border-radius:12px;margin:1.75rem 0;overflow:hidden}
+    .reveal-box summary{cursor:pointer;padding:1rem 1.3rem;font-size:.92rem;font-weight:600;color:var(--text);list-style:none;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+    .reveal-box summary::-webkit-details-marker{display:none}
+    .reveal-box summary::after{content:"\25BE";color:var(--text-3);font-size:.85rem;flex-shrink:0;background:var(--bg3);border:1px solid var(--border);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;transition:transform .15s}
+    .reveal-box[open] summary::after{transform:rotate(180deg)}
+    .reveal-box[open] summary{border-bottom:1px solid var(--border)}
+    .reveal-hint{font-size:.72rem;font-weight:400;color:var(--text-3)}
+    .reveal-content{padding:1.1rem 1.3rem;color:var(--text-2);font-size:.9rem}
+    .reveal-content p{margin-bottom:.8rem}
+    .reveal-content p:last-child{margin-bottom:0}
+
     @media(max-width:620px){nav.site-nav{padding:0 1.25rem}.nav-links{display:none}.blog-header,main{padding-left:1.25rem;padding-right:1.25rem}.axis-grid{grid-template-columns:1fr}}
   </style>
 </head>
@@ -117,30 +131,6 @@
     <div class="axis-card"><div class="a-title">3.2 &middot; Commands &amp; skills</div><p>A command is a shared shortcut. A skill has frontmatter: <code>context: fork</code> for isolation, <code>allowed-tools</code> for restriction, <code>argument-hint</code> for usability.</p></div>
     <div class="axis-card"><div class="a-title">3.4 &middot; Plan vs. direct</div><p>Plan mode for architectural decisions and multi-file changes. Direct execution when the scope and the fix are both already obvious.</p></div>
     <div class="axis-card"><div class="a-title">3.6 &middot; CI/CD</div><p><code>-p</code> for non-interactive mode, <code>--output-format json</code> with <code>--json-schema</code> for machine-parseable output a pipeline can act on.</p></div>
-  </div>
-
-  <h2>Where this post's files go</h2>
-  <p>See the hub's <a href="index.html#setup">before-you-start section</a> if you haven't already, it covers installing Claude Code and why you don't need PeakAndPack's source. Once that's done, this post's folder shape is specific to D3's deliverables:</p>
-
-  <pre><code>mkdir -p .claude/rules .claude/commands .claude/skills/reproduce-bug</code></pre>
-
-  <p>Everything below is a file you save into place and a command you run to confirm it worked, not a description to take on faith.</p>
-
-  <div class="fw-table-wrap">
-    <table class="fw-table">
-      <thead><tr><th>File on this page</th><th>Save it to</th><th>Verify with</th></tr></thead>
-      <tbody>
-        <tr><td>d3-claude-md/CLAUDE.md</td><td><code>.claude/CLAUDE.md</code></td><td><code>/memory</code></td></tr>
-        <tr><td>d3-claude-md/environment-facts.md</td><td><code>.claude/environment-facts.md</code></td><td><code>/memory</code></td></tr>
-        <tr><td>d3-claude-md/rules/playwright-tests.md</td><td><code>.claude/rules/playwright-tests.md</code></td><td><code>/memory</code></td></tr>
-        <tr><td>d3-claude-md/rules/bug-reports.md</td><td><code>.claude/rules/bug-reports.md</code></td><td><code>/memory</code></td></tr>
-        <tr><td>d3-triage-command.md</td><td><code>.claude/commands/triage-bug.md</code></td><td><code>/triage-bug</code></td></tr>
-        <tr><td>d3-reproduce-skill/SKILL.md</td><td><code>.claude/skills/reproduce-bug/SKILL.md</code></td><td><code>/reproduce-bug BUG-007</code></td></tr>
-        <tr><td>d3-plan-vs-direct.md</td><td>anywhere, it's a reasoning doc to read, not a file Claude Code loads</td><td>n/a</td></tr>
-        <tr><td>d3-ci-review.sh</td><td>anywhere in the repo, e.g. <code>scripts/d3-ci-review.sh</code></td><td><code>chmod +x</code>, then run manually or wire into CI</td></tr>
-        <tr><td>d3-review-schema.json</td><td>same folder as d3-ci-review.sh</td><td>used automatically via the script's <code>--json-schema</code> flag</td></tr>
-      </tbody>
-    </table>
   </div>
 
   <h2>Part 1: config that a new teammate actually inherits</h2>
@@ -238,6 +228,34 @@
     <p><strong>Diagnosing this in practice:</strong> the exam guide's own skill point for 3.1 is running <code>/memory</code> to see which files actually loaded. If a teammate's output doesn't match the standard, that's the first thing to check, not a longer prompt.</p>
   </div>
 
+  <details class="reveal-box" id="deliverable-setup">
+    <summary><span>D3 Deliverable Pre-requisite <span class="reveal-hint">(click to expand)</span></span></summary>
+    <div class="reveal-content">
+      <p>See the hub's <a href="index.html#setup">before-you-start section</a> if you haven't already, it covers installing Claude Code and why you don't need PeakAndPack's source. Once that's done, this post's folder shape is specific to D3's deliverables:</p>
+
+      <pre><code>mkdir -p .claude/rules .claude/commands .claude/skills/reproduce-bug</code></pre>
+
+      <p>Everything below is a file you save into place and a command you run to confirm it worked, not a description to take on faith.</p>
+
+      <div class="fw-table-wrap">
+        <table class="fw-table">
+          <thead><tr><th>File on this page</th><th>Save it to</th><th>Verify with</th></tr></thead>
+          <tbody>
+            <tr><td>d3-claude-md/CLAUDE.md</td><td><code>.claude/CLAUDE.md</code></td><td><code>/memory</code></td></tr>
+            <tr><td>d3-claude-md/environment-facts.md</td><td><code>.claude/environment-facts.md</code></td><td><code>/memory</code></td></tr>
+            <tr><td>d3-claude-md/rules/playwright-tests.md</td><td><code>.claude/rules/playwright-tests.md</code></td><td><code>/memory</code></td></tr>
+            <tr><td>d3-claude-md/rules/bug-reports.md</td><td><code>.claude/rules/bug-reports.md</code></td><td><code>/memory</code></td></tr>
+            <tr><td>d3-triage-command.md</td><td><code>.claude/commands/triage-bug.md</code></td><td><code>/triage-bug</code></td></tr>
+            <tr><td>d3-reproduce-skill/SKILL.md</td><td><code>.claude/skills/reproduce-bug/SKILL.md</code></td><td><code>/reproduce-bug BUG-007</code></td></tr>
+            <tr><td>d3-plan-vs-direct.md</td><td>anywhere, it's a reasoning doc to read, not a file Claude Code loads</td><td>n/a</td></tr>
+            <tr><td>d3-ci-review.sh</td><td>anywhere in the repo, e.g. <code>scripts/d3-ci-review.sh</code></td><td><code>chmod +x</code>, then run manually or wire into CI</td></tr>
+            <tr><td>d3-review-schema.json</td><td>same folder as d3-ci-review.sh</td><td>used automatically via the script's <code>--json-schema</code> flag</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
   <div class="deliverable-box">
     <div class="d-label">Deliverable, Part 1</div>
     <ul>
@@ -246,7 +264,7 @@
       <li><a href="d3-claude-md/rules/playwright-tests.md">d3-claude-md/rules/playwright-tests.md</a>: path-scoped to <code>tests/**/*.spec.ts</code>, discovered independently, no import needed</li>
       <li><a href="d3-claude-md/rules/bug-reports.md">d3-claude-md/rules/bug-reports.md</a>: path-scoped to <code>reports/**/*.md</code></li>
     </ul>
-    <p class="howto"><strong>How to use it:</strong> drop CLAUDE.md, environment-facts.md, and the rules/ folder into <code>.claude/</code> at your repo root and commit them. No invocation needed, Claude Code loads CLAUDE.md every session and discovers the rules files on its own. Run <code>/memory</code> to confirm what actually loaded.</p>
+    <p class="howto"><strong>How to use it:</strong> drop CLAUDE.md, environment-facts.md, and the rules/ folder into <code>.claude/</code> at your repo root and commit them. No invocation needed, Claude Code loads CLAUDE.md every session and discovers the rules files on its own. Run <code>/memory</code> to confirm what actually loaded. <a href="#deliverable-setup" class="tag accent">Full setup &darr;</a></p>
   </div>
 
   <h2>Part 2: a command everyone gets, a skill that stays contained</h2>
@@ -294,7 +312,7 @@
       <li><a href="d3-triage-command.md">d3-triage-command.md</a>: the <code>/triage-bug</code> command, project-scoped, reuses D1's bug catalog</li>
       <li><a href="d3-reproduce-skill/SKILL.md">d3-reproduce-skill/SKILL.md</a>: a skill with <code>context: fork</code>, <code>allowed-tools</code>, and <code>argument-hint</code> all set deliberately, not defaults</li>
     </ul>
-    <p class="howto"><strong>How to use it:</strong> copy the command to <code>.claude/commands/triage-bug.md</code>, then type <code>/triage-bug</code> followed by a failing test's output. Copy the skill folder to <code>.claude/skills/reproduce-bug/</code>, then type <code>/reproduce-bug BUG-007</code> (or any bug ID or description), the invocable name comes from the folder, not the filename.</p>
+    <p class="howto"><strong>How to use it:</strong> copy the command to <code>.claude/commands/triage-bug.md</code>, then type <code>/triage-bug</code> followed by a failing test's output. Copy the skill folder to <code>.claude/skills/reproduce-bug/</code>, then type <code>/reproduce-bug BUG-007</code> (or any bug ID or description), the invocable name comes from the folder, not the filename. <a href="#deliverable-setup" class="tag accent">Full setup &darr;</a></p>
   </div>
 
   <h2>Part 3: plan mode is a decision, not a mood</h2>
@@ -314,7 +332,7 @@
     <ul>
       <li><a href="d3-plan-vs-direct.md">d3-plan-vs-direct.md</a>: the full reasoning for both tasks against the guide's stated criteria</li>
     </ul>
-    <p class="howto"><strong>How to use it:</strong> this is a worked example to reason from, not a file you deploy. Run its two criteria checks (multi-file? architectural? multiple valid approaches?) against your own next task before opening plan mode out of habit either way.</p>
+    <p class="howto"><strong>How to use it:</strong> this is a worked example to reason from, not a file you deploy. Run its two criteria checks (multi-file? architectural? multiple valid approaches?) against your own next task before opening plan mode out of habit either way. <a href="#deliverable-setup" class="tag accent">Full setup &darr;</a></p>
   </div>
 
   <h2>Part 4: a reviewer with no memory of writing the code</h2>
@@ -359,7 +377,7 @@
       <li><a href="d3-ci-review.sh">d3-ci-review.sh</a>: the full CI script, checkout-scoped, non-interactive, posts inline PR comments</li>
       <li><a href="d3-review-schema.json">d3-review-schema.json</a>: the JSON schema its findings are validated against</li>
     </ul>
-    <p class="howto"><strong>How to use it:</strong> <code>chmod +x d3-ci-review.sh</code>, wire it into your CI workflow with <code>ANTHROPIC_API_KEY</code> set as a repo secret and <code>gh</code>/<code>jq</code> available on the runner. It's a no-op unless the PR's diff touches <code>src/checkout/**</code> or <code>src/cart/**</code>.</p>
+    <p class="howto"><strong>How to use it:</strong> <code>chmod +x d3-ci-review.sh</code>, wire it into your CI workflow with <code>ANTHROPIC_API_KEY</code> set as a repo secret and <code>gh</code>/<code>jq</code> available on the runner. It's a no-op unless the PR's diff touches <code>src/checkout/**</code> or <code>src/cart/**</code>. <a href="#deliverable-setup" class="tag accent">Full setup &darr;</a></p>
   </div>
 
   <h2>The QA angle: config bugs have no stack trace</h2>
