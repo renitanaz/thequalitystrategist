@@ -3,28 +3,29 @@
 <head>
   <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>The CLAUDE.md, the Skill, and the CI Gate: What D3 Actually Tests | The Quality Strategist</title>
-  <meta name="description" content="Same PeakAndPack QA setup, configured four ways: a shared CLAUDE.md and path-scoped rules, a command versus a scoped skill, a plan-mode decision, and a CI gate. CCAR-F D3, Claude Code Configuration and Workflows." />
+  <meta name="description" content="PeakAndPack's QA setup, configured four ways: a shared CLAUDE.md and path-scoped rules, a command versus a scoped skill, a plan-mode decision, and a CI gate. CCAR-F D3, Claude Code Configuration and Workflows." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root{--bg:#0d0d0d;--bg2:#161616;--bg3:#1e1e1e;--border:#2e2e2e;--text:#f0f0f0;--text-2:#c8c8c8;--text-3:#8a8a8a;--green:#4ade80;--green-bg:rgba(74,222,128,0.07);--blue:#60a5fa;--blue-bg:rgba(96,165,250,0.07);--amber:#fbbf24;--amber-bg:rgba(251,191,36,0.07);--purple:#a78bfa;--purple-bg:rgba(167,139,250,0.07);--red:#f87171;--red-bg:rgba(248,113,113,0.07);--teal:#2dd4bf;--teal-bg:rgba(45,212,191,0.07)}
+    :root{--bg:#FAFCF5;--bg2:#F5F7F0;--bg3:#EEF1E7;--border:rgba(26,31,20,0.12);--text:#1A1F14;--text-2:#3D4235;--text-3:#6B7060;--green:#1A7A3A;--green-bg:#D8F0E0;--blue:#2A5C9A;--blue-bg:#DDE8F5;--amber:#9A6E1A;--amber-bg:#F5EDD6;--purple:#7A4A9A;--purple-bg:#EDE0F5;--red:#9A2A4A;--red-bg:#F5DDE5;--teal:#1A6B54;--teal-bg:#D8EEE8;--maroon:#8A4A2A;--maroon-bg:#FAF0E8;--olive:#6B7C3A}
     html{scroll-behavior:smooth}
     body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;line-height:1.8;-webkit-font-smoothing:antialiased}
     a{color:inherit}
-    .skip-link{position:absolute;top:-100%;left:1rem;background:var(--blue);color:#000;padding:.5rem 1rem;border-radius:0 0 6px 6px;font-size:.85rem;font-weight:500;text-decoration:none;z-index:999}.skip-link:focus{top:0}
-    nav.site-nav{position:sticky;top:0;z-index:100;background:rgba(13,13,13,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:56px}
+    .skip-link{position:absolute;top:-100%;left:1rem;background:var(--blue);color:var(--bg);padding:.5rem 1rem;border-radius:0 0 6px 6px;font-size:.85rem;font-weight:500;text-decoration:none;z-index:999}.skip-link:focus{top:0}
+    nav.site-nav{position:sticky;top:0;z-index:100;background:rgba(250,252,245,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:56px}
     .nav-logo{font-family:'DM Serif Display',serif;font-size:1rem;color:var(--text);text-decoration:none}
     .nav-links{display:flex;gap:2rem;list-style:none}.nav-links a{color:var(--text-3);text-decoration:none;font-size:.85rem}.nav-links a:hover{color:var(--text)}
     .blog-header{max-width:900px;margin:0 auto;padding:4rem 2rem 2.5rem;border-bottom:1px solid var(--border)}
     .breadcrumb{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}.breadcrumb a{color:var(--text-3);text-decoration:none}
     .blog-tags{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.25rem}
     .tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
-    .tag.accent{background:var(--blue-bg);color:var(--blue);border-color:rgba(96,165,250,.25)}
+    .tag.accent{background:var(--blue-bg);color:var(--blue);border-color:rgba(42,92,154,.3)}
     a.tag{text-decoration:none;display:inline-block;cursor:pointer;transition:background .15s}
-    a.tag:hover{background:var(--blue-bg);color:var(--blue);border-color:rgba(96,165,250,.25)}
+    a.tag:hover{background:var(--blue-bg);color:var(--blue);border-color:rgba(42,92,154,.3)}
     .blog-header h1{font-family:'DM Serif Display',serif;font-size:clamp(1.7rem,4vw,2.5rem);line-height:1.25;color:var(--text);margin-bottom:.75rem}
+    .blog-header h1 .h1-lede{color:var(--olive)}
     .blog-subtitle{font-family:'DM Serif Display',serif;font-size:1.05rem;font-style:italic;color:var(--text-3);margin-bottom:1.25rem}
     .blog-meta{display:flex;align-items:center;gap:1.25rem;font-size:.82rem;color:var(--text-3);flex-wrap:wrap}.blog-meta .series{color:var(--text-2);font-weight:500}
     main{max-width:900px;margin:0 auto;padding:3rem 2rem 5rem}
@@ -40,8 +41,8 @@
     .blueprint-box .bp-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--purple);font-weight:600;margin-bottom:.4rem}
     .blueprint-box p{color:var(--text-2);margin-bottom:0}
 
-    .deliverable-box{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.2rem 1.4rem;margin:1.5rem 0}
-    .deliverable-box .d-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--green);font-weight:600;margin-bottom:.6rem}
+    .deliverable-box{background:var(--maroon-bg);border:1px solid var(--maroon);border-radius:10px;padding:1.2rem 1.4rem;margin:1.5rem 0}
+    .deliverable-box .d-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--maroon);font-weight:600;margin-bottom:.6rem}
     .deliverable-box ul{margin:0;padding-left:1.2rem}
     .deliverable-box a{color:var(--text);text-decoration:underline;text-underline-offset:2px}
     .howto{font-size:.82rem;color:var(--text-3);margin-top:.9rem;padding-top:.8rem;border-top:1px dashed var(--border)}
@@ -77,7 +78,7 @@
 
     footer{border-top:1px solid var(--border);padding:2rem;text-align:center;font-size:.78rem;color:var(--text-3)}footer a{color:var(--text-3);text-decoration:none}
 
-    .reveal-box{background:var(--bg2);border:1px solid var(--border);border-radius:12px;margin:1.75rem 0;overflow:hidden}
+    .reveal-box{background:var(--maroon-bg);border:1px solid var(--maroon);border-radius:12px;margin:1.75rem 0;overflow:hidden}
     .reveal-box summary{cursor:pointer;padding:1rem 1.3rem;font-size:.92rem;font-weight:600;color:var(--text);list-style:none;display:flex;align-items:center;justify-content:space-between;gap:1rem}
     .reveal-box summary::-webkit-details-marker{display:none}
     .reveal-box summary::after{content:"\25BE";color:var(--text-3);font-size:.85rem;flex-shrink:0;background:var(--bg3);border:1px solid var(--border);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;transition:transform .15s}
@@ -111,8 +112,8 @@
     <span class="tag accent">D3 &middot; 20%</span>
     <span class="tag">Post 02 of 5</span>
   </div>
-  <h1>The CLAUDE.md, the Skill, and the CI Gate: What D3 Actually Tests</h1>
-  <p class="blog-subtitle">Same PeakAndPack QA setup, configured four ways: a shared CLAUDE.md and path-scoped rules, a command versus a scoped skill, a plan-mode decision, and a CI gate that reviews someone else's diff.</p>
+  <h1><span class="h1-lede">The CLAUDE.md, the Skill, and the CI Gate</span>: What D3 Actually Tests</h1>
+  <p class="blog-subtitle">PeakAndPack's QA setup, configured four ways: a shared CLAUDE.md and path-scoped rules, a command versus a scoped skill, a plan-mode decision, and a CI gate that reviews someone else's diff.</p>
   <div class="blog-meta">
     <span class="series">CCAR-F for QA</span>
     <span aria-hidden="true">&middot;</span>
@@ -138,83 +139,83 @@
 
   <div class="diagram-wrap">
     <svg viewBox="0 0 700 260" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" role="img" aria-label="Diagram showing CLAUDE.md hierarchy: user-level config in the home directory applies only to that person and is never shared, project-level config at the repo root is version-controlled and reaches every teammate. Two separate, unconnected mechanisms extend it: at-import pulls an always-loaded file directly into CLAUDE.md, while path-scoped rule files under dot-claude slash rules are discovered independently by Claude Code and load only when a matching file is open, with no import required.">
-      <rect x="20" y="20" width="200" height="56" rx="8" fill="#161616" stroke="#2e2e2e" stroke-dasharray="4 3"/>
-      <text x="120" y="42" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="#8a8a8a">~/.claude/CLAUDE.md</text>
-      <text x="120" y="60" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#8a8a8a">user-level, not shared</text>
+      <rect x="20" y="20" width="200" height="56" rx="8" fill="#F5F7F0" stroke="#C9CFC0" stroke-dasharray="4 3"/>
+      <text x="120" y="42" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="#6B7060">~/.claude/CLAUDE.md</text>
+      <text x="120" y="60" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#6B7060">user-level, not shared</text>
 
-      <rect x="250" y="20" width="200" height="56" rx="8" fill="#0f1f30" stroke="#60a5fa" stroke-width="1.5"/>
-      <text x="350" y="42" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="#60a5fa">.claude/CLAUDE.md</text>
-      <text x="350" y="60" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#c8c8c8">project-level, version-controlled</text>
+      <rect x="250" y="20" width="200" height="56" rx="8" fill="#DDE8F5" stroke="#2A5C9A" stroke-width="1.5"/>
+      <text x="350" y="42" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="#2A5C9A">.claude/CLAUDE.md</text>
+      <text x="350" y="60" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#3D4235">project-level, version-controlled</text>
 
-      <rect x="480" y="20" width="200" height="56" rx="8" fill="#161616" stroke="#2e2e2e" stroke-dasharray="4 3"/>
-      <text x="580" y="42" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="#8a8a8a">subdir/CLAUDE.md</text>
-      <text x="580" y="60" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#8a8a8a">directory-level, bound to that folder</text>
+      <rect x="480" y="20" width="200" height="56" rx="8" fill="#F5F7F0" stroke="#C9CFC0" stroke-dasharray="4 3"/>
+      <text x="580" y="42" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="#6B7060">subdir/CLAUDE.md</text>
+      <text x="580" y="60" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#6B7060">directory-level, bound to that folder</text>
 
-      <path d="M350,76 L350,104" stroke="#60a5fa" stroke-width="1.5" marker-end="url(#arrowD3a)"/>
+      <path d="M350,76 L350,104" stroke="#2A5C9A" stroke-width="1.5" marker-end="url(#arrowD3a)"/>
 
-      <rect x="175" y="110" width="350" height="50" rx="8" fill="#0f1f30" stroke="#60a5fa" stroke-width="1.5" stroke-dasharray="4 3"/>
-      <text x="350" y="130" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#60a5fa">@import environment-facts.md</text>
-      <text x="350" y="146" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#8a8a8a">explicit, always loaded into CLAUDE.md itself</text>
+      <rect x="175" y="110" width="350" height="50" rx="8" fill="#DDE8F5" stroke="#2A5C9A" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <text x="350" y="130" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#2A5C9A">@import environment-facts.md</text>
+      <text x="350" y="146" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#6B7060">explicit, always loaded into CLAUDE.md itself</text>
 
-      <text x="350" y="188" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#f87171">a separate, unconnected mechanism, not reached through CLAUDE.md at all</text>
+      <text x="350" y="188" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#9A2A4A">a separate, unconnected mechanism, not reached through CLAUDE.md at all</text>
 
-      <rect x="100" y="196" width="500" height="46" rx="8" fill="#1a2e14" stroke="#4ade80" stroke-width="1.5"/>
-      <text x="350" y="214" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#4ade80">.claude/rules/*.md: paths: [&quot;tests/**/*.spec.ts&quot;]</text>
-      <text x="350" y="229" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#8a8a8a">discovered directly by Claude Code, loads only for matching files</text>
+      <rect x="100" y="196" width="500" height="46" rx="8" fill="#D8F0E0" stroke="#1A7A3A" stroke-width="1.5"/>
+      <text x="350" y="214" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#1A7A3A">.claude/rules/*.md: paths: [&quot;tests/**/*.spec.ts&quot;]</text>
+      <text x="350" y="229" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#6B7060">discovered directly by Claude Code, loads only for matching files</text>
 
       <defs>
-        <marker id="arrowD3a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#60a5fa"/></marker>
+        <marker id="arrowD3a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2A5C9A"/></marker>
       </defs>
     </svg>
   </div>
 
   <div class="diagram-wrap">
     <svg viewBox="0 0 700 300" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" role="img" aria-label="Diagram of two developers' machines, each with a user-level CLAUDE.md folder shown dashed and grey to mean it never leaves that machine, and a project-plus-subdirectory-level folder shown in blue, connected by dashed sync lines through a central Git repository icon to mean that folder is pushed and pulled between both machines.">
-      <rect x="290" y="14" width="120" height="44" rx="10" fill="#0f1f30" stroke="#60a5fa" stroke-width="1.5"/>
-      <text x="350" y="34" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="#60a5fa">Git repository</text>
-      <text x="350" y="50" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#8a8a8a">single source of truth</text>
+      <rect x="290" y="14" width="120" height="44" rx="10" fill="#DDE8F5" stroke="#2A5C9A" stroke-width="1.5"/>
+      <text x="350" y="34" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="#2A5C9A">Git repository</text>
+      <text x="350" y="50" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#6B7060">single source of truth</text>
 
-      <path d="M300,58 C 230,100 180,150 148,232" fill="none" stroke="#60a5fa" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrowD3h)"/>
-      <text x="205" y="120" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="8.5" fill="#60a5fa">push / pull</text>
+      <path d="M300,58 C 230,100 180,150 148,232" fill="none" stroke="#2A5C9A" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrowD3h)"/>
+      <text x="205" y="120" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="8.5" fill="#2A5C9A">push / pull</text>
 
-      <path d="M400,58 C 470,100 520,150 552,232" fill="none" stroke="#60a5fa" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrowD3i)"/>
-      <text x="495" y="120" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="8.5" fill="#60a5fa">push / pull</text>
+      <path d="M400,58 C 470,100 520,150 552,232" fill="none" stroke="#2A5C9A" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrowD3i)"/>
+      <text x="495" y="120" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="8.5" fill="#2A5C9A">push / pull</text>
 
-      <rect x="45" y="70" width="200" height="90" rx="8" fill="#1e1e1e" stroke="#2e2e2e" stroke-width="1.5"/>
-      <rect x="55" y="80" width="180" height="70" rx="4" fill="#161616"/>
-      <text x="145" y="112" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="12" font-weight="700" fill="#f0f0f0">Developer A</text>
-      <text x="145" y="129" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#8a8a8a">local machine</text>
-      <rect x="125" y="160" width="40" height="10" fill="#2e2e2e"/>
-      <rect x="95" y="170" width="100" height="6" rx="3" fill="#2e2e2e"/>
+      <rect x="45" y="70" width="200" height="90" rx="8" fill="#EEF1E7" stroke="#C9CFC0" stroke-width="1.5"/>
+      <rect x="55" y="80" width="180" height="70" rx="4" fill="#F5F7F0"/>
+      <text x="145" y="112" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="12" font-weight="700" fill="#1A1F14">Developer A</text>
+      <text x="145" y="129" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#6B7060">local machine</text>
+      <rect x="125" y="160" width="40" height="10" fill="#C9CFC0"/>
+      <rect x="95" y="170" width="100" height="6" rx="3" fill="#C9CFC0"/>
 
-      <rect x="20" y="190" width="250" height="38" rx="6" fill="none" stroke="#8a8a8a" stroke-width="1.5" stroke-dasharray="4 3"/>
-      <text x="145" y="206" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="#c8c8c8">~/.claude/CLAUDE.md</text>
-      <text x="145" y="221" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="8.5" fill="#8a8a8a">user-level, never leaves this machine</text>
+      <rect x="20" y="190" width="250" height="38" rx="6" fill="none" stroke="#6B7060" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <text x="145" y="206" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="#3D4235">~/.claude/CLAUDE.md</text>
+      <text x="145" y="221" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="8.5" fill="#6B7060">user-level, never leaves this machine</text>
 
-      <rect x="20" y="236" width="250" height="38" rx="6" fill="#0f1f30" stroke="#60a5fa" stroke-width="1.5"/>
-      <text x="145" y="252" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#60a5fa">.claude/CLAUDE.md + subdir/CLAUDE.md</text>
-      <text x="145" y="267" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="8.5" fill="#8a8a8a">project + subdir level, lives in the repo</text>
+      <rect x="20" y="236" width="250" height="38" rx="6" fill="#DDE8F5" stroke="#2A5C9A" stroke-width="1.5"/>
+      <text x="145" y="252" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#2A5C9A">.claude/CLAUDE.md + subdir/CLAUDE.md</text>
+      <text x="145" y="267" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="8.5" fill="#6B7060">project + subdir level, lives in the repo</text>
 
-      <rect x="455" y="70" width="200" height="90" rx="8" fill="#1e1e1e" stroke="#2e2e2e" stroke-width="1.5"/>
-      <rect x="465" y="80" width="180" height="70" rx="4" fill="#161616"/>
-      <text x="555" y="112" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="12" font-weight="700" fill="#f0f0f0">Developer B</text>
-      <text x="555" y="129" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#8a8a8a">local machine</text>
-      <rect x="535" y="160" width="40" height="10" fill="#2e2e2e"/>
-      <rect x="505" y="170" width="100" height="6" rx="3" fill="#2e2e2e"/>
+      <rect x="455" y="70" width="200" height="90" rx="8" fill="#EEF1E7" stroke="#C9CFC0" stroke-width="1.5"/>
+      <rect x="465" y="80" width="180" height="70" rx="4" fill="#F5F7F0"/>
+      <text x="555" y="112" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="12" font-weight="700" fill="#1A1F14">Developer B</text>
+      <text x="555" y="129" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#6B7060">local machine</text>
+      <rect x="535" y="160" width="40" height="10" fill="#C9CFC0"/>
+      <rect x="505" y="170" width="100" height="6" rx="3" fill="#C9CFC0"/>
 
-      <rect x="430" y="190" width="250" height="38" rx="6" fill="none" stroke="#8a8a8a" stroke-width="1.5" stroke-dasharray="4 3"/>
-      <text x="555" y="206" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="#c8c8c8">~/.claude/CLAUDE.md</text>
-      <text x="555" y="221" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="8.5" fill="#8a8a8a">user-level, never leaves this machine</text>
+      <rect x="430" y="190" width="250" height="38" rx="6" fill="none" stroke="#6B7060" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <text x="555" y="206" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="#3D4235">~/.claude/CLAUDE.md</text>
+      <text x="555" y="221" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="8.5" fill="#6B7060">user-level, never leaves this machine</text>
 
-      <rect x="430" y="236" width="250" height="38" rx="6" fill="#0f1f30" stroke="#60a5fa" stroke-width="1.5"/>
-      <text x="555" y="252" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#60a5fa">.claude/CLAUDE.md + subdir/CLAUDE.md</text>
-      <text x="555" y="267" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="8.5" fill="#8a8a8a">project + subdir level, lives in the repo</text>
+      <rect x="430" y="236" width="250" height="38" rx="6" fill="#DDE8F5" stroke="#2A5C9A" stroke-width="1.5"/>
+      <text x="555" y="252" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#2A5C9A">.claude/CLAUDE.md + subdir/CLAUDE.md</text>
+      <text x="555" y="267" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="8.5" fill="#6B7060">project + subdir level, lives in the repo</text>
 
-      <text x="350" y="292" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#8a8a8a">Only what's inside the repo travels between machines. Home-directory config never does.</text>
+      <text x="350" y="292" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#6B7060">Only what's inside the repo travels between machines. Home-directory config never does.</text>
 
       <defs>
-        <marker id="arrowD3h" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#60a5fa"/></marker>
-        <marker id="arrowD3i" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#60a5fa"/></marker>
+        <marker id="arrowD3h" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2A5C9A"/></marker>
+        <marker id="arrowD3i" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2A5C9A"/></marker>
       </defs>
     </svg>
   </div>
@@ -272,29 +273,29 @@
 
   <div class="diagram-wrap">
     <svg viewBox="0 0 700 190" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" role="img" aria-label="Diagram contrasting a slash command, which runs directly in the main conversation with full context, against a skill configured with context fork, which runs in an isolated sub-agent and returns only a summary, with allowed-tools restricting what it can do.">
-      <text x="20" y="26" font-family="DM Sans, sans-serif" font-size="12" font-weight="700" fill="#f0f0f0" letter-spacing="1">/triage-bug: COMMAND</text>
-      <rect x="20" y="40" width="170" height="46" rx="8" fill="#1e1e1e" stroke="#2e2e2e"/>
-      <text x="105" y="68" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" fill="#c8c8c8">Main conversation</text>
-      <path d="M190,63 L228,63" stroke="#8a8a8a" stroke-width="1.5" marker-end="url(#arrowD3b)"/>
-      <rect x="230" y="40" width="170" height="46" rx="8" fill="#1e1e1e" stroke="#2e2e2e"/>
-      <text x="315" y="63" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#c8c8c8">Runs inline, full</text>
-      <text x="315" y="78" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#c8c8c8">context, no isolation</text>
+      <text x="20" y="26" font-family="DM Sans, sans-serif" font-size="12" font-weight="700" fill="#1A1F14" letter-spacing="1">/triage-bug: COMMAND</text>
+      <rect x="20" y="40" width="170" height="46" rx="8" fill="#EEF1E7" stroke="#C9CFC0"/>
+      <text x="105" y="68" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" fill="#3D4235">Main conversation</text>
+      <path d="M190,63 L228,63" stroke="#6B7060" stroke-width="1.5" marker-end="url(#arrowD3b)"/>
+      <rect x="230" y="40" width="170" height="46" rx="8" fill="#EEF1E7" stroke="#C9CFC0"/>
+      <text x="315" y="63" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#3D4235">Runs inline, full</text>
+      <text x="315" y="78" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#3D4235">context, no isolation</text>
 
-      <text x="20" y="120" font-family="DM Sans, sans-serif" font-size="12" font-weight="700" fill="#a78bfa" letter-spacing="1">/reproduce-bug: SKILL, context: fork</text>
-      <rect x="20" y="134" width="170" height="46" rx="8" fill="#1e1e1e" stroke="#2e2e2e"/>
-      <text x="105" y="162" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" fill="#c8c8c8">Main conversation</text>
-      <path d="M190,157 L228,157" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrowD3c)"/>
-      <rect x="230" y="134" width="200" height="46" rx="8" fill="#2e1a3a" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="4 3"/>
-      <text x="330" y="152" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#a78bfa">Isolated sub-agent</text>
-      <text x="330" y="167" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#c8c8c8">allowed-tools: Bash, WebFetch</text>
-      <path d="M430,157 L468,157" stroke="#4ade80" stroke-width="1.5" marker-end="url(#arrowD3d)"/>
-      <rect x="470" y="134" width="200" height="46" rx="8" fill="#0f2e1a" stroke="#4ade80"/>
-      <text x="570" y="157" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#4ade80">Summary only returns</text>
+      <text x="20" y="120" font-family="DM Sans, sans-serif" font-size="12" font-weight="700" fill="#7A4A9A" letter-spacing="1">/reproduce-bug: SKILL, context: fork</text>
+      <rect x="20" y="134" width="170" height="46" rx="8" fill="#EEF1E7" stroke="#C9CFC0"/>
+      <text x="105" y="162" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" fill="#3D4235">Main conversation</text>
+      <path d="M190,157 L228,157" stroke="#7A4A9A" stroke-width="1.5" marker-end="url(#arrowD3c)"/>
+      <rect x="230" y="134" width="200" height="46" rx="8" fill="#EDE0F5" stroke="#7A4A9A" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <text x="330" y="152" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#7A4A9A">Isolated sub-agent</text>
+      <text x="330" y="167" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#3D4235">allowed-tools: Bash, WebFetch</text>
+      <path d="M430,157 L468,157" stroke="#1A7A3A" stroke-width="1.5" marker-end="url(#arrowD3d)"/>
+      <rect x="470" y="134" width="200" height="46" rx="8" fill="#D8F0E0" stroke="#1A7A3A"/>
+      <text x="570" y="157" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#1A7A3A">Summary only returns</text>
 
       <defs>
-        <marker id="arrowD3b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8a8a8a"/></marker>
-        <marker id="arrowD3c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/></marker>
-        <marker id="arrowD3d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#4ade80"/></marker>
+        <marker id="arrowD3b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+        <marker id="arrowD3c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7A4A9A"/></marker>
+        <marker id="arrowD3d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1A7A3A"/></marker>
       </defs>
     </svg>
   </div>
@@ -340,28 +341,28 @@
 
   <div class="diagram-wrap">
     <svg viewBox="0 0 700 170" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" role="img" aria-label="Diagram: a pull request triggers a fresh, non-interactive claude -p invocation that has no memory of writing the code, which outputs JSON validated against a schema, which is then posted as inline PR comments.">
-      <rect x="20" y="62" width="130" height="46" rx="8" fill="#1e1e1e" stroke="#2e2e2e"/>
-      <text x="85" y="90" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" fill="#c8c8c8">PR opened</text>
-      <path d="M150,85 L188,85" stroke="#8a8a8a" stroke-width="1.5" marker-end="url(#arrowD3e)"/>
+      <rect x="20" y="62" width="130" height="46" rx="8" fill="#EEF1E7" stroke="#C9CFC0"/>
+      <text x="85" y="90" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" fill="#3D4235">PR opened</text>
+      <path d="M150,85 L188,85" stroke="#6B7060" stroke-width="1.5" marker-end="url(#arrowD3e)"/>
 
-      <rect x="190" y="55" width="190" height="60" rx="8" fill="#2e2410" stroke="#fbbf24" stroke-width="1.5"/>
-      <text x="285" y="78" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#fbbf24">claude -p, fresh session</text>
-      <text x="285" y="93" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#c8c8c8">no memory of writing this diff</text>
-      <text x="285" y="106" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#c8c8c8">CLAUDE.md loaded automatically</text>
-      <path d="M380,85 L418,85" stroke="#8a8a8a" stroke-width="1.5" marker-end="url(#arrowD3f)"/>
+      <rect x="190" y="55" width="190" height="60" rx="8" fill="#F5EDD6" stroke="#9A6E1A" stroke-width="1.5"/>
+      <text x="285" y="78" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#9A6E1A">claude -p, fresh session</text>
+      <text x="285" y="93" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#3D4235">no memory of writing this diff</text>
+      <text x="285" y="106" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#3D4235">CLAUDE.md loaded automatically</text>
+      <path d="M380,85 L418,85" stroke="#6B7060" stroke-width="1.5" marker-end="url(#arrowD3f)"/>
 
-      <rect x="420" y="62" width="130" height="46" rx="8" fill="#161616" stroke="#2e2e2e"/>
-      <text x="485" y="82" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="#c8c8c8">--json-schema</text>
-      <text x="485" y="97" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="#c8c8c8">validated output</text>
-      <path d="M550,85 L588,85" stroke="#4ade80" stroke-width="1.5" marker-end="url(#arrowD3g)"/>
+      <rect x="420" y="62" width="130" height="46" rx="8" fill="#F5F7F0" stroke="#C9CFC0"/>
+      <text x="485" y="82" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="#3D4235">--json-schema</text>
+      <text x="485" y="97" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="#3D4235">validated output</text>
+      <path d="M550,85 L588,85" stroke="#1A7A3A" stroke-width="1.5" marker-end="url(#arrowD3g)"/>
 
-      <rect x="590" y="62" width="90" height="46" rx="8" fill="#0f2e1a" stroke="#4ade80"/>
-      <text x="635" y="90" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#4ade80">PR comments</text>
+      <rect x="590" y="62" width="90" height="46" rx="8" fill="#D8F0E0" stroke="#1A7A3A"/>
+      <text x="635" y="90" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" fill="#1A7A3A">PR comments</text>
 
       <defs>
-        <marker id="arrowD3e" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8a8a8a"/></marker>
-        <marker id="arrowD3f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8a8a8a"/></marker>
-        <marker id="arrowD3g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#4ade80"/></marker>
+        <marker id="arrowD3e" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+        <marker id="arrowD3f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+        <marker id="arrowD3g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1A7A3A"/></marker>
       </defs>
     </svg>
   </div>
