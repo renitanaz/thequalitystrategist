@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root{--bg:#FAFCF5;--bg2:#F5F7F0;--bg3:#EEF1E7;--border:rgba(26,31,20,0.12);--text:#1A1F14;--text-2:#3D4235;--text-3:#6B7060;--green:#1A7A3A;--green-bg:#D8F0E0;--blue:#2A5C9A;--blue-bg:#DDE8F5;--amber:#9A6E1A;--amber-bg:#F5EDD6;--purple:#7A4A9A;--purple-bg:#EDE0F5;--red:#9A2A4A;--red-bg:#F5DDE5;--teal:#1A6B54;--teal-bg:#D8EEE8;--maroon:#8A4A2A;--maroon-bg:#FAF0E8;--olive:#6B7C3A}
+    :root{--bg:#FAFCF5;--bg2:#F5F7F0;--bg3:#EEF1E7;--border:rgba(26,31,20,0.12);--text:#1A1F14;--text-2:#3D4235;--text-3:#6B7060;--green:#1A7A3A;--green-bg:#D8F0E0;--blue:#2A5C9A;--blue-bg:#DDE8F5;--amber:#9A6E1A;--amber-bg:#F5EDD6;--purple:#7A4A9A;--purple-bg:#EDE0F5;--red:#9A2A4A;--red-bg:#F5DDE5;--teal:#1A6B54;--teal-bg:#D8EEE8;--maroon:#8A4A2A;--maroon-bg:#FAF0E8;--olive:#6B7C3A;--olive-dark:#4A5828}
     html{scroll-behavior:smooth}
     body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;line-height:1.8;-webkit-font-smoothing:antialiased}
     a{color:inherit}
@@ -81,6 +81,8 @@
     .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:2.5rem;flex-wrap:wrap}
     .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:500;font-size:.88rem;padding:.7rem 1.2rem;border-radius:8px}
     .nav-cta.secondary{background:var(--bg3);color:var(--text-2);border:1px solid var(--border)}
+    .nav-cta.primary{background:var(--olive);color:var(--bg)}
+    .nav-cta.primary:hover{background:var(--olive-dark)}
 
     footer{border-top:1px solid var(--border);padding:2rem;text-align:center;font-size:.78rem;color:var(--text-3)}footer a{color:var(--text-3);text-decoration:none}
 
@@ -127,6 +129,7 @@
     <div class="axis-card"><div class="a-title">3.1 / 3.3 &middot; Config scope</div><p>CLAUDE.md hierarchy: user, project, directory. <code>@import</code> to stay modular. <code>.claude/rules/</code> for path-scoped conventions a directory structure can't express.</p></div>
     <div class="axis-card"><div class="a-title">3.2 &middot; Commands &amp; skills</div><p>A command is a shared shortcut. A skill has frontmatter: <code>context: fork</code> for isolation, <code>allowed-tools</code> for restriction, <code>argument-hint</code> for usability.</p></div>
     <div class="axis-card"><div class="a-title">3.4 &middot; Plan vs. direct</div><p>Plan mode for architectural decisions and multi-file changes. Direct execution when the scope and the fix are both already obvious.</p></div>
+    <div class="axis-card"><div class="a-title">3.5 &middot; Iterative refinement</div><p>Concrete examples over prose when interpretation is inconsistent. Test-driven iteration. The interview pattern to surface what you hadn't anticipated.</p></div>
     <div class="axis-card"><div class="a-title">3.6 &middot; CI/CD</div><p><code>-p</code> for non-interactive mode, <code>--output-format json</code> with <code>--json-schema</code> for machine-parseable output a pipeline can act on.</p></div>
   </div>
 
@@ -386,17 +389,39 @@
     </div>
   </div>
 
+  <h2>Part 5: getting Parts 1 through 4 right the first few times</h2>
+  <p><a href="https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2F6nizmqk8tpzpfjvt6qmmav7rh%2Fpublic%2F1783542750%2FClaude+Certified+Architect+%E2%80%93+Foundations+Exam+Guide.pdf" target="_blank" rel="noopener noreferrer">Task Statement 3.5</a> (exam guide) isn't a fifth artifact, it's how the first four in this post actually got built. None of them worked on the first pass.</p>
+
+  <div class="axis-grid">
+    <div class="axis-card"><div class="a-title">Concrete examples &middot; Part 2's command</div><p><code>/triage-bug</code>'s first draft, told in prose to "summarize the failure clearly," produced a different shape every run. Two worked input/output examples fixed the format, prose alone hadn't.</p></div>
+    <div class="axis-card"><div class="a-title">Interview pattern &middot; Part 1's CLAUDE.md</div><p>Before writing the rules, asking Claude what would happen if a path-scoped rule and CLAUDE.md disagreed surfaced a conflict case that wasn't obvious from writing the rules alone.</p></div>
+    <div class="axis-card"><div class="a-title">Test-driven iteration &middot; Part 4's reviewer</div><p>The CI reviewer's prompt was shaped against three test PRs with known, pre-decided findings, sharing what it missed or over-flagged each round, not written once and trusted.</p></div>
+  </div>
+
+  <div class="callout blue">
+    <p><strong>Bundled versus sequential:</strong> when the reviewer's prompt had two interacting problems at once, missing a real finding because a false-positive suppression rule was too broad, both went into one message, since fixing either alone risked reintroducing the other. An unrelated formatting complaint from a separate test PR was fixed on its own, in a later pass.</p>
+  </div>
+
+  <div class="deliverable-box">
+    <div class="d-label">Deliverable, Part 5</div>
+    <ul>
+      <li><a href="d3-iterative-refinement.md">d3-iterative-refinement.md</a>: the before-and-after for all three techniques, the command's inconsistent first draft against its example-corrected version, the CLAUDE.md conflict the interview pattern surfaced, and the reviewer prompt's test-driven revision history</li>
+    </ul>
+    <p class="howto"><strong>How to use it:</strong> reference doc, not a file Claude Code loads. Read it before assuming a first-draft command, rule, or CI prompt is done just because it ran once without an error.</p>
+  </div>
+
   <h2>The QA angle: config bugs have no stack trace</h2>
   <p>A wrong assertion fails a test, loudly, with a line number. A rule file scoped to the wrong glob just never loads, silently, and the only symptom is Claude quietly not following a convention nobody remembers to check for.</p>
   <p>Testing configuration itself means testing for absence: create a decoy file outside a rule's glob and confirm the rule doesn't apply to it, run <code>/memory</code> after onboarding a fresh clone and diff what loaded against what you expected, and treat a CI review's schema validation failure as a finding in its own right, not just infrastructure noise to retry past.</p>
 
   <div class="blueprint-box">
     <div class="bp-label">Blueprint tie &middot; D3, 20%, <a href="https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2F6nizmqk8tpzpfjvt6qmmav7rh%2Fpublic%2F1783542750%2FClaude+Certified+Architect+%E2%80%93+Foundations+Exam+Guide.pdf" target="_blank" rel="noopener noreferrer">Task Statements 3.1&ndash;3.6</a> (exam guide)</div>
-    <p>D3 tests configuration as a set of concrete choices, not a vague "set things up well": project-level versus user-level CLAUDE.md (3.1), glob-scoped rules versus directory-bound ones (3.3), a shared command versus an isolated skill (3.2), plan mode versus direct execution against stated criteria (3.4), and a CI pipeline that runs non-interactively with structured output (3.6). Every one of those showed up as a real file in this post, not a description of one.</p>
+    <p>D3 tests configuration as a set of concrete choices, not a vague "set things up well": project-level versus user-level CLAUDE.md (3.1), glob-scoped rules versus directory-bound ones (3.3), a shared command versus an isolated skill (3.2), plan mode versus direct execution against stated criteria (3.4), the techniques that actually got the first four artifacts right (3.5), and a CI pipeline that runs non-interactively with structured output (3.6). Every one of those showed up as a real file in this post, not a description of one.</p>
   </div>
 
   <div class="nav-row">
     <a href="index.html" class="nav-cta secondary">&larr; Back to CCAR-F for QA</a>
+    <a href="d5-context-reliability.html" class="nav-cta primary">Post 03: Context Management &rarr;</a>
   </div>
 
   <div style="margin-top:2.6rem;padding-top:1.6rem;border-top:1px solid var(--border)">

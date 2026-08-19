@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root{--bg:#FAFCF5;--bg2:#F5F7F0;--bg3:#EEF1E7;--border:rgba(26,31,20,0.12);--text:#1A1F14;--text-2:#3D4235;--text-3:#6B7060;--green:#1A7A3A;--green-bg:#D8F0E0;--blue:#2A5C9A;--blue-bg:#DDE8F5;--amber:#9A6E1A;--amber-bg:#F5EDD6;--purple:#7A4A9A;--purple-bg:#EDE0F5;--red:#9A2A4A;--red-bg:#F5DDE5;--teal:#1A6B54;--teal-bg:#D8EEE8;--maroon:#8A4A2A;--maroon-bg:#FAF0E8;--olive:#6B7C3A}
+    :root{--bg:#FAFCF5;--bg2:#F5F7F0;--bg3:#EEF1E7;--border:rgba(26,31,20,0.12);--text:#1A1F14;--text-2:#3D4235;--text-3:#6B7060;--green:#1A7A3A;--green-bg:#D8F0E0;--blue:#2A5C9A;--blue-bg:#DDE8F5;--amber:#9A6E1A;--amber-bg:#F5EDD6;--purple:#7A4A9A;--purple-bg:#EDE0F5;--red:#9A2A4A;--red-bg:#F5DDE5;--teal:#1A6B54;--teal-bg:#D8EEE8;--maroon:#8A4A2A;--maroon-bg:#FAF0E8;--olive:#6B7C3A;--olive-dark:#4A5828}
     html{scroll-behavior:smooth}
     body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;line-height:1.8;-webkit-font-smoothing:antialiased}
     a{color:inherit}
@@ -45,6 +45,11 @@
     .deliverable-box a{color:var(--text);text-decoration:underline;text-underline-offset:2px}
     .howto{font-size:.82rem;color:var(--text-3);margin-top:.9rem;padding-top:.8rem;border-top:1px dashed var(--border)}
     .howto strong{color:var(--text-2);font-weight:500}
+    .fw-table-wrap{overflow-x:auto;margin:.7rem 0 0}
+    table.fw-table{width:100%;border-collapse:collapse;font-size:.78rem;line-height:1.5}
+    table.fw-table th,table.fw-table td{border:1px solid var(--border);padding:.5rem .7rem;text-align:left;vertical-align:top}
+    table.fw-table th{background:var(--bg3);font-weight:600;font-size:.7rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em}
+    table.fw-table td{color:var(--text-2)}
 
     .callout{background:var(--green-bg);border-left:3px solid var(--green);border-radius:0 10px 10px 0;padding:1.1rem 1.4rem;margin:1.5rem 0;font-size:.92rem}
     .callout.amber{background:var(--amber-bg);border-left-color:var(--amber)}
@@ -65,6 +70,8 @@
     .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:2.5rem;flex-wrap:wrap}
     .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:500;font-size:.88rem;padding:.7rem 1.2rem;border-radius:8px}
     .nav-cta.secondary{background:var(--bg3);color:var(--text-2);border:1px solid var(--border)}
+    .nav-cta.primary{background:var(--olive);color:var(--bg)}
+    .nav-cta.primary:hover{background:var(--olive-dark)}
 
     footer{border-top:1px solid var(--border);padding:2rem;text-align:center;font-size:.78rem;color:var(--text-3)}footer a{color:var(--text-3);text-decoration:none}
 
@@ -150,6 +157,15 @@
       <li><a href="d4-few-shot-examples.md">d4-few-shot-examples.md</a>: two examples chosen for the mechanism they teach, not the count</li>
     </ul>
     <p class="howto"><strong>How to use it:</strong> rewrite any confidence adjective in a prompt into a checklist of specific, checkable conditions. If a reviewer can't point to which condition failed when they disagree with a verdict, the criteria aren't explicit enough yet.</p>
+    <div class="fw-table-wrap">
+      <table class="fw-table">
+        <thead><tr><th>File on this page</th><th>Save it to</th><th>Verify with</th></tr></thead>
+        <tbody>
+          <tr><td>d4-explicit-criteria.md</td><td>anywhere, it's a before/after to read, not a file Claude Code loads</td><td>n/a</td></tr>
+          <tr><td>d4-few-shot-examples.md</td><td>anywhere, it's a reference doc to read</td><td>n/a</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <h2>Part 2: a schema that can't lie by omission</h2>
@@ -175,6 +191,14 @@
       <li><a href="d4-structured-verdict.ts">d4-structured-verdict.ts</a>: the full tool schema, nullable fields, and the forced-final-turn <code>tool_choice</code> pattern</li>
     </ul>
     <p class="howto"><strong>How to use it:</strong> define the verdict as a tool with an input schema, force that tool only on the turn meant to be final, and make any field nullable where "I don't know" is a legitimate answer, not a validation failure.</p>
+    <div class="fw-table-wrap">
+      <table class="fw-table">
+        <thead><tr><th>File on this page</th><th>Save it to</th><th>Verify with</th></tr></thead>
+        <tbody>
+          <tr><td>d4-structured-verdict.ts</td><td>anywhere, it's an adaptable pattern, not a standalone script</td><td>n/a</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <h2>Part 3: retrying with the actual error, and knowing when to stop</h2>
@@ -196,6 +220,14 @@
       <li><a href="d4-validation-retry.ts">d4-validation-retry.ts</a>: cross-field validation, a specific-error retry prompt, and a retryable-vs-not check</li>
     </ul>
     <p class="howto"><strong>How to use it:</strong> after parsing structured output, add validation for rules a JSON schema can't express (cross-field logic), and when retrying, always include the exact validation error and the original failed output, never just the original prompt again.</p>
+    <div class="fw-table-wrap">
+      <table class="fw-table">
+        <thead><tr><th>File on this page</th><th>Save it to</th><th>Verify with</th></tr></thead>
+        <tbody>
+          <tr><td>d4-validation-retry.ts</td><td>anywhere, it's an adaptable pattern, not a standalone script</td><td>n/a</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <h2>Part 4: overnight batches, and a reviewer who wasn't there</h2>
@@ -212,6 +244,15 @@
       <li><a href="d4-multi-pass-review.md">d4-multi-pass-review.md</a>: per-file plus integration passes, applied to D5's own three-file checkout investigation</li>
     </ul>
     <p class="howto"><strong>How to use it:</strong> before batching a workflow, check it needs no mid-request tool calls and tolerates real latency. Before reviewing multiple files in one pass, check whether depth is already inconsistent across files, if so, split into per-file passes plus one integration pass.</p>
+    <div class="fw-table-wrap">
+      <table class="fw-table">
+        <thead><tr><th>File on this page</th><th>Save it to</th><th>Verify with</th></tr></thead>
+        <tbody>
+          <tr><td>d4-batch-triage.md</td><td>anywhere, it's a reference doc to read, not a file Claude Code loads</td><td>n/a</td></tr>
+          <tr><td>d4-multi-pass-review.md</td><td>anywhere, it's a reference doc to read</td><td>n/a</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <h2>The QA angle: precision is testable, "sounds careful" isn't</h2>
@@ -223,7 +264,7 @@
   </div>
 
   <div class="nav-row">
-    <a href="index.html" class="nav-cta secondary">&larr; Back to CCAR-F for QA</a>
+    <a href="index.html" class="nav-cta primary">Series overview &rarr;</a>
   </div>
 
   <div style="margin-top:2.6rem;padding-top:1.6rem;border-top:1px solid var(--border)">

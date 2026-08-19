@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root{--bg:#FAFCF5;--bg2:#F5F7F0;--bg3:#EEF1E7;--border:rgba(26,31,20,0.12);--text:#1A1F14;--text-2:#3D4235;--text-3:#6B7060;--green:#1A7A3A;--green-bg:#D8F0E0;--blue:#2A5C9A;--blue-bg:#DDE8F5;--amber:#9A6E1A;--amber-bg:#F5EDD6;--purple:#7A4A9A;--purple-bg:#EDE0F5;--red:#9A2A4A;--red-bg:#F5DDE5;--teal:#1A6B54;--teal-bg:#D8EEE8;--maroon:#8A4A2A;--maroon-bg:#FAF0E8;--olive:#6B7C3A}
+    :root{--bg:#FAFCF5;--bg2:#F5F7F0;--bg3:#EEF1E7;--border:rgba(26,31,20,0.12);--text:#1A1F14;--text-2:#3D4235;--text-3:#6B7060;--green:#1A7A3A;--green-bg:#D8F0E0;--blue:#2A5C9A;--blue-bg:#DDE8F5;--amber:#9A6E1A;--amber-bg:#F5EDD6;--purple:#7A4A9A;--purple-bg:#EDE0F5;--red:#9A2A4A;--red-bg:#F5DDE5;--teal:#1A6B54;--teal-bg:#D8EEE8;--maroon:#8A4A2A;--maroon-bg:#FAF0E8;--olive:#6B7C3A;--olive-dark:#4A5828}
     html{scroll-behavior:smooth}
     body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;line-height:1.8;-webkit-font-smoothing:antialiased}
     a{color:inherit}
@@ -98,6 +98,8 @@
     .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:2.5rem;flex-wrap:wrap}
     .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:500;font-size:.88rem;padding:.7rem 1.2rem;border-radius:8px}
     .nav-cta.secondary{background:var(--bg3);color:var(--text-2);border:1px solid var(--border)}
+    .nav-cta.primary{background:var(--olive);color:var(--bg)}
+    .nav-cta.primary:hover{background:var(--olive-dark)}
 
     footer{border-top:1px solid var(--border);padding:2rem;text-align:center;font-size:.78rem;color:var(--text-3)}footer a{color:var(--text-3);text-decoration:none}
     @media(max-width:620px){nav.site-nav{padding:0 1.25rem}.nav-links{display:none}.blog-header,main{padding-left:1.25rem;padding-right:1.25rem}}
@@ -228,6 +230,18 @@
       <li><a href="d1-triage-agent.ts">d1-triage-agent.ts</a>: the <code>stop_reason</code>-driven agentic implementation, three tools, real live-API calls</li>
       <li><a href="d1-triage-comparison.md">d1-triage-comparison.md</a>: the full scenario-by-scenario comparison and methodology notes</li>
     </ul>
+    <p class="howto"><strong>How to use it:</strong> new to the capsule? The hub's <a href="index.html#setup">before-you-start section</a> covers installing Claude Code and why you don't need PeakAndPack's source. These four files aren't Claude Code config, they're standalone: drop them anywhere in a working folder, and set <code>ANTHROPIC_API_KEY</code> to actually run the two scripts, entirely optional, the comparison above is already worked through, running it yourself just confirms it. No key yet? Create one free at <a href="https://console.anthropic.com" target="_blank" rel="noopener noreferrer">console.anthropic.com</a>.</p>
+    <div class="fw-table-wrap">
+      <table class="fw-table">
+        <thead><tr><th>File on this page</th><th>Save it to</th><th>Verify with</th></tr></thead>
+        <tbody>
+          <tr><td>d1-triage-scenarios.md</td><td>anywhere, it's the source for each scenario's input</td><td>n/a, reference doc</td></tr>
+          <tr><td>d1-triage-workflow.ts</td><td>anywhere, e.g. project root</td><td><code>npx tsx d1-triage-workflow.ts &lt;path-to-failure.json&gt;</code></td></tr>
+          <tr><td>d1-triage-agent.ts</td><td>same folder as the workflow script</td><td><code>npx tsx d1-triage-agent.ts &lt;path-to-failure.json&gt;</code></td></tr>
+          <tr><td>d1-triage-comparison.md</td><td>anywhere, it's the worked results to read against your own run</td><td>n/a, reference doc</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <div class="callout amber">
@@ -319,6 +333,51 @@
     <ul>
       <li><a href="d1-coordinator-subagents.ts">d1-coordinator-subagents.ts</a>: coordinator + two subagent definitions, a <code>PostToolUse</code> normalization hook, and a tool-interception prerequisite gate</li>
     </ul>
+    <p class="howto"><strong>How to use it:</strong> read this one, don't run it as-is. It models the Agent SDK's documented shape, not copy-paste production code, check the current SDK docs for exact call syntax before running it for real.</p>
+    <div class="fw-table-wrap">
+      <table class="fw-table">
+        <thead><tr><th>File on this page</th><th>Save it to</th><th>Verify with</th></tr></thead>
+        <tbody>
+          <tr><td>d1-coordinator-subagents.ts</td><td>anywhere, it's illustrative of the pattern, not a file Claude Code loads</td><td>n/a</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <h2>Part 4: decomposing the sweep, and picking the session back up</h2>
+  <p><a href="https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2F6nizmqk8tpzpfjvt6qmmav7rh%2Fpublic%2F1783542750%2FClaude+Certified+Architect+%E2%80%93+Foundations+Exam+Guide.pdf" target="_blank" rel="noopener noreferrer">Task Statements 1.6 and 1.7</a> (exam guide) stop mattering at the scale of one bug. They show up once the work is the whole 11-bug catalog instead of BUG-011 alone, and once the investigation spans more than one sitting.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 700 150" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" role="img" aria-label="Two decomposition shapes side by side. Fixed pipeline: 11 known bugs checked in the same order every sweep. Dynamic decomposition: an unfiled batch where each check's target depends on what the previous check found.">
+      <rect x="20" y="20" width="310" height="100" rx="8" fill="#F5EDD6" stroke="#9A6E1A" stroke-width="1.5"/>
+      <text x="175" y="46" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="12" font-weight="700" fill="#9A6E1A">FIXED PIPELINE</text>
+      <text x="175" y="68" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="#3D4235">11 known bugs, same order,</text>
+      <text x="175" y="84" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="#3D4235">every release sweep</text>
+      <text x="175" y="104" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#6B7060">decided before the sweep starts</text>
+
+      <rect x="370" y="20" width="310" height="100" rx="8" fill="#EDE0F5" stroke="#7A4A9A" stroke-width="1.5"/>
+      <text x="525" y="46" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="12" font-weight="700" fill="#7A4A9A">DYNAMIC DECOMPOSITION</text>
+      <text x="525" y="68" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="#3D4235">unfiled batch: catalog, then reports,</text>
+      <text x="525" y="84" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10" fill="#3D4235">then live API, only as far as needed</text>
+      <text x="525" y="104" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#6B7060">generated by what the last check found</text>
+    </svg>
+  </div>
+
+  <div class="axis-grid">
+    <div class="axis-card"><div class="a-title">Fixed pipeline, known catalog</div><p>Re-verifying all 11 catalogued bugs before a release: same repro steps, same order, every time. Predictable on purpose.</p></div>
+    <div class="axis-card"><div class="a-title">Dynamic decomposition, unfiled batch</div><p>A fresh batch of unfiled reports: what the first check turns up decides whether the second one runs at all.</p></div>
+  </div>
+
+  <div class="callout amber">
+    <p><strong>Session state, once the sweep spans more than one sitting:</strong> resume a named session when nothing's changed since it paused. Start fresh with a structured summary when the code moved underneath it, a resumed session reasoning from stale tool results is worse than no session at all. Fork when two remediation strategies both need investigating from the same baseline without re-running the sweep twice.</p>
+  </div>
+
+  <div class="deliverable-box">
+    <div class="d-label">Deliverable, Part 4</div>
+    <ul>
+      <li><a href="d1-sweep-decomposition.md">d1-sweep-decomposition.md</a>: the fixed-pipeline checklist for the known catalog, a dynamic-decomposition worked example for an unfiled batch, and the session commands for picking the sweep back up correctly</li>
+    </ul>
+    <p class="howto"><strong>How to use it:</strong> reference doc, not a file Claude Code loads. Run the fixed-pipeline checklist before a release, use the dynamic-decomposition example as a template the next time triage is genuinely open-ended.</p>
   </div>
 
   <h2>The QA angle: an agent has no fixed test plan</h2>
@@ -331,12 +390,13 @@
   <p>That's the real shift agentic architecture asks of a QA seat. Not new tools so much as a different definition of what a passing test even means: from "did this call return the right value" to "does this system's behaviour, across many runs, stay inside bounds I've actually measured."</p>
 
   <div class="blueprint-box">
-    <div class="bp-label">Blueprint tie &middot; D1, 27%, <a href="https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2F6nizmqk8tpzpfjvt6qmmav7rh%2Fpublic%2F1783542750%2FClaude+Certified+Architect+%E2%80%93+Foundations+Exam+Guide.pdf" target="_blank" rel="noopener noreferrer">Task Statements 1.1&ndash;1.5</a> (exam guide)</div>
-    <p>D1 is the heaviest domain on the exam, and it's tested at the level of specific mechanisms, not general philosophy: does your loop check <code>stop_reason</code> or something weaker (1.1), does your coordinator delegate through the <code>Task</code> tool with isolated subagent context instead of one overloaded agent (1.2, 1.3), and do your business-critical rules live in a hook or in a hopeful sentence in the system prompt (1.4, 1.5). All three showed up as real, checkable choices in this one triage task.</p>
+    <div class="bp-label">Blueprint tie &middot; D1, 27%, <a href="https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2F6nizmqk8tpzpfjvt6qmmav7rh%2Fpublic%2F1783542750%2FClaude+Certified+Architect+%E2%80%93+Foundations+Exam+Guide.pdf" target="_blank" rel="noopener noreferrer">Task Statements 1.1&ndash;1.7</a> (exam guide)</div>
+    <p>D1 is the heaviest domain on the exam, and it's tested at the level of specific mechanisms, not general philosophy: does your loop check <code>stop_reason</code> or something weaker (1.1), does your coordinator delegate through the <code>Task</code> tool with isolated subagent context instead of one overloaded agent (1.2, 1.3), do your business-critical rules live in a hook or in a hopeful sentence in the system prompt (1.4, 1.5), and does the shape of the investigation, plus how a session gets picked back up, match the shape of the actual work (1.6, 1.7). All four showed up as real, checkable choices across this post's triage work.</p>
   </div>
 
   <div class="nav-row">
     <a href="index.html" class="nav-cta secondary">&larr; Back to CCAR-F for QA</a>
+    <a href="d3-claude-code-configuration.html" class="nav-cta primary">Post 02: Claude Code Configuration and Workflows &rarr;</a>
   </div>
 
   <div style="margin-top:2.6rem;padding-top:1.6rem;border-top:1px solid var(--border)">
