@@ -72,6 +72,7 @@
 
     .axis-grid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin:1.4rem 0}
     .axis-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:.9rem 1.1rem}
+    .four-things .axis-card{border-color:var(--green)}
     .axis-card .a-title{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--teal);font-weight:600;margin-bottom:.4rem}
     .axis-card p{font-size:.86rem;margin-bottom:0;color:var(--text-2)}
 
@@ -144,7 +145,7 @@
   <p>Building an agent to do this triage touches almost every task statement in D1: how the loop knows when to stop, whether one agent or several should investigate, and what has to be guaranteed rather than just requested.</p>
 
   <h2>Four things D1 actually asks you to know</h2>
-  <div class="axis-grid">
+  <div class="axis-grid four-things">
     <div class="axis-card"><div class="a-title">1.1 &middot; The loop</div><p>Continue on <code>stop_reason: "tool_use"</code>, stop on <code>"end_turn"</code>. Not text parsing, not an iteration count as the primary signal.</p></div>
     <div class="axis-card"><div class="a-title">1.2 / 1.3 &middot; Coordination</div><p>A coordinator delegates via the <code>Task</code> tool. Subagents get an isolated context, they see only what's explicitly in their prompt.</p></div>
     <div class="axis-card"><div class="a-title">1.4 / 1.5 &middot; Enforcement</div><p>Hooks give deterministic guarantees. Prompt instructions alone have a non-zero failure rate on rules that must always hold.</p></div>
@@ -384,7 +385,12 @@ Actual: false. Failing item: { id: 4, name: "Sleeping Bag (-15C)", price: -89 }<
       <li>What two conditions must <strong>both</strong> be true before <code>blockPrematureFiling</code> allows a new bug report to be filed?</li>
       <li>Where does the coordinator's own instructions say to spawn both subagents in parallel, not one after the other, and why does that matter here?</li>
     </ol>
-    <p class="howto">(1) <code>check_live_api</code> only, its <code>tools: [...]</code> array on line 28 doesn't list the others, an isolated agent can't reach past what it's explicitly scoped to. (2) <code>state.reproductionVerified</code> and <code>state.reportsSearched</code> must both be true, see line 65, either one missing blocks the filing. (3) The coordinator's <code>systemPrompt</code>, "IN PARALLEL, in a single response with two Task calls, not one after the other", it matters because the two subagents don't depend on each other's results, so running them sequentially would only add latency for nothing, the same reasoning as the "why parallel, not sequential" card above.</p>
+    <p class="howto"><strong>Answers:</strong></p>
+    <ol>
+      <li><code>check_live_api</code> only, its <code>tools: [...]</code> array on line 28 doesn't list the others, an isolated agent can't reach past what it's explicitly scoped to.</li>
+      <li><code>state.reproductionVerified</code> and <code>state.reportsSearched</code> must both be true, see line 65, either one missing blocks the filing.</li>
+      <li>The coordinator's <code>systemPrompt</code>, "IN PARALLEL, in a single response with two Task calls, not one after the other". It matters because the two subagents don't depend on each other's results, so running them sequentially would only add latency for nothing, the same reasoning as the "why parallel, not sequential" card above.</li>
+    </ol>
   </div>
 
   <h2>Part 4: decomposing the sweep, and picking the session back up</h2>
@@ -413,7 +419,12 @@ Actual: false. Failing item: { id: 4, name: "Sleeping Bag (-15C)", price: -89 }<
   </div>
 
   <div class="callout amber">
-    <p><strong>Session state, once the sweep spans more than one sitting:</strong> resume a named session when nothing's changed since it paused. Start fresh with a structured summary when the code moved underneath it, a resumed session reasoning from stale tool results is worse than no session at all. Fork when two remediation strategies both need investigating from the same baseline without re-running the sweep twice.</p>
+    <p><strong>Session state, once the sweep spans more than one sitting:</strong></p>
+    <ul>
+      <li><strong>Resume</strong> a named session when nothing's changed since it paused.</li>
+      <li><strong>Start fresh</strong> with a structured summary when the code moved underneath it, a resumed session reasoning from stale tool results is worse than no session at all.</li>
+      <li><strong>Fork</strong> when two remediation strategies both need investigating from the same baseline, without re-running the sweep twice.</li>
+    </ul>
   </div>
 
   <div class="deliverable-box">
@@ -424,7 +435,8 @@ Actual: false. Failing item: { id: 4, name: "Sleeping Bag (-15C)", price: -89 }<
     <p class="howto"><strong>How to use it:</strong> reference doc, not a file Claude Code loads. Run the fixed-pipeline checklist before a release, use the dynamic-decomposition example as a template the next time triage is genuinely open-ended.</p>
   </div>
 
-  <h2>The QA angle: an agent has no fixed test plan</h2>
+  <h2>The QA angle</h2>
+  <h3>How to test: an agent has no fixed test plan</h3>
   <p>You can write one unit test for the workflow: this exact input, this exact output, every time. That test means something, because the workflow's execution path never changes.</p>
   <p>You can't write that same test for the agent. It might call zero tools or three, in any order, and still land on a correct verdict, or call the same three and land on a wrong one. A single assertion tells you almost nothing about whether it's reliable.</p>
 
@@ -433,7 +445,7 @@ Actual: false. Failing item: { id: 4, name: "Sleeping Bag (-15C)", price: -89 }<
   <p>What replaces the single assertion is eval-style testing: run the same scenario many times, measure the distribution of outcomes, track tool-call count as its own metric, and treat "did it converge within the iteration cap" as a pass condition in its own right, not just "was the final answer correct."</p>
   <p>That's the real shift agentic architecture asks of a QA seat. Not new tools so much as a different definition of what a passing test even means: from "did this call return the right value" to "does this system's behaviour, across many runs, stay inside bounds I've actually measured."</p>
 
-  <h3>When you'll actually reach for this</h3>
+  <h3>Applying what we learnt to your own projects</h3>
   <p>Not in the abstract, at specific moments:</p>
   <ul>
     <li><strong>A design review proposes "add an agent"</strong> without saying why a fixed workflow can't do the job. Ask what the agent gets that the workflow doesn't, tools, judgement, live verification, if the answer is vague, the architecture choice hasn't actually been made yet, it's been assumed.</li>
