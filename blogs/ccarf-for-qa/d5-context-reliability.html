@@ -73,6 +73,7 @@
     .stat-strip .s1{background:var(--green-bg)}.stat-strip .s1 .stat-num{color:var(--green)}
     .stat-strip .s2{background:var(--red-bg)}.stat-strip .s2 .stat-num{color:var(--red)}
     .stat-strip .s3{background:var(--teal-bg)}.stat-strip .s3 .stat-num{color:var(--teal)}
+    .four-things .axis-card{border-color:var(--green)}
 
 
     .reveal-box{background:var(--bg2);border:1px solid var(--border);border-radius:12px;margin:1.75rem 0;overflow:hidden}
@@ -130,9 +131,10 @@
 
   <p>D5 is the lightest domain by weight, 15%, and the easiest to underrate because none of it is about getting an answer right. It's about what's still true, still attributed, and still legible after a session runs long enough to stop being a single clean exchange.</p>
   <p>Every deliverable below reuses Post 01's triage agent and Post 01's own real finding, a live discrepancy the catalog didn't know about, because D5 isn't a new task, it's what happens to an existing one under pressure: more tool calls, more time, more sources that might disagree.</p>
+  <p><strong>Context, in plain terms:</strong> everything Claude can currently see and reason from in one exchange, the conversation so far, any files it's read, every tool result returned. It isn't infinite, and what stays inside it, what gets trimmed, and what quietly gets forgotten is exactly what this domain is about.</p>
 
   <h2>Four things D5 actually asks you to know</h2>
-  <div class="axis-grid">
+  <div class="axis-grid four-things">
     <div class="axis-card"><div class="a-title">5.1 &middot; What survives</div><p>A persistent case-facts block, placed first, holding exact values. Verbose tool output gets trimmed before it accumulates, not summarized after.</p></div>
     <div class="axis-card"><div class="a-title">5.2 / 5.3 &middot; Escalate or propagate</div><p>Explicit criteria beat sentiment or self-reported confidence. A failed tool call reports what actually happened, not a generic status.</p></div>
     <div class="axis-card"><div class="a-title">5.4 &middot; What outlives a restart</div><p>Scratchpad files, subagent delegation for verbose exploration, <code>/compact</code> between phases, a manifest for crash recovery.</p></div>
@@ -193,6 +195,16 @@
         </tbody>
       </table>
     </div>
+    <p class="howto"><strong>Try it:</strong> this file isn't meant to run on its own, so open it and find two specific things instead. Each has a real, checkable answer in the file:</p>
+    <ol>
+      <li>If <code>check_live_api</code> returns a result with no <code>status</code> field at all, what happens to <code>observedStatus</code>, does it get wiped out or does it keep its previous value?</li>
+      <li>Where does the case-facts block actually get placed in the next prompt, and why does that positioning matter?</li>
+    </ol>
+    <p class="howto"><strong>Answers:</strong></p>
+    <ol>
+      <li>It keeps its previous value. The <code>??</code> operator on <code>rawResult.status ?? existing.observedStatus</code> only replaces the existing value when the new one is null or undefined, a missing field can't silently erase something already captured.</li>
+      <li>At the START of the next prompt, per the comment above <code>caseFactsBlock</code>. That's a direct application of the "lost in the middle" finding from the reveal box above, the position most reliably read by the model is the start (or end), not buried in a growing history.</li>
+    </ol>
   </div>
 
   <h2>Part 2: escalate, or propagate what actually happened</h2>
@@ -227,7 +239,13 @@
     <p><strong>The BUG-011 mistake, generalized:</strong> a 200 response with an empty result set is not the same event as a 503 or a network timeout, but a generic error handler often treats "nothing came back" identically regardless of why. Conflating "the endpoint answered and the answer was empty" with "the endpoint never answered" is the same category error as the catalog/live discrepancy from Post 01.</p>
   </div>
 
-  <p>Escalation criteria run on the same principle as error handling: specific and explicit, not a vibe. The agent escalates when the live check contradicts the catalog, when a developer's test output explicitly asks for a human, or when two catalog entries match ambiguously, never on self-reported confidence or sentiment alone, both of which the guide names directly as unreliable proxies for actual complexity.</p>
+  <p>Escalation criteria run on the same principle as error handling: specific and explicit, not a vibe. The agent escalates when:</p>
+  <ul>
+    <li>The live check contradicts the catalog.</li>
+    <li>A developer's test output explicitly asks for a human.</li>
+    <li>Two catalog entries match ambiguously.</li>
+  </ul>
+  <p>Never on self-reported confidence or sentiment alone, both of which the guide names directly as unreliable proxies for actual complexity.</p>
 
   <div class="deliverable-box">
     <div class="d-label">Deliverable, Part 2</div>
@@ -245,9 +263,20 @@
         </tbody>
       </table>
     </div>
+    <p class="howto"><strong>Try it:</strong> this file isn't meant to run on its own, so open it and find two specific things instead. Each has a real, checkable answer in the file:</p>
+    <ol>
+      <li>A 200 response with an empty result set, is that <code>ok: true</code> or <code>ok: false</code>? What real PeakAndPack mistake does this line exist to avoid repeating?</li>
+      <li>What does <code>recoveryDecision</code> do differently for a <code>failureType: "access"</code> result versus an <code>"unresolvable"</code> one?</li>
+    </ol>
+    <p class="howto"><strong>Answers:</strong></p>
+    <ol>
+      <li><code>ok: true</code>, per the comment directly above the return, a valid empty result is not a failure. This is the BUG-011 mistake generalized, treating "the endpoint answered and the answer was empty" the same as "the endpoint never answered" at all.</li>
+      <li>Access failures (a 503 cold start) get retried locally inside the subagent, no propagation yet. Unresolvable failures get propagated to the coordinator with partial results and alternatives attached, never suppressed or silently marked as success.</li>
+    </ol>
   </div>
 
   <h2>Part 3: the scratchpad that survives a restart</h2>
+  <p><strong>Scratchpad and <code>/compact</code>, in plain terms:</strong> a <strong>scratchpad</strong> is just a plain file the agent writes its own findings to as it works, nothing built into Claude Code, a habit adopted deliberately for long investigations. <code>/compact</code> is a real Claude Code command that compresses the conversation so far into a shorter summary, freeing up room to keep working in the same session instead of starting completely over.</p>
   <p>The triage task doesn't run long enough to need this. A regression investigation spanning cart, checkout, and shared pricing logic does. Past a certain point in an unaided session, the guide's own failure mode shows up: the agent starts referencing "typical patterns" instead of the specific line it found forty tool calls ago.</p>
 
   <details class="reveal-box">
@@ -332,7 +361,9 @@
 }</code></pre>
   <p>High confidence in what was directly observed, low confidence in which catalog entry it belongs to. One collapsed number would have hidden that split entirely.</p>
 
-  <p>Provenance is the same discipline applied to sources instead of fields. The correct shape for the BUG-011 conflict never picks a winner:</p>
+  <p>A field-level confidence score is only as trustworthy as what it's checked against. The way to actually calibrate it: keep a small labeled set where the real, verified outcome is already known, then compare the model's stated confidence per field against how often it was actually right at that confidence level. A field that says "high" but is wrong a third of the time on the labeled set needs its threshold recalibrated before it's trusted to skip human review.</p>
+
+  <p><strong>Provenance, in plain terms:</strong> which source a specific claim actually came from, kept attached to that claim, instead of merging several sources into one answer that no longer says where any part of it came from. Provenance is the same discipline applied to sources instead of fields. The correct shape for the BUG-011 conflict never picks a winner:</p>
   <pre><code>{
   "claims": [
     { "source": "bug-catalog", "claim": "returns 500 on empty query" },
@@ -340,6 +371,8 @@
   ],
   "conflictDetected": true
 }</code></pre>
+
+  <p>One more field belongs in that claims array: when each source's information is actually from. <code>d5-case-facts.ts</code>'s <code>liveCheckTimestamp</code> already captures this for the live-check side, and it matters beyond bookkeeping, without a date attached, two sources that disagree because one is simply older read as a contradiction instead of what they actually are, the world changing between two honest, correctly-reported snapshots. BUG-011 itself is a live example: the catalog's claim isn't wrong exactly, it's just from before this behavior changed. A date on each claim is what lets a reader tell "these conflict" apart from "this one's stale."</p>
 
   <div class="deliverable-box">
     <div class="d-label">Deliverable, Part 4</div>
@@ -359,8 +392,17 @@
     </div>
   </div>
 
-  <h2>The QA angle: reliability is a property of the session, not the answer</h2>
+  <h2>The QA angle</h2>
+  <h3>How to test: reliability is a property of the session, not the answer</h3>
   <p>A single triage verdict can be correct and the system can still be unreliable, if getting there depended on context that happened not to overflow yet, or on a source conflict that happened not to come up. D5 is what a QA seat actually owns here: not whether one run got the right answer, but whether the same system stays right at call fifty, after a restart, and when two sources disagree.</p>
+
+  <h3>Applying what we learnt to your own projects</h3>
+  <ul>
+    <li><strong>An agent starts giving vaguer, less specific answers the longer a session runs:</strong> that's the "lost in the middle" effect from Part 1, not the model getting worse, check whether the specific values it needs are still near the start of the prompt or buried in a growing history.</li>
+    <li><strong>An agent silently treats "no results" the same as "the request failed":</strong> that's the BUG-011 mistake from Part 2, a valid empty response and a genuine failure need different handling, conflating them hides real problems and creates false ones.</li>
+    <li><strong>A long investigation gets interrupted, a crash, a closed terminal, a context limit hit:</strong> that's exactly what Part 3's scratchpad pattern is for, findings that live on disk, referenced by path, survive a restart in a way that conversation history alone doesn't.</li>
+    <li><strong>A system reports one aggregate accuracy number and everyone treats it as settled:</strong> per Part 4, that number can hide a category the system is quietly, consistently wrong on. Ask for the breakdown, not just the average.</li>
+  </ul>
 
   <div class="blueprint-box">
     <div class="bp-label">Blueprint tie &middot; D5, 15%, <a href="https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2F6nizmqk8tpzpfjvt6qmmav7rh%2Fpublic%2F1783542750%2FClaude+Certified+Architect+%E2%80%93+Foundations+Exam+Guide.pdf" target="_blank" rel="noopener noreferrer">Task Statements 5.1&ndash;5.6</a> (exam guide)</div>

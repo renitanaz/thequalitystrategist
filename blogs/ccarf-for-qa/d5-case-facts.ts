@@ -17,6 +17,10 @@
 // Not run against a live key in this environment, see the methodology
 // note in the main post. The extraction logic itself is real.
 
+// "interface" names this exact shape, every CaseFacts value has these
+// six fields. "string | null" on each one means the value is either
+// real text or explicitly null, "we don't know this yet" is a real,
+// distinguishable state, not just a missing key.
 interface CaseFacts {
   bugIdUnderInvestigation: string | null;
   endpointChecked: string | null;
@@ -35,11 +39,21 @@ function extractCaseFacts(
   existing: CaseFacts
 ): CaseFacts {
   if (toolName === "check_live_api") {
+    // "{ ...existing, someField: newValue }" spreads every field from
+    // the existing CaseFacts object into a new one, then overwrites
+    // just the fields listed after it, so anything already known and
+    // not touched here carries forward unchanged. "??" is the
+    // nullish-coalescing operator, "use the left side, unless it's
+    // null or undefined, then fall back to the right side", so a
+    // missing field in this particular tool result doesn't erase a
+    // value already captured earlier.
     return {
       ...existing,
       endpointChecked: rawResult.endpoint ?? existing.endpointChecked,
       observedStatus: rawResult.status ?? existing.observedStatus,
       liveCheckTimestamp: new Date().toISOString(),
+      // A ternary: condition ? valueIfTrue : valueIfFalse, on one
+      // line instead of a full if/else block.
       liveClaim:
         rawResult.status === 200
           ? "reproduces as documented"
@@ -47,6 +61,15 @@ function extractCaseFacts(
     };
   }
   if (toolName === "search_bug_catalog") {
+    // "const [firstMatch] = rawResult.matches ?? []" is array
+    // destructuring: it pulls just the first element out of the
+    // matches array and names it firstMatch. The "?? []" means if
+    // matches is missing entirely, fall back to an empty array first,
+    // so this line can't crash on a result with no matches field.
+    // "firstMatch?.[0]" is optional chaining, if firstMatch turned
+    // out to be undefined (no matches at all), this evaluates to
+    // undefined instead of throwing, rather than crashing trying to
+    // read index 0 off of nothing.
     const [firstMatch] = rawResult.matches ?? [];
     return {
       ...existing,
@@ -62,6 +85,9 @@ function extractCaseFacts(
 // position-aware ordering skill point), not the raw multi-hundred-byte
 // tool result buried in the middle of a growing history.
 function caseFactsBlock(facts: CaseFacts): string {
+  // Another template literal: everything inside ${ } gets substituted
+  // with the real field value at the time this runs, producing one
+  // short block of plain text ready to prepend to the next prompt.
   return `CASE FACTS (verified, not summarized):
 - Bug under investigation: ${facts.bugIdUnderInvestigation ?? "none yet"}
 - Catalog claims: ${facts.catalogClaim ?? "no match found"}

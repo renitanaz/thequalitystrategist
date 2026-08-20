@@ -245,11 +245,11 @@
         <thead><tr><th>File on this page</th><th>Save it to</th><th>Verify with</th></tr></thead>
         <tbody>
           <tr><td>d1-triage-scenarios.md</td><td>anywhere, it's the source for each scenario's input</td><td>n/a, reference doc</td></tr>
-          <tr><td>d1-triage-workflow.ts</td><td>anywhere, e.g. project root</td><td><code>npx tsx d1-triage-workflow.ts &lt;path-to-failure.json&gt;</code></td></tr>
-          <tr><td>d1-triage-agent.ts</td><td>same folder as the workflow script</td><td><code>npx tsx d1-triage-agent.ts &lt;path-to-failure.json&gt;</code></td></tr>
+          <tr><td>d1-triage-workflow.ts</td><td>anywhere, e.g. project root</td><td><code>npx tsx d1-triage-workflow.ts &lt;path-to-failure.txt&gt;</code></td></tr>
+          <tr><td>d1-triage-agent.ts</td><td>same folder as the workflow script</td><td><code>npx tsx d1-triage-agent.ts &lt;path-to-failure.txt&gt;</code></td></tr>
           <tr><td>d1-triage-comparison.md</td><td>anywhere, it's the worked results to read against your own run</td><td>n/a, reference doc</td></tr>
-          <tr><td>d1-triage-workflow.py</td><td>anywhere, e.g. project root</td><td><code>python d1-triage-workflow.py &lt;path-to-failure.json&gt;</code></td></tr>
-          <tr><td>d1-triage-agent.py</td><td>same folder as the other Python script</td><td><code>python d1-triage-agent.py &lt;path-to-failure.json&gt;</code></td></tr>
+          <tr><td>d1-triage-workflow.py</td><td>anywhere, e.g. project root</td><td><code>python d1-triage-workflow.py &lt;path-to-failure.txt&gt;</code></td></tr>
+          <tr><td>d1-triage-agent.py</td><td>same folder as the other Python script</td><td><code>python d1-triage-agent.py &lt;path-to-failure.txt&gt;</code></td></tr>
         </tbody>
       </table>
     </div>
@@ -257,12 +257,14 @@
     <pre><code>Test: "product list has no negative prices"
 Expected: products.every(p =&gt; p.price &gt;= 0)
 Actual: false. Failing item: { id: 4, name: "Sleeping Bag (-15C)", price: -89 }</code></pre>
-    <p class="howto">TypeScript: run <code>npx tsx d1-triage-workflow.ts scenario-1.txt</code> and <code>npx tsx d1-triage-agent.ts scenario-1.txt</code>. Python: <code>pip install anthropic requests</code> first, then <code>python d1-triage-workflow.py scenario-1.txt</code> and <code>python d1-triage-agent.py scenario-1.txt</code>, same logic, same output, no async/await to work through. Either way, both need <code>ANTHROPIC_API_KEY</code> set first. Expect a JSON verdict matching <code>BUG-001</code> from both, the interesting differences show up on Scenario 3 and Scenario 6, where the agent's live-check tool catches something the workflow can't.</p>
+    <ul class="howto-list">
+      <li><strong>TypeScript:</strong> run <code>npx tsx d1-triage-workflow.ts scenario-1.txt</code> and <code>npx tsx d1-triage-agent.ts scenario-1.txt</code>.</li>
+      <li><strong>Python:</strong> <code>pip install anthropic requests</code> first, then <code>python d1-triage-workflow.py scenario-1.txt</code> and <code>python d1-triage-agent.py scenario-1.txt</code>, same logic, same output, no async/await to work through.</li>
+      <li>Either way, both need <code>ANTHROPIC_API_KEY</code> set first.</li>
+      <li>Expect a JSON verdict matching <code>BUG-001</code> from both, the interesting differences show up on Scenario 3 and Scenario 6, where the agent's live-check tool catches something the workflow can't.</li>
+    </ul>
   </div>
 
-  <div class="callout amber">
-    <p><strong>On methodology.</strong> No live Anthropic API key in this environment, so the verdicts above were reasoned through by hand, not produced by running the scripts. Every live-API claim is real though: the search-endpoint and product-data results were fetched from the actual PeakAndPack API while writing this. The scripts are complete and correct, ready to run against a real key.</p>
-  </div>
 
   <h3>A real bug this comparison caught, after publishing</h3>
   <p>A reader ran both scripts for real against Scenario 2 (the BUG-011 case) and hit something worth documenting: instead of a clean verdict, both scripts kept returning the fallback shape, <code>{"match": null, "confidence": "low", "action": "file-new"}</code>, as if Claude had no idea what it was looking at.</p>
@@ -279,7 +281,12 @@ Actual: false. Failing item: { id: 4, name: "Sleeping Bag (-15C)", price: -89 }<
     <figcaption>The same scenario, run again: this time Claude replied with plain JSON, no fence, and the script worked correctly. The fencing isn't consistent from run to run.</figcaption>
   </figure>
 
-  <p>That inconsistency is the real finding. It wasn't that Claude always fences its JSON, or never does, it does it sometimes, unpredictably. A script that only handles the unfenced case will work fine in testing and then fail silently in production the first time a fence shows up, exactly the kind of intermittent, hard-to-reproduce bug this post's own QA angle section talks about later. Both scripts on this page have since been fixed to strip a leading or trailing code fence before parsing, and their prompts now explicitly forbid fences, backticks, and explanations. If you're adapting this pattern elsewhere, don't trust a plain-text JSON request to actually stay plain text, verify what the model sends back before assuming a parse failure means the model was wrong.</p>
+  <p>That inconsistency is the real finding: Claude doesn't always fence its JSON, or never fence it, it does it sometimes, unpredictably.</p>
+  <ul class="howto-list">
+    <li>A script that only handles the unfenced case will work fine in testing and then fail silently in production the first time a fence shows up, exactly the kind of intermittent, hard-to-reproduce bug this post's own QA angle section talks about later.</li>
+    <li>Both scripts on this page have since been fixed to strip a leading or trailing code fence before parsing, and their prompts now explicitly forbid fences, backticks, and explanations.</li>
+    <li>If you're adapting this pattern elsewhere: don't trust a plain-text JSON request to actually stay plain text. Verify what the model sends back before assuming a parse failure means the model was wrong.</li>
+  </ul>
 
   <h2>Part 2: one agent or several?</h2>
   <p>So far this post has treated "the agent" as a single thing working alone. It doesn't have to be. A <strong>coordinator</strong> is one agent whose only job is to break a task into pieces and hand each piece to a <strong>subagent</strong>, a smaller agent with its own instructions and its own tools, that does one specific job and reports back. The coordinator never investigates anything itself, it only decides who does what and combines what comes back. Each subagent also gets an <strong>isolated context</strong>, meaning it starts with no memory of the coordinator's conversation or of any other subagent, only what's explicitly handed to it.</p>

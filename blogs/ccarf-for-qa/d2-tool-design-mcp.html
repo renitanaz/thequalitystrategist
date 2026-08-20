@@ -63,6 +63,7 @@
     .axis-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:.9rem 1.1rem}
     .axis-card .a-title{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--teal);font-weight:600;margin-bottom:.4rem}
     .axis-card p{font-size:.86rem;margin-bottom:0;color:var(--text-2)}
+    .four-things .axis-card{border-color:var(--green)}
 
     .pull-quote{font-family:'DM Serif Display',serif;font-style:italic;font-size:1.25rem;line-height:1.5;color:var(--text);border-left:3px solid var(--teal);padding:.3rem 0 .3rem 1.3rem;margin:2rem 0}
 
@@ -123,9 +124,10 @@
 
   <p>D2 doesn't test whether a tool works. It tests whether an agent can tell, from the description alone, which tool to call, what happens when the call fails, and whether it should even have access to that tool in the first place. All three questions get answered before a single tool actually runs.</p>
   <p>Every example below is a real PeakAndPack tool, most reused from Post 01 and Post 03, sharpened against a specific D2 task statement instead of just working.</p>
+  <p><strong>Tool, tool description, and MCP, in plain terms:</strong> a <strong>tool</strong> is a specific action Claude can take beyond just writing text, checking a live API, searching a catalog, editing a file. Claude never sees how a tool actually works internally, only its <strong>description</strong>, a short block of text telling it what the tool does, what to send it, and when to use it. That description is the entire basis for every decision this post covers. <strong>MCP (Model Context Protocol)</strong> is the standard way Claude Code connects to a set of tools that live outside Claude Code itself, in a separate small program called an "MCP server," instead of every tool being built directly into Claude Code. Every PeakAndPack tool in this post could be shipped as an MCP server, Part 4 shows what that actually looks like.</p>
 
   <h2>Four things D2 actually asks you to know</h2>
-  <div class="axis-grid">
+  <div class="axis-grid four-things">
     <div class="axis-card"><div class="a-title">2.1 &middot; Descriptions</div><p>The description is the primary way a model selects a tool. Ambiguous or overlapping descriptions cause misrouting, not model failure.</p></div>
     <div class="axis-card"><div class="a-title">2.2 &middot; Structured errors</div><p><code>isError</code> plus a category (transient, validation, business, permission) plus a retryable flag, not a generic failure string.</p></div>
     <div class="axis-card"><div class="a-title">2.3 &middot; Scope &amp; choice</div><p>Fewer tools per agent beats more. <code>tool_choice</code> forced only for a genuinely fixed first step.</p></div>
@@ -165,6 +167,7 @@
       <li><a href="d2-tool-descriptions.md">d2-tool-descriptions.md</a>: the full before/after, plus the four questions a description should always answer</li>
     </ul>
     <p class="howto"><strong>How to use it:</strong> for any MCP tool description, check it states input format, output shape, when to use it, and when NOT to (naming the sibling tool). A description missing that last part is usually the one causing misrouting.</p>
+    <p class="howto"><strong>One more place misrouting hides:</strong> a well-written description can still get overridden by the system prompt. Keyword-sensitive instructions elsewhere ("always prefer checking data directly" written before the split happened) can pull an agent back toward the wrong tool even after its description is fixed, worth a re-read of the system prompt itself when a rewritten description doesn't actually fix the misrouting.</p>
     <div class="fw-table-wrap">
       <table class="fw-table">
         <thead><tr><th>File on this page</th><th>Save it to</th><th>Verify with</th></tr></thead>
@@ -176,6 +179,7 @@
   </div>
 
   <h2>Part 2: an error that tells the agent what to do next</h2>
+  <p><strong>isError, in plain terms:</strong> when a tool call fails, the response can either look like ordinary data and leave the model to guess something's wrong, or it can carry an explicit <code>isError: true</code> flag that says so outright. MCP standardizes the second option.</p>
   <p><a href="https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2F6nizmqk8tpzpfjvt6qmmav7rh%2Fpublic%2F1783542750%2FClaude+Certified+Architect+%E2%80%93+Foundations+Exam+Guide.pdf" target="_blank" rel="noopener noreferrer">Task Statement 2.2</a> (exam guide)'s <code>isError</code> pattern isn't just a boolean. What turns a failure into something an agent can act on is the category attached to it.</p>
 
   <details class="reveal-box">
@@ -214,14 +218,28 @@
         </tbody>
       </table>
     </div>
+    <p class="howto"><strong>Try it:</strong> this file isn't meant to run on its own (no live key here, and it's a pattern to adapt, not a script with a CLI entry point), so open it and find three specific things instead. Each has a real, checkable answer in the file:</p>
+    <ol>
+      <li>Which error category is checked first, before the network call is even made, and why does the order matter?</li>
+      <li>What real PeakAndPack bug does the permission branch exist to prevent, and which line names it directly?</li>
+      <li>Validation and business errors are both marked <code>isRetryable: false</code>, but for different reasons. What's the difference?</li>
+    </ol>
+    <p class="howto"><strong>Answers:</strong></p>
+    <ol>
+      <li><code>validation</code>, the <code>endpoint.startsWith("/api/")</code> check runs before <code>fetch</code> is ever called. Checking it first means a malformed path never wastes a real network request on something that was always going to fail.</li>
+      <li><code>BUG-010</code> (the orders endpoint returns every user's orders to anyone who asks), named directly in the comment above the permission check. The check returns a permission error whenever an orders lookup has no <code>requesterId</code>, instead of silently handing back the data.</li>
+      <li>Validation is non-retryable because the same malformed input produces the same error every time, retrying changes nothing. Business is non-retryable for a different reason, the request is well-formed and the answer is a real policy "no," not a technical failure retrying could fix.</li>
+    </ol>
   </div>
 
   <h2>Part 3: how many tools, and who picks</h2>
+  <p><strong>tool_choice, in plain terms:</strong> by default Claude decides for itself, freely, whether to call a tool at all and which one, that's <code>tool_choice: "auto"</code>. <code>"any"</code> narrows that slightly, Claude must call some tool, no plain-text reply, but still picks which one, useful when a text answer isn't acceptable but the choice of tool genuinely is open. A caller can go further and force one specific tool on the next turn instead, useful only when that step is genuinely fixed and there's no real judgment call to leave open.</p>
   <p><a href="https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2F6nizmqk8tpzpfjvt6qmmav7rh%2Fpublic%2F1783542750%2FClaude+Certified+Architect+%E2%80%93+Foundations+Exam+Guide.pdf" target="_blank" rel="noopener noreferrer">Task Statement 2.3</a> (exam guide) is two decisions in one: how many tools any single agent can see, and when a caller forces a specific one instead of leaving the choice open.</p>
 
   <div class="axis-grid">
     <div class="axis-card"><div class="a-title">Why scoped, not shared</div><p>An agent with tools outside its specialization tends to misuse them. Post 01's two subagents get 1 and 2 tools each, never the full three.</p></div>
     <div class="axis-card"><div class="a-title">Why 18 tools degrade reliability</div><p>The guide's own number: 18 tools instead of 4-5 measurably worsens selection accuracy, not because the model gets confused, because the decision space grew.</p></div>
+    <div class="axis-card"><div class="a-title">Scoped, not zero, cross-role access</div><p>"Scoped" doesn't have to mean "none." A subagent can get one narrow, high-frequency tool outside its specialization, e.g. a lightweight fact check, while anything more complex still routes through the coordinator instead of being handled locally.</p></div>
   </div>
 
   <div class="deliverable-box">
@@ -242,6 +260,7 @@
 
   <h2>Part 4: the config, and the tools that already exist</h2>
   <p>2.4 and 2.5 are both about not building things that already exist: an MCP server config that's scoped correctly, and the built-in tools (Grep, Glob, Read, Write, Edit) that cover most of what a custom tool would otherwise need to.</p>
+  <p><strong>MCP resources, in plain terms:</strong> a tool is for taking an action, a <strong>resource</strong> is for exposing a catalog of content the agent can look at directly, an issue list, a documentation tree, a database schema, without spending a tool call just to find out what's available. An MCP server can offer both at once: PeakAndPack's bug catalog as a resource would let an agent see all 11 entries up front, instead of needing a <code>search_bug_catalog</code> tool call just to check what exists.</p>
 
   <div class="diagram-wrap">
     <svg viewBox="0 0 700 150" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" role="img" aria-label="Diagram: a project-scoped dot-mcp-json file is version-controlled and shared with the whole team, using environment variable expansion for the API token so no secret is committed. A personal, experimental MCP server lives in the user-level dot claude dot json file instead, and both are available to Claude Code simultaneously.">
@@ -278,6 +297,7 @@
       <li><a href="d2-built-in-tools.md">d2-built-in-tools.md</a>: Grep vs. Glob vs. Edit-fallback, grounded in D5's own scratchpad example</li>
     </ul>
     <p class="howto"><strong>How to use it:</strong> drop <code>.mcp.json</code> at your repo root, set <code>PEAKANDPACK_API_TOKEN</code> in your environment rather than the file, Claude Code expands it at connection time. Personal, experimental servers go in <code>~/.claude.json</code> instead, never committed.</p>
+    <p class="howto"><strong>Building versus reusing:</strong> for a standard integration (Jira, GitHub, Slack), check for an existing community MCP server before writing one, a custom server is worth the maintenance cost only for something genuinely team-specific like PeakAndPack's own API. And if an agent keeps reaching for a built-in tool (Grep) over a more capable MCP tool that's actually available, the MCP tool's description is usually the thing to fix first, the same "description is the interface" point from Part 1, not a reason to remove the built-in option.</p>
     <div class="fw-table-wrap">
       <table class="fw-table">
         <thead><tr><th>File on this page</th><th>Save it to</th><th>Verify with</th></tr></thead>
@@ -290,8 +310,23 @@
     <p class="howto"><strong>Try it:</strong> <code>@example/peakandpack-mcp-server</code> is a placeholder name, there's no real MCP server behind PeakAndPack, so it won't actually connect. What you can verify for real: drop the file in as-is, restart Claude Code, and confirm the server shows up in Claude Code's MCP server list (connection failed is expected and fine). To test a real connection, swap the <code>command</code> and <code>args</code> for any MCP server you already have installed, the <code>${PEAKANDPACK_API_TOKEN}</code> expansion pattern works identically regardless of which server it's pointed at.</p>
   </div>
 
-  <h2>The QA angle: a tool boundary is a test boundary</h2>
-  <p>Every distinction in this post has a testing mirror. A split tool description is testable in a way a merged one isn't, you can write a case that asserts the model picks the right tool for an ambiguous-sounding request. A structured error category is a thing you can assert on directly, instead of string-matching a message that might change wording. A scoped tool list is a thing you can enumerate and diff against what an agent is actually allowed to call. None of that is available when a tool is vague, a failure is a plain string, or an agent's tool list is "whatever's configured, we're not sure."</p>
+  <h2>The QA angle</h2>
+  <h3>How to test: a tool boundary is a test boundary</h3>
+  <p>Every distinction in this post has a testing mirror:</p>
+  <ul>
+    <li>A split tool description is testable in a way a merged one isn't, you can write a case that asserts the model picks the right tool for an ambiguous-sounding request.</li>
+    <li>A structured error category is a thing you can assert on directly, instead of string-matching a message that might change wording.</li>
+    <li>A scoped tool list is a thing you can enumerate and diff against what an agent is actually allowed to call.</li>
+  </ul>
+  <p>None of that is available when a tool is vague, a failure is a plain string, or an agent's tool list is "whatever's configured, we're not sure."</p>
+
+  <h3>Applying what we learnt to your own projects</h3>
+  <ul>
+    <li><strong>An agent calls the wrong tool for an ambiguous request:</strong> before assuming the model made a bad call, read the two tool descriptions it was choosing between side by side, an overlapping or vague description is usually the real cause, not the model's judgment.</li>
+    <li><strong>You catch yourself writing <code>throw new Error("Something went wrong")</code> inside a tool an agent calls:</strong> that's the generic-failure-string problem this post's Part 2 covers, replace it with a category the agent can actually act on instead of just seeing that something broke.</li>
+    <li><strong>An agent starts using a tool outside what it was scoped for:</strong> that's usually not a prompting problem, it's a sign the tool list handed to that agent is wider than its actual job, per Part 3's fewer-tools-per-agent point.</li>
+    <li><strong>You're about to commit an MCP config with a real API key typed in directly:</strong> that's what <code>${ENV_VAR}</code> expansion in <code>.mcp.json</code> exists to prevent, per Part 4, the secret stays in the environment, never in version control.</li>
+  </ul>
 
   <div class="blueprint-box">
     <div class="bp-label">Blueprint tie &middot; D2, 18%, <a href="https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2F6nizmqk8tpzpfjvt6qmmav7rh%2Fpublic%2F1783542750%2FClaude+Certified+Architect+%E2%80%93+Foundations+Exam+Guide.pdf" target="_blank" rel="noopener noreferrer">Task Statements 2.1&ndash;2.5</a> (exam guide)</div>

@@ -5,8 +5,17 @@
 // and nullable fields, so the model reports "I don't know" instead of
 // fabricating a bug ID to satisfy a required field.
 
+// "import type" pulls in Anthropic's own TypeScript type definitions
+// only, not any actual running code from the SDK, this file defines a
+// tool schema and doesn't call the API itself, so it only needs the
+// shapes, not the client.
 import type Anthropic from "@anthropic-ai/sdk";
 
+// "const triageVerdictTool: Anthropic.Tool = {...}" declares a
+// constant whose shape must match Anthropic's own Tool type, this is
+// what actually gets sent to Claude as one of its available tools,
+// its own name, description, and input_schema tell Claude when to
+// call it and exactly what shape to fill in.
 const triageVerdictTool: Anthropic.Tool = {
   name: "report_triage_verdict",
   description: "Reports the final triage verdict for one failing test.",
@@ -34,10 +43,21 @@ const triageVerdictTool: Anthropic.Tool = {
       },
       reasoning: { type: "string", description: "One sentence, citing the specific matching criteria met." },
     },
+    // "required" lists which of the properties above must be present
+    // in every call, missing any of these four would make Claude's
+    // tool call itself invalid before this code even runs, this is
+    // schema validation, enforced automatically, not something this
+    // file has to check by hand.
     required: ["matchedBugId", "confidence", "action", "reasoning"],
   },
 };
 
+// "Anthropic.MessageCreateParams["tool_choice"]" reaches into the
+// SDK's own MessageCreateParams type and pulls out just the type of
+// its tool_choice field, so this constant is guaranteed to match
+// whatever shape the real API call expects there, without this file
+// having to redeclare that shape itself.
+//
 // Forcing this specific tool on the FINAL turn only, guarantees the
 // model reports through the schema instead of drifting into prose,
 // while earlier turns stay tool_choice: "auto" so it can still call

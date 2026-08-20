@@ -63,6 +63,7 @@
     .axis-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:.9rem 1.1rem}
     .axis-card .a-title{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--teal);font-weight:600;margin-bottom:.4rem}
     .axis-card p{font-size:.86rem;margin-bottom:0;color:var(--text-2)}
+    .four-things .axis-card{border-color:var(--green)}
 
     .pull-quote{font-family:'DM Serif Display',serif;font-style:italic;font-size:1.25rem;line-height:1.5;color:var(--text);border-left:3px solid var(--teal);padding:.3rem 0 .3rem 1.3rem;margin:2rem 0}
 
@@ -123,9 +124,10 @@
 
   <p>D4 is the last of the five domain posts, and the domain most likely to be mistaken for "writing good prompts." It's narrower and more mechanical than that: specific criteria over vague adjectives, a schema over free text, a retry that uses the actual error, a reviewer with no stake in the answer already given.</p>
   <p>Every example below is Post 01's triage agent or Post 02's CI reviewer, pushed one step further than either post needed to go on its own.</p>
+  <p><strong>Structured output and few-shot examples, in plain terms:</strong> <strong>structured output</strong> means asking Claude to reply in a fixed, predictable shape, a JSON object with specific named fields, instead of free-form prose, so the reply can be parsed and acted on by code rather than just read by a person. A <strong>few-shot example</strong> is a worked sample included right in the prompt, a real input paired with the correct output for it, shown to the model before it's asked to handle a new case.</p>
 
   <h2>Four things D4 actually asks you to know</h2>
-  <div class="axis-grid">
+  <div class="axis-grid four-things">
     <div class="axis-card"><div class="a-title">4.1 / 4.2 &middot; Precision</div><p>Explicit categorical criteria beat "be conservative." Few-shot examples earn their place on ambiguous cases, not easy ones.</p></div>
     <div class="axis-card"><div class="a-title">4.3 &middot; Structured output</div><p><code>tool_use</code> with a JSON schema eliminates syntax errors, not semantic ones. Nullable fields stop a model from fabricating a value to fill a gap.</p></div>
     <div class="axis-card"><div class="a-title">4.4 &middot; Validation loops</div><p>Retry with the specific error attached, not a repeat of the same prompt. Some failures aren't fixable by retrying at all.</p></div>
@@ -150,6 +152,10 @@
 
   <p>Few-shot examples earn their place the same way: not by padding a prompt with more instances of the case the model already gets right, but by walking through the case where a surface signal (a shared keyword, a similar-looking endpoint) is actually misleading.</p>
 
+  <div class="callout amber">
+    <p><strong>When one category is the problem, fix that category, not everything:</strong> a criterion that's noisy on one specific case (say, flagging every discount-code mismatch, even correct ones) erodes trust in every other verdict too, a reviewer who's seen the agent cry wolf on discounts starts second-guessing its refund verdicts as well. Tightening that one criterion, or turning it off while it's reworked, protects trust in the categories that are already reliable. It's a cheaper fix than rewriting the whole prompt while the noisy category is still live.</p>
+  </div>
+
   <div class="deliverable-box">
     <div class="d-label">Deliverable, Part 1</div>
     <ul>
@@ -169,6 +175,7 @@
   </div>
 
   <h2>Part 2: a schema that can't lie by omission</h2>
+  <p><strong>tool_use, in plain terms:</strong> instead of asking Claude to type out JSON in plain prose (which it might wrap in a markdown code fence, get syntactically wrong, or leave a field out of), you define the exact shape as a tool and let Claude "call" that tool with matching arguments. The reply arrives well-formed by construction, not because Claude promised to format it correctly. Post 01 hit the plain-prose version of this problem directly, a fenced JSON reply broke a plain <code>JSON.parse</code> call in production, the exact failure mode this pattern avoids.</p>
   <p><a href="https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2F6nizmqk8tpzpfjvt6qmmav7rh%2Fpublic%2F1783542750%2FClaude+Certified+Architect+%E2%80%93+Foundations+Exam+Guide.pdf" target="_blank" rel="noopener noreferrer">Task Statement 4.3</a> (exam guide)'s core distinction: <code>tool_use</code> with a JSON schema eliminates syntax errors, a malformed brace, a missing quote, but it does nothing to stop a semantically wrong answer, a bug ID that doesn't exist, a total that doesn't sum.</p>
 
   <pre><code>{
@@ -179,6 +186,7 @@
 }</code></pre>
 
   <p><code>matchedBugId</code> is explicitly nullable. A required, non-null field here would pressure the model to pick <em>something</em> from the catalog even when nothing actually matches, the exact fabrication the guide's 4.3 skill point warns against. <code>"unclear"</code> in the confidence enum is doing similar work, it's a real, distinct outcome (the tools couldn't resolve this) rather than a synonym for "low" (a match was found but it's shaky).</p>
+  <p>A fixed enum works here because the action space is genuinely closed, there are only four real verdicts. For a category that isn't closed, a fifth catalog might add a bug class this schema has never seen, the same nullable discipline applies differently: add an <code>"other"</code> value plus a free-text detail field alongside it, so the model can report something real without either fabricating a fit to an existing category or being blocked entirely.</p>
 
   <div class="axis-grid">
     <div class="axis-card"><div class="a-title">tool_choice: auto, then forced</div><p>Early turns stay <code>"auto"</code> so the model can still call <code>search_bug_catalog</code> or <code>check_live_api</code> freely. The final turn forces <code>report_triage_verdict</code>, guaranteeing schema-shaped output instead of drifting prose.</p></div>
@@ -199,6 +207,16 @@
         </tbody>
       </table>
     </div>
+    <p class="howto"><strong>Try it:</strong> this file isn't meant to run on its own (no live key here, it's a schema and a tool-choice constant, not a script), so open it and find two specific things instead. Each has a real, checkable answer in the file:</p>
+    <ol>
+      <li>Why is <code>matchedBugId</code> nullable instead of a plain required string, and what would go wrong if it weren't?</li>
+      <li>Where does <code>finalTurnToolChoice</code> actually get used, on every turn, or only one, and why does that matter for the earlier tool calls?</li>
+    </ol>
+    <p class="howto"><strong>Answers:</strong></p>
+    <ol>
+      <li>The comment above it names the reason directly: a required, non-null field would pressure the model to pick <em>something</em> from the catalog even when nothing actually matches, that's the fabrication Task Statement 4.3 warns against. Nullable lets "nothing matches" be a real, honest answer.</li>
+      <li>Only the final turn, per the comment above the constant. Earlier turns stay <code>tool_choice: "auto"</code> so the model can still call <code>search_bug_catalog</code> or <code>check_live_api</code> freely, forcing the verdict tool on every turn would block it from investigating before it reports.</li>
+    </ol>
   </div>
 
   <h2>Part 3: retrying with the actual error, and knowing when to stop</h2>
@@ -214,6 +232,8 @@
 
   <p>Retry has a ceiling. If the live API and the catalog both come back inconclusive, an endpoint that genuinely no longer exists, no amount of re-prompting produces information that isn't there. That's an <code>escalate-to-human</code> case, not another retry.</p>
 
+  <p>One field in <code>d4-validation-retry.ts</code>'s <code>TriageVerdict</code> interface isn't for validation at all: <code>detectedPattern</code>. It records which specific criterion actually fired for this verdict, so that when a developer later dismisses a finding as wrong, there's something concrete to check, is this one criterion producing most of the false positives, or is it spread evenly across all three? Without it, a dismissed finding is just a data point, with it, dismissed findings become a pattern you can actually query.</p>
+
   <div class="deliverable-box">
     <div class="d-label">Deliverable, Part 3</div>
     <ul>
@@ -228,14 +248,29 @@
         </tbody>
       </table>
     </div>
+    <p class="howto"><strong>Try it:</strong> this file isn't meant to run on its own, so open it and find two specific things instead. Each has a real, checkable answer in the file:</p>
+    <ol>
+      <li><code>validateVerdict</code> checks two different invalid combinations. What are they, and why can't a JSON schema alone catch either one?</li>
+      <li>What single phrase in an error message makes <code>isRetryable</code> return <code>false</code>, and what real-world situation is that meant to catch?</li>
+    </ol>
+    <p class="howto"><strong>Answers:</strong></p>
+    <ol>
+      <li><code>action: "link-existing"</code> with a null <code>matchedBugId</code> (nothing to link to), and <code>confidence: "high"</code> with a null <code>matchedBugId</code> outside of <code>escalate-to-human</code> (high confidence in no match doesn't make sense on its own). Both fields are individually valid on their own, a schema checks each field's type in isolation, it can't express a rule about how two fields relate to each other.</li>
+      <li>The literal string <code>"no information available"</code>. It's meant to catch the case where the live API and the catalog both come back inconclusive, an endpoint that genuinely no longer exists, where no amount of re-prompting produces information that isn't there.</li>
+    </ol>
   </div>
 
   <h2>Part 4: overnight batches, and a reviewer who wasn't there</h2>
+  <p><strong>The Batch API, in plain terms:</strong> instead of sending one request and waiting for one reply right away, you submit a large stack of requests at once and get all the results back later, often cheaper per request, but with no guarantee of a fast turnaround. It's the right fit only for work where "later today" is an acceptable answer, not for anything a user or another process is actively waiting on.</p>
   <p>4.5 and 4.6 both come down to matching the tool to what the task actually tolerates: latency for batching, independence for reviewing.</p>
 
   <div class="callout blue">
     <p><strong>PeakAndPack's version:</strong> d1-triage-agent.ts's live, tool-calling triage cannot batch at all, the Batch API doesn't support mid-request tool calls. Only a nightly sweep using the simpler <code>d1-triage-workflow.ts</code> shape, no tools, one call in, one verdict out, actually qualifies.</p>
   </div>
+
+  <p>Running that sweep for real needs one more piece the qualify/disqualify decision above doesn't cover: each request in a batch carries a <code>custom_id</code> you choose, a scenario's failure text ID, say, so that when results come back unordered, each verdict can be matched to the failure it belongs to. If a handful of requests fail (a malformed input, a document too large), only those specific <code>custom_id</code>s get resubmitted, not the whole batch.</p>
+
+  <p>Part 4's second technique, multi-pass review, is really Part 1's attention-dilution problem restated for reviewers instead of criteria: reviewing many files in one pass produces the same file detailed feedback while another gets skimmed, and the same pattern flagged in one file waved through in another. <code>d4-multi-pass-review.md</code> covers the fix, per-file passes for local issues, then one separate integration pass for anything that only shows up looking across files together.</p>
 
   <div class="deliverable-box">
     <div class="d-label">Deliverable, Part 4</div>
@@ -255,8 +290,23 @@
     </div>
   </div>
 
-  <h2>The QA angle: precision is testable, "sounds careful" isn't</h2>
-  <p>Every D4 distinction produces something you can actually assert on. Explicit criteria let a test name which condition failed. A schema lets a test check for a specific null instead of parsing free text for an implied absence. A validation rule is a function you can call directly, independent of the model that triggered it. None of that exists when the standard is "the prompt sounds careful," which is the actual gap between prompt engineering as a craft and prompt engineering as something a QA seat can hold a system accountable to.</p>
+  <h2>The QA angle</h2>
+  <h3>How to test: precision is testable, "sounds careful" isn't</h3>
+  <p>Every D4 distinction produces something you can actually assert on:</p>
+  <ul>
+    <li>Explicit criteria let a test name which condition failed.</li>
+    <li>A schema lets a test check for a specific null instead of parsing free text for an implied absence.</li>
+    <li>A validation rule is a function you can call directly, independent of the model that triggered it.</li>
+  </ul>
+  <p>None of that exists when the standard is "the prompt sounds careful," which is the actual gap between prompt engineering as a craft and prompt engineering as something a QA seat can hold a system accountable to.</p>
+
+  <h3>Applying what we learnt to your own projects</h3>
+  <ul>
+    <li><strong>A prompt asks the model to "be careful" or "be conservative":</strong> that's a request a reviewer can't check, per Part 1, replace it with a short checklist of specific, checkable conditions so a disagreement can point to which one failed.</li>
+    <li><strong>You're parsing a model's plain-text JSON reply with a try/catch and a generic fallback:</strong> that's the exact pattern Post 01 got burned by, per Part 2, a <code>tool_use</code> schema guarantees the shape parses, it just doesn't guarantee the content is right, which still needs checking downstream.</li>
+    <li><strong>A retry loop re-sends the same prompt after a failure:</strong> per Part 3, that throws away the one piece of information the failure actually gave you, include the specific error, and know when to stop retrying and escalate instead.</li>
+    <li><strong>The same session that wrote a fix is asked to review it:</strong> per Part 4, that's a self-review with no independent perspective, a fresh session with no memory of writing the code is more likely to actually question it.</li>
+  </ul>
 
   <div class="blueprint-box">
     <div class="bp-label">Blueprint tie &middot; D4, 20%, <a href="https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2F6nizmqk8tpzpfjvt6qmmav7rh%2Fpublic%2F1783542750%2FClaude+Certified+Architect+%E2%80%93+Foundations+Exam+Guide.pdf" target="_blank" rel="noopener noreferrer">Task Statements 4.1&ndash;4.6</a> (exam guide)</div>

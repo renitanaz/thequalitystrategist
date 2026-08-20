@@ -1,7 +1,7 @@
 ---
 description: Reproduces a reported PeakAndPack bug against the live API and reports exactly what it observes.
 context: fork
-allowed-tools: ["Bash", "WebFetch"]
+allowed-tools: ["Bash(curl:*)", "WebFetch"]
 argument-hint: "<bug-id-or-description>"
 ---
 
@@ -15,9 +15,13 @@ argument-hint: "<bug-id-or-description>"
                     Render instance). Forking keeps that out of the
                     main conversation instead of burning its context
                     budget.
-  allowed-tools     Scoped to read-only network calls. This skill
-                    cannot write files or run a destructive command,
-                    even if asked to.
+  allowed-tools     Naming just "Bash" grants the full shell, any
+                    command, not only network calls. "Bash(curl:*)"
+                    restricts it to curl invocations specifically,
+                    the actual scoping this skill needs. A bare
+                    "Bash" entry would let the model run anything,
+                    including an unrelated install, if it ever
+                    reasoned its way there.
   argument-hint     Shown to a developer who runs /reproduce-bug with
                     no argument, so they know what to pass.
 

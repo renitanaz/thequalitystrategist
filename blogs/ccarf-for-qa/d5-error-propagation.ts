@@ -8,6 +8,10 @@
 // implementation, not a standalone script, it has no entry point of
 // its own.
 
+// "interface" names this error shape so both functions below can
+// refer to it by name. "alternatives: string[]" means an array (a
+// list) of strings, zero or more suggestions for what the caller
+// could try next.
 interface StructuredToolError {
   failureType: "access" | "unresolvable";
   attemptedQuery: string;
@@ -19,6 +23,14 @@ interface StructuredToolError {
 //   - silently suppressing errors (returning empty results as success)
 //   - terminating the entire workflow on a single subagent failure
 //   - a generic "search unavailable" status that hides what happened
+// The return type spans several lines: this function's Promise
+// eventually resolves to ONE of two shapes, either { ok: true, body }
+// on success, or { ok: false, error } carrying a StructuredToolError
+// on failure. Checking result.ok afterward (see recoveryDecision,
+// below) tells TypeScript, and a reader, which of the two shapes is
+// actually there. "try { ... } catch { ... }" runs the risky code
+// inside try, and if anything inside it throws, execution jumps
+// straight to catch instead of crashing the whole program.
 async function checkLiveApiWithStructuredErrors(
   endpoint: string
 ): Promise<
@@ -64,6 +76,13 @@ async function checkLiveApiWithStructuredErrors(
 
 // What the coordinator does with each outcome, not one catch-all
 // response for every non-2xx result.
+// "ReturnType<typeof checkLiveApiWithStructuredErrors>" asks
+// TypeScript to reuse that function's own return type here instead of
+// retyping the two-shape union by hand, so if the function's shape
+// ever changes, this stays in sync automatically. "Awaited<...>"
+// unwraps the Promise part, since a caller of this function will
+// already have the resolved value in hand, not a still-pending
+// promise.
 function recoveryDecision(
   result: Awaited<ReturnType<typeof checkLiveApiWithStructuredErrors>>
 ): string {
