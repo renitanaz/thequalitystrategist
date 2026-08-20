@@ -149,6 +149,12 @@
   </div>
 
   <h2>Part 1: the loop, correctly this time</h2>
+
+  <h3>Workflow versus agent, in plain terms</h3>
+  <p>A <strong>workflow</strong> here means a fixed sequence: the same steps run every time, regardless of input. For this triage task, that's one call, feed in the failure text, get back a verdict, no branching, no second look.</p>
+  <p>An <strong>agent</strong> gets tools instead of a fixed path, and decides for itself, at each step, whether to use one, how many times, and in what order, before it settles on an answer. For this same task, that means it can search the bug catalog, check whether a failure still reproduces against the live app right now, or search past incident reports, choosing whichever of those actually helps, if any.</p>
+  <p>Both are solving the exact same problem below. The difference is entirely in how each one decides it's finished.</p>
+
   <p>An agent that decides it's "done" by checking whether it made any tool calls, or by scanning its own text for something answer-shaped, is guessing. The documented signal is <code>stop_reason</code>: <code>"tool_use"</code> means keep going, <code>"end_turn"</code> means actually finished.</p>
 
   <details class="reveal-box">
@@ -156,19 +162,13 @@
     <div class="reveal-content">
       <p>Straight from <a href="https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2F6nizmqk8tpzpfjvt6qmmav7rh%2Fpublic%2F1783542750%2FClaude+Certified+Architect+%E2%80%93+Foundations+Exam+Guide.pdf" target="_blank" rel="noopener noreferrer">Task Statement 1.1</a> (exam guide)'s skills list, the three ways a loop's stop condition goes wrong:</p>
       <ul>
-        <li>Parsing natural-language signals in the model's own text to decide when to stop.</li>
-        <li>Setting an arbitrary iteration cap as the <strong>primary</strong> stopping mechanism, a cap as a safety backstop is fine, a cap as the actual logic isn't.</li>
-        <li>Checking for the presence or absence of assistant text content as a completion indicator.</li>
+        <li><strong style="color:var(--red)">Parsing natural-language signals</strong> in the model's own text to decide when to stop.</li>
+        <li>Setting an arbitrary <strong style="color:var(--red)">iteration cap as the primary stopping mechanism</strong>, a cap as a safety backstop is fine, a cap as the actual logic isn't.</li>
+        <li>Checking for the <strong style="color:var(--red)">presence or absence of assistant text content</strong> as a completion indicator.</li>
       </ul>
       <p>d1-triage-agent.ts's first draft did the third one, checking whether <code>toolUses.length === 0</code>. The corrected version checks <code>stop_reason</code> directly instead.</p>
     </div>
   </details>
-
-  <div class="stat-strip">
-    <div class="s1"><span class="stat-num">6/6</span><span class="stat-label">agent got every scenario right</span></div>
-    <div class="s2"><span class="stat-num">4/6</span><span class="stat-label">workflow got right, confidently wrong once</span></div>
-    <div class="s3"><span class="stat-num">1</span><span class="stat-label">stale catalog bug caught live, unplanned</span></div>
-  </div>
 
   <div class="diagram-wrap">
     <svg viewBox="0 0 720 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" role="img" aria-label="Diagram comparing a linear workflow (input, classify, verdict) to an agentic loop (input, then a repeating decide-tool-observe cycle, then verdict).">
@@ -219,6 +219,12 @@
 
   <p>That result wasn't planned, it turned up live while building this comparison. Either BUG-011 is already fixed, or the real trigger differs from what's documented. The workflow only has the catalog text, so it confidently links a new failure to a bug that may no longer exist. The agent's live-check tool catches the mismatch and downgrades its own confidence instead of asserting a match it can't verify.</p>
 
+  <div class="stat-strip">
+    <div class="s1"><span class="stat-num">6/6</span><span class="stat-label">agent got every scenario right</span></div>
+    <div class="s2"><span class="stat-num">4/6</span><span class="stat-label">workflow got right, confidently wrong once</span></div>
+    <div class="s3"><span class="stat-num">1</span><span class="stat-label">stale catalog bug caught live, unplanned</span></div>
+  </div>
+
   <div class="deliverable-box">
     <div class="d-label">Deliverable, Part 1</div>
     <ul>
@@ -251,7 +257,8 @@ Actual: false. Failing item: { id: 4, name: "Sleeping Bag (-15C)", price: -89 }<
   </div>
 
   <h2>Part 2: one agent or several?</h2>
-  <p><a href="https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2F6nizmqk8tpzpfjvt6qmmav7rh%2Fpublic%2F1783542750%2FClaude+Certified+Architect+%E2%80%93+Foundations+Exam+Guide.pdf" target="_blank" rel="noopener noreferrer">Task Statements 1.2 and 1.3</a> (exam guide) ask a different question than the loop does: not when one agent stops, but whether it should be one agent at all. The exam's hub-and-spoke pattern: a coordinator that never investigates itself, only delegates and aggregates.</p>
+  <p>So far this post has treated "the agent" as a single thing working alone. It doesn't have to be. A <strong>coordinator</strong> is one agent whose only job is to break a task into pieces and hand each piece to a <strong>subagent</strong>, a smaller agent with its own instructions and its own tools, that does one specific job and reports back. The coordinator never investigates anything itself, it only decides who does what and combines what comes back. Each subagent also gets an <strong>isolated context</strong>, meaning it starts with no memory of the coordinator's conversation or of any other subagent, only what's explicitly handed to it.</p>
+  <p><a href="https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2F6nizmqk8tpzpfjvt6qmmav7rh%2Fpublic%2F1783542750%2FClaude+Certified+Architect+%E2%80%93+Foundations+Exam+Guide.pdf" target="_blank" rel="noopener noreferrer">Task Statements 1.2 and 1.3</a> (exam guide) ask a different question than the loop does: not when one agent stops, but whether it should be one agent at all. The exam calls this the hub-and-spoke pattern, the coordinator is the hub, subagents are the spokes, and every result flows back through the hub, never spoke to spoke directly.</p>
 
   <div class="diagram-wrap">
     <svg viewBox="0 0 700 260" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" role="img" aria-label="Hub-and-spoke diagram: a coordinator spawns two subagents in parallel via the Task tool, verify-reproduction and find-related-reports, each with its own isolated context and its own scoped tools, neither subagent sees the other.">
@@ -294,6 +301,7 @@ Actual: false. Failing item: { id: 4, name: "Sleeping Bag (-15C)", price: -89 }<
   </div>
 
   <h2>Part 3: the hook is the guarantee the prompt isn't</h2>
+  <p>A <strong>hook</strong>, in Claude Code and the Agent SDK, is a small piece of code that runs automatically at a fixed point, before a tool call, after one, whichever point you choose, without Claude ever deciding to run it. That's the difference from an instruction in a prompt: a prompt is something Claude reads and usually follows, a hook fires every single time, no exceptions, because it's code, not a request.</p>
   <p><a href="https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2F6nizmqk8tpzpfjvt6qmmav7rh%2Fpublic%2F1783542750%2FClaude+Certified+Architect+%E2%80%93+Foundations+Exam+Guide.pdf" target="_blank" rel="noopener noreferrer">Task Statement 1.5</a> (exam guide), plainly: hooks exist for the cases where "the model probably will" isn't good enough.</p>
 
   <div class="diagram-wrap">
@@ -347,6 +355,7 @@ Actual: false. Failing item: { id: 4, name: "Sleeping Bag (-15C)", price: -89 }<
   </div>
 
   <h2>Part 4: decomposing the sweep, and picking the session back up</h2>
+  <p>A <strong>session</strong>, in Claude Code, is one continuous conversation, everything from when you run <code>claude</code> and start talking to it, to whenever you exit. Close the terminal or exit and that session's context is gone unless you deliberately pick it back up. Claude Code gives you a few ways to do that: <strong>resume</strong> a named session to continue exactly where you left off, or <strong>fork</strong> a session to branch off a copy while leaving the original untouched, useful for exploring two different approaches from the same starting point.</p>
   <p><a href="https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2F6nizmqk8tpzpfjvt6qmmav7rh%2Fpublic%2F1783542750%2FClaude+Certified+Architect+%E2%80%93+Foundations+Exam+Guide.pdf" target="_blank" rel="noopener noreferrer">Task Statements 1.6 and 1.7</a> (exam guide) stop mattering at the scale of one bug. They show up once the work is the whole 11-bug catalog instead of BUG-011 alone, and once the investigation spans more than one sitting.</p>
 
   <div class="diagram-wrap">
