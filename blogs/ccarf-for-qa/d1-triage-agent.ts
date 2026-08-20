@@ -142,7 +142,7 @@ async function triage(failureText: string) {
 Failing test output:
 ${failureText}
 
-When you have enough information, reply with ONLY a JSON object, nothing else:
+When you have enough information, reply with ONLY a raw JSON object, nothing else, no markdown code fences, no backticks, no explanation:
 {"match": "BUG-XXX or null", "confidence": "high|medium|low", "action": "file-new|link-existing|flag-flaky-retry", "reasoning": "one sentence"}`,
     },
   ];
@@ -172,7 +172,12 @@ When you have enough information, reply with ONLY a JSON object, nothing else:
       // .find looks through Claude's reply for the text part of it
       // (as opposed to a tool-use part) and grabs just that.
       const text = response.content.find((b) => b.type === "text");
-      const raw = text && text.type === "text" ? text.text.trim() : "{}";
+      const rawText = text && text.type === "text" ? text.text.trim() : "{}";
+      // Same issue as the workflow script: plain-text JSON requests
+      // have no hard guarantee, Claude can wrap the answer in a
+      // markdown code fence even when told not to. Strip one off the
+      // front and back, if present, before parsing.
+      const raw = rawText.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
       try {
         // "{...JSON.parse(raw), toolCallsUsed: ..., iterations: ...}"
         // takes everything Claude's JSON answer contained and adds two

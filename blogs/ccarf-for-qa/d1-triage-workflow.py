@@ -17,6 +17,7 @@
 
 import sys        # gives access to command-line arguments
 import json       # for converting to/from JSON text
+import re         # for stripping markdown code fences from Claude's reply
 import anthropic  # the official library for talking to Claude
 
 # Creates one object that knows how to send requests to Claude's API.
@@ -82,7 +83,7 @@ Bug catalog:
 Failing test output:
 {failure_text}
 
-Reply with ONLY a JSON object matching this exact shape, nothing else:
+Reply with ONLY a raw JSON object matching this exact shape, nothing else, no markdown code fences, no backticks, no explanation:
 {{"match": "BUG-XXX or null", "confidence": "high|medium|low", "action": "file-new|link-existing|flag-flaky-retry"}}""",
             }
         ],
@@ -92,12 +93,20 @@ Reply with ONLY a JSON object matching this exact shape, nothing else:
     # checks the first block is plain text (not something else), and
     # pulls out just the text string, "{}" as a fallback if it isn't.
     text = response.content[0].text if response.content[0].type == "text" else "{}"
+    # Asking for "ONLY a JSON object" in plain prose is a request, not
+    # a guarantee, unlike tool_use (see D4's Task Statement 4.3), plain
+    # text prompting has no hard enforcement. Claude sometimes wraps its
+    # answer in a markdown code fence anyway, ```json ... ```, which
+    # json.loads cannot read as-is. re.sub strips a fence off the
+    # front and back, if one is there, before parsing continues.
+    cleaned = re.sub(r"^```(?:json)?\s*", "", text.strip(), flags=re.IGNORECASE)
+    cleaned = re.sub(r"```\s*$", "", cleaned, flags=re.IGNORECASE).strip()
     # "try" attempts something that might fail; if it does, "except"
     # below runs instead of crashing the whole script.
     try:
         # json.loads turns a text string that looks like {"key": "value"}
         # into a real Python dictionary the rest of the code can work with.
-        return json.loads(text.strip())
+        return json.loads(cleaned)
     except Exception:
         # The workflow's only failure handling: if the model didn't return
         # valid JSON, there is no retry, no second attempt. It surfaces as

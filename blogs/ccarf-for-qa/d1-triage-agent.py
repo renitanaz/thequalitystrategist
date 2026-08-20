@@ -22,6 +22,7 @@
 
 import sys
 import json
+import re         # for stripping markdown code fences from Claude's reply
 import anthropic
 import requests  # for making the real HTTP call check_live_api needs
 
@@ -145,7 +146,7 @@ def triage(failure_text):
 Failing test output:
 {failure_text}
 
-When you have enough information, reply with ONLY a JSON object, nothing else:
+When you have enough information, reply with ONLY a raw JSON object, nothing else, no markdown code fences, no backticks, no explanation:
 {{"match": "BUG-XXX or null", "confidence": "high|medium|low", "action": "file-new|link-existing|flag-flaky-retry", "reasoning": "one sentence"}}""",
         }
     ]
@@ -175,7 +176,13 @@ When you have enough information, reply with ONLY a JSON object, nothing else:
             # Looks through Claude's reply for the text part of it (as
             # opposed to a tool-use part) and grabs just that.
             text_block = next((b for b in response.content if b.type == "text"), None)
-            raw = text_block.text.strip() if text_block else "{}"
+            raw_text = text_block.text.strip() if text_block else "{}"
+            # Same issue as the workflow script: plain-text JSON requests
+            # have no hard guarantee, Claude can wrap the answer in a
+            # markdown code fence even when told not to. Strip one off
+            # the front and back, if present, before parsing.
+            raw = re.sub(r"^```(?:json)?\s*", "", raw_text, flags=re.IGNORECASE)
+            raw = re.sub(r"```\s*$", "", raw, flags=re.IGNORECASE).strip()
             try:
                 # {**json.loads(raw), ...} takes everything Claude's
                 # JSON answer contained and adds two extra fields onto
