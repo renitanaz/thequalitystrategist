@@ -58,6 +58,9 @@
     .callout p{color:var(--text-2);margin-bottom:0}
 
     .diagram-wrap{margin:1.75rem 0;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.2rem}
+    .screenshot{margin:1rem 0 0;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1rem}
+    .screenshot img{display:block;width:100%;height:auto;border-radius:6px}
+    .screenshot figcaption{font-size:.78rem;color:var(--text-3);margin-top:.6rem}
 
     .stat-strip{display:flex;gap:0;margin:1.75rem 0;border-radius:12px;overflow:hidden;border:1px solid var(--border)}
     .stat-strip>div{flex:1;padding:1.1rem 1rem;text-align:center}
@@ -260,6 +263,23 @@ Actual: false. Failing item: { id: 4, name: "Sleeping Bag (-15C)", price: -89 }<
     <p><strong>On methodology.</strong> No live Anthropic API key in this environment, so the verdicts above were reasoned through by hand, not produced by running the scripts. Every live-API claim is real though: the search-endpoint and product-data results were fetched from the actual PeakAndPack API while writing this. The scripts are complete and correct, ready to run against a real key.</p>
   </div>
 
+  <h3>A real bug this comparison caught, after publishing</h3>
+  <p>A reader ran both scripts for real against Scenario 2 (the BUG-011 case) and hit something worth documenting: instead of a clean verdict, both scripts kept returning the fallback shape, <code>{"match": null, "confidence": "low", "action": "file-new"}</code>, as if Claude had no idea what it was looking at.</p>
+
+  <figure class="screenshot">
+    <img src="d1-fence-bug-workflow.png" alt="Terminal output confirming the workflow script's raw model reply was wrapped in a triple-backtick markdown code fence around a correct, high-confidence JSON match to BUG-011, which JSON.parse could not read as-is, causing it to fall back to a generic low-confidence result instead of surfacing the real answer." loading="lazy" />
+    <figcaption>The raw model output, once actually inspected: a correct, high-confidence BUG-011 match, wrapped in a markdown code fence that broke JSON.parse.</figcaption>
+  </figure>
+
+  <p>That wasn't the model getting it wrong. Claude had the right answer, <code>BUG-011</code>, high confidence, correctly matching the ground truth, but it wrapped that answer in a <code>```json ... ```</code> code fence anyway, despite the prompt asking for "ONLY a JSON object." <code>JSON.parse</code> can't read a fence character, so it threw, and the catch block quietly substituted a generic low-confidence fallback in place of the real, correct verdict.</p>
+
+  <figure class="screenshot">
+    <img src="d1-fence-bug-agent.png" alt="Terminal output showing the agentic version of the same scenario on a different run succeeding with valid, unfenced JSON and converging correctly in 3 iterations, confirming the fencing behavior is inconsistent from one run to the next, not a fixed pattern." loading="lazy" />
+    <figcaption>The same scenario, run again: this time Claude replied with plain JSON, no fence, and the script worked correctly. The fencing isn't consistent from run to run.</figcaption>
+  </figure>
+
+  <p>That inconsistency is the real finding. It wasn't that Claude always fences its JSON, or never does, it does it sometimes, unpredictably. A script that only handles the unfenced case will work fine in testing and then fail silently in production the first time a fence shows up, exactly the kind of intermittent, hard-to-reproduce bug this post's own QA angle section talks about later. Both scripts on this page have since been fixed to strip a leading or trailing code fence before parsing, and their prompts now explicitly forbid fences, backticks, and explanations. If you're adapting this pattern elsewhere, don't trust a plain-text JSON request to actually stay plain text, verify what the model sends back before assuming a parse failure means the model was wrong.</p>
+
   <h2>Part 2: one agent or several?</h2>
   <p>So far this post has treated "the agent" as a single thing working alone. It doesn't have to be. A <strong>coordinator</strong> is one agent whose only job is to break a task into pieces and hand each piece to a <strong>subagent</strong>, a smaller agent with its own instructions and its own tools, that does one specific job and reports back. The coordinator never investigates anything itself, it only decides who does what and combines what comes back. Each subagent also gets an <strong>isolated context</strong>, meaning it starts with no memory of the coordinator's conversation or of any other subagent, only what's explicitly handed to it.</p>
   <p><a href="https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2F6nizmqk8tpzpfjvt6qmmav7rh%2Fpublic%2F1783542750%2FClaude+Certified+Architect+%E2%80%93+Foundations+Exam+Guide.pdf" target="_blank" rel="noopener noreferrer">Task Statements 1.2 and 1.3</a> (exam guide) ask a different question than the loop does: not when one agent stops, but whether it should be one agent at all. The exam calls this the hub-and-spoke pattern, the coordinator is the hub, subagents are the spokes, and every result flows back through the hub, never spoke to spoke directly.</p>
@@ -346,6 +366,7 @@ Actual: false. Failing item: { id: 4, name: "Sleeping Bag (-15C)", price: -89 }<
     <div class="d-label">Deliverable, Parts 2 &amp; 3</div>
     <ul>
       <li><a href="d1-coordinator-subagents.ts">d1-coordinator-subagents.ts</a>: coordinator + two subagent definitions, a <code>PostToolUse</code> normalization hook, and a tool-interception prerequisite gate</li>
+      <li><a href="d1-coordinator-subagents.py">d1-coordinator-subagents.py</a>: the same illustrative pattern, in Python</li>
     </ul>
     <p class="howto"><strong>How to use it:</strong> read this one, don't run it as-is. It models the Agent SDK's documented shape, not copy-paste production code, check the current SDK docs for exact call syntax before running it for real.</p>
     <div class="fw-table-wrap">
@@ -353,9 +374,17 @@ Actual: false. Failing item: { id: 4, name: "Sleeping Bag (-15C)", price: -89 }<
         <thead><tr><th>File on this page</th><th>Save it to</th><th>Verify with</th></tr></thead>
         <tbody>
           <tr><td>d1-coordinator-subagents.ts</td><td>anywhere, it's illustrative of the pattern, not a file Claude Code loads</td><td>n/a</td></tr>
+          <tr><td>d1-coordinator-subagents.py</td><td>anywhere, same as the TypeScript version</td><td>n/a</td></tr>
         </tbody>
       </table>
     </div>
+    <p class="howto"><strong>Try it:</strong> this file isn't meant to run (the SDK call shapes are illustrative, running it against the real Agent SDK needs current-docs syntax this file doesn't guarantee), so instead of a command, open it and find three specific things. Each has a real, checkable answer in the file:</p>
+    <ol>
+      <li>Which single tool can <code>verifyReproductionAgent</code> use, and what stops it from also searching past reports?</li>
+      <li>What two conditions must <strong>both</strong> be true before <code>blockPrematureFiling</code> allows a new bug report to be filed?</li>
+      <li>Where does the coordinator's own instructions say to spawn both subagents in parallel, not one after the other, and why does that matter here?</li>
+    </ol>
+    <p class="howto">(1) <code>check_live_api</code> only, its <code>tools: [...]</code> array on line 28 doesn't list the others, an isolated agent can't reach past what it's explicitly scoped to. (2) <code>state.reproductionVerified</code> and <code>state.reportsSearched</code> must both be true, see line 65, either one missing blocks the filing. (3) The coordinator's <code>systemPrompt</code>, "IN PARALLEL, in a single response with two Task calls, not one after the other", it matters because the two subagents don't depend on each other's results, so running them sequentially would only add latency for nothing, the same reasoning as the "why parallel, not sequential" card above.</p>
   </div>
 
   <h2>Part 4: decomposing the sweep, and picking the session back up</h2>
