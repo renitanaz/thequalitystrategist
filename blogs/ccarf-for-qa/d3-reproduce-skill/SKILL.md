@@ -15,13 +15,11 @@ argument-hint: "<bug-id-or-description>"
                     Render instance). Forking keeps that out of the
                     main conversation instead of burning its context
                     budget.
-  allowed-tools     Naming just "Bash" grants the full shell, any
-                    command, not only network calls. "Bash(curl:*)"
-                    restricts it to curl invocations specifically,
-                    the actual scoping this skill needs. A bare
-                    "Bash" entry would let the model run anything,
-                    including an unrelated install, if it ever
-                    reasoned its way there.
+  allowed-tools     "Bash(curl:*)" restricts the skill to curl
+                    invocations only, the actual read-only network
+                    access. A bare "Bash" entry is the full shell,
+                    any command, and could result in accessing an
+                    unrelated package.
   argument-hint     Shown to a developer who runs /reproduce-bug with
                     no argument, so they know what to pass.
 

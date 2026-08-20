@@ -390,7 +390,7 @@ Actual: false. Failing item: { id: 4, name: "Sleeping Bag (-15C)", price: -89 }<
   </div>
 
   <div class="callout amber">
-    <p><strong>A real gap this skill shipped with:</strong> an earlier version of <code>SKILL.md</code> listed its allowed tool as plain <code>"Bash"</code>, and a reader running <code>/reproduce-bug BUG-007</code> saw it reach for an unrelated package install. Naming a tool isn't the same as restricting it, bare <code>"Bash"</code> is the full shell, any command. It's fixed above to <code>"Bash(curl:*)"</code>, which restricts the skill to curl invocations only, the actual read-only network access this skill was always meant to have.</p>
+    <p><strong>A real gap this skill shipped with:</strong> an earlier version of <code>SKILL.md</code> listed its allowed tool as plain <code>"Bash"</code>, and a reader running <code>/reproduce-bug BUG-007</code> saw it reach for an unrelated package install. <code>"Bash(curl:*)"</code> restricts the skill to curl invocations only, the actual read-only network access. A bare <code>"Bash"</code> entry is the full shell, any command, and could result in accessing an unrelated package.</p>
   </div>
 
   <h2>Part 3: plan mode is a decision, not a mood</h2>
@@ -398,22 +398,33 @@ Actual: false. Failing item: { id: 4, name: "Sleeping Bag (-15C)", price: -89 }<
   <p><a href="https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2F6nizmqk8tpzpfjvt6qmmav7rh%2Fpublic%2F1783542750%2FClaude+Certified+Architect+%E2%80%93+Foundations+Exam+Guide.pdf" target="_blank" rel="noopener noreferrer">Task Statement 3.4</a> (exam guide) isn't asking whether you know plan mode exists. It's asking whether you can tell, before you start, which side of the line a given task falls on. Two real PeakAndPack fixes, reasoned through against the guide's own criteria:</p>
 
   <div class="example-box">
-    <div class="verdict-row"><div class="verdict-icon plan">P</div><div><div class="verdict-label">Close BUG-004 and BUG-007 together</div><div class="verdict-sub">Multi-file, three valid places for validation to live, affects every future price-bearing endpoint. Plan mode.</div></div></div>
-    <div class="verdict-row"><div class="verdict-icon direct">D</div><div><div class="verdict-label">Close BUG-002 alone</div><div class="verdict-sub">One handler, one obvious fix, the guide's own textbook example. Direct execution.</div></div></div>
+    <div class="verdict-row"><div class="verdict-icon plan">P</div><div><div class="verdict-label">Close BUG-004 and BUG-007 together</div><div class="verdict-sub">BUG-004 is no price validation on the products endpoint. BUG-007 is the cart trusting whatever price the client sends at checkout. Fixed together, the real decision isn't the fix, it's where validation should live: middleware checking every price-bearing request, a shared schema both endpoints import, or a duplicated check in each endpoint. All three work, all three touch multiple files, and whichever one is picked shapes every future endpoint that touches price. Plan mode.</div></div></div>
+    <div class="verdict-row"><div class="verdict-icon direct">D</div><div><div class="verdict-label">Close BUG-002 alone</div><div class="verdict-sub">BUG-002 is product registration accepting an empty name field. The fix is one required-field check in one handler, no other file involved, no real alternative shape to weigh. Direct execution.</div></div></div>
   </div>
 
   <div class="callout amber">
-    <p><strong>The same bug, either side of the line:</strong> BUG-004 and BUG-007 could each be fixed alone as a Task-B-shaped change. What moves them into plan-mode territory is the decision to fix them <em>together</em>, because that turns a validation fix into a decision about where validation lives project-wide. Scope decides this, not bug severity or how the fix reads in isolation.</p>
+    <p><strong>The same bug, either side of the line:</strong> BUG-004 and BUG-007 could each be fixed alone, a single well-scoped change, the same shape as BUG-002 above. What moves them into plan-mode territory is the decision to fix them <em>together</em>, because that turns a validation fix into a decision about where validation lives project-wide. Scope decides this, not bug severity or how the fix reads in isolation.</p>
   </div>
 
-  <p>One more plan-mode detail worth knowing: for a task that needs heavy codebase exploration before a plan can even be written, reading through dozens of files to understand how something works, Claude Code has a built-in <strong>Explore</strong> subagent for exactly that. It isolates the verbose back-and-forth of searching and reading into its own context, then hands the main conversation just a summary, so a large investigation doesn't eat the context budget you actually need for reasoning about the plan itself.</p>
+  <p>One more plan-mode detail worth knowing: Claude Code has a built-in <strong>Explore</strong> subagent for one specific situation, a task where a plan can't even be written yet because it first needs heavy exploration, reading through dozens of files just to understand how something currently works.</p>
+  <ul>
+    <li>It isolates the verbose back-and-forth of searching and reading into its own context, not the main conversation's.</li>
+    <li>It hands the main conversation back only a summary once it's done.</li>
+    <li>That keeps the context budget free for the part that actually needs it, reasoning about the plan itself, instead of that budget being eaten by the exploration.</li>
+  </ul>
 
   <div class="deliverable-box">
     <div class="d-label">Deliverable, Part 3</div>
     <ul>
       <li><a href="d3-plan-vs-direct.md">d3-plan-vs-direct.md</a>: the full reasoning for both tasks against the guide's stated criteria</li>
     </ul>
-    <p class="howto"><strong>How to use it:</strong> run its two criteria checks (multi-file? architectural? multiple valid approaches?) against your own next task before opening plan mode out of habit either way.</p>
+    <p class="howto"><strong>How to use it:</strong> there's no script here, it's three questions to answer honestly about your own next task, in the chat, before you start:</p>
+    <ol>
+      <li>Does it touch more than one file?</li>
+      <li>Does more than one valid way to build it exist, with no obviously correct choice yet?</li>
+      <li>Does the decision made here affect code beyond just this task?</li>
+    </ol>
+    <p class="howto">Two or more "yes" answers is what pushed BUG-004 and BUG-007 into plan mode above, one or none is what kept BUG-002 in direct execution. Answer the same three questions about your own task before opening plan mode out of habit, or skipping it out of habit, either way.</p>
     <div class="fw-table-wrap">
       <table class="fw-table">
         <thead><tr><th>File on this page</th><th>Save it to</th><th>Verify with</th></tr></thead>
@@ -425,8 +436,8 @@ Actual: false. Failing item: { id: 4, name: "Sleeping Bag (-15C)", price: -89 }<
   </div>
 
   <h2>Part 4: a reviewer with no memory of writing the code</h2>
-  <p><strong>CI</strong> (continuous integration), in plain terms: the automated process that runs every time code gets pushed, tests, builds, checks, without a person having to trigger it by hand. Wiring Claude Code into that pipeline means it runs the same way, automatically, on every pull request, not typed into a chat window by a person.</p>
-  <p><a href="https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2F6nizmqk8tpzpfjvt6qmmav7rh%2Fpublic%2F1783542750%2FClaude+Certified+Architect+%E2%80%93+Foundations+Exam+Guide.pdf" target="_blank" rel="noopener noreferrer">Task Statement 3.6</a> (exam guide) is CI integration, and its least obvious knowledge point isn't a flag, it's session isolation: the same session that wrote a diff is a worse reviewer of that diff than a fresh one, because it already believes its own reasoning.</p>
+  <p><strong>CI</strong> (continuous integration), in plain terms: a process that runs by itself every time code gets pushed. It runs the tests, builds the project, and runs checks, no person has to start it by hand. Adding Claude Code to this pipeline means Claude Code runs automatically too, on every pull request, the same way the tests and builds already do. Nobody has to type a prompt into a chat window for it.</p>
+  <p><a href="https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2F6nizmqk8tpzpfjvt6qmmav7rh%2Fpublic%2F1783542750%2FClaude+Certified+Architect+%E2%80%93+Foundations+Exam+Guide.pdf" target="_blank" rel="noopener noreferrer">Task Statement 3.6</a> (exam guide) covers this setup. Its trickiest point isn't a command-line flag, it's this: the session that wrote a piece of code is not a good reviewer of that same code. A fresh session, one that never saw the code get written, catches more. Why? Because the session that wrote it already believes it did the right thing, it's grading its own homework.</p>
 
   <div class="diagram-wrap">
     <svg viewBox="0 0 700 170" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" role="img" aria-label="Diagram: a pull request triggers a fresh, non-interactive claude -p invocation that has no memory of writing the code, which outputs JSON validated against a schema, which is then posted as inline PR comments.">
@@ -485,8 +496,25 @@ Actual: false. Failing item: { id: 4, name: "Sleeping Bag (-15C)", price: -89 }<
         </tbody>
       </table>
     </div>
-    <p class="howto"><strong>Try it, the easy version:</strong> in a plain git repo with no <code>src/checkout/**</code> or <code>src/cart/**</code> changes, just run <code>chmod +x d3-ci-review.sh &amp;&amp; ./d3-ci-review.sh</code>. It should print "No checkout or cart changes in this PR, skipping review." and exit cleanly, confirming the no-op path works before you ever touch CI or a real PR.</p>
-    <p class="howto"><strong>The full version</strong> needs more: a real branch with changes under one of those two paths, <code>ANTHROPIC_API_KEY</code> set, and <code>gh</code> authenticated against a real PR (inline comments won't post without one). Worth doing once you're past the sandbox stage, not required to understand what the script does.</p>
+    <p class="howto"><strong>Try it, three tiers, each needs less setup than the next:</strong></p>
+    <ol>
+      <li><strong>Easy:</strong> in a plain git repo with no <code>src/checkout/**</code> or <code>src/cart/**</code> changes, run <code>chmod +x d3-ci-review.sh &amp;&amp; ./d3-ci-review.sh</code>. It should print "No checkout or cart changes in this PR, skipping review." and exit cleanly, confirming the no-op path works before you ever touch CI or a real PR.</li>
+      <li><strong>Middle, a real review with no PR at all:</strong> skip the script and run just its <code>claude</code> line by hand, on any code you paste in directly. Needs only <code>ANTHROPIC_API_KEY</code>, no <code>gh</code>, no git diff, no real PR:
+        <pre><code>DIFF='function getCartTotal(items) {
+  return items.reduce((sum, i) =&gt; sum + i.price, 0); // price comes straight from the client
+}'
+
+claude -p "Review this diff for the same class of bug as BUG-007 (cart trusts a
+client-supplied price) and BUG-008 (no stock check before order placement).
+Flag only genuine issues in this category, nothing about style.
+
+Diff:
+
+$DIFF" --output-format json --json-schema d3-review-schema.json</code></pre>
+        This exercises the two hardest-to-fake parts of the script, the actual review call and the schema-validated output, on code that genuinely has the BUG-007 pattern. Everything the full script adds past this (pulling the real diff, checking prior comments, posting to a PR) is plumbing around this same call, worth trusting once this part works, not something you need a real PR to verify first.
+      </li>
+      <li><strong>Full:</strong> a real branch with changes under one of those two paths, <code>ANTHROPIC_API_KEY</code> set, and <code>gh</code> authenticated against a real PR (inline comments won't post without one). Worth doing once you're past the sandbox stage, not required to understand what the script does.</li>
+    </ol>
   </div>
 
   <h2>Part 5: getting Parts 1 through 4 right the first few times</h2>
@@ -515,9 +543,9 @@ Actual: false. Failing item: { id: 4, name: "Sleeping Bag (-15C)", price: -89 }<
   <p>A wrong assertion fails a test, loudly, with a line number. A rule file scoped to the wrong glob just never loads, silently, and the only symptom is Claude quietly not following a convention nobody remembers to check for.</p>
   <p>Testing configuration itself means testing for absence:</p>
   <ul>
-    <li>Create a decoy file outside a rule's glob and confirm the rule doesn't apply to it.</li>
+    <li>Create a decoy file outside a rule's glob and confirm the rule doesn't apply to it: for <code>playwright-tests.md</code> (scoped to <code>tests/**/*.spec.ts</code>), create a file that just misses the pattern, right filename but the wrong folder (<code>src/example.spec.ts</code>) or the right folder but the wrong filename (<code>tests/example.util.ts</code>). Open it, run <code>/memory</code>, and confirm <code>playwright-tests.md</code> is <em>not</em> listed. That's the rule correctly staying off, not a bug, and it's the case a passing test suite would never catch on its own.</li>
     <li>Run <code>/memory</code> after onboarding a fresh clone and diff what loaded against what you expected.</li>
-    <li>Treat a CI review's schema validation failure as a finding in its own right, not just infrastructure noise to retry past.</li>
+    <li>Treat a CI review's schema validation failure as a finding in its own right, not just infrastructure noise to retry past: <code>d3-ci-review.sh</code>'s <code>--json-schema d3-review-schema.json</code> flag means Claude's reply either matches the expected shape or the step fails. The easy reaction is to just re-run the job, the same way you'd retry a flaky network call. But a schema failure here isn't random, it's Claude actually producing something outside the shape it was told to, the exact same failure mode Post 01 hit when a reply came back wrapped in a markdown code fence. Re-running hides that. Logging what Claude actually returned, and checking whether the same shape keeps failing, turns a retry into evidence that the prompt or schema itself needs fixing.</li>
   </ul>
 
   <h3>Applying what we learnt to your own projects</h3>
@@ -531,7 +559,16 @@ Actual: false. Failing item: { id: 4, name: "Sleeping Bag (-15C)", price: -89 }<
 
   <div class="blueprint-box">
     <div class="bp-label">Blueprint tie &middot; D3, 20%, <a href="https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2F6nizmqk8tpzpfjvt6qmmav7rh%2Fpublic%2F1783542750%2FClaude+Certified+Architect+%E2%80%93+Foundations+Exam+Guide.pdf" target="_blank" rel="noopener noreferrer">Task Statements 3.1&ndash;3.6</a> (exam guide)</div>
-    <p>D3 tests configuration as a set of concrete choices, not a vague "set things up well": project-level versus user-level CLAUDE.md (3.1), glob-scoped rules versus directory-bound ones (3.3), a shared command versus an isolated skill (3.2), plan mode versus direct execution against stated criteria (3.4), the techniques that actually got the first four artifacts right (3.5), and a CI pipeline that runs non-interactively with structured output (3.6). Every one of those showed up as a real file in this post, not a description of one.</p>
+    <p>D3 tests configuration as a set of concrete choices, not a vague "set things up well":</p>
+    <ul>
+      <li>Project-level versus user-level CLAUDE.md. (3.1)</li>
+      <li>A shared command versus an isolated skill. (3.2)</li>
+      <li>Glob-scoped rules versus directory-bound ones. (3.3)</li>
+      <li>Plan mode versus direct execution, against stated criteria. (3.4)</li>
+      <li>The techniques that actually got the first four artifacts right. (3.5)</li>
+      <li>A CI pipeline that runs non-interactively with structured output. (3.6)</li>
+    </ul>
+    <p>Every one of those showed up as a real file in this post, not a description of one.</p>
   </div>
 
   <div class="nav-row">
