@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>The Case Facts, the Scratchpad, and the Calibrated Guess: What D5 Actually Tests | The Quality Strategist</title>
-  <meta name="description" content="PeakAndPack's QA setup, stretched across a long session: what survives context trimming, when to escalate instead of guess, what an interrupted investigation recovers from, and why a confidence score means nothing until it's calibrated. CCAR-F D5, Context Management and Reliability." />
+  <meta name="description" content="What survives context trimming, when to escalate instead of guess, what an interrupted investigation recovers from, and why a confidence score means nothing until it's calibrated. CCAR-F D5, Context Management and Reliability." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
@@ -119,7 +119,7 @@
     <span class="tag">Post 03 of 5</span>
   </div>
   <h1><span class="h1-lede">The Case Facts, the Scratchpad, and the Calibrated Guess</span>: What D5 Actually Tests</h1>
-  <p class="blog-subtitle">PeakAndPack's QA setup, stretched across a long session: what survives context trimming, when to escalate instead of guess, what an interrupted investigation recovers from, and why a confidence score means nothing until it's calibrated.</p>
+  <p class="blog-subtitle">What survives context trimming, when to escalate instead of guess, what an interrupted investigation recovers from, and why a confidence score means nothing until it's calibrated.</p>
   <div class="blog-meta">
     <span class="series">CCAR-F for QA</span>
     <span aria-hidden="true">&middot;</span>
@@ -129,8 +129,8 @@
 
 <main id="main-content" class="blog-body">
 
-  <p>D5 is the lightest domain by weight, 15%, and the easiest to underrate because none of it is about getting an answer right. It's about what's still true, still attributed, and still legible after a session runs long enough to stop being a single clean exchange.</p>
-  <p>Every deliverable below reuses Post 01's triage agent and Post 01's own real finding, a live discrepancy the catalog didn't know about, because D5 isn't a new task, it's what happens to an existing one under pressure: more tool calls, more time, more sources that might disagree.</p>
+  <p>D5 is the lightest domain by weight, 15%, and it's easy to underrate for that reason. It isn't about getting one answer right. It's about whether that answer stays true, stays correctly credited to its source, and stays easy to follow, once a session runs long enough to stop being one quick exchange.</p>
+  <p>Every deliverable below reuses Post 01's triage agent, and Post 01's own real finding, a live discrepancy the catalog didn't know about. D5 isn't a new task. It's what happens to that same task under pressure: more tool calls, more time, more sources that might disagree with each other.</p>
   <p><strong>Context, in plain terms:</strong> everything Claude can currently see and reason from in one exchange, the conversation so far, any files it's read, every tool result returned. It isn't infinite, and what stays inside it, what gets trimmed, and what quietly gets forgotten is exactly what this domain is about.</p>
 
   <h2>Four things D5 actually asks you to know</h2>
@@ -142,7 +142,7 @@
   </div>
 
   <h2>Part 1: the case-facts block</h2>
-  <p>D1's triage agent appends every tool result to history verbatim, fine for three tools across six scenarios. It stops being fine once a live-API check starts returning full response bodies: the guide's own example is 40+ fields per lookup when five are relevant.</p>
+  <p>D1's triage agent appends every tool result to its history exactly as it came in. That's fine for three tools across six scenarios. It stops being fine once a live-API check starts returning full response bodies, the guide's own example: 40+ fields in one lookup when only five actually matter.</p>
 
   <details class="reveal-box">
     <summary>Guess what gets lost first when a long session gets summarized, before you look</summary>
@@ -208,7 +208,7 @@
   </div>
 
   <h2>Part 2: escalate, or propagate what actually happened</h2>
-  <p>5.2 and 5.3 are two sides of the same problem: when the agent itself can't resolve something, what does it do instead of guessing? Escalate to a human, or hand the coordinator enough information to decide.</p>
+  <p>5.2 and 5.3 are two sides of the same problem: what does the agent do when it can't resolve something itself, instead of just guessing? Either escalate to a human, or hand the coordinator enough information to decide.</p>
 
   <div class="diagram-wrap">
     <svg viewBox="0 0 700 190" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" role="img" aria-label="Diagram: a live API check produces one of three outcomes. A two-oh-two with data or an empty result set is a valid response, not an error. A five-oh-three is an access failure the subagent retries locally. A network error is unresolvable and gets propagated to the coordinator with structured context, never silently suppressed.">
@@ -236,7 +236,7 @@
   </div>
 
   <div class="callout amber">
-    <p><strong>The BUG-011 mistake, generalized:</strong> a 200 response with an empty result set is not the same event as a 503 or a network timeout, but a generic error handler often treats "nothing came back" identically regardless of why. Conflating "the endpoint answered and the answer was empty" with "the endpoint never answered" is the same category error as the catalog/live discrepancy from Post 01.</p>
+    <p><strong>The BUG-011 mistake, generalized:</strong> a 200 response with an empty result set is not the same event as a 503 or a network timeout. But a generic error handler often treats "nothing came back" the same way, no matter why nothing came back. Mixing up "the endpoint answered, and the answer was empty" with "the endpoint never answered at all" is the same kind of mistake as Post 01's catalog/live discrepancy.</p>
   </div>
 
   <p>Escalation criteria run on the same principle as error handling: specific and explicit, not a vibe. The agent escalates when:</p>
@@ -277,13 +277,13 @@
 
   <h2>Part 3: the scratchpad that survives a restart</h2>
   <p><strong>Scratchpad and <code>/compact</code>, in plain terms:</strong> a <strong>scratchpad</strong> is just a plain file the agent writes its own findings to as it works, nothing built into Claude Code, a habit adopted deliberately for long investigations. <code>/compact</code> is a real Claude Code command that compresses the conversation so far into a shorter summary, freeing up room to keep working in the same session instead of starting completely over.</p>
-  <p>The triage task doesn't run long enough to need this. A regression investigation spanning cart, checkout, and shared pricing logic does. Past a certain point in an unaided session, the guide's own failure mode shows up: the agent starts referencing "typical patterns" instead of the specific line it found forty tool calls ago.</p>
+  <p>The triage task doesn't run long enough to need any of this. A regression investigation spanning cart, checkout, and shared pricing logic does. Past a certain point, without help, the guide's own failure mode shows up: the agent starts talking about "typical patterns" instead of the exact line it found forty tool calls ago.</p>
 
   <details class="reveal-box">
     <summary>Guess what a session without a scratchpad starts doing wrong, before you look</summary>
     <div class="reveal-content">
-      <p>Not hallucinating, exactly, degrading. The guide's own description: models in extended sessions "start giving inconsistent answers and referencing typical patterns rather than specific classes discovered earlier." The finding is technically still in the conversation history, it's just stopped being what the model actually reasons from.</p>
-      <p>A scratchpad file doesn't fix the model's attention, it routes around the problem: the specific finding lives on disk, referenced by path, instead of depending on staying salient in a growing history.</p>
+      <p>This isn't hallucinating, it's degrading. The guide's own description: models in extended sessions "start giving inconsistent answers and referencing typical patterns rather than specific classes discovered earlier." The finding is technically still there in the conversation history. It's just stopped being something the model actually uses when it reasons.</p>
+      <p>A scratchpad file doesn't fix the model's attention span. It works around the problem instead: the specific finding lives in a file on disk, referenced by its path, instead of depending on staying noticeable inside a history that keeps growing.</p>
     </div>
   </details>
 
@@ -336,12 +336,12 @@
   </div>
 
   <h2>Part 4: a confidence score you calibrated, or didn't</h2>
-  <p>"94% accurate" can still hide one category the system is systematically wrong on. Six scenarios is too small a sample to prove anything, which is exactly why it's a useful illustration: 100% correct on six scenarios looks identical to "got lucky on the one hard case" without stratifying by category first.</p>
+  <p>"94% accurate" can still hide one category the system is consistently wrong on. Six scenarios is too small a sample to prove anything, and that's actually the point: 100% correct on six scenarios looks exactly the same as "got lucky on the one hard case," unless the results get broken down by category first.</p>
 
   <details class="reveal-box">
     <summary>Guess why a 97% aggregate accuracy number can still be hiding a real problem, before you look</summary>
     <div class="reveal-content">
-      <p>Because it's one number covering every document type and field, and a system can be excellent on the common cases while being quietly, consistently wrong on one rare one, the aggregate never separates the two.</p>
+      <p>Because it's one number covering every document type and field. A system can be excellent on the common cases while being quietly, consistently wrong on one rare one, and one blended number never separates the two.</p>
       <p>The guide's fix: stratified random sampling, measuring error rates per document type and per field instead of trusting one blended percentage, specifically to catch the segment a single aggregate number would hide.</p>
     </div>
   </details>
@@ -361,7 +361,7 @@
 }</code></pre>
   <p>High confidence in what was directly observed, low confidence in which catalog entry it belongs to. One collapsed number would have hidden that split entirely.</p>
 
-  <p>A field-level confidence score is only as trustworthy as what it's checked against. The way to actually calibrate it: keep a small labeled set where the real, verified outcome is already known, then compare the model's stated confidence per field against how often it was actually right at that confidence level. A field that says "high" but is wrong a third of the time on the labeled set needs its threshold recalibrated before it's trusted to skip human review.</p>
+  <p>A field-level confidence score is only as trustworthy as what it's checked against. Here's how to actually calibrate it: keep a small labeled set where the real, verified outcome is already known. Then compare the model's stated confidence for each field against how often it was actually right at that confidence level. If a field says "high" but is wrong a third of the time on that labeled set, its threshold needs recalibrating before anyone trusts it enough to skip human review.</p>
 
   <p><strong>Provenance, in plain terms:</strong> which source a specific claim actually came from, kept attached to that claim, instead of merging several sources into one answer that no longer says where any part of it came from. Provenance is the same discipline applied to sources instead of fields. The correct shape for the BUG-011 conflict never picks a winner:</p>
   <pre><code>{
@@ -372,7 +372,7 @@
   "conflictDetected": true
 }</code></pre>
 
-  <p>One more field belongs in that claims array: when each source's information is actually from. <code>d5-case-facts.ts</code>'s <code>liveCheckTimestamp</code> already captures this for the live-check side, and it matters beyond bookkeeping, without a date attached, two sources that disagree because one is simply older read as a contradiction instead of what they actually are, the world changing between two honest, correctly-reported snapshots. BUG-011 itself is a live example: the catalog's claim isn't wrong exactly, it's just from before this behavior changed. A date on each claim is what lets a reader tell "these conflict" apart from "this one's stale."</p>
+  <p>One more field belongs in that claims array: when each source's information is actually from. <code>d5-case-facts.ts</code>'s <code>liveCheckTimestamp</code> already captures this for the live-check side. It matters for more than bookkeeping. Without a date attached, two sources that disagree only because one is older get read as a contradiction. But that's not what they actually are, they're two honest, correctly-reported snapshots of the world taken at two different moments. BUG-011 is a real example of this: the catalog's claim isn't wrong exactly, it's just from before this behavior changed. A date on each claim is what lets a reader tell "these two conflict" apart from "this one's just stale."</p>
 
   <div class="deliverable-box">
     <div class="d-label">Deliverable, Part 4</div>
@@ -394,7 +394,7 @@
 
   <h2>The QA angle</h2>
   <h3>How to test: reliability is a property of the session, not the answer</h3>
-  <p>A single triage verdict can be correct and the system can still be unreliable, if getting there depended on context that happened not to overflow yet, or on a source conflict that happened not to come up. D5 is what a QA seat actually owns here: not whether one run got the right answer, but whether the same system stays right at call fifty, after a restart, and when two sources disagree.</p>
+  <p>A single triage verdict can be correct, and the system can still be unreliable. That happens when getting the right answer depended on the context not overflowing yet, or on a source conflict that simply didn't come up this time. D5 is what a QA seat actually owns here: not whether one run got the right answer, but whether the same system stays right at call fifty, after a restart, and when two sources disagree.</p>
 
   <h3>Applying what we learnt to your own projects</h3>
   <ul>
