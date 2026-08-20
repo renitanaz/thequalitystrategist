@@ -152,8 +152,9 @@
 
   <h3>Workflow versus agent, in plain terms</h3>
   <p>A <strong>workflow</strong> here means a fixed sequence: the same steps run every time, regardless of input. For this triage task, that's one call, feed in the failure text, get back a verdict, no branching, no second look.</p>
-  <p>An <strong>agent</strong> gets tools instead of a fixed path, and decides for itself, at each step, whether to use one, how many times, and in what order, before it settles on an answer. For this same task, that means it can search the bug catalog, check whether a failure still reproduces against the live app right now, or search past incident reports, choosing whichever of those actually helps, if any.</p>
+  <p>An <strong>agent</strong> gets tools instead of a fixed path, and decides for itself, at each step, whether to use one, how many times, and in what order, before it settles on an answer. For this same task, that means it can search the <strong>bug catalog</strong> (PeakAndPack's list of 11 known, documented bugs, each with an ID like <code>BUG-001</code> and a short description), check whether a failure still reproduces against the live app right now, or search past incident reports, choosing whichever of those actually helps, if any.</p>
   <p>Both are solving the exact same problem below. The difference is entirely in how each one decides it's finished.</p>
+  <p>One thing worth knowing about that bug catalog before going further: it's a static list that was created by hand with bugs (bugs intentionally added into PeakAndPack), written down as plain text, 11 entries, an ID and a one-line description each. That list is simply pasted, as-is, directly into these scripts as a constant. Nothing refreshes it automatically, which is exactly why it can go stale, a bug gets fixed in the live app, but the catalog's copy of it doesn't know that. That gap is the whole point of Scenario 3 later in this post.</p>
 
   <p>An agent that decides it's "done" by checking whether it made any tool calls, or by scanning its own text for something answer-shaped, is guessing. The documented signal is <code>stop_reason</code>: <code>"tool_use"</code> means keep going, <code>"end_turn"</code> means actually finished.</p>
 
@@ -204,7 +205,7 @@
 
   <p>The task both implementations solve: given one failing test's console output, decide which of PeakAndPack's 11 known bugs it matches, how confident that match is, and whether to file new, link existing, or flag as flaky.</p>
   <p>The workflow gets the full 11-bug catalog in one prompt and returns a verdict in a single call, no second chances. The agent gets three tools instead: search the catalog, check the live PeakAndPack API for whether a failure still reproduces right now, and search past incident reports. Its loop is the <code>stop_reason</code> pattern above, not a fixed number of steps.</p>
-  <p>Six scenarios, five built from real, verified PeakAndPack bugs, one deliberately not in the catalog:</p>
+  <p>Six scenarios below, five built from real, verified PeakAndPack bugs, plus Scenario 6, deliberately left out of the catalog on purpose, to see how each approach handles a failure the lookup list was never built to recognize. Most scenarios end the same way for both, marked green below, the two where they actually diverge are marked red, and those two are the ones worth paying attention to:</p>
 
   <div class="example-box">
     <div class="verdict-row"><div class="verdict-icon ok">&#10003;</div><div><div class="verdict-label">Negative price &rarr; BUG-001</div><div class="verdict-sub">Both correct. Agent live-verified it.</div></div></div>
@@ -215,9 +216,9 @@
     <div class="verdict-row"><div class="verdict-icon miss">&times;</div><div><div class="verdict-label">Slow checkout, not in the catalog</div><div class="verdict-sub"><strong style="color:var(--red)">Workflow files a duplicate.</strong> Agent finds a matching prior report instead.</div></div></div>
   </div>
 
-  <p class="pull-quote">"/api/search" with no query currently returns 200, empty results. Not the 500 the catalog describes for BUG-011.</p>
+  <p class="pull-quote">The catalog says BUG-011 crashes the server (a 500 error) when you search with nothing typed in. Checked live against the real site right now, the same action returns 200 (success), no results, no crash.</p>
 
-  <p>That result wasn't planned, it turned up live while building this comparison. Either BUG-011 is already fixed, or the real trigger differs from what's documented. The workflow only has the catalog text, so it confidently links a new failure to a bug that may no longer exist. The agent's live-check tool catches the mismatch and downgrades its own confidence instead of asserting a match it can't verify.</p>
+  <p>That result wasn't planned, it turned up live while building this comparison. Either BUG-011 is already fixed, or the real trigger differs from what's documented. Either way, reality and the static catalog now disagree. The workflow only has the catalog text to go on, so it confidently links Scenario 3's failure to BUG-011 anyway, a bug that may no longer exist. The agent's live-check tool catches that disagreement and downgrades its own confidence instead of asserting a match it can't actually verify.</p>
 
   <div class="stat-strip">
     <div class="s1"><span class="stat-num">6/6</span><span class="stat-label">agent got every scenario right</span></div>
@@ -232,6 +233,7 @@
       <li><a href="d1-triage-workflow.ts">d1-triage-workflow.ts</a>: the deterministic implementation, runnable with an Anthropic API key</li>
       <li><a href="d1-triage-agent.ts">d1-triage-agent.ts</a>: the <code>stop_reason</code>-driven agentic implementation, three tools, real live-API calls</li>
       <li><a href="d1-triage-comparison.md">d1-triage-comparison.md</a>: the full scenario-by-scenario comparison and methodology notes</li>
+      <li><a href="d1-triage-workflow.py">d1-triage-workflow.py</a> / <a href="d1-triage-agent.py">d1-triage-agent.py</a>: same two implementations, in Python, if TypeScript syntax gets in the way of the logic</li>
     </ul>
     <p class="howto"><strong>How to use it:</strong> new to the capsule? The hub's <a href="index.html#setup">before-you-start section</a> covers installing Claude Code and why you don't need PeakAndPack's source. These four files aren't Claude Code config, they're standalone: drop them anywhere in a working folder, and set <code>ANTHROPIC_API_KEY</code> to actually run the two scripts, entirely optional, the comparison above is already worked through, running it yourself just confirms it. No key yet? Create one free at <a href="https://console.anthropic.com" target="_blank" rel="noopener noreferrer">console.anthropic.com</a>.</p>
     <div class="fw-table-wrap">
@@ -242,6 +244,8 @@
           <tr><td>d1-triage-workflow.ts</td><td>anywhere, e.g. project root</td><td><code>npx tsx d1-triage-workflow.ts &lt;path-to-failure.json&gt;</code></td></tr>
           <tr><td>d1-triage-agent.ts</td><td>same folder as the workflow script</td><td><code>npx tsx d1-triage-agent.ts &lt;path-to-failure.json&gt;</code></td></tr>
           <tr><td>d1-triage-comparison.md</td><td>anywhere, it's the worked results to read against your own run</td><td>n/a, reference doc</td></tr>
+          <tr><td>d1-triage-workflow.py</td><td>anywhere, e.g. project root</td><td><code>python d1-triage-workflow.py &lt;path-to-failure.json&gt;</code></td></tr>
+          <tr><td>d1-triage-agent.py</td><td>same folder as the other Python script</td><td><code>python d1-triage-agent.py &lt;path-to-failure.json&gt;</code></td></tr>
         </tbody>
       </table>
     </div>
@@ -249,7 +253,7 @@
     <pre><code>Test: "product list has no negative prices"
 Expected: products.every(p =&gt; p.price &gt;= 0)
 Actual: false. Failing item: { id: 4, name: "Sleeping Bag (-15C)", price: -89 }</code></pre>
-    <p class="howto">Then run <code>npx tsx d1-triage-workflow.ts scenario-1.txt</code> and <code>npx tsx d1-triage-agent.ts scenario-1.txt</code>. Both need <code>ANTHROPIC_API_KEY</code> set first. Expect a JSON verdict matching <code>BUG-001</code> from both, the interesting differences show up on Scenario 3 and Scenario 6, where the agent's live-check tool catches something the workflow can't.</p>
+    <p class="howto">TypeScript: run <code>npx tsx d1-triage-workflow.ts scenario-1.txt</code> and <code>npx tsx d1-triage-agent.ts scenario-1.txt</code>. Python: <code>pip install anthropic requests</code> first, then <code>python d1-triage-workflow.py scenario-1.txt</code> and <code>python d1-triage-agent.py scenario-1.txt</code>, same logic, same output, no async/await to work through. Either way, both need <code>ANTHROPIC_API_KEY</code> set first. Expect a JSON verdict matching <code>BUG-001</code> from both, the interesting differences show up on Scenario 3 and Scenario 6, where the agent's live-check tool catches something the workflow can't.</p>
   </div>
 
   <div class="callout amber">
