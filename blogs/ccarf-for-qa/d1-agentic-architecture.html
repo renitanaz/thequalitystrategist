@@ -136,9 +136,6 @@
 
 <main id="main-content" class="blog-body">
 
-  <div class="callout amber">
-    <p><strong>Revised after reading the actual exam guide.</strong> An earlier version of this post compared "workflow" against "agent" as a general architecture choice. That's a real distinction, but it's not what Domain 1 tests. The official guide's seven task statements are specific: <code>stop_reason</code>-driven loop control, coordinator-subagent delegation via the <code>Task</code> tool, and hooks for guarantees a prompt can't give. This version is rebuilt around those, not around a plausible-sounding analogy.</p>
-  </div>
 
   <p>A failing test lands in your queue. You've seen this error before, or you think you have. File it as a duplicate and you might bury a real regression. File it as new and you might create the fortieth copy of a bug everyone already knows about.</p>
   <p>Building an agent to do this triage touches almost every task statement in D1: how the loop knows when to stop, whether one agent or several should investigate, and what has to be guaranteed rather than just requested.</p>
@@ -242,6 +239,11 @@
         </tbody>
       </table>
     </div>
+    <p class="howto"><strong>Try it:</strong> save Scenario 1 from <code>d1-triage-scenarios.md</code> as <code>scenario-1.txt</code> in the same folder as the scripts:</p>
+    <pre><code>Test: "product list has no negative prices"
+Expected: products.every(p =&gt; p.price &gt;= 0)
+Actual: false. Failing item: { id: 4, name: "Sleeping Bag (-15C)", price: -89 }</code></pre>
+    <p class="howto">Then run <code>npx tsx d1-triage-workflow.ts scenario-1.txt</code> and <code>npx tsx d1-triage-agent.ts scenario-1.txt</code>. Both need <code>ANTHROPIC_API_KEY</code> set first. Expect a JSON verdict matching <code>BUG-001</code> from both, the interesting differences show up on Scenario 3 and Scenario 6, where the agent's live-check tool catches something the workflow can't.</p>
   </div>
 
   <div class="callout amber">
@@ -388,6 +390,15 @@
 
   <p>What replaces the single assertion is eval-style testing: run the same scenario many times, measure the distribution of outcomes, track tool-call count as its own metric, and treat "did it converge within the iteration cap" as a pass condition in its own right, not just "was the final answer correct."</p>
   <p>That's the real shift agentic architecture asks of a QA seat. Not new tools so much as a different definition of what a passing test even means: from "did this call return the right value" to "does this system's behaviour, across many runs, stay inside bounds I've actually measured."</p>
+
+  <h3>When you'll actually reach for this</h3>
+  <p>Not in the abstract, at specific moments:</p>
+  <ul>
+    <li><strong>A design review proposes "add an agent"</strong> without saying why a fixed workflow can't do the job. Ask what the agent gets that the workflow doesn't, tools, judgement, live verification, if the answer is vague, the architecture choice hasn't actually been made yet, it's been assumed.</li>
+    <li><strong>A PR adds a coordinator-subagent pattern.</strong> Check whether each subagent's context is passed to it explicitly or assumed to carry over from the coordinator, that assumption is exactly the gap Task Statements 1.2 and 1.3 test, and it fails silently, not loudly, a subagent just reasons from less than it should.</li>
+    <li><strong>A loop's termination logic checks anything other than <code>stop_reason</code></strong>, a hardcoded call limit as the primary stop condition, or the absence of tool-use content as a completion signal. Both are the exam's own named anti-patterns, and both show up in practice as intermittent, hard-to-reproduce behaviour, not a clean failure.</li>
+    <li><strong>A business-critical rule lives only in a system prompt</strong>, "always verify the customer before refunding," with no hook enforcing it. That's a probabilistic guarantee standing in for a real one, worth flagging before it ships, not after the incident that proves the prompt wasn't enough.</li>
+  </ul>
 
   <div class="blueprint-box">
     <div class="bp-label">Blueprint tie &middot; D1, 27%, <a href="https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2F6nizmqk8tpzpfjvt6qmmav7rh%2Fpublic%2F1783542750%2FClaude+Certified+Architect+%E2%80%93+Foundations+Exam+Guide.pdf" target="_blank" rel="noopener noreferrer">Task Statements 1.1&ndash;1.7</a> (exam guide)</div>

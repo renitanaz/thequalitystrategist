@@ -61,6 +61,9 @@
     .callout p{color:var(--text-2);margin-bottom:0}
 
     .diagram-wrap{margin:1.75rem 0;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.2rem}
+    .screenshot{margin:1rem 0 0;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1rem}
+    .screenshot img{display:block;width:100%;height:auto;border-radius:6px}
+    .screenshot figcaption{font-size:.78rem;color:var(--text-3);margin-top:.6rem}
 
     .axis-grid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin:1.4rem 0}
     .axis-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:.9rem 1.1rem}
@@ -236,18 +239,24 @@
       <li><a href="d3-claude-md/rules/playwright-tests.md">d3-claude-md/rules/playwright-tests.md</a>: path-scoped to <code>tests/**/*.spec.ts</code>, discovered independently, no import needed</li>
       <li><a href="d3-claude-md/rules/bug-reports.md">d3-claude-md/rules/bug-reports.md</a>: path-scoped to <code>reports/**/*.md</code></li>
     </ul>
-    <p class="howto"><strong>How to use it:</strong> new to the capsule? The hub's <a href="index.html#setup">before-you-start section</a> covers installing Claude Code and why you don't need PeakAndPack's source. Then <code>mkdir -p .claude/rules</code> and commit these:</p>
+    <p class="howto"><strong>How to use it:</strong> new to the capsule? The hub's <a href="index.html#setup">before-you-start section</a> covers installing Claude Code and why you don't need PeakAndPack's source, no need to repeat that here. Inside your working folder, this post additionally needs a <code>.claude/rules</code> subfolder, run <code>mkdir -p .claude/rules</code> if you don't already have it, then commit these:</p>
     <div class="fw-table-wrap">
       <table class="fw-table">
         <thead><tr><th>File on this page</th><th>Save it to</th><th>Verify with</th></tr></thead>
         <tbody>
           <tr><td>d3-claude-md/CLAUDE.md</td><td><code>.claude/CLAUDE.md</code></td><td><code>/memory</code></td></tr>
           <tr><td>d3-claude-md/environment-facts.md</td><td><code>.claude/environment-facts.md</code></td><td><code>/memory</code></td></tr>
-          <tr><td>d3-claude-md/rules/playwright-tests.md</td><td><code>.claude/rules/playwright-tests.md</code></td><td><code>/memory</code></td></tr>
-          <tr><td>d3-claude-md/rules/bug-reports.md</td><td><code>.claude/rules/bug-reports.md</code></td><td><code>/memory</code></td></tr>
+          <tr><td>d3-claude-md/rules/playwright-tests.md</td><td><code>.claude/rules/playwright-tests.md</code></td><td>open a file matching <code>tests/**/*.spec.ts</code>, then <code>/memory</code></td></tr>
+          <tr><td>d3-claude-md/rules/bug-reports.md</td><td><code>.claude/rules/bug-reports.md</code></td><td>open a file matching <code>reports/**/*.md</code>, then <code>/memory</code></td></tr>
         </tbody>
       </table>
     </div>
+    <p class="howto">These two won't show up in <code>/memory</code> right after setup, and that's correct, not broken. Path-scoped rules only load once Claude is actually working on a file matching their glob, that's the entire mechanism Task Statement 3.3 tests: conditional loading, not always-on like CLAUDE.md. Open a matching file first, or ask Claude to edit one, then check <code>/memory</code> again.</p>
+    <p class="howto"><strong>Try it:</strong> create <code>tests/example.spec.ts</code> (any content) and ask Claude to write a test in it, or just open the file. Then run <code>/memory</code>, <code>rules/playwright-tests.md</code> should now be listed as loaded. Ask Claude to summarize the testing conventions it's following, the answer should match what's in that file, not a generic default.</p>
+    <figure class="screenshot">
+      <img src="d3-claude-md/ccarf-practice-folder.png" alt="VS Code file explorer showing the ccarf-practice project folder with .claude/CLAUDE.md, .claude/environment-facts.md, .claude/commands/, .claude/skills/reproduce-bug/, and .claude/rules/ containing bug-reports.md and playwright-tests.md, matching the table above." loading="lazy" />
+      <figcaption>What the folder looks like once everything in the table above is in place.</figcaption>
+    </figure>
   </div>
 
   <h2>Part 2: a command everyone gets, a skill that stays contained</h2>
@@ -295,7 +304,7 @@
       <li><a href="d3-triage-command.md">d3-triage-command.md</a>: the <code>/triage-bug</code> command, project-scoped, reuses D1's bug catalog</li>
       <li><a href="d3-reproduce-skill/SKILL.md">d3-reproduce-skill/SKILL.md</a>: a skill with <code>context: fork</code>, <code>allowed-tools</code>, and <code>argument-hint</code> all set deliberately, not defaults</li>
     </ul>
-    <p class="howto"><strong>How to use it:</strong> run <code>mkdir -p .claude/commands .claude/skills/reproduce-bug</code>, save each file, then invoke it. The skill's invocable name comes from its folder, not its filename.</p>
+    <p class="howto"><strong>How to use it:</strong> run <code>mkdir -p .claude/commands .claude/skills/reproduce-bug</code> if you don't already have these two folders, save each file, then invoke it. The <code>/reproduce-bug</code> trigger name comes from the folder, but the file inside it must still be named exactly <code>SKILL.md</code>, not renamed, or Claude Code won't recognize it as a skill at all. If you add either file to an already-running Claude Code session, exit and start a fresh session (<code>claude</code> again) before invoking it, commands and skills are discovered at startup, not picked up live.</p>
     <div class="fw-table-wrap">
       <table class="fw-table">
         <thead><tr><th>File on this page</th><th>Save it to</th><th>Verify with</th></tr></thead>
@@ -305,6 +314,11 @@
         </tbody>
       </table>
     </div>
+    <p class="howto"><strong>Try it:</strong> <code>/triage-bug</code> needs the failing test's output pasted right after it, in the same message, or Claude has nothing to classify and will ask for it instead of guessing. Paste this whole block in:</p>
+    <pre><code>/triage-bug Test: "product list has no negative prices"
+Expected: products.every(p =&gt; p.price &gt;= 0)
+Actual: false. Failing item: { id: 4, name: "Sleeping Bag (-15C)", price: -89 }</code></pre>
+    <p class="howto">Expect a verdict matching <code>BUG-001</code>, high confidence, one sentence of reasoning. Five more ready-made scenarios, including one deliberately not in the catalog, are in <a href="d1-triage-scenarios.md">d1-triage-scenarios.md</a>. <code>/reproduce-bug</code> is simpler, just a bug ID or description as the argument, e.g. <code>/reproduce-bug BUG-007</code>, as shown in the table above.</p>
   </div>
 
   <h2>Part 3: plan mode is a decision, not a mood</h2>
@@ -387,6 +401,8 @@
         </tbody>
       </table>
     </div>
+    <p class="howto"><strong>Try it, the easy version:</strong> in a plain git repo with no <code>src/checkout/**</code> or <code>src/cart/**</code> changes, just run <code>chmod +x d3-ci-review.sh &amp;&amp; ./d3-ci-review.sh</code>. It should print "No checkout or cart changes in this PR, skipping review." and exit cleanly, confirming the no-op path works before you ever touch CI or a real PR.</p>
+    <p class="howto"><strong>The full version</strong> needs more: a real branch with changes under one of those two paths, <code>ANTHROPIC_API_KEY</code> set, and <code>gh</code> authenticated against a real PR (inline comments won't post without one). Worth doing once you're past the sandbox stage, not required to understand what the script does.</p>
   </div>
 
   <h2>Part 5: getting Parts 1 through 4 right the first few times</h2>
