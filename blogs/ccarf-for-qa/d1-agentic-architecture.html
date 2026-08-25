@@ -239,7 +239,7 @@
       <li><a href="d1-triage-comparison.md">d1-triage-comparison.md</a>: the full scenario-by-scenario comparison and methodology notes</li>
       <li><a href="d1-triage-workflow.py">d1-triage-workflow.py</a> / <a href="d1-triage-agent.py">d1-triage-agent.py</a>: same two implementations, in Python, if TypeScript syntax gets in the way of the logic</li>
     </ul>
-    <p class="howto"><strong>How to use it:</strong> new to the capsule? The hub's <a href="index.html#setup">before-you-start section</a> covers installing Claude Code and why you don't need PeakAndPack's source. These four files aren't Claude Code config, they're standalone: drop them anywhere in a working folder, and set <code>ANTHROPIC_API_KEY</code> to actually run the two scripts, entirely optional, the comparison above is already worked through, running it yourself just confirms it. No key yet? Create one free at <a href="https://console.anthropic.com" target="_blank" rel="noopener noreferrer">console.anthropic.com</a>.</p>
+    <p class="howto"><strong>How to use it:</strong> new to the capsule? The hub's <a href="index.html#setup">before-you-start section</a> covers installing Claude Code and why you don't need PeakAndPack's source. None of these files are Claude Code config, they're standalone: drop them anywhere in a working folder, and set <code>ANTHROPIC_API_KEY</code> to actually run the two scripts, entirely optional, the comparison above is already worked through, running it yourself just confirms it. No key yet? Create one free at <a href="https://console.anthropic.com" target="_blank" rel="noopener noreferrer">console.anthropic.com</a>.</p>
     <div class="fw-table-wrap">
       <table class="fw-table">
         <thead><tr><th>File on this page</th><th>Save it to</th><th>Verify with</th></tr></thead>
@@ -262,59 +262,37 @@ Actual: false. Failing item: { id: 4, name: "Sleeping Bag (-15C)", price: -89 }<
       <li><strong>Python:</strong> <code>pip install anthropic requests</code> first, then <code>python d1-triage-workflow.py scenario-1.txt</code> and <code>python d1-triage-agent.py scenario-1.txt</code>, same logic, same output, no async/await to work through.</li>
       <li>Either way, both need <code>ANTHROPIC_API_KEY</code> set first.</li>
       <li>Expect a JSON verdict matching <code>BUG-001</code> from both, the interesting differences show up on Scenario 3 and Scenario 6, where the agent's live-check tool catches something the workflow can't.</li>
+      <li>Both scripts strip a leading or trailing markdown code fence before parsing, Claude sometimes wraps a plain-text JSON reply in one even when told not to (a plain-text request is a request, not a guarantee, D4's Task Statement 4.3), so don't remove that step if you're adapting this pattern elsewhere.</li>
     </ul>
   </div>
-
-
-  <h3>A real bug this comparison caught, after publishing</h3>
-  <p>A reader ran both scripts for real against Scenario 2 (the BUG-011 case) and hit something worth documenting: instead of a clean verdict, both scripts kept returning the fallback shape, <code>{"match": null, "confidence": "low", "action": "file-new"}</code>, as if Claude had no idea what it was looking at.</p>
-
-  <figure class="screenshot">
-    <img src="d1-fence-bug-workflow.png" alt="Terminal output confirming the workflow script's raw model reply was wrapped in a triple-backtick markdown code fence around a correct, high-confidence JSON match to BUG-011, which JSON.parse could not read as-is, causing it to fall back to a generic low-confidence result instead of surfacing the real answer." loading="lazy" />
-    <figcaption>The raw model output, once actually inspected: a correct, high-confidence BUG-011 match, wrapped in a markdown code fence that broke JSON.parse.</figcaption>
-  </figure>
-
-  <p>That wasn't the model getting it wrong. Claude had the right answer, <code>BUG-011</code>, high confidence, correctly matching the ground truth, but it wrapped that answer in a <code>```json ... ```</code> code fence anyway, despite the prompt asking for "ONLY a JSON object." <code>JSON.parse</code> can't read a fence character, so it threw, and the catch block quietly substituted a generic low-confidence fallback in place of the real, correct verdict.</p>
-
-  <figure class="screenshot">
-    <img src="d1-fence-bug-agent.png" alt="Terminal output showing the agentic version of the same scenario on a different run succeeding with valid, unfenced JSON and converging correctly in 3 iterations, confirming the fencing behavior is inconsistent from one run to the next, not a fixed pattern." loading="lazy" />
-    <figcaption>The same scenario, run again: this time Claude replied with plain JSON, no fence, and the script worked correctly. The fencing isn't consistent from run to run.</figcaption>
-  </figure>
-
-  <p>That inconsistency is the real finding: Claude doesn't always fence its JSON, or never fence it, it does it sometimes, unpredictably.</p>
-  <ul class="howto-list">
-    <li>A script that only handles the unfenced case will work fine in testing and then fail silently in production the first time a fence shows up, exactly the kind of intermittent, hard-to-reproduce bug this post's own QA angle section talks about later.</li>
-    <li>Both scripts on this page have since been fixed to strip a leading or trailing code fence before parsing, and their prompts now explicitly forbid fences, backticks, and explanations.</li>
-    <li>If you're adapting this pattern elsewhere: don't trust a plain-text JSON request to actually stay plain text. Verify what the model sends back before assuming a parse failure means the model was wrong.</li>
-  </ul>
 
   <h2>Part 2: one agent or several?</h2>
   <p>So far this post has treated "the agent" as a single thing working alone. It doesn't have to be. A <strong>coordinator</strong> is one agent whose only job is to break a task into pieces and hand each piece to a <strong>subagent</strong>, a smaller agent with its own instructions and its own tools, that does one specific job and reports back. The coordinator never investigates anything itself, it only decides who does what and combines what comes back. Each subagent also gets an <strong>isolated context</strong>, meaning it starts with no memory of the coordinator's conversation or of any other subagent, only what's explicitly handed to it.</p>
   <p><a href="https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2F6nizmqk8tpzpfjvt6qmmav7rh%2Fpublic%2F1783542750%2FClaude+Certified+Architect+%E2%80%93+Foundations+Exam+Guide.pdf" target="_blank" rel="noopener noreferrer">Task Statements 1.2 and 1.3</a> (exam guide) ask a different question than the loop does: not when one agent stops, but whether it should be one agent at all. The exam calls this the hub-and-spoke pattern, the coordinator is the hub, subagents are the spokes, and every result flows back through the hub, never spoke to spoke directly.</p>
 
   <div class="diagram-wrap">
-    <svg viewBox="0 0 700 260" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" role="img" aria-label="Hub-and-spoke diagram: a coordinator spawns two subagents in parallel via the Task tool, verify-reproduction and find-related-reports, each with its own isolated context and its own scoped tools, neither subagent sees the other.">
-      <rect x="275" y="14" width="150" height="46" rx="8" fill="#EDE0F5" stroke="#7A4A9A" stroke-width="1.5"/>
-      <text x="350" y="42" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="12" font-weight="700" fill="#7A4A9A">Coordinator</text>
+    <svg viewBox="0 0 700 286" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" role="img" aria-label="Hub-and-spoke diagram: a coordinator spawns two subagents in parallel via the Task tool, verify-reproduction and find-related-reports, each with its own isolated context and its own scoped tools, neither subagent sees the other.">
+      <text x="350" y="18" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#6B7060">2 &times; Task calls, same turn (parallel, not sequential)</text>
 
-      <text x="350" y="76" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#6B7060">2 &times; Task calls, same turn (parallel, not sequential)</text>
+      <rect x="275" y="40" width="150" height="46" rx="8" fill="#EDE0F5" stroke="#7A4A9A" stroke-width="1.5"/>
+      <text x="350" y="68" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="12" font-weight="700" fill="#7A4A9A">Coordinator</text>
 
-      <path d="M310,60 C 260,100 180,110 130,132" fill="none" stroke="#6B7060" stroke-width="1.5" marker-end="url(#arrowP2a)"/>
-      <path d="M390,60 C 440,100 520,110 570,132" fill="none" stroke="#6B7060" stroke-width="1.5" marker-end="url(#arrowP2b)"/>
+      <path d="M310,86 C 260,126 180,136 130,158" fill="none" stroke="#6B7060" stroke-width="1.5" marker-end="url(#arrowP2a)"/>
+      <path d="M390,86 C 440,126 520,136 570,158" fill="none" stroke="#6B7060" stroke-width="1.5" marker-end="url(#arrowP2b)"/>
 
-      <rect x="40" y="134" width="200" height="90" rx="8" fill="#F5F7F0" stroke="rgba(26,31,20,0.12)" stroke-dasharray="4 3"/>
-      <text x="140" y="156" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="#1A1F14">verify-reproduction</text>
-      <text x="140" y="176" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#6B7060">tool: check_live_api only</text>
-      <text x="140" y="192" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#6B7060">isolated context</text>
-      <text x="140" y="210" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#1A7A3A">reports: status only</text>
+      <rect x="40" y="160" width="200" height="90" rx="8" fill="#F5F7F0" stroke="rgba(26,31,20,0.12)" stroke-dasharray="4 3"/>
+      <text x="140" y="182" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="#1A1F14">verify-reproduction</text>
+      <text x="140" y="202" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#6B7060">tool: check_live_api only</text>
+      <text x="140" y="218" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#6B7060">isolated context</text>
+      <text x="140" y="236" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#1A7A3A">reports: status only</text>
 
-      <rect x="460" y="134" width="200" height="90" rx="8" fill="#F5F7F0" stroke="rgba(26,31,20,0.12)" stroke-dasharray="4 3"/>
-      <text x="560" y="156" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="#1A1F14">find-related-reports</text>
-      <text x="560" y="176" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#6B7060">tools: catalog + reports</text>
-      <text x="560" y="192" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#6B7060">isolated context</text>
-      <text x="560" y="210" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#1A7A3A">reports: matches found</text>
+      <rect x="460" y="160" width="200" height="90" rx="8" fill="#F5F7F0" stroke="rgba(26,31,20,0.12)" stroke-dasharray="4 3"/>
+      <text x="560" y="182" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="#1A1F14">find-related-reports</text>
+      <text x="560" y="202" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#6B7060">tools: catalog + reports</text>
+      <text x="560" y="218" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#6B7060">isolated context</text>
+      <text x="560" y="236" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#1A7A3A">reports: matches found</text>
 
-      <text x="350" y="248" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#9A2A4A">neither subagent sees the other &middot; both report back to the coordinator only</text>
+      <text x="350" y="274" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9.5" fill="#9A2A4A">neither subagent sees the other &middot; both report back to the coordinator only</text>
 
       <defs>
         <marker id="arrowP2a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
@@ -324,13 +302,21 @@ Actual: false. Failing item: { id: 4, name: "Sleeping Bag (-15C)", price: -89 }<
   </div>
 
   <div class="axis-grid">
-    <div class="axis-card"><div class="a-title">Why split it at all</div><p>A verifier that can also search reports is a verifier that might skip verifying.</p></div>
+    <div class="axis-card"><div class="a-title">Why split it at all</div><p>If one agent had both tools, it could find a similar past report and treat that as "verified" instead of actually calling the live API. Giving the verifier only <code>check_live_api</code> removes that shortcut, it has no other tool to reach for, so verifying is the only thing it can do.</p></div>
     <div class="axis-card"><div class="a-title">Why parallel, not sequential</div><p>Neither subagent depends on the other, so two round trips buys nothing but latency.</p></div>
   </div>
 
   <div class="callout red">
-    <p><strong>The failure this catches:</strong> one agent juggling live-checks and report-search in a single context can conflate "found in the catalog" with "confirmed still true," the exact BUG-011 mistake from Part 1, at a scale that gets worse past three tools.</p>
+    <p><strong>The failure this catches:</strong> one agent handling both live-checks and report-search, in the same context, can mix up two different claims: "I found something similar in the catalog" and "I confirmed this is still true right now." Those aren't the same thing, mixing them up is the exact BUG-011 mistake from Part 1. Splitting the work into two agents makes that mix-up impossible, each one only has a tool for its own half. The more tools piled onto one agent, the easier this kind of mix-up gets.</p>
   </div>
+
+  <p>Preventing that mix-up is only one reason to split work across subagents, not the whole justification. The others, some already visible above without being named:</p>
+  <ul class="howto-list">
+    <li><strong>Isolated context.</strong> Each subagent starts with none of the coordinator's conversation, and none of the other subagent's either, per the definition earlier in this Part. A subagent's own noisy back-and-forth, retries, raw HTTP responses, exploratory searching, stays contained instead of eating into everyone else's context.</li>
+    <li><strong>Fewer tools per agent, more reliable selection.</strong> D2's Task Statement 2.3 names an actual number: 18 tools instead of 4-5 measurably worsens an agent's ability to pick the right one. Splitting keeps each agent's own tool list small.</li>
+    <li><strong>Parallel execution.</strong> Already covered above, neither subagent depends on the other's result.</li>
+    <li><strong>Decomposing genuinely broad work.</strong> A coordinator breaking a large question into pieces no single agent could reasonably hold at once, more visible in a research-pipeline-shaped system than in this post's two-subagent example.</li>
+  </ul>
 
   <h2>Part 3: the hook is the guarantee the prompt isn't</h2>
   <p>A <strong>hook</strong>, in Claude Code and the Agent SDK, is a small piece of code that runs automatically at a fixed point, before a tool call, after one, whichever point you choose, without Claude ever deciding to run it. That's the difference from an instruction in a prompt: a prompt is something Claude reads and usually follows, a hook fires every single time, no exceptions, because it's code, not a request.</p>
@@ -366,7 +352,7 @@ Actual: false. Failing item: { id: 4, name: "Sleeping Bag (-15C)", price: -89 }<
   </div>
 
   <div class="axis-grid">
-    <div class="axis-card"><div class="a-title">PostToolUse: normalize</div><p>Live API and mock reports disagree on timestamp format. Fixed before the model reasons about it, not by asking it to "handle either."</p></div>
+    <div class="axis-card"><div class="a-title">PostToolUse: normalize</div><p>A <code>PostToolUse</code> hook runs automatically right after any tool call returns, before Claude ever sees the result. Here it fixes a real mismatch: the live API returns timestamps as Unix seconds, the mock past-reports store returns them as ISO 8601 text. The hook rewrites every timestamp into one consistent format the moment it comes back, so Claude only ever sees one format and never has to reason about which one it got, instead of a prompt just asking it to "handle either."</p></div>
     <div class="axis-card"><div class="a-title">Interception: gate</div><p>Same shape as the exam's own example: <code>process_refund</code> blocked until <code>get_customer</code> confirms an ID.</p></div>
   </div>
 
@@ -376,7 +362,7 @@ Actual: false. Failing item: { id: 4, name: "Sleeping Bag (-15C)", price: -89 }<
       <li><a href="d1-coordinator-subagents.ts">d1-coordinator-subagents.ts</a>: coordinator + two subagent definitions, a <code>PostToolUse</code> normalization hook, and a tool-interception prerequisite gate</li>
       <li><a href="d1-coordinator-subagents.py">d1-coordinator-subagents.py</a>: the same illustrative pattern, in Python</li>
     </ul>
-    <p class="howto"><strong>How to use it:</strong> read this one, don't run it as-is. It models the Agent SDK's documented shape, not copy-paste production code, check the current SDK docs for exact call syntax before running it for real.</p>
+    <p class="howto"><strong>How to use it:</strong> read this file for the pattern, don't try to run it, it has no entry point of its own. Every import, field name, and hook shape here is checked against the current Agent SDK documentation, <code>AgentDefinition</code> takes <code>prompt</code> not <code>systemPrompt</code>, hooks register as <code>{ EventName: [{ hooks: [fn] }] }</code> not a flat array, and the tool that spawns subagents is named <code>"Agent"</code> in <code>allowedTools</code> (the SDK renamed it from <code>"Task"</code> in Claude Code v2.1.63, this post keeps saying "Task tool" in prose because that's still the exam guide's own wording). One specific detail couldn't be confirmed from the fetched docs and is flagged directly in the file's comments: the exact property name holding a tool's raw result inside a <code>PostToolUse</code> hook's input. Everything else here is real, current syntax, not a guess.</p>
     <div class="fw-table-wrap">
       <table class="fw-table">
         <thead><tr><th>File on this page</th><th>Save it to</th><th>Verify with</th></tr></thead>
