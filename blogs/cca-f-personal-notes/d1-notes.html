@@ -121,7 +121,6 @@
         <div class="kw g2"><dt>Overly narrow decomposition</dt><dd>Risk named explicitly in the guide: a coordinator that splits a broad topic too narrowly leaves real coverage gaps (see Q7 below).</dd></div>
         <div class="kw g2"><dt>Task tool</dt><dd>The mechanism for spawning subagents. <code>allowedTools</code> must include <code>"Task"</code> for a coordinator to invoke them.</dd></div>
         <div class="kw g2"><dt><code>AgentDefinition</code></dt><dd>Per-subagent configuration: description, system prompt, and tool restrictions.</dd></div>
-        <div class="kw g2"><dt>Fork-based session management</dt><dd>Uses <code>fork_session</code> to branch <em>one session</em> into two independent copies from the same starting analysis, so two approaches can be tried without touching the original. Not the same thing as a coordinator spawning several subagents at once: that's parallel work, this is a duplicated session.</dd></div>
         <div class="kw g2"><dt>Parallel Task calls</dt><dd>What actually achieves parallel subagent execution: multiple <code>Task</code> tool calls emitted within a <em>single</em> coordinator response, instead of spread across separate turns.</dd></div>
         <div class="kw g3"><dt>Programmatic enforcement</dt><dd>Hooks / prerequisite gates - guaranteed. Contrast with prompt-based guidance, which has a non-zero failure rate even when the rule is stated clearly.</dd></div>
         <div class="kw g3"><dt>Structured handoff protocol</dt><dd>What a human escalation needs: customer details, root cause analysis, recommended action - compiled for someone with no access to the conversation transcript.</dd></div>
@@ -130,7 +129,7 @@
         <div class="kw g4"><dt>Prompt chaining</dt><dd>A fixed sequence of separate prompts run in order, each step decided in advance: e.g. reviewing a 5-file pull request, one call per file first, then a final call checking whether a change in one file breaks an assumption another file was relying on.</dd></div>
         <div class="kw g4"><dt>Dynamic decomposition</dt><dd>Adaptive: subtasks are generated based on what's discovered at each step, not fixed up front.</dd></div>
         <div class="kw g4"><dt><code>--resume &lt;session-name&gt;</code></dt><dd>Continues a specific named prior conversation.</dd></div>
-        <div class="kw g4"><dt><code>fork_session</code></dt><dd>Creates an independent branch from a shared analysis baseline to explore a divergent approach.</dd></div>
+        <div class="kw g4"><dt><code>fork_session</code></dt><dd>Branches <em>one session</em> into two independent copies from the same baseline, to explore a divergent approach without touching the original. Not the same thing as a coordinator spawning several subagents at once: that's parallel work on one session, this is a duplicated session.</dd></div>
         <div class="kw g4"><dt>Stale tool results</dt><dd>Why a fresh session with a structured summary can beat resuming: reasoning from stale results is worse than reasoning from none.</dd></div>
       </dl>
     </div>
@@ -143,7 +142,11 @@
         <div class="cornell-row">
           <div class="cornell-cue g1"><span class="ts">Task Statement</span>1.1<br>Agentic loops</div>
           <div class="cornell-note">
-            <p><span class="lbl">Knowledge:</span> the loop is send request &rarr; check <code>stop_reason</code> &rarr; run tool &rarr; append result to history &rarr; repeat. <span class="hl">Model-driven decisions</span> (Claude picks the next tool from context) is the tested contrast against <span class="hl">pre-configured decision trees</span>.</p>
+            <p><span class="lbl">Knowledge:</span></p>
+            <ul>
+              <li>The loop: send request &rarr; check <code>stop_reason</code> &rarr; run tool &rarr; append result to history &rarr; repeat.</li>
+              <li><span class="hl">Model-driven decisions</span> (Claude picks the next tool from context) is the tested contrast against <span class="hl">pre-configured decision trees</span>.</li>
+            </ul>
             <p><span class="lbl">Skills:</span></p>
             <ul>
               <li>Loop continues while <code>stop_reason === "tool_use"</code>, terminates on <code>"end_turn"</code>.</li>
@@ -156,7 +159,13 @@
         <div class="cornell-row">
           <div class="cornell-cue g2"><span class="ts">Task Statement</span>1.2<br>Coordinator&ndash;subagent orchestration</div>
           <div class="cornell-note">
-            <p><span class="lbl">Knowledge:</span> <span class="hl">hub-and-spoke</span> - coordinator owns all inter-subagent communication, error handling, and routing. Subagents have <span class="hl">isolated context</span> by default. Coordinator owns decomposition, delegation, aggregation, and deciding which subagents to invoke based on query complexity. Named risk: too-narrow decomposition leaves broad topics under-covered.</p>
+            <p><span class="lbl">Knowledge:</span></p>
+            <ul>
+              <li><span class="hl">Hub-and-spoke</span>: coordinator owns all inter-subagent communication, error handling, and routing.</li>
+              <li>Subagents have <span class="hl">isolated context</span> by default.</li>
+              <li>Coordinator owns decomposition, delegation, aggregation, and deciding which subagents to invoke based on query complexity.</li>
+              <li>Named risk: too-narrow decomposition leaves broad topics under-covered.</li>
+            </ul>
             <p><span class="lbl">Skills:</span></p>
             <ul>
               <li>Coordinator dynamically selects which subagents to invoke, rather than always routing through the full pipeline.</li>
@@ -169,7 +178,13 @@
         <div class="cornell-row">
           <div class="cornell-cue g2"><span class="ts">Task Statement</span>1.3<br>Subagent invocation &amp; context passing</div>
           <div class="cornell-note">
-            <p><span class="lbl">Knowledge:</span> the <code>Task</code> tool spawns subagents; coordinator's <code>allowedTools</code> must include <code>"Task"</code>. Subagent context must be <span class="hl">explicit in the prompt</span> - no automatic inheritance, no shared memory between invocations. <code>AgentDefinition</code> holds each subagent's description, system prompt, tool restrictions. <span class="hl">Fork-based session management</span>: <code>fork_session</code> branches one session into two independent copies from the same baseline, letting you explore two approaches without disturbing the original.</p>
+            <p><span class="lbl">Knowledge:</span></p>
+            <ul>
+              <li>The <code>Task</code> tool spawns subagents; coordinator's <code>allowedTools</code> must include <code>"Task"</code>.</li>
+              <li>Subagent context must be <span class="hl">explicit in the prompt</span>: no automatic inheritance, no shared memory between invocations.</li>
+              <li><code>AgentDefinition</code> holds each subagent's description, system prompt, tool restrictions.</li>
+              <li><span class="hl">Fork-based session management</span>: <code>fork_session</code> branches one session into two independent copies from the same baseline, letting you explore two approaches without disturbing the original.</li>
+            </ul>
             <p><span class="lbl">Skills:</span></p>
             <ul>
               <li>Include complete findings from prior agents directly in the subagent's prompt (e.g. pass web-search + document-analysis output straight to the synthesis subagent).</li>
@@ -182,7 +197,12 @@
         <div class="cornell-row">
           <div class="cornell-cue g3"><span class="ts">Task Statement</span>1.4<br>Enforcement &amp; handoff patterns</div>
           <div class="cornell-note">
-            <p><span class="lbl">Knowledge:</span> <span class="hl">programmatic enforcement</span> (hooks, prerequisite gates) vs. prompt-based guidance for ordering. When <span class="hl">deterministic compliance</span> is required (e.g. identity verification before a financial operation), prompt instructions alone have a non-zero failure rate. Structured handoff protocol for mid-process escalation: customer details, root cause analysis, recommended action.</p>
+            <p><span class="lbl">Knowledge:</span></p>
+            <ul>
+              <li><span class="hl">Programmatic enforcement</span> (hooks, prerequisite gates) vs. prompt-based guidance for ordering.</li>
+              <li>When <span class="hl">deterministic compliance</span> is required (e.g. identity verification before a financial operation), prompt instructions alone have a non-zero failure rate.</li>
+              <li>Structured handoff protocol for mid-process escalation: customer details, root cause analysis, recommended action.</li>
+            </ul>
             <p><span class="lbl">Skills:</span></p>
             <ul>
               <li>Programmatic prerequisites block a downstream tool call until a prerequisite step completes - e.g. block <code>process_refund</code> until <code>get_customer</code> returns a verified customer ID.</li>
@@ -194,7 +214,12 @@
         <div class="cornell-row">
           <div class="cornell-cue g3"><span class="ts">Task Statement</span>1.5<br>Hooks: interception &amp; normalization</div>
           <div class="cornell-note">
-            <p><span class="lbl">Knowledge:</span> <code>PostToolUse</code> hooks intercept tool <em>results</em> for transformation before the model processes them. Other hook patterns intercept <em>outgoing</em> tool calls to enforce compliance (e.g. block refunds above a threshold). Core distinction: hooks = <span class="hl">deterministic guarantee</span>, prompts = <span class="hl">probabilistic compliance</span>.</p>
+            <p><span class="lbl">Knowledge:</span></p>
+            <ul>
+              <li><code>PostToolUse</code> hooks intercept tool <em>results</em> for transformation before the model processes them.</li>
+              <li>Other hook patterns intercept <em>outgoing</em> tool calls to enforce compliance (e.g. block refunds above a threshold).</li>
+              <li>Core distinction: hooks = <span class="hl">deterministic guarantee</span>, prompts = <span class="hl">probabilistic compliance</span>.</li>
+            </ul>
             <p><span class="lbl">Skills:</span></p>
             <ul>
               <li><code>PostToolUse</code> hooks normalize heterogeneous formats from different MCP tools - e.g. Unix timestamps, ISO 8601, numeric status codes - into one shape.</li>
@@ -206,7 +231,12 @@
         <div class="cornell-row">
           <div class="cornell-cue g4"><span class="ts">Task Statement</span>1.6<br>Task decomposition strategies</div>
           <div class="cornell-note">
-            <p><span class="lbl">Knowledge:</span> <span class="hl">fixed sequential pipelines</span> (prompt chaining) vs. <span class="hl">dynamic adaptive decomposition</span> based on intermediate findings. Prompt chaining is a fixed sequence of separate prompts run in order, each step decided in advance: e.g. reviewing a 5-file pull request, one call per file first, then a final call checking whether a change in one file breaks an assumption another file was relying on. Adaptive investigation plans generate subtasks from what's discovered at each step.</p>
+            <p><span class="lbl">Knowledge:</span></p>
+            <ul>
+              <li><span class="hl">Fixed sequential pipelines</span> (prompt chaining) vs. <span class="hl">dynamic adaptive decomposition</span> based on intermediate findings.</li>
+              <li>Prompt chaining is a fixed sequence of separate prompts run in order, each step decided in advance: e.g. reviewing a 5-file pull request, one call per file first, then a final call checking whether a change in one file breaks an assumption another file was relying on.</li>
+              <li>Adaptive investigation plans generate subtasks from what's discovered at each step.</li>
+            </ul>
             <p><span class="lbl">Skills:</span></p>
             <ul>
               <li>Match the pattern to the workflow: prompt chaining for predictable multi-aspect reviews, dynamic decomposition for open-ended investigation.</li>
@@ -218,7 +248,13 @@
         <div class="cornell-row">
           <div class="cornell-cue g4"><span class="ts">Task Statement</span>1.7<br>Session state, resumption, forking</div>
           <div class="cornell-note">
-            <p><span class="lbl">Knowledge:</span> <code>--resume &lt;session-name&gt;</code> continues a specific named prior conversation. <code>fork_session</code> creates an independent branch from a shared baseline. Resuming after code changes requires <span class="hl">explicitly informing the agent</span> what changed. Starting fresh with a <span class="hl">structured summary</span> is more reliable than resuming with stale tool results.</p>
+            <p><span class="lbl">Knowledge:</span></p>
+            <ul>
+              <li><code>--resume &lt;session-name&gt;</code> continues a specific named prior conversation.</li>
+              <li><code>fork_session</code> creates an independent branch from a shared baseline.</li>
+              <li>Resuming after code changes requires <span class="hl">explicitly informing the agent</span> what changed.</li>
+              <li>Starting fresh with a <span class="hl">structured summary</span> is more reliable than resuming with stale tool results.</li>
+            </ul>
             <p><span class="lbl">Skills:</span></p>
             <ul>
               <li>Use <code>--resume</code> with session names to continue named investigation sessions across work sessions.</li>
