@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>D4 Notes: Prompt Engineering &amp; Structured Output | CCA-F Personal Notes</title>
+<meta name="robots" content="noindex, nofollow" />
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#FAFCF5;--bg2:#F5F7F0;--bg3:#EEF1E7;--border:rgba(26,31,20,0.14);--text:#1A1F14;--text-2:#3D4235;--text-3:#6B7060;--green:#1A7A3A;--green-bg:#D8F0E0;--amber:#9A6E1A;--amber-bg:#F5EDD6;--purple:#7A4A9A;--purple-bg:#EDE0F5;--red:#9A2A4A;--red-bg:#F5DDE5;--teal:#1A6B54;--teal-bg:#D8EEE8;--blue:#2A5C9A;--blue-bg:#DDE8F5}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:16px;line-height:1.65;padding:2rem 1.25rem 5rem}
+  main{max-width:940px;margin:0 auto}
+  a{color:var(--purple)}
+  .back{display:inline-block;font-size:.82rem;color:var(--text-3);text-decoration:none;margin-bottom:1rem}
+  header{border-bottom:1px solid var(--border);padding-bottom:1.4rem;margin-bottom:2rem}
+  h1{font-size:1.5rem;margin-bottom:.3rem;color:var(--green)}
+  .meta{font-size:.85rem;color:var(--text-3)}
+  .weight-tag{display:inline-block;background:var(--green-bg);color:var(--green);font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;padding:2px 9px;border-radius:99px;margin-right:.5rem}
+
+  .topic{margin-top:1.6rem;border-top:1px solid var(--border);padding-top:1rem}
+  .topic:first-of-type{border-top:none;padding-top:0;margin-top:0}
+  .topic>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+  .topic>summary::-webkit-details-marker{display:none}
+  .topic>summary::after{content:"+";font-size:1.5rem;line-height:1;color:var(--text-3);flex-shrink:0}
+  .topic[open]>summary::after{content:"\2212"}
+  .topic-body{margin-top:1.3rem}
+  h2{font-size:1.2rem}
+  h2 .sec-num{color:var(--purple);margin-right:.4rem}
+  h3.subhead{font-size:.85rem;margin:2rem 0 .8rem;color:var(--text-3);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+  h3.subhead:first-of-type{margin-top:0}
+
+  .keyword-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem 1.4rem}
+  .kw{background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--border);border-radius:8px;padding:.6rem .8rem}
+  .kw dt{font-weight:700;font-size:.86rem;color:var(--teal)}
+  .kw dd{font-size:.82rem;color:var(--text-2);margin-top:.15rem}
+  .kw.g1{border-left-color:var(--red)}
+  .kw.g2{border-left-color:var(--purple)}
+  .kw.g3{border-left-color:var(--teal)}
+  .kw.g4{border-left-color:var(--amber)}
+  .kw.g5{border-left-color:var(--blue)}
+  .kw.g6{border-left-color:var(--green)}
+  .kw-legend{display:flex;flex-wrap:wrap;gap:.9rem;font-size:.76rem;color:var(--text-3);margin-bottom:1rem}
+  .kw-legend span{display:inline-flex;align-items:center;gap:.35rem}
+  .kw-legend i{width:9px;height:9px;border-radius:50%;display:inline-block}
+  @media(max-width:640px){.keyword-grid{grid-template-columns:1fr}}
+
+  .cornell{border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:1.4rem}
+  .cornell-row{display:grid;grid-template-columns:26% 74%}
+  .cornell-row+.cornell-row{border-top:1px solid var(--border)}
+  .cornell-cue{background:var(--purple-bg);padding:.9rem 1rem;font-weight:600;font-size:.85rem;color:var(--purple)}
+  .cornell-cue .ts{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;opacity:.8;margin-bottom:.2rem}
+  .cornell-cue.g1{background:var(--red-bg);color:var(--red)}
+  .cornell-cue.g2{background:var(--purple-bg);color:var(--purple)}
+  .cornell-cue.g3{background:var(--teal-bg);color:var(--teal)}
+  .cornell-cue.g4{background:var(--amber-bg);color:var(--amber)}
+  .cornell-cue.g5{background:var(--blue-bg);color:var(--blue)}
+  .cornell-cue.g6{background:var(--green-bg);color:var(--green)}
+  .cornell-note{padding:.9rem 1.1rem;font-size:.88rem;color:var(--text-2)}
+  .cornell-note ul{padding-left:1.1rem;margin-top:.3rem}
+  .cornell-note li{margin-bottom:.3rem}
+  .cornell-note code{background:var(--bg3);padding:.1rem .35rem;border-radius:4px;font-size:.85em;color:var(--teal);font-family:monospace}
+  .cornell-note .lbl{font-weight:600;color:var(--text)}
+  .cornell-note .hl{color:var(--amber);font-weight:600}
+  @media(max-width:640px){.cornell-row{grid-template-columns:1fr}.cornell-cue{padding-bottom:.4rem}}
+
+  .cornell-summary{background:var(--amber-bg);border-left:3px solid var(--amber);border-radius:0 8px 8px 0;padding:1rem 1.2rem;font-size:.86rem;color:var(--text-2);margin-bottom:.5rem}
+  .cornell-summary strong{color:var(--text)}
+  .cornell-summary .summary-label{display:block;margin-bottom:.5rem}
+  .cornell-summary ul{padding-left:1.2rem;margin:0}
+  .cornell-summary li{margin-bottom:.4rem}
+  .cornell-summary li:last-child{margin-bottom:0}
+
+  .mindmap-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:2rem}
+
+  .decision-table{width:100%;border-collapse:collapse;font-size:.85rem;margin-bottom:1.5rem}
+  .decision-table th,.decision-table td{border:1px solid var(--border);padding:.55rem .7rem;text-align:left;vertical-align:top}
+  .decision-table th{background:var(--bg3);color:var(--text-3);font-size:.75rem;text-transform:uppercase;letter-spacing:.03em}
+  .decision-table td{color:var(--text-2)}
+  .decision-table code{background:var(--bg3);padding:.1rem .35rem;border-radius:4px;font-size:.85em;color:var(--teal);font-family:monospace}
+
+  .recall-item{background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:.7rem;overflow:hidden}
+  .recall-item summary{cursor:pointer;padding:.85rem 1.1rem;font-size:.88rem;font-weight:500;list-style:none;display:flex;justify-content:space-between;gap:1rem}
+  .recall-item summary::-webkit-details-marker{display:none}
+  .recall-item summary::after{content:"show answer";font-size:.72rem;color:var(--text-3);text-transform:uppercase;flex-shrink:0}
+  .recall-item[open] summary::after{content:"hide";}
+  .recall-item[open] summary{border-bottom:1px solid var(--border)}
+  .recall-answer{padding:.9rem 1.1rem;font-size:.86rem;color:var(--text-2)}
+  .recall-answer code{background:var(--bg3);padding:.1rem .35rem;border-radius:4px;font-size:.85em;color:var(--teal);font-family:monospace}
+
+  .mcq{background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:.9rem;overflow:hidden}
+  .mcq-q{padding:.9rem 1.1rem;font-size:.87rem;color:var(--text-2)}
+  .mcq-q .qnum{font-weight:700;color:var(--text)}
+  .mcq-opts{padding:0 1.1rem .5rem;font-size:.85rem;color:var(--text-2)}
+  .mcq-opts div{padding:.25rem 0}
+  .mcq details{border-top:1px solid var(--border)}
+  .mcq summary{cursor:pointer;padding:.7rem 1.1rem;font-size:.8rem;color:var(--purple);list-style:none}
+  .mcq summary::-webkit-details-marker{display:none}
+  .mcq-answer{padding:0 1.1rem .9rem;font-size:.85rem;color:var(--text-2)}
+  .mcq-answer .correct{color:var(--green);font-weight:700}
+
+  .progress-note{font-size:.82rem;color:var(--text-3);text-align:center;margin-top:2.5rem}
+  .src-note{font-size:.78rem;color:var(--text-3);margin-bottom:2rem}
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="index.html">&larr; CCA-F Personal Notes</a>
+  <header>
+    <span class="weight-tag">D4 &middot; 20% of exam</span>
+    <h1>Prompt Engineering &amp; Structured Output</h1>
+    <p class="meta">Task Statements 4.1&ndash;4.6</p>
+  </header>
+  <p class="src-note">Source: Claude Certified Architect &ndash; Foundations Certification Exam Guide (v0.1, last updated Feb 10 2025), Domain 4 section, official sample Questions 11 and 12.</p>
+
+  <details class="topic">
+    <summary><h2><span class="sec-num">1</span>Topic Keywords</h2></summary>
+    <div class="topic-body">
+      <div class="kw-legend">
+        <span><i style="background:var(--red)"></i>4.1 Explicit criteria</span>
+        <span><i style="background:var(--purple)"></i>4.2 Few-shot</span>
+        <span><i style="background:var(--teal)"></i>4.3 Structured output</span>
+        <span><i style="background:var(--amber)"></i>4.4 Validation &amp; retry</span>
+        <span><i style="background:var(--blue)"></i>4.5 Batch processing</span>
+        <span><i style="background:var(--green)"></i>4.6 Multi-pass review</span>
+      </div>
+      <dl class="keyword-grid">
+        <div class="kw g1"><dt>Explicit criteria</dt><dd>Precise, categorical rules beat vague instructions like "be conservative" &mdash; the latter doesn't actually improve precision.</dd></div>
+        <div class="kw g1"><dt>False-positive trust cost</dt><dd>A high false-positive category undermines developer trust even in the categories that are accurate.</dd></div>
+        <div class="kw g1"><dt>Severity criteria</dt><dd>Explicit per-level criteria with concrete code examples, for consistent classification.</dd></div>
+        <div class="kw g2"><dt>Few-shot prompting</dt><dd>The most effective technique for consistently formatted, actionable output when instructions alone produce inconsistency.</dd></div>
+        <div class="kw g2"><dt>Ambiguous-case examples</dt><dd>Few-shot examples that demonstrate handling of edge cases, so the model generalizes judgment instead of matching only pre-specified cases.</dd></div>
+        <div class="kw g2"><dt>2&ndash;4 targeted examples</dt><dd>Guide's own number for how many few-shot examples to add per ambiguous scenario, each showing the reasoning for the chosen action.</dd></div>
+        <div class="kw g3"><dt><code>tool_use</code> for structure</dt><dd>The most reliable approach for guaranteed schema-compliant output &mdash; eliminates JSON syntax errors (not semantic ones).</dd></div>
+        <div class="kw g3"><dt><code>tool_choice</code> modes</dt><dd><code>"auto"</code> may skip the tool, <code>"any"</code> forces some tool, forced selection names one exact tool.</dd></div>
+        <div class="kw g3"><dt>Nullable required fields</dt><dd>Field must exist in the schema, but its value may be <code>null</code> &mdash; prevents the model fabricating data to satisfy a required field.</dd></div>
+        <div class="kw g3"><dt>"other" + detail pattern</dt><dd>Extensible enum categorization: pick <code>"other"</code> plus a free-text detail field when nothing else fits.</dd></div>
+        <div class="kw g4"><dt>Retry-with-error-feedback</dt><dd>Append the specific validation error to the prompt on retry, along with the original doc and the failed extraction.</dd></div>
+        <div class="kw g4"><dt>Limits of retry</dt><dd>Ineffective when the required information is simply absent from the source &mdash; no amount of retrying invents a fact that isn't there.</dd></div>
+        <div class="kw g4"><dt><code>detected_pattern</code></dt><dd>Field tracking which code construct triggered a finding, to analyze dismissal/false-positive patterns systematically.</dd></div>
+        <div class="kw g4"><dt>Semantic vs. schema errors</dt><dd>Schema syntax errors are eliminated by tool use. Semantic errors (values don't sum, wrong field) still need validation.</dd></div>
+        <div class="kw g5"><dt>Message Batches API</dt><dd>~50% cost savings, up to a 24-hour processing window, no guaranteed latency SLA.</dd></div>
+        <div class="kw g5"><dt>Blocking vs. non-blocking</dt><dd>Batch fits non-blocking, latency-tolerant work (overnight reports); wrong for blocking workflows (pre-merge checks).</dd></div>
+        <div class="kw g5"><dt>No mid-batch tool calling</dt><dd>The batch API cannot execute a tool mid-request and return results within that same request.</dd></div>
+        <div class="kw g5"><dt><code>custom_id</code></dt><dd>Correlates each batch response back to its original request; also used to resubmit only failed documents.</dd></div>
+        <div class="kw g6"><dt>Self-review limitation</dt><dd>A model retains its own generation reasoning, making it less likely to question its own decisions in the same session.</dd></div>
+        <div class="kw g6"><dt>Independent review instance</dt><dd>A separate Claude call without the generator's reasoning context catches subtler issues than self-review.</dd></div>
+        <div class="kw g6"><dt>Multi-pass review</dt><dd>Per-file local analysis passes, plus one separate cross-file integration pass &mdash; avoids attention dilution and contradictions.</dd></div>
+      </dl>
+    </div>
+  </details>
+
+  <details class="topic">
+    <summary><h2><span class="sec-num">2</span>Main Pointers</h2></summary>
+    <div class="topic-body">
+      <div class="cornell">
+        <div class="cornell-row">
+          <div class="cornell-cue g1"><span class="ts">Task Statement</span>4.1<br>Explicit criteria for precision</div>
+          <div class="cornell-note">
+            <p><span class="lbl">Knowledge:</span> <span class="hl">explicit criteria</span> over vague instructions. General phrases like "be conservative" or "only report high-confidence findings" do <em>not</em> improve precision the way specific categorical criteria do. False-positive rates in one category damage trust in accurate categories too.</p>
+            <p><span class="lbl">Skills:</span></p>
+            <ul>
+              <li>Write specific criteria defining which issues to report (bugs, security) vs. skip (minor style, local patterns) &mdash; not confidence-based filtering.</li>
+              <li>Temporarily disable a high-false-positive category to restore developer trust while the prompt for that category is being improved.</li>
+              <li>Define explicit severity criteria with concrete code examples at each level for consistent classification.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="cornell-row">
+          <div class="cornell-cue g2"><span class="ts">Task Statement</span>4.2<br>Few-shot prompting</div>
+          <div class="cornell-note">
+            <p><span class="lbl">Knowledge:</span> few-shot examples are the most effective technique for consistent, actionable output when detailed instructions alone produce inconsistency. They demonstrate <span class="hl">ambiguous-case handling</span> and let the model generalize judgment to novel patterns, not just match pre-specified cases. Also reduces hallucination in extraction.</p>
+            <p><span class="lbl">Skills:</span></p>
+            <ul>
+              <li>Create 2&ndash;4 targeted few-shot examples for ambiguous scenarios, showing the reasoning for why one action was chosen over plausible alternatives.</li>
+              <li>Include examples that demonstrate the exact desired output format (location, issue, severity, suggested fix).</li>
+              <li>Provide examples distinguishing acceptable code patterns from genuine issues, to reduce false positives while still generalizing.</li>
+              <li>Add examples showing correct extraction from varied document formats to fix empty/null extraction of required fields.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="cornell-row">
+          <div class="cornell-cue g3"><span class="ts">Task Statement</span>4.3<br>Structured output via tool_use</div>
+          <div class="cornell-note">
+            <p><span class="lbl">Knowledge:</span> <code>tool_use</code> + JSON schema is the most reliable route to <span class="hl">guaranteed schema-compliant output</span>, eliminating syntax errors &mdash; but not semantic ones (e.g. line items that don't sum to the total). <code>tool_choice</code>: <code>"auto"</code> / <code>"any"</code> / forced. Schema design: required vs. optional, enum + "other"/"unclear" for extensibility.</p>
+            <p><span class="lbl">Skills:</span></p>
+            <ul>
+              <li>Define extraction tools with JSON schemas as input parameters; extract structured data from the tool_use response.</li>
+              <li>Set <code>tool_choice: "any"</code> to guarantee structured output when multiple extraction schemas exist and the document type is unknown.</li>
+              <li>Force a specific tool to ensure one extraction runs before enrichment steps that depend on it.</li>
+              <li>Design nullable optional fields so the model isn't pressured to fabricate a value to satisfy a required field.</li>
+              <li>Add <code>"unclear"</code> and <code>"other"</code> + detail-string enum values; include format-normalization rules alongside the strict schema.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="cornell-row">
+          <div class="cornell-cue g4"><span class="ts">Task Statement</span>4.4<br>Validation, retry, feedback loops</div>
+          <div class="cornell-note">
+            <p><span class="lbl">Knowledge:</span> retry-with-error-feedback appends the specific validation error to guide correction. Retries are <span class="hl">ineffective when information is simply absent</span> from the source (vs. a format/structural error, where retry works). <code>detected_pattern</code> enables systematic dismissal-pattern analysis.</p>
+            <p><span class="lbl">Skills:</span></p>
+            <ul>
+              <li>Implement follow-up requests including the original document, the failed extraction, and the specific validation error for self-correction.</li>
+              <li>Identify when retries will be ineffective (info only in a document not provided) vs. when they'll succeed (format mismatches, structural errors).</li>
+              <li>Add <code>detected_pattern</code> fields to structured findings, enabling analysis of why developers dismiss certain findings.</li>
+              <li>Design self-correction flows: extract <code>calculated_total</code> alongside <code>stated_total</code> to flag discrepancies; add <code>conflict_detected</code> booleans.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="cornell-row">
+          <div class="cornell-cue g5"><span class="ts">Task Statement</span>4.5<br>Batch processing strategies</div>
+          <div class="cornell-note">
+            <p><span class="lbl">Knowledge:</span> Message Batches API: ~50% cost savings, up to 24-hour window, <span class="hl">no guaranteed latency SLA</span>. Fits non-blocking, latency-tolerant workloads; wrong for blocking workflows. No multi-turn tool calling inside one batch request. <code>custom_id</code> correlates request/response pairs.</p>
+            <p><span class="lbl">Skills:</span></p>
+            <ul>
+              <li>Match API to workflow latency requirement: synchronous for blocking pre-merge checks, batch for overnight/weekly analysis.</li>
+              <li>Calculate batch submission frequency to guarantee an SLA (e.g. 4-hour submission windows to guarantee a 30-hour SLA on top of 24-hour processing).</li>
+              <li>Handle batch failures by resubmitting only the failed documents, identified by <code>custom_id</code> (e.g. after chunking an oversized document).</li>
+              <li>Refine the prompt on a small sample before scaling to a large batch, to maximize first-pass success and reduce resubmission cost.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="cornell-row">
+          <div class="cornell-cue g6"><span class="ts">Task Statement</span>4.6<br>Multi-instance &amp; multi-pass review</div>
+          <div class="cornell-note">
+            <p><span class="lbl">Knowledge:</span> self-review is limited &mdash; the model retains its own generation reasoning, making it less likely to question its own decisions. <span class="hl">Independent review instances</span> (no prior reasoning context) catch subtler issues. Multi-pass review splits large reviews into per-file + integration passes to avoid attention dilution and contradictory findings.</p>
+            <p><span class="lbl">Skills:</span></p>
+            <ul>
+              <li>Use a second, independent Claude instance to review generated code without the generator's reasoning context.</li>
+              <li>Split large multi-file reviews into focused per-file passes for local issues, plus a separate integration pass for cross-file data flow.</li>
+              <li>Run verification passes where the model self-reports confidence alongside each finding, to enable calibrated review routing.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="cornell-summary">
+        <strong class="summary-label">Summary, one line per task statement:</strong>
+        <ul>
+          <li><strong>4.1</strong> Specific categorical criteria beat vague conservatism instructions &mdash; false positives cost trust across the board.</li>
+          <li><strong>4.2</strong> 2&ndash;4 targeted few-shot examples fix both output-format drift and ambiguous-case judgment.</li>
+          <li><strong>4.3</strong> Forced/any <code>tool_choice</code> + JSON schema kills syntax errors; nullable fields stop fabrication; semantic errors still need checking.</li>
+          <li><strong>4.4</strong> Retry only fixes fixable mistakes; if the source lacks the info, return null and flag it, don't loop.</li>
+          <li><strong>4.5</strong> Batch = cheap but no latency guarantee, wrong for anything blocking; <code>custom_id</code> lets you resubmit just the failures.</li>
+          <li><strong>4.6</strong> A generator reviewing its own output is a weaker check than an independent instance; split big reviews into local + integration passes.</li>
+        </ul>
+      </div>
+    </div>
+  </details>
+
+  <details class="topic">
+    <summary><h2><span class="sec-num">3</span>Mind Map and Pictorial Info</h2></summary>
+    <div class="topic-body">
+      <h3 class="subhead">Mind Map</h3>
+      <div class="mindmap-wrap">
+        <svg viewBox="0 0 820 600" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Mind map of D4: Prompt Engineering and Structured Output, with six branches: explicit criteria, few-shot prompting, structured output via tool use, validation and retry, batch processing, and multi-pass review.">
+          <circle cx="410" cy="300" r="74" fill="#D8F0E0" stroke="#1A7A3A" stroke-width="2"/>
+          <text x="410" y="292" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="#1A7A3A">D4</text>
+          <text x="410" y="310" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="#3D4235">Prompt Engineering &amp;</text>
+          <text x="410" y="324" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="#3D4235">Structured Output</text>
+
+          <line x1="345" y1="255" x2="150" y2="115" stroke="#9A2A4A" stroke-width="1.5"/>
+          <rect x="15" y="15" width="255" height="105" rx="8" fill="#F5DDE5" stroke="#9A2A4A"/>
+          <text x="142" y="35" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700" fill="#9A2A4A">4.1 Explicit Criteria</text>
+          <text x="142" y="52" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#3D4235">categorical, not "be conservative"</text>
+          <text x="142" y="70" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">false positives cost trust broadly</text>
+
+          <line x1="410" y1="226" x2="410" y2="115" stroke="#7A4A9A" stroke-width="1.5"/>
+          <rect x="285" y="15" width="250" height="105" rx="8" fill="#EDE0F5" stroke="#7A4A9A"/>
+          <text x="410" y="35" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700" fill="#7A4A9A">4.2 Few-Shot Prompting</text>
+          <rect x="297" y="45" width="226" height="20" rx="4" fill="#FAFCF5" stroke="#7A4A9A" stroke-opacity=".4"/>
+          <text x="410" y="59" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#7A4A9A">2&ndash;4 examples per ambiguous case</text>
+          <text x="410" y="80" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">fixes format drift + judgment</text>
+
+          <line x1="475" y1="255" x2="670" y2="115" stroke="#1A6B54" stroke-width="1.5"/>
+          <rect x="550" y="15" width="255" height="105" rx="8" fill="#D8EEE8" stroke="#1A6B54"/>
+          <text x="677" y="35" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700" fill="#1A6B54">4.3 Structured Output</text>
+          <rect x="562" y="45" width="230" height="20" rx="4" fill="#FAFCF5" stroke="#1A6B54" stroke-opacity=".4"/>
+          <text x="677" y="59" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#1A6B54">tool_choice: "any" | forced</text>
+          <text x="677" y="80" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">nullable fields stop fabrication</text>
+
+          <line x1="345" y1="345" x2="150" y2="485" stroke="#9A6E1A" stroke-width="1.5"/>
+          <rect x="15" y="480" width="255" height="105" rx="8" fill="#F5EDD6" stroke="#9A6E1A"/>
+          <text x="142" y="500" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700" fill="#9A6E1A">4.4 Validation &amp; Retry</text>
+          <text x="142" y="517" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#3D4235">retry fixes format, not absence</text>
+          <text x="142" y="535" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">missing info &rarr; null + flag it</text>
+
+          <line x1="410" y1="374" x2="410" y2="480" stroke="#2A5C9A" stroke-width="1.5"/>
+          <rect x="285" y="480" width="250" height="105" rx="8" fill="#DDE8F5" stroke="#2A5C9A"/>
+          <text x="410" y="500" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700" fill="#2A5C9A">4.5 Batch Processing</text>
+          <text x="410" y="517" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#3D4235">50% cheaper, no latency SLA</text>
+          <rect x="297" y="527" width="226" height="20" rx="4" fill="#FAFCF5" stroke="#2A5C9A" stroke-opacity=".4"/>
+          <text x="410" y="541" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#2A5C9A">custom_id per request</text>
+
+          <line x1="475" y1="345" x2="670" y2="485" stroke="#1A7A3A" stroke-width="1.5"/>
+          <rect x="550" y="480" width="255" height="105" rx="8" fill="#D8F0E0" stroke="#1A7A3A"/>
+          <text x="677" y="500" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700" fill="#1A7A3A">4.6 Multi-Pass Review</text>
+          <text x="677" y="517" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#3D4235">independent instance, not self-review</text>
+          <text x="677" y="535" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">per-file pass + integration pass</text>
+        </svg>
+      </div>
+
+      <h3 class="subhead">Diagram: Structured Extraction with tool_use</h3>
+      <div class="mindmap-wrap">
+        <svg viewBox="0 0 780 230" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Flow diagram: a document goes into Claude constrained by a forced tool_choice and JSON schema, producing a tool_use block. Validation checks the result. If the mistake is fixable, retry with the specific error appended. If the information is genuinely absent from the source, return null and flag the field as missing instead of retrying.">
+          <use href="#icon-doc" x="45" y="55" style="color:#3D4235"/>
+          <text x="45" y="80" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#6B7060">messy document</text>
+          <path d="M75,55 L108,55" stroke="#6B7060" stroke-width="1.5" marker-end="url(#se1)"/>
+
+          <use href="#icon-bot" x="150" y="32" style="color:#1A6B54"/>
+          <rect x="110" y="40" width="160" height="46" rx="8" fill="#D8EEE8" stroke="#1A6B54"/>
+          <text x="190" y="60" text-anchor="middle" font-family="Consolas, monospace" font-size="8" fill="#1A6B54">tool_choice: forced</text>
+          <text x="190" y="75" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#3D4235">+ JSON schema</text>
+          <path d="M270,63 L303,63" stroke="#6B7060" stroke-width="1.5" marker-end="url(#se2)"/>
+
+          <rect x="305" y="40" width="140" height="46" rx="8" fill="#EEF1E7" stroke="rgba(26,31,20,.2)"/>
+          <text x="375" y="59" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">tool_use block</text>
+          <text x="375" y="73" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#6B7060">schema-valid shape</text>
+          <path d="M445,63 L478,63" stroke="#6B7060" stroke-width="1.5" marker-end="url(#se3)"/>
+
+          <rect x="480" y="40" width="120" height="46" rx="8" fill="#F5EDD6" stroke="#9A6E1A"/>
+          <text x="540" y="68" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#9A6E1A">Validate</text>
+
+          <path d="M600,50 C630,30 650,25 670,30" stroke="#1A7A3A" stroke-width="1.5" fill="none" marker-end="url(#se4)"/>
+          <text x="635" y="18" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#1A7A3A">fixable error</text>
+          <rect x="620" y="130" width="150" height="52" rx="8" fill="#D8F0E0" stroke="#1A7A3A"/>
+          <text x="695" y="150" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#1A7A3A">Retry with error</text>
+          <text x="695" y="164" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#3D4235">appended to prompt</text>
+          <path d="M670,30 C700,35 700,80 695,128" stroke="#1A7A3A" stroke-width="1.5" fill="none" marker-end="url(#se5)"/>
+
+          <path d="M600,76 C630,100 650,110 670,108" stroke="#9A2A4A" stroke-width="1.5" fill="none" marker-end="url(#se6)"/>
+          <text x="635" y="122" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#9A2A4A">info absent from source</text>
+          <rect x="620" y="30" width="150" height="0" fill="none"/>
+          <rect x="405" y="130" width="180" height="52" rx="8" fill="#F5DDE5" stroke="#9A2A4A"/>
+          <text x="495" y="150" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#9A2A4A">field: null</text>
+          <text x="495" y="164" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#3D4235">flagged as missing, not retried</text>
+          <path d="M670,108 C620,120 580,120 520,128" stroke="#9A2A4A" stroke-width="1.5" fill="none" marker-end="url(#se7)"/>
+
+          <defs>
+            <marker id="se1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+            <marker id="se2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+            <marker id="se3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+            <marker id="se4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1A7A3A"/></marker>
+            <marker id="se5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1A7A3A"/></marker>
+            <marker id="se6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9A2A4A"/></marker>
+            <marker id="se7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9A2A4A"/></marker>
+            <g id="icon-doc">
+              <rect x="-8" y="-11" width="16" height="22" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/>
+              <line x1="-4" y1="-5" x2="4" y2="-5" stroke="currentColor" stroke-width="1.2"/>
+              <line x1="-4" y1="-1" x2="4" y2="-1" stroke="currentColor" stroke-width="1.2"/>
+              <line x1="-4" y1="3" x2="1" y2="3" stroke="currentColor" stroke-width="1.2"/>
+            </g>
+            <g id="icon-bot">
+              <rect x="-9" y="-7" width="18" height="14" rx="4" fill="none" stroke="currentColor" stroke-width="1.4"/>
+              <circle cx="-3.5" cy="0" r="1.6" fill="currentColor"/>
+              <circle cx="3.5" cy="0" r="1.6" fill="currentColor"/>
+              <line x1="0" y1="-7" x2="0" y2="-10.5" stroke="currentColor" stroke-width="1.4"/>
+              <circle cx="0" cy="-11.5" r="1.3" fill="currentColor"/>
+            </g>
+          </defs>
+        </svg>
+      </div>
+
+      <h3 class="subhead">Diagram: Sync vs. Batch Decision</h3>
+      <div class="mindmap-wrap">
+        <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Diagram: a developer waiting live routes to the synchronous API for a fast blocking answer, while an overnight unattended job routes to the Message Batches API for a cheaper but delayed result with no latency guarantee.">
+          <use href="#icon-stick2" x="70" y="45" style="color:#3D4235"/>
+          <text x="70" y="70" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#6B7060">someone is waiting live</text>
+          <path d="M70,80 L70,108" stroke="#6B7060" stroke-width="1.5" marker-end="url(#sb1)"/>
+          <rect x="10" y="110" width="220" height="60" rx="8" fill="#DDE8F5" stroke="#2A5C9A"/>
+          <text x="120" y="132" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="#2A5C9A">Synchronous API</text>
+          <text x="120" y="150" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">fast, blocking, full price</text>
+          <text x="120" y="163" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">e.g. pre-merge CI check</text>
+
+          <line x1="360" y1="0" x2="360" y2="200" stroke="rgba(26,31,20,.12)"/>
+
+          <use href="#icon-clock" x="600" y="45" style="color:#3D4235"/>
+          <text x="600" y="70" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#6B7060">runs overnight, unattended</text>
+          <path d="M600,80 L600,108" stroke="#6B7060" stroke-width="1.5" marker-end="url(#sb2)"/>
+          <rect x="490" y="110" width="220" height="60" rx="8" fill="#D8F0E0" stroke="#1A7A3A"/>
+          <text x="600" y="132" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="#1A7A3A">Message Batches API</text>
+          <text x="600" y="150" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">~50% cheaper, up to 24h, no SLA</text>
+          <text x="600" y="163" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">e.g. overnight audit report</text>
+
+          <defs>
+            <marker id="sb1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+            <marker id="sb2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+            <g id="icon-stick2">
+              <circle cx="0" cy="-9" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <line x1="0" y1="-4" x2="0" y2="9" stroke="currentColor" stroke-width="1.5"/>
+              <line x1="0" y1="0" x2="-8" y2="6" stroke="currentColor" stroke-width="1.5"/>
+              <line x1="0" y1="0" x2="8" y2="6" stroke="currentColor" stroke-width="1.5"/>
+              <line x1="0" y1="9" x2="-6" y2="20" stroke="currentColor" stroke-width="1.5"/>
+              <line x1="0" y1="9" x2="6" y2="20" stroke="currentColor" stroke-width="1.5"/>
+            </g>
+            <g id="icon-clock">
+              <circle cx="0" cy="0" r="13" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <line x1="0" y1="0" x2="0" y2="-8" stroke="currentColor" stroke-width="1.5"/>
+              <line x1="0" y1="0" x2="6" y2="3" stroke="currentColor" stroke-width="1.5"/>
+            </g>
+          </defs>
+        </svg>
+      </div>
+    </div>
+  </details>
+
+  <details class="topic">
+    <summary><h2><span class="sec-num">4</span>Active Recall</h2></summary>
+    <div class="topic-body">
+      <details class="recall-item"><summary>Why doesn't "be conservative" or "only report high-confidence findings" actually improve precision?</summary><div class="recall-answer">These are general instructions, not specific categorical criteria. The guide is explicit: general confidence-based language doesn't improve precision the way defining exactly what to report vs. skip does.</div></details>
+
+      <details class="recall-item"><summary>How many few-shot examples does the guide suggest per ambiguous scenario, and what should each one show?</summary><div class="recall-answer">2&ndash;4 targeted examples, each showing the <em>reasoning</em> for why one action was chosen over plausible alternatives &mdash; not just the input/output pair alone.</div></details>
+
+      <details class="recall-item"><summary>Does a strict JSON schema via tool_use guarantee the extracted values are correct?</summary><div class="recall-answer">No. It eliminates syntax/formatting errors (missing fields, wrong types, invalid enum values) but not semantic errors &mdash; e.g. line items that don't sum to the stated total, or a value placed in the wrong field.</div></details>
+
+      <details class="recall-item"><summary>Why use a nullable field instead of a required-with-no-null field for something the customer might not provide?</summary><div class="recall-answer">A required, non-nullable field pressures the model to fabricate a plausible-looking value just to satisfy the schema. Nullable lets it honestly report "not provided" instead.</div></details>
+
+      <details class="recall-item"><summary>Your extraction failed validation. When should you retry, and when is retry pointless?</summary><div class="recall-answer">Retry when the mistake is fixable &mdash; wrong enum value, wrong field placement, a structural/format error &mdash; by appending the specific validation error to a follow-up request. Retry is pointless when the information simply isn't present in the source document; the correct move there is <code>null</code> plus a "missing" flag, not another attempt.</div></details>
+
+      <details class="recall-item"><summary>What's the <code>detected_pattern</code> field for?</summary><div class="recall-answer">Recording which code construct or phrase triggered a given finding, so you can later analyze which patterns developers tend to dismiss &mdash; i.e. systematic false-positive analysis.</div></details>
+
+      <details class="recall-item"><summary>Name the two headline trade-offs of the Message Batches API.</summary><div class="recall-answer">About 50% cost savings, but up to a 24-hour processing window with <strong>no guaranteed latency SLA</strong>. Good for non-blocking, latency-tolerant work; wrong for anything a user is actively waiting on.</div></details>
+
+      <details class="recall-item"><summary>Can a single batch request call a tool mid-request and use the result to continue reasoning?</summary><div class="recall-answer">No &mdash; the batch API does not support multi-turn tool calling within one request. Needed context has to be gathered and included up front before submission.</div></details>
+
+      <details class="recall-item"><summary>A batch of 500 documents comes back with 12 failures. What's the correct recovery?</summary><div class="recall-answer">Resubmit only the 12 failed documents, identified by their <code>custom_id</code>, with whatever fix is needed (e.g. chunking ones that exceeded context limits) &mdash; not the entire batch.</div></details>
+
+      <details class="recall-item"><summary>Why is a model reviewing the exact code it just generated, in the same session, a weaker check than an independent review?</summary><div class="recall-answer">It retains the reasoning context from generation, which makes it less likely to question its own prior decisions. An independent instance without that inherited context catches subtler issues.</div></details>
+
+      <details class="recall-item"><summary>Why split a 14-file review into per-file passes plus one integration pass, instead of one big pass over everything?</summary><div class="recall-answer">A single pass over many files at once causes attention dilution &mdash; inconsistent depth per file, missed bugs, and even self-contradiction (flagging a pattern in one file while approving identical code in another). Per-file local passes stay consistent; a separate integration pass then catches cross-file issues.</div></details>
+    </div>
+  </details>
+
+  <details class="topic">
+    <summary><h2><span class="sec-num">5</span>Official Sample Questions (D4)</h2></summary>
+    <div class="topic-body">
+      <div class="mcq">
+        <div class="mcq-q"><span class="qnum">Q11.</span> (Scenario 5, CI) Real-time Claude calls power (1) a blocking pre-merge check, and (2) an overnight technical-debt report. Manager proposes switching both to the Message Batches API for the 50% savings. How do you evaluate this?</div>
+        <div class="mcq-opts">
+          <div>A) Use batch for the technical-debt reports only; keep real-time calls for pre-merge checks.</div>
+          <div>B) Switch both to batch with status polling.</div>
+          <div>C) Keep real-time for both, to avoid batch result ordering issues.</div>
+          <div>D) Switch both to batch with a timeout fallback to real-time.</div>
+        </div>
+        <details><summary>Show answer</summary><div class="mcq-answer"><span class="correct">A.</span> Batch has no guaranteed latency SLA (up to 24h), unsuitable for a blocking workflow developers are waiting on, but ideal for an overnight job. B relies on "often faster" completion, not acceptable for a blocking check. C is a misconception &mdash; results correlate fine via <code>custom_id</code>. D adds complexity the simple per-workflow match already solves.</div></details>
+      </div>
+
+      <div class="mcq">
+        <div class="mcq-q"><span class="qnum">Q12.</span> (Scenario 5) A single-pass review of a 14-file PR produces inconsistent depth, misses obvious bugs, and even contradicts itself &mdash; flagging a pattern in one file, approving identical code in another. How should you restructure the review?</div>
+        <div class="mcq-opts">
+          <div>A) Split into focused passes: analyze each file individually for local issues, then run a separate integration pass for cross-file data flow.</div>
+          <div>B) Require developers to split large PRs into smaller 3&ndash;4-file submissions.</div>
+          <div>C) Switch to a higher-tier model with a larger context window.</div>
+          <div>D) Run three independent full-PR passes, only flag issues appearing in at least two of three.</div>
+        </div>
+        <details><summary>Show answer</summary><div class="mcq-answer"><span class="correct">A.</span> Directly addresses attention dilution, the actual root cause. B shifts the burden to developers without fixing the review system. C misunderstands that a bigger context window doesn't fix attention <em>quality</em>. D would actually suppress detection of real bugs caught only intermittently by requiring consensus.</div></details>
+      </div>
+    </div>
+  </details>
+
+  <p class="progress-note">D4 done &middot; next up: D5 (Context Management &amp; Reliability, 15%)</p>
+</main>
+</body>
+</html>

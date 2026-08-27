@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>D1 Notes: Agentic Architecture &amp; Orchestration | CCA-F Personal Notes</title>
+<meta name="robots" content="noindex, nofollow" />
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#FAFCF5;--bg2:#F5F7F0;--bg3:#EEF1E7;--border:rgba(26,31,20,0.14);--text:#1A1F14;--text-2:#3D4235;--text-3:#6B7060;--green:#1A7A3A;--green-bg:#D8F0E0;--amber:#9A6E1A;--amber-bg:#F5EDD6;--purple:#7A4A9A;--purple-bg:#EDE0F5;--red:#9A2A4A;--red-bg:#F5DDE5;--teal:#1A6B54;--teal-bg:#D8EEE8}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:16px;line-height:1.65;padding:2rem 1.25rem 5rem}
+  main{max-width:940px;margin:0 auto}
+  a{color:var(--purple)}
+  .back{display:inline-block;font-size:.82rem;color:var(--text-3);text-decoration:none;margin-bottom:1rem}
+  header{border-bottom:1px solid var(--border);padding-bottom:1.4rem;margin-bottom:2rem}
+  h1{font-size:1.5rem;margin-bottom:.3rem;color:var(--red)}
+  .meta{font-size:.85rem;color:var(--text-3)}
+  .weight-tag{display:inline-block;background:var(--red-bg);color:var(--red);font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;padding:2px 9px;border-radius:99px;margin-right:.5rem}
+
+  .topic{margin-top:1.6rem;border-top:1px solid var(--border);padding-top:1rem}
+  .topic:first-of-type{border-top:none;padding-top:0;margin-top:0}
+  .topic>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+  .topic>summary::-webkit-details-marker{display:none}
+  .topic>summary::after{content:"+";font-size:1.5rem;line-height:1;color:var(--text-3);flex-shrink:0}
+  .topic[open]>summary::after{content:"\2212"}
+  .topic-body{margin-top:1.3rem}
+  h2{font-size:1.2rem}
+  h2 .sec-num{color:var(--purple);margin-right:.4rem}
+  h3.subhead{font-size:.85rem;margin:2rem 0 .8rem;color:var(--text-3);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+  h3.subhead:first-of-type{margin-top:0}
+
+  .keyword-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem 1.4rem}
+  .kw{background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--border);border-radius:8px;padding:.6rem .8rem}
+  .kw.g1{border-left-color:var(--red)}
+  .kw.g2{border-left-color:var(--purple)}
+  .kw.g3{border-left-color:var(--amber)}
+  .kw.g4{border-left-color:var(--teal)}
+  .kw-legend{display:flex;flex-wrap:wrap;gap:.9rem;font-size:.76rem;color:var(--text-3);margin-bottom:1rem}
+  .kw-legend span{display:inline-flex;align-items:center;gap:.35rem}
+  .kw-legend i{width:9px;height:9px;border-radius:50%;display:inline-block}
+  .kw dt{font-weight:700;font-size:.86rem;color:var(--teal)}
+  .kw dd{font-size:.82rem;color:var(--text-2);margin-top:.15rem}
+  @media(max-width:640px){.keyword-grid{grid-template-columns:1fr}}
+
+  .cornell{border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:1.4rem}
+  .cornell-row{display:grid;grid-template-columns:26% 74%}
+  .cornell-row+.cornell-row{border-top:1px solid var(--border)}
+  .cornell-cue{background:var(--purple-bg);padding:.9rem 1rem;font-weight:600;font-size:.85rem;color:var(--purple)}
+  .cornell-cue.g1{background:var(--red-bg);color:var(--red)}
+  .cornell-cue.g2{background:var(--purple-bg);color:var(--purple)}
+  .cornell-cue.g3{background:var(--amber-bg);color:var(--amber)}
+  .cornell-cue.g4{background:var(--teal-bg);color:var(--teal)}
+  .cornell-cue .ts{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;opacity:.8;margin-bottom:.2rem}
+  .cornell-note{padding:.9rem 1.1rem;font-size:.88rem;color:var(--text-2)}
+  .cornell-note ul{padding-left:1.1rem;margin-top:.3rem}
+  .cornell-note li{margin-bottom:.3rem}
+  .cornell-note code{background:var(--bg3);padding:.1rem .35rem;border-radius:4px;font-size:.85em;color:var(--teal);font-family:monospace}
+  .cornell-note .lbl{font-weight:600;color:var(--text)}
+  .cornell-note .hl{color:var(--amber);font-weight:600}
+  @media(max-width:640px){.cornell-row{grid-template-columns:1fr}.cornell-cue{padding-bottom:.4rem}}
+
+  .cornell-summary{background:var(--amber-bg);border-left:3px solid var(--amber);border-radius:0 8px 8px 0;padding:1rem 1.2rem;font-size:.86rem;color:var(--text-2);margin-bottom:.5rem}
+  .cornell-summary strong{color:var(--text)}
+  .cornell-summary .summary-label{display:block;margin-bottom:.5rem}
+  .cornell-summary ul{padding-left:1.2rem;margin:0}
+  .cornell-summary li{margin-bottom:.4rem}
+  .cornell-summary li:last-child{margin-bottom:0}
+
+  .mindmap-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:2rem}
+
+  .recall-item{background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:.7rem;overflow:hidden}
+  .recall-item summary{cursor:pointer;padding:.85rem 1.1rem;font-size:.88rem;font-weight:500;list-style:none;display:flex;justify-content:space-between;gap:1rem}
+  .recall-item summary::-webkit-details-marker{display:none}
+  .recall-item summary::after{content:"show answer";font-size:.72rem;color:var(--text-3);text-transform:uppercase;flex-shrink:0}
+  .recall-item[open] summary::after{content:"hide";}
+  .recall-item[open] summary{border-bottom:1px solid var(--border)}
+  .recall-answer{padding:.9rem 1.1rem;font-size:.86rem;color:var(--text-2)}
+  .recall-answer code{background:var(--bg3);padding:.1rem .35rem;border-radius:4px;font-size:.85em;color:var(--teal);font-family:monospace}
+
+  .mcq{background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:.9rem;overflow:hidden}
+  .mcq-q{padding:.9rem 1.1rem;font-size:.87rem;color:var(--text-2)}
+  .mcq-q .qnum{font-weight:700;color:var(--text)}
+  .mcq-opts{padding:0 1.1rem .5rem;font-size:.85rem;color:var(--text-2)}
+  .mcq-opts div{padding:.25rem 0}
+  .mcq details{border-top:1px solid var(--border)}
+  .mcq summary{cursor:pointer;padding:.7rem 1.1rem;font-size:.8rem;color:var(--purple);list-style:none}
+  .mcq summary::-webkit-details-marker{display:none}
+  .mcq-answer{padding:0 1.1rem .9rem;font-size:.85rem;color:var(--text-2)}
+  .mcq-answer .correct{color:var(--green);font-weight:700}
+
+  .progress-note{font-size:.82rem;color:var(--text-3);text-align:center;margin-top:2.5rem}
+  .src-note{font-size:.78rem;color:var(--text-3);margin-bottom:2rem}
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="index.html">&larr; CCA-F Personal Notes</a>
+  <header>
+    <span class="weight-tag">D1 &middot; 27% of exam &middot; heaviest domain</span>
+    <h1>Agentic Architecture &amp; Orchestration</h1>
+    <p class="meta">Task Statements 1.1&ndash;1.7</p>
+  </header>
+  <p class="src-note">Source: Claude Certified Architect &ndash; Foundations Certification Exam Guide (v0.1, last updated Feb 10 2025), Domain 1 section, official sample questions, and Exercise 1/4.</p>
+
+  <details class="topic">
+    <summary><h2><span class="sec-num">1</span>Topic Keywords</h2></summary>
+    <div class="topic-body">
+      <div class="kw-legend">
+        <span><i style="background:var(--red)"></i>1.1 The loop</span>
+        <span><i style="background:var(--purple)"></i>1.2/1.3 Coordination</span>
+        <span><i style="background:var(--amber)"></i>1.4/1.5 Enforcement</span>
+        <span><i style="background:var(--teal)"></i>1.6/1.7 Decomp. &amp; state</span>
+      </div>
+      <dl class="keyword-grid">
+        <div class="kw g1"><dt><code>stop_reason</code></dt><dd>Field on the API response that drives the loop: <code>"tool_use"</code> = continue, <code>"end_turn"</code> = done.</dd></div>
+        <div class="kw g1"><dt><code>tool_use_id</code></dt><dd>ID carried on a tool_use block and echoed back on its matching tool_result block &mdash; how the API connects a specific tool request to the right reply when more than one call is in flight.</dd></div>
+        <div class="kw g1"><dt>Agentic loop lifecycle</dt><dd>Send request &rarr; inspect <code>stop_reason</code> &rarr; execute requested tools &rarr; append results to conversation history &rarr; repeat.</dd></div>
+        <div class="kw g1"><dt>Model-driven decision-making</dt><dd>Claude reasons about which tool to call next from context, as opposed to a pre-configured decision tree or fixed tool sequence.</dd></div>
+        <div class="kw g1"><dt>Loop anti-patterns</dt><dd>Parsing natural-language signals to detect termination; an arbitrary iteration cap as the primary stop mechanism; checking for assistant text content as a "done" signal.</dd></div>
+        <div class="kw g2"><dt>Hub-and-spoke</dt><dd>Coordinator (hub) manages all inter-subagent communication, error handling, and routing; subagents (spokes) never talk to each other directly.</dd></div>
+        <div class="kw g2"><dt>Isolated context</dt><dd>Subagents do not automatically inherit the coordinator's conversation history &mdash; nothing carries over unless explicitly passed in the prompt.</dd></div>
+        <div class="kw g2"><dt>Overly narrow decomposition</dt><dd>Risk named explicitly in the guide: a coordinator that splits a broad topic too narrowly leaves real coverage gaps (see Q7 below).</dd></div>
+        <div class="kw g2"><dt>Task tool</dt><dd>The mechanism for spawning subagents. <code>allowedTools</code> must include <code>"Task"</code> for a coordinator to invoke them.</dd></div>
+        <div class="kw g2"><dt><code>AgentDefinition</code></dt><dd>Per-subagent configuration: description, system prompt, and tool restrictions.</dd></div>
+        <div class="kw g2"><dt>Fork-based session management</dt><dd>Explores divergent approaches from a shared analysis baseline (distinct from coordinator/subagent forking of work).</dd></div>
+        <div class="kw g2"><dt>Parallel Task calls</dt><dd>Multiple <code>Task</code> tool calls emitted in a <em>single</em> coordinator response &mdash; not spread across separate turns &mdash; is what actually achieves parallel subagent execution.</dd></div>
+        <div class="kw g3"><dt>Programmatic enforcement</dt><dd>Hooks / prerequisite gates &mdash; guaranteed. Contrast with prompt-based guidance, which has a non-zero failure rate even when the rule is stated clearly.</dd></div>
+        <div class="kw g3"><dt>Structured handoff protocol</dt><dd>What a human escalation needs: customer details, root cause analysis, recommended action &mdash; compiled for someone with no access to the conversation transcript.</dd></div>
+        <div class="kw g3"><dt>PostToolUse hook</dt><dd>Intercepts a tool's result to transform/normalize it before the model ever sees it.</dd></div>
+        <div class="kw g3"><dt>Tool call interception hook</dt><dd>Intercepts an <em>outgoing</em> tool call to enforce a compliance rule (e.g. block a refund over a threshold) before it executes.</dd></div>
+        <div class="kw g4"><dt>Prompt chaining</dt><dd>Fixed sequential pipeline &mdash; e.g. analyze each file individually, then run one cross-file integration pass.</dd></div>
+        <div class="kw g4"><dt>Dynamic decomposition</dt><dd>Adaptive: subtasks are generated based on what's discovered at each step, not fixed up front.</dd></div>
+        <div class="kw g4"><dt><code>--resume &lt;session-name&gt;</code></dt><dd>Continues a specific named prior conversation.</dd></div>
+        <div class="kw g4"><dt><code>fork_session</code></dt><dd>Creates an independent branch from a shared analysis baseline to explore a divergent approach.</dd></div>
+        <div class="kw g4"><dt>Stale tool results</dt><dd>Why a fresh session with a structured summary can beat resuming: reasoning from stale results is worse than reasoning from none.</dd></div>
+      </dl>
+    </div>
+  </details>
+
+  <details class="topic">
+    <summary><h2><span class="sec-num">2</span>Main Pointers</h2></summary>
+    <div class="topic-body">
+      <div class="cornell">
+        <div class="cornell-row">
+          <div class="cornell-cue g1"><span class="ts">Task Statement</span>1.1<br>Agentic loops</div>
+          <div class="cornell-note">
+            <p><span class="lbl">Knowledge:</span> the loop is send request &rarr; check <code>stop_reason</code> &rarr; run tool &rarr; append result to history &rarr; repeat. <span class="hl">Model-driven decisions</span> (Claude picks the next tool from context) is the tested contrast against <span class="hl">pre-configured decision trees</span>.</p>
+            <p><span class="lbl">Skills:</span></p>
+            <ul>
+              <li>Loop continues while <code>stop_reason === "tool_use"</code>, terminates on <code>"end_turn"</code>.</li>
+              <li>Tool results get added to conversation context between iterations so reasoning can incorporate new information.</li>
+              <li><strong>Mechanic:</strong> a tool_use block carries the tool name, its input, and a <code>tool_use_id</code>. The application executes the tool, then appends the result as a tool_result block carrying that <em>same</em> ID &mdash; that's what lets Claude match a result back to the right request when several calls are in flight.</li>
+              <li><span class="lbl">Avoid:</span> parsing natural-language signals for termination; an iteration cap as the <em>primary</em> stop mechanism; checking for assistant text content as a completion indicator.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="cornell-row">
+          <div class="cornell-cue g2"><span class="ts">Task Statement</span>1.2<br>Coordinator&ndash;subagent orchestration</div>
+          <div class="cornell-note">
+            <p><span class="lbl">Knowledge:</span> <span class="hl">hub-and-spoke</span> &mdash; coordinator owns all inter-subagent communication, error handling, and routing. Subagents have <span class="hl">isolated context</span> by default. Coordinator owns decomposition, delegation, aggregation, and deciding which subagents to invoke based on query complexity. Named risk: too-narrow decomposition leaves broad topics under-covered.</p>
+            <p><span class="lbl">Skills:</span></p>
+            <ul>
+              <li>Coordinator dynamically selects which subagents to invoke, rather than always routing through the full pipeline.</li>
+              <li>Partition research scope across subagents to minimize duplication (distinct subtopics/source types per agent).</li>
+              <li><strong>Iterative refinement loop:</strong> coordinator evaluates synthesis output for gaps, re-delegates to search/analysis subagents with targeted queries, re-invokes synthesis until coverage is sufficient.</li>
+              <li>Route all subagent communication through the coordinator &mdash; for observability, consistent error handling, controlled information flow.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="cornell-row">
+          <div class="cornell-cue g2"><span class="ts">Task Statement</span>1.3<br>Subagent invocation &amp; context passing</div>
+          <div class="cornell-note">
+            <p><span class="lbl">Knowledge:</span> the <code>Task</code> tool spawns subagents; coordinator's <code>allowedTools</code> must include <code>"Task"</code>. Subagent context must be <span class="hl">explicit in the prompt</span> &mdash; no automatic inheritance, no shared memory between invocations. <code>AgentDefinition</code> holds each subagent's description, system prompt, tool restrictions. <span class="hl">Fork-based session management</span> explores divergent approaches from a shared baseline.</p>
+            <p><span class="lbl">Skills:</span></p>
+            <ul>
+              <li>Include complete findings from prior agents directly in the subagent's prompt (e.g. pass web-search + document-analysis output straight to the synthesis subagent).</li>
+              <li>Use structured data formats that separate content from metadata (source URLs, doc names, page numbers) to preserve attribution across handoffs.</li>
+              <li><strong>Parallel spawning</strong> = multiple <code>Task</code> calls emitted in one coordinator response, not across separate turns.</li>
+              <li>Coordinator prompts should specify goals + quality criteria, not step-by-step procedure &mdash; that's what lets subagents adapt.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="cornell-row">
+          <div class="cornell-cue g3"><span class="ts">Task Statement</span>1.4<br>Enforcement &amp; handoff patterns</div>
+          <div class="cornell-note">
+            <p><span class="lbl">Knowledge:</span> <span class="hl">programmatic enforcement</span> (hooks, prerequisite gates) vs. prompt-based guidance for ordering. When <span class="hl">deterministic compliance</span> is required (e.g. identity verification before a financial operation), prompt instructions alone have a non-zero failure rate. Structured handoff protocol for mid-process escalation: customer details, root cause analysis, recommended action.</p>
+            <p><span class="lbl">Skills:</span></p>
+            <ul>
+              <li>Programmatic prerequisites block a downstream tool call until a prerequisite step completes &mdash; e.g. block <code>process_refund</code> until <code>get_customer</code> returns a verified customer ID.</li>
+              <li>Decompose multi-concern requests into distinct items, investigate each in parallel with shared context, then synthesize one unified resolution.</li>
+              <li>Compile structured handoff summaries (customer ID, root cause, refund amount, recommended action) for a human agent with no transcript access.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="cornell-row">
+          <div class="cornell-cue g3"><span class="ts">Task Statement</span>1.5<br>Hooks: interception &amp; normalization</div>
+          <div class="cornell-note">
+            <p><span class="lbl">Knowledge:</span> <code>PostToolUse</code> hooks intercept tool <em>results</em> for transformation before the model processes them. Other hook patterns intercept <em>outgoing</em> tool calls to enforce compliance (e.g. block refunds above a threshold). Core distinction: hooks = <span class="hl">deterministic guarantee</span>, prompts = <span class="hl">probabilistic compliance</span>.</p>
+            <p><span class="lbl">Skills:</span></p>
+            <ul>
+              <li><code>PostToolUse</code> hooks normalize heterogeneous formats from different MCP tools &mdash; e.g. Unix timestamps, ISO 8601, numeric status codes &mdash; into one shape.</li>
+              <li>Tool-call interception hooks block policy-violating actions (e.g. refunds exceeding $500) and redirect to an alternative workflow (human escalation).</li>
+              <li>Choose hooks over prompt-based enforcement whenever a business rule requires <em>guaranteed</em> compliance, not just likely compliance.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="cornell-row">
+          <div class="cornell-cue g4"><span class="ts">Task Statement</span>1.6<br>Task decomposition strategies</div>
+          <div class="cornell-note">
+            <p><span class="lbl">Knowledge:</span> <span class="hl">fixed sequential pipelines</span> (prompt chaining) vs. <span class="hl">dynamic adaptive decomposition</span> based on intermediate findings. Prompt chaining example: analyze each file individually, then run a separate cross-file integration pass. Adaptive investigation plans generate subtasks from what's discovered at each step.</p>
+            <p><span class="lbl">Skills:</span></p>
+            <ul>
+              <li>Match the pattern to the workflow: prompt chaining for predictable multi-aspect reviews, dynamic decomposition for open-ended investigation.</li>
+              <li>Split large code reviews into per-file local analysis + a separate cross-file integration pass, to avoid attention dilution.</li>
+              <li>Decompose open-ended tasks (e.g. "add comprehensive tests to a legacy codebase") by first mapping structure, then identifying high-impact areas, then building a prioritized plan that adapts as dependencies surface.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="cornell-row">
+          <div class="cornell-cue g4"><span class="ts">Task Statement</span>1.7<br>Session state, resumption, forking</div>
+          <div class="cornell-note">
+            <p><span class="lbl">Knowledge:</span> <code>--resume &lt;session-name&gt;</code> continues a specific named prior conversation. <code>fork_session</code> creates an independent branch from a shared baseline. Resuming after code changes requires <span class="hl">explicitly informing the agent</span> what changed. Starting fresh with a <span class="hl">structured summary</span> is more reliable than resuming with stale tool results.</p>
+            <p><span class="lbl">Skills:</span></p>
+            <ul>
+              <li>Use <code>--resume</code> with session names to continue named investigation sessions across work sessions.</li>
+              <li>Use <code>fork_session</code> for parallel exploration branches &mdash; e.g. comparing two testing strategies or refactoring approaches from one codebase analysis.</li>
+              <li>Choose resumption when prior context is mostly valid; choose fresh + injected summary when prior tool results are stale.</li>
+              <li>Inform a resumed session about specific file changes for targeted re-analysis, rather than forcing full re-exploration.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="cornell-summary">
+        <strong class="summary-label">Summary, one line per task statement:</strong>
+        <ul>
+          <li><strong>1.1</strong> Trust <code>stop_reason</code>, never text-guessing or a cap as primary logic.</li>
+          <li><strong>1.2</strong> Hub-and-spoke, coordinator dynamically selects subagents and iteratively refines via re-delegation.</li>
+          <li><strong>1.3</strong> Context is explicit, never inherited; parallel = same response, multiple <code>Task</code> calls.</li>
+          <li><strong>1.4</strong> Critical-path ordering is a programmatic gate, not a prompt request.</li>
+          <li><strong>1.5</strong> <code>PostToolUse</code> normalizes, interception hooks gate &mdash; both are guarantees a prompt can't give.</li>
+          <li><strong>1.6</strong> Fixed pipeline for predictable multi-aspect work, dynamic decomposition for open-ended work.</li>
+          <li><strong>1.7</strong> Resume when nothing's stale, fork to explore two paths from one baseline, fresh+summary when the ground truth moved.</li>
+        </ul>
+      </div>
+    </div>
+  </details>
+
+  <details class="topic">
+    <summary><h2><span class="sec-num">3</span>Mind Map and Pictorial Info</h2></summary>
+    <div class="topic-body">
+      <h3 class="subhead">Mind Map</h3>
+      <div class="mindmap-wrap">
+        <svg viewBox="0 0 780 620" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Mind map of D1: Agentic Architecture and Orchestration, with four branches: agentic loops, coordinator-subagent orchestration and invocation, enforcement and handoff, and decomposition and session state, each with a code snippet showing the relevant syntax.">
+          <circle cx="390" cy="310" r="76" fill="#EDE0F5" stroke="#7A4A9A" stroke-width="2"/>
+          <text x="390" y="302" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="#7A4A9A">D1</text>
+          <text x="390" y="320" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#3D4235">Agentic Architecture</text>
+          <text x="390" y="334" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#3D4235">&amp; Orchestration</text>
+
+          <!-- 1.1 top-left -->
+          <path d="M335,255 C270,190 220,150 150,115" fill="none" stroke="#9A2A4A" stroke-width="1.5"/>
+          <rect x="15" y="15" width="215" height="110" rx="8" fill="#F5DDE5" stroke="#9A2A4A"/>
+          <text x="122" y="35" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11.5" font-weight="700" fill="#9A2A4A">1.1 Agentic Loops</text>
+          <text x="122" y="52" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">stop_reason drives control flow</text>
+          <text x="122" y="66" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">3 named anti-patterns to avoid</text>
+          <rect x="27" y="76" width="190" height="20" rx="4" fill="#FAFCF5" stroke="#9A2A4A" stroke-opacity=".4"/>
+          <text x="122" y="90" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="#9A2A4A">while stop_reason=="tool_use"</text>
+          <text x="122" y="112" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">tool_use_id links call &rarr; result</text>
+
+          <!-- 1.2/1.3 top-right -->
+          <path d="M445,255 C500,190 550,150 620,115" fill="none" stroke="#7A4A9A" stroke-width="1.5"/>
+          <rect x="550" y="10" width="215" height="130" rx="8" fill="#EDE0F5" stroke="#7A4A9A"/>
+          <text x="657" y="30" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11.5" font-weight="700" fill="#7A4A9A">1.2/1.3 Coordination</text>
+          <text x="657" y="46" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">hub-and-spoke, isolated context,</text>
+          <text x="657" y="60" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">explicit context passing</text>
+          <rect x="562" y="70" width="190" height="20" rx="4" fill="#FAFCF5" stroke="#7A4A9A" stroke-opacity=".4"/>
+          <text x="657" y="84" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#7A4A9A">allowedTools: ["Task"]</text>
+          <text x="657" y="105" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">parallel = multiple Task calls,</text>
+          <text x="657" y="118" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">one coordinator response</text>
+          <text x="657" y="132" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#9A2A4A">risk: overly narrow decomposition</text>
+
+          <!-- 1.4/1.5 bottom-left -->
+          <path d="M335,365 C270,430 220,470 150,505" fill="none" stroke="#9A6E1A" stroke-width="1.5"/>
+          <rect x="15" y="495" width="215" height="110" rx="8" fill="#F5EDD6" stroke="#9A6E1A"/>
+          <text x="122" y="515" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11.5" font-weight="700" fill="#9A6E1A">1.4/1.5 Enforcement</text>
+          <text x="122" y="531" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">hooks = deterministic guarantee</text>
+          <text x="122" y="545" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">prompts alone = probabilistic</text>
+          <rect x="27" y="555" width="90" height="20" rx="4" fill="#FAFCF5" stroke="#9A6E1A" stroke-opacity=".4"/>
+          <text x="72" y="569" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#9A6E1A">PreToolUse</text>
+          <rect x="122" y="555" width="95" height="20" rx="4" fill="#FAFCF5" stroke="#9A6E1A" stroke-opacity=".4"/>
+          <text x="169" y="569" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#9A6E1A">PostToolUse</text>
+          <text x="122" y="591" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">gate vs. normalize</text>
+
+          <!-- 1.6/1.7 bottom-right -->
+          <path d="M445,365 C500,430 550,470 620,505" fill="none" stroke="#1A6B54" stroke-width="1.5"/>
+          <rect x="550" y="480" width="215" height="130" rx="8" fill="#D8EEE8" stroke="#1A6B54"/>
+          <text x="657" y="500" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11.5" font-weight="700" fill="#1A6B54">1.6/1.7 Decomp. &amp; State</text>
+          <text x="657" y="516" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">fixed pipeline vs dynamic</text>
+          <text x="657" y="530" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">decomposition</text>
+          <rect x="562" y="540" width="190" height="20" rx="4" fill="#FAFCF5" stroke="#1A6B54" stroke-opacity=".4"/>
+          <text x="657" y="554" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#1A6B54">--resume &lt;name&gt; / fork_session()</text>
+          <text x="657" y="576" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">resume vs fresh+summary</text>
+          <text x="657" y="590" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">vs fork &mdash; pick by what changed</text>
+        </svg>
+      </div>
+
+      <h3 class="subhead">Diagram: Coordinator, Subagents, and the Task Tool</h3>
+      <div class="mindmap-wrap">
+        <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Diagram: a coordinator with allowedTools including Task spawns two subagents in parallel by emitting two Task calls in one response. Each subagent gets isolated context, explicit facts passed in its prompt, and its own scoped tools. Both report back only to the coordinator, never to each other.">
+          <text x="360" y="14" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#6B7060">2 &times; Task calls, same response &rarr; parallel spawn</text>
+          <rect x="260" y="26" width="200" height="60" rx="8" fill="#EDE0F5" stroke="#7A4A9A" stroke-width="1.5"/>
+          <text x="360" y="49" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="12" font-weight="700" fill="#7A4A9A">Coordinator</text>
+          <text x="360" y="65" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="#3D4235">allowedTools: ["Task"]</text>
+
+          <path d="M320,86 C260,115 180,122 140,150" fill="none" stroke="#6B7060" stroke-width="1.5" marker-end="url(#cs1)"/>
+          <path d="M400,86 C460,115 540,122 580,150" fill="none" stroke="#6B7060" stroke-width="1.5" marker-end="url(#cs2)"/>
+
+          <rect x="40" y="152" width="220" height="110" rx="8" fill="#F5F7F0" stroke="rgba(26,31,20,.15)" stroke-dasharray="4 3"/>
+          <text x="150" y="174" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700" fill="#1A1F14">Subagent A</text>
+          <text x="150" y="192" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">isolated context</text>
+          <text x="150" y="207" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">explicit facts in prompt</text>
+          <rect x="55" y="216" width="190" height="20" rx="4" fill="#FAFCF5" stroke="#1A6B54" stroke-opacity=".4"/>
+          <text x="150" y="230" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#1A6B54">scoped tools only</text>
+          <text x="150" y="248" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#9A2A4A">reports back to coordinator only</text>
+
+          <rect x="460" y="152" width="220" height="110" rx="8" fill="#F5F7F0" stroke="rgba(26,31,20,.15)" stroke-dasharray="4 3"/>
+          <text x="570" y="174" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700" fill="#1A1F14">Subagent B</text>
+          <text x="570" y="192" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">isolated context</text>
+          <text x="570" y="207" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">explicit facts in prompt</text>
+          <rect x="475" y="216" width="190" height="20" rx="4" fill="#FAFCF5" stroke="#1A6B54" stroke-opacity=".4"/>
+          <text x="570" y="230" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#1A6B54">scoped tools only</text>
+          <text x="570" y="248" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#9A2A4A">reports back to coordinator only</text>
+
+          <text x="360" y="285" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#9A2A4A">A and B never see each other &mdash; hub-and-spoke, not peer-to-peer</text>
+
+          <defs>
+            <marker id="cs1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+            <marker id="cs2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+          </defs>
+        </svg>
+      </div>
+
+      <h3 class="subhead">Diagram: Fixed Pipeline vs. Dynamic Decomposition</h3>
+      <div class="mindmap-wrap">
+        <svg viewBox="0 0 720 260" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Diagram comparing a fixed sequential pipeline, four steps in a straight line decided in advance, against dynamic decomposition, where each step branches based on what the previous step found.">
+          <text x="180" y="20" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11.5" font-weight="700" fill="#9A6E1A">FIXED PIPELINE (prompt chaining)</text>
+          <rect x="10" y="35" width="80" height="42" rx="6" fill="#F5EDD6" stroke="#9A6E1A"/>
+          <text x="50" y="60" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="#3D4235">Verify</text>
+          <path d="M90,56 L118,56" stroke="#6B7060" stroke-width="1.5" marker-end="url(#fp1)"/>
+          <rect x="120" y="35" width="80" height="42" rx="6" fill="#F5EDD6" stroke="#9A6E1A"/>
+          <text x="160" y="60" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="#3D4235">Check</text>
+          <path d="M200,56 L228,56" stroke="#6B7060" stroke-width="1.5" marker-end="url(#fp2)"/>
+          <rect x="230" y="35" width="80" height="42" rx="6" fill="#F5EDD6" stroke="#9A6E1A"/>
+          <text x="270" y="60" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="#3D4235">Policy</text>
+          <path d="M310,56 L338,56" stroke="#6B7060" stroke-width="1.5" marker-end="url(#fp3)"/>
+          <rect x="340" y="35" width="80" height="42" rx="6" fill="#F5DDE5" stroke="#9A2A4A"/>
+          <text x="380" y="60" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="#9A2A4A">Decide</text>
+          <text x="215" y="100" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">order fixed before the run starts &middot; same steps every time</text>
+
+          <line x1="0" y1="122" x2="720" y2="122" stroke="rgba(26,31,20,.12)"/>
+
+          <text x="180" y="141" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11.5" font-weight="700" fill="#7A4A9A">DYNAMIC DECOMPOSITION</text>
+
+          <rect x="10" y="175" width="90" height="42" rx="6" fill="#EDE0F5" stroke="#7A4A9A"/>
+          <text x="55" y="200" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="#3D4235">Map issue</text>
+          <path d="M100,184 C135,170 155,168 180,173" stroke="#6B7060" stroke-width="1.5" fill="none" marker-end="url(#fp4)"/>
+          <path d="M100,208 C135,222 155,224 180,219" stroke="#6B7060" stroke-width="1.5" fill="none" marker-end="url(#fp5)"/>
+          <rect x="182" y="155" width="120" height="36" rx="6" fill="#F5F7F0" stroke="rgba(26,31,20,.15)" stroke-dasharray="4 3"/>
+          <text x="242" y="177" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">next check A?</text>
+          <rect x="182" y="201" width="120" height="36" rx="6" fill="#F5F7F0" stroke="rgba(26,31,20,.15)" stroke-dasharray="4 3"/>
+          <text x="242" y="223" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">next check B?</text>
+          <text x="470" y="185" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">each branch is generated by what</text>
+          <text x="470" y="200" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">the previous step actually found &mdash;</text>
+          <text x="470" y="215" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">not fixed in advance</text>
+
+          <defs>
+            <marker id="fp1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+            <marker id="fp2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+            <marker id="fp3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+            <marker id="fp4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+            <marker id="fp5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+          </defs>
+        </svg>
+      </div>
+
+      <h3 class="subhead">Diagram: Session State Decision</h3>
+      <div class="mindmap-wrap">
+        <svg viewBox="0 0 720 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Decision diagram: a paused session branches three ways depending on what changed. Nothing changed leads to resume with session name. Two approaches need exploring leads to fork session. The underlying code moved leads to a fresh session with a structured summary.">
+          <rect x="300" y="15" width="120" height="42" rx="8" fill="#EEF1E7" stroke="rgba(26,31,20,.2)"/>
+          <text x="360" y="41" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#3D4235">Session paused</text>
+
+          <path d="M330,57 C220,90 140,100 90,128" fill="none" stroke="#1A7A3A" stroke-width="1.5" marker-end="url(#ss1)"/>
+          <rect x="172" y="79" width="98" height="17" fill="#FAFCF5"/>
+          <text x="221" y="91" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#1A7A3A">nothing changed</text>
+          <rect x="15" y="130" width="180" height="52" rx="8" fill="#D8F0E0" stroke="#1A7A3A"/>
+          <text x="105" y="152" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700" fill="#1A7A3A">Resume</text>
+          <text x="105" y="168" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#1A6B54">--resume &lt;session-name&gt;</text>
+
+          <path d="M360,57 L360,128" fill="none" stroke="#2A5C9A" stroke-width="1.5" marker-end="url(#ss2)"/>
+          <rect x="325" y="86" width="140" height="17" fill="#FAFCF5"/>
+          <text x="395" y="98" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#2A5C9A">2 approaches to compare</text>
+          <rect x="270" y="130" width="180" height="52" rx="8" fill="#DDE8F5" stroke="#2A5C9A"/>
+          <text x="360" y="152" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700" fill="#2A5C9A">Fork</text>
+          <text x="360" y="168" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#2A5C9A">fork_session()</text>
+
+          <path d="M400,57 C500,90 570,100 615,128" fill="none" stroke="#9A2A4A" stroke-width="1.5" marker-end="url(#ss3)"/>
+          <rect x="452" y="79" width="140" height="17" fill="#FAFCF5"/>
+          <text x="522" y="91" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#9A2A4A">code moved underneath it</text>
+          <rect x="525" y="130" width="180" height="52" rx="8" fill="#F5DDE5" stroke="#9A2A4A"/>
+          <text x="615" y="150" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700" fill="#9A2A4A">Fresh + summary</text>
+          <text x="615" y="167" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">stale results are worse than none</text>
+
+          <defs>
+            <marker id="ss1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1A7A3A"/></marker>
+            <marker id="ss2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2A5C9A"/></marker>
+            <marker id="ss3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9A2A4A"/></marker>
+          </defs>
+        </svg>
+      </div>
+
+      <h3 class="subhead">Flow: The Loop, With a Hook in It</h3>
+      <div class="mindmap-wrap">
+        <svg viewBox="0 0 700 170" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Flow diagram: an agentic loop calls a tool, the call passes through a tool-call-interception hook before executing, the tool runs, and a PostToolUse hook normalizes the result before it re-enters the loop and stop_reason is re-checked.">
+          <rect x="10" y="62" width="115" height="46" rx="8" fill="#EDE0F5" stroke="#7A4A9A"/>
+          <text x="67" y="90" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11" fill="#7A4A9A">Agentic loop</text>
+          <path d="M125,85 L158,85" stroke="#6B7060" stroke-width="1.5" marker-end="url(#a1)"/>
+
+          <rect x="160" y="62" width="132" height="46" rx="8" fill="#F5EDD6" stroke="#9A6E1A"/>
+          <text x="226" y="80" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#9A6E1A">interception hook</text>
+          <text x="226" y="94" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#3D4235">policy check on call</text>
+          <path d="M292,85 L325,85" stroke="#6B7060" stroke-width="1.5" marker-end="url(#a2)"/>
+
+          <rect x="327" y="62" width="100" height="46" rx="8" fill="#EEF1E7" stroke="rgba(26,31,20,.2)"/>
+          <text x="377" y="90" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11" fill="#3D4235">Tool runs</text>
+          <path d="M427,85 L460,85" stroke="#6B7060" stroke-width="1.5" marker-end="url(#a3)"/>
+
+          <rect x="462" y="62" width="130" height="46" rx="8" fill="#D8EEE8" stroke="#1A6B54"/>
+          <text x="527" y="80" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="#1A6B54">PostToolUse hook</text>
+          <text x="527" y="94" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#3D4235">normalize result</text>
+
+          <path d="M527,62 C527,20 290,20 67,55" fill="none" stroke="#6B7060" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#a4)"/>
+          <text x="290" y="18" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">normalized result appended to context, stop_reason re-checked</text>
+
+          <defs>
+            <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+            <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+            <marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+            <marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+          </defs>
+        </svg>
+      </div>
+    </div>
+  </details>
+
+  <details class="topic">
+    <summary><h2><span class="sec-num">4</span>Active Recall</h2></summary>
+    <div class="topic-body">
+      <details class="recall-item"><summary>What exact API field controls whether the agentic loop continues, and what are its two relevant values?</summary><div class="recall-answer"><code>stop_reason</code>. <code>"tool_use"</code> = continue the loop, <code>"end_turn"</code> = terminate.</div></details>
+
+      <details class="recall-item"><summary>What connects a tool_use request to its tool_result reply, and why does that matter?</summary><div class="recall-answer">The <code>tool_use_id</code> &mdash; carried on the tool_use block and echoed back on the tool_result block. It matters because more than one tool call can be in flight at once, so the ID is what lets the correct result get matched to the correct request.</div></details>
+
+      <details class="recall-item"><summary>Name all three loop anti-patterns the guide calls out.</summary><div class="recall-answer">(1) Parsing natural-language signals in the model's text to detect termination. (2) An arbitrary iteration cap used as the <em>primary</em> stopping mechanism. (3) Checking for the presence/absence of assistant text content as a completion indicator.</div></details>
+
+      <details class="recall-item"><summary>In hub-and-spoke orchestration, who handles inter-subagent communication and error routing?</summary><div class="recall-answer">The coordinator only. Subagents never communicate with each other directly &mdash; everything routes through the hub.</div></details>
+
+      <details class="recall-item"><summary>Does a subagent automatically inherit the coordinator's conversation history?</summary><div class="recall-answer">No. Context must be explicitly included in the subagent's prompt. There's also no shared memory between separate subagent invocations.</div></details>
+
+      <details class="recall-item"><summary>What configuration is required on the coordinator's side before it can spawn subagents at all?</summary><div class="recall-answer"><code>allowedTools</code> must include <code>"Task"</code> &mdash; the Task tool is the actual spawning mechanism.</div></details>
+
+      <details class="recall-item"><summary>How do you actually achieve parallel subagent execution, mechanically?</summary><div class="recall-answer">Emit multiple <code>Task</code> tool calls within a single coordinator response &mdash; not across separate turns.</div></details>
+
+      <details class="recall-item"><summary>What's the named risk of a coordinator decomposing a broad topic too aggressively?</summary><div class="recall-answer">Overly narrow task decomposition leads to incomplete coverage of broad research topics &mdash; some real subtopics never get assigned to any subagent (this is exactly what official sample Question 7 tests).</div></details>
+
+      <details class="recall-item"><summary>What's the coordinator's iterative-refinement loop, specifically?</summary><div class="recall-answer">It evaluates the synthesis output for gaps, re-delegates to search/analysis subagents with targeted queries, and re-invokes synthesis &mdash; repeating until coverage is sufficient.</div></details>
+
+      <details class="recall-item"><summary>Give the textbook example of a programmatic prerequisite gate, and say why a prompt instruction isn't good enough there.</summary><div class="recall-answer">Block <code>process_refund</code> until <code>get_customer</code> has returned a verified customer ID. Prompt instructions alone have a non-zero failure rate, so anything requiring deterministic compliance (identity verification before a financial operation) needs a programmatic gate, not a request.</div></details>
+
+      <details class="recall-item"><summary>What four things belong in a structured handoff summary to a human agent?</summary><div class="recall-answer">Customer ID, root cause, refund amount (or equivalent transactional detail), and recommended action &mdash; because the human has no access to the conversation transcript.</div></details>
+
+      <details class="recall-item"><summary>Distinguish what a PostToolUse hook does from what a tool-call-interception hook does.</summary><div class="recall-answer"><strong>PostToolUse:</strong> intercepts a tool's <em>result</em>, transforms/normalizes it before the model sees it (e.g. unifying Unix timestamps, ISO 8601, and numeric status codes). <strong>Interception hook:</strong> intercepts an <em>outgoing</em> tool call before it executes, to block policy-violating actions (e.g. refunds over $500) and redirect elsewhere.</div></details>
+
+      <details class="recall-item"><summary>Prompt chaining vs. dynamic decomposition &mdash; when does each apply?</summary><div class="recall-answer"><strong>Prompt chaining</strong> (fixed sequential pipeline): predictable, multi-aspect reviews where the steps are known up front (e.g. per-file analysis, then one cross-file integration pass). <strong>Dynamic decomposition:</strong> open-ended investigation where each step's subtasks are generated by what the previous step found.</div></details>
+
+      <details class="recall-item"><summary>Why split a large code review into per-file passes plus a separate integration pass?</summary><div class="recall-answer">To avoid attention dilution &mdash; a single pass across many files at once produces inconsistent depth and can even contradict itself (flagging a pattern in one file, approving identical code in another).</div></details>
+
+      <details class="recall-item"><summary>What's the difference between <code>--resume</code> and <code>fork_session</code>?</summary><div class="recall-answer"><code>--resume &lt;session-name&gt;</code> continues one specific named conversation exactly where it left off. <code>fork_session</code> creates an independent branch from a shared analysis baseline, for exploring two divergent approaches without disturbing the original.</div></details>
+
+      <details class="recall-item"><summary>When is starting a brand-new session with a structured summary the better call than resuming?</summary><div class="recall-answer">When the prior session's tool results have gone stale (e.g. the underlying code changed) &mdash; reasoning from stale results is worse than reasoning from a clean, accurate summary. If resuming anyway, the agent must be explicitly told what changed.</div></details>
+    </div>
+  </details>
+
+  <details class="topic">
+    <summary><h2><span class="sec-num">5</span>Official Sample Questions (D1)</h2></summary>
+    <div class="topic-body">
+      <div class="mcq">
+        <div class="mcq-q"><span class="qnum">Q1.</span> (Scenario 1, Customer Support) Production data shows the agent skips <code>get_customer</code> in 12% of cases and calls <code>lookup_order</code> on stated name alone, occasionally causing misidentified accounts and incorrect refunds. Most effective fix?</div>
+        <div class="mcq-opts">
+          <div>A) Programmatic prerequisite blocking <code>lookup_order</code>/<code>process_refund</code> until <code>get_customer</code> returns a verified ID.</div>
+          <div>B) Strengthen the system prompt to say verification is mandatory.</div>
+          <div>C) Few-shot examples showing the agent always calling <code>get_customer</code> first.</div>
+          <div>D) A routing classifier enabling only the tool subset appropriate to the request.</div>
+        </div>
+        <details><summary>Show answer</summary><div class="mcq-answer"><span class="correct">A.</span> Deterministic guarantee needed &mdash; B and C are still probabilistic LLM compliance, D fixes tool availability, not ordering.</div></details>
+      </div>
+
+      <div class="mcq">
+        <div class="mcq-q"><span class="qnum">Q7.</span> (Scenario 3, Multi-Agent Research) Topic "impact of AI on creative industries" &mdash; final reports cover only visual arts, missing music/writing/film. Coordinator logs show it decomposed into "AI in digital art creation," "AI in graphic design," "AI in photography." Root cause?</div>
+        <div class="mcq-opts">
+          <div>A) Synthesis agent lacks coverage-gap detection instructions.</div>
+          <div>B) Coordinator's task decomposition is too narrow, so subagent assignments don't cover all relevant domains.</div>
+          <div>C) Web search agent's queries aren't comprehensive enough.</div>
+          <div>D) Document analysis agent is filtering out non-visual sources.</div>
+        </div>
+        <details><summary>Show answer</summary><div class="mcq-answer"><span class="correct">B.</span> Every subagent executed its assigned task correctly &mdash; the problem is what they were assigned in the first place. This is the "overly narrow decomposition" risk from 1.2's Knowledge list, directly.</div></details>
+      </div>
+
+      <div class="mcq">
+        <div class="mcq-q"><span class="qnum">Q8.</span> (Scenario 3) A web-search subagent times out. Which error-propagation approach to the coordinator best enables intelligent recovery?</div>
+        <div class="mcq-opts">
+          <div>A) Structured error context: failure type, attempted query, partial results, alternative approaches.</div>
+          <div>B) Retry with backoff internally, return a generic "search unavailable" only after retries exhaust.</div>
+          <div>C) Catch the timeout, return an empty result set marked successful.</div>
+          <div>D) Propagate the exception to a top-level handler that kills the whole workflow.</div>
+        </div>
+        <details><summary>Show answer</summary><div class="mcq-answer"><span class="correct">A.</span> B hides context, C silently suppresses a real failure as success, D over-reacts by terminating everything. (Cross-references D5's error-propagation task statement too.)</div></details>
+      </div>
+
+      <div class="mcq">
+        <div class="mcq-q"><span class="qnum">Q9.</span> (Scenario 3) Synthesis agent needs frequent fact-checks; 85% are simple lookups, 15% need deep investigation. Currently every check round-trips through the coordinator to the web-search agent, adding 40% latency. Best fix?</div>
+        <div class="mcq-opts">
+          <div>A) Give synthesis a scoped <code>verify_fact</code> tool for the simple case; complex cases still go through the coordinator.</div>
+          <div>B) Batch all verification needs and send them to web search at the end of the pass.</div>
+          <div>C) Give synthesis full access to all web-search tools directly.</div>
+          <div>D) Have the web-search agent proactively cache extra context speculatively.</div>
+        </div>
+        <details><summary>Show answer</summary><div class="mcq-answer"><span class="correct">A.</span> Principle of least privilege &mdash; scoped tool for the common case, existing coordination pattern kept for the hard 15%. C violates separation of concerns (this is exactly the "tools outside specialization" risk from D2 2.3).</div></details>
+      </div>
+    </div>
+  </details>
+
+  <p class="progress-note">D1 done &middot; next up: D3 (Claude Code Configuration &amp; Workflows, 20%)</p>
+</main>
+</body>
+</html>

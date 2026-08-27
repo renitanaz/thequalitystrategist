@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Course Material Notes (Non-Guide Source) | CCA-F Personal Notes</title>
+<meta name="robots" content="noindex, nofollow" />
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#FAFCF5;--bg2:#F5F7F0;--bg3:#EEF1E7;--border:rgba(26,31,20,0.14);--text:#1A1F14;--text-2:#3D4235;--text-3:#6B7060;--green:#1A7A3A;--green-bg:#D8F0E0;--amber:#9A6E1A;--amber-bg:#F5EDD6;--purple:#7A4A9A;--purple-bg:#EDE0F5;--red:#9A2A4A;--red-bg:#F5DDE5;--teal:#1A6B54;--teal-bg:#D8EEE8}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:16px;line-height:1.65;padding:2rem 1.25rem 5rem}
+  main{max-width:940px;margin:0 auto}
+  a{color:var(--purple)}
+  .back{display:inline-block;font-size:.82rem;color:var(--text-3);text-decoration:none;margin-bottom:1rem}
+  header{border-bottom:1px solid var(--border);padding-bottom:1.4rem;margin-bottom:2rem}
+  h1{font-size:1.5rem;margin-bottom:.3rem}
+  .meta{font-size:.85rem;color:var(--text-3)}
+  .src-note{background:var(--amber-bg);border-left:3px solid var(--amber);border-radius:0 8px 8px 0;padding:1rem 1.2rem;font-size:.86rem;color:var(--text-2);margin-bottom:2rem}
+  .src-note strong{color:var(--text)}
+
+  h2{font-size:1.15rem;margin:2.2rem 0 .3rem;padding-top:1.6rem;border-top:1px solid var(--border);color:var(--text)}
+  h2:first-of-type{border-top:none;padding-top:0;margin-top:0}
+  .domain-tag{display:inline-block;font-size:.68rem;text-transform:uppercase;letter-spacing:.04em;padding:2px 8px;border-radius:99px;margin-left:.5rem;vertical-align:middle;font-weight:600}
+  .tag-d1{background:var(--red-bg);color:var(--red)}
+  .tag-d2{background:var(--amber-bg);color:var(--amber)}
+  .tag-d3{background:var(--purple-bg);color:var(--purple)}
+  .tag-d4{background:var(--green-bg);color:var(--green)}
+  .tag-d5{background:var(--teal-bg);color:var(--teal)}
+  .tag-oos{background:var(--bg3);color:var(--text-3)}
+
+  .block{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1rem 1.2rem;margin-bottom:1rem;font-size:.88rem;color:var(--text-2)}
+  .block ul{padding-left:1.2rem;margin-top:.4rem}
+  .block li{margin-bottom:.35rem}
+  .block code{background:var(--bg3);padding:.1rem .35rem;border-radius:4px;font-size:.85em;color:var(--teal);font-family:monospace}
+  .block .lbl{font-weight:600;color:var(--text)}
+  .oos-note{font-size:.78rem;color:var(--text-3);font-style:italic;margin-top:.5rem}
+
+  .toc{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1rem 1.3rem;margin-bottom:2rem;font-size:.85rem}
+  .toc a{display:block;padding:.2rem 0;color:var(--text-2);text-decoration:none}
+  .toc a:hover{color:var(--purple)}
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="index.html">&larr; CCA-F Personal Notes</a>
+  <header>
+    <h1>Course Material Notes</h1>
+    <p class="meta">Consolidated from the prep-course lessons you provided &mdash; everything except the official exam guide</p>
+  </header>
+
+  <div class="src-note">
+    <strong>How this file differs from the domain notes:</strong> this is raw consolidated material from the course lessons you pasted, stripped of the running example's narrative, organized by lesson topic rather than by exam domain. Each section is tagged with the domain it's most relevant to, or <span class="domain-tag tag-oos">not exam scope</span> where the official guide's own Appendix explicitly excludes the topic (fine-tuning, embeddings/vector-DB internals, tokenization, etc.) or doesn't list it as tested. Domain notes (d1&ndash;d5) are the ones built for direct exam prep; this file is the source material behind them.
+  </div>
+
+  <div class="toc">
+    <a href="#ecosystem">1. Claude ecosystem map</a>
+    <a href="#howworks">2. How Claude generates a response <span class="domain-tag tag-oos">not exam scope</span></a>
+    <a href="#apibasics">3. API basics: client, messages, stop_reason</a>
+    <a href="#multiturn">4. Multi-turn conversations</a>
+    <a href="#sysprompt">5. System prompts vs. message history</a>
+    <a href="#modelparams">6. Model selection, temperature, stop sequences <span class="domain-tag tag-oos">partly not exam scope</span></a>
+    <a href="#evals">7. Prompt evaluation workflow</a>
+    <a href="#grading">8. Grading model outputs</a>
+    <a href="#promptstructure">9. Clear/direct prompting &amp; XML structure</a>
+    <a href="#rag">10. RAG overview <span class="domain-tag tag-oos">not exam scope</span></a>
+    <a href="#criteria">11. Explicit criteria &amp; few-shot examples</a>
+    <a href="#toolbasics">12. Tool schemas, tool_choice, first tool use</a>
+    <a href="#structuredoutput">13. Structured output via tool_use</a>
+    <a href="#validation">14. Validation, retry, confidence, human review</a>
+    <a href="#batch">15. Batch processing &amp; multi-pass review</a>
+    <a href="#loopmechanics">16. Tool-use loop mechanics</a>
+    <a href="#toolnaming">17. Tool naming, descriptions, structured errors</a>
+    <a href="#toolscoping">18. Scoped tool access, built-in tools, MCP</a>
+    <a href="#coordinator">19. Coordinator&ndash;subagent architecture</a>
+    <a href="#decomposition">20. Decomposition, hooks, handoffs</a>
+    <a href="#context">21. Context management for long sessions</a>
+    <a href="#claudemd">22. CLAUDE.md configuration hierarchy</a>
+    <a href="#sessions">23. Claude Code session management</a>
+    <a href="#workflows">24. Claude Code workflows: commands, skills, plan mode</a>
+    <a href="#cicd">25. Claude Code in CI/CD</a>
+    <a href="#reliability">26. Escalation, error propagation, provenance</a>
+    <a href="#mapping">27. Domain mapping &amp; sample scenario</a>
+  </div>
+
+  <h2 id="ecosystem">1. Claude Ecosystem Map</h2>
+  <div class="block">
+    <ul>
+      <li><span class="lbl">Claude App</span> &mdash; hosted product (browser/desktop/mobile). Not a production runtime: you don't own app state, orchestration, tool execution, validation, or deployment. Mostly a reference point, not an architecture layer.</li>
+      <li><span class="lbl">Claude API</span> &mdash; the model interface inside your own application. Your backend sends messages, system instructions, parameters, tool definitions; Claude returns text, structured data, or a tool-use request. The backend still owns conversation state, auth, permission checks, tool execution, output validation, retries, observability, business-rule enforcement.</li>
+      <li><span class="lbl">Claude Code</span> &mdash; a developer workflow tool inside a codebase (inspect, edit, test, refactor, document, review). Belongs to development workflow, not application runtime.</li>
+      <li><span class="lbl">Agent SDK</span> &mdash; structures multi-step orchestration (agents, tools, hooks, handoffs, execution flow) for production workflows that are more than one request/response.</li>
+      <li><span class="lbl">MCP (Model Context Protocol)</span> &mdash; standard way to expose tools and context to Claude-compatible clients. Not just tool calling &mdash; an integration boundary. A good MCP tool needs a clear name, description, typed input schema, structured output, useful error handling, appropriate permissions.</li>
+      <li>The exam-relevant question across all of these isn't "how do I prompt Claude" but <strong>which layer should guarantee a given behavior</strong> &mdash; e.g. a rule like "verify identity before this action" should be a programmatic prerequisite gate in the backend, not just a system-prompt sentence.</li>
+    </ul>
+  </div>
+
+  <h2 id="howworks">2. How Claude Generates a Response <span class="domain-tag tag-oos">not exam scope</span></h2>
+  <div class="block">
+    <ul>
+      <li>Text &rarr; <strong>tokens</strong> (word/subword/punctuation fragments) &rarr; <strong>embeddings</strong> (numeric vectors representing meaning) &rarr; <strong>contextualization</strong> (embeddings adjusted based on surrounding tokens, since meaning depends on context) &rarr; <strong>next-token prediction</strong> (repeated one token at a time until the response is complete).</li>
+      <li>The model doesn't have hidden memory of your data, your customers, or prior conversations unless your application sends that context again on every request.</li>
+      <li>Core mental model: Claude is a context-in, next-token-out prediction engine. Prompts, conversation history, documents, tool results, system instructions are all forms of "context."</li>
+    </ul>
+    <p class="oos-note">The official exam guide's Appendix explicitly excludes "Claude's internal architecture, training process, or model weights" and "embedding models... implementation details." This section is background/orientation only, not scored.</p>
+  </div>
+
+  <h2 id="apibasics">3. API Basics: Client, Messages, stop_reason</h2>
+  <div class="block">
+    <ul>
+      <li>Anthropic provides official SDKs for multiple languages (Python, TypeScript, Java, Go, Ruby, C#, PHP, CLI). Same core concepts across all: create a client, send messages, set parameters, read the response.</li>
+      <li>Store the API key outside source code (environment variable / secrets manager, not hardcoded, not committed to version control).</li>
+      <li><code>client.messages.create</code> core parameters: <code>model</code>, <code>max_tokens</code> (a ceiling, not a target &mdash; Claude stops early if it naturally finishes first), <code>messages</code> (structured list, each with a <code>role</code>).</li>
+      <li><code>stop_reason</code> values to know: <code>end_turn</code> (finished naturally &mdash; safe to show the user), <code>max_tokens</code> (cut off by the token limit &mdash; response may be incomplete), <code>tool_use</code> (Claude wants your application to run a tool before continuing).</li>
+    </ul>
+  </div>
+
+  <h2 id="multiturn">4. Multi-Turn Conversations</h2>
+  <div class="block">
+    <ul>
+      <li>Each API request is isolated by default. Claude does not automatically remember previous requests &mdash; your application must resend the conversation history explicitly for Claude to have that context.</li>
+      <li>A conversation is just a growing <code>messages</code> list: alternating <code>user</code> and <code>assistant</code> role entries. The application owns and stores this list (in production: a database or session store, not just an in-memory variable).</li>
+      <li>Common mistake: sending only the newest user message on a follow-up turn, omitting the earlier turns &mdash; Claude then reasons with no memory of what was already said.</li>
+      <li>Practical limits: very long conversations increase cost, latency, and complexity. Production systems typically don't keep unlimited raw history &mdash; they summarize older turns or extract structured facts into separate persistent state (see Context Management, below).</li>
+    </ul>
+  </div>
+
+  <h2 id="sysprompt">5. System Prompts vs. Message History</h2>
+  <div class="block">
+    <ul>
+      <li>The <code>messages</code> list answers "what has been said so far." The <code>system</code> prompt answers "how should the assistant behave" &mdash; role, tone, durable behavior rules. It has its own place in the request, distinct from the message history.</li>
+      <li>A system prompt is guidance, not a guarantee. If a rule is financially or otherwise critical (e.g. "verify identity before refunding"), the backend should still enforce it programmatically &mdash; the prompt is not a substitute for a real guarantee (same principle as D1's hooks/prerequisite-gates content).</li>
+    </ul>
+  </div>
+
+  <h2 id="modelparams">6. Model Selection, Temperature, Stop Sequences <span class="domain-tag tag-oos">partly not exam scope</span></h2>
+  <div class="block">
+    <ul>
+      <li><span class="lbl">Model selection</span>: choose based on task, not by default reaching for the most powerful model. Strong general-purpose model for typical reasoning conversations; smaller/faster model for simple high-volume tasks (classification, routing, short extraction); most capable reasoning model for complex/high-risk tasks (policy exceptions, multi-step analysis, advanced orchestration). Production systems often mix models by role.</li>
+      <li><span class="lbl">Temperature</span>: controls how strongly the model follows token probabilities. Near 0 = deterministic/predictable (favor for classification, extraction, policy-driven decisions, consistent support-style replies). Near 1 = more variety (favor for brainstorming/creative tasks). Not "good vs. bad" &mdash; match to the task.</li>
+      <li><span class="lbl">Stop sequences</span>: a custom string that halts generation when produced. Useful for separating a customer-facing section from internal notes, or stopping at a known boundary. Not a substitute for validation &mdash; doesn't guarantee the output before the marker is correct.</li>
+    </ul>
+    <p class="oos-note">The official guide's Appendix lists "Performance benchmarking or model comparison metrics" as out of scope, and doesn't name temperature/stop-sequences as tested skills. Keep as general API literacy, not something to expect a scored question on.</p>
+  </div>
+
+  <h2 id="evals">7. Prompt Evaluation Workflow</h2>
+  <div class="block">
+    <ul>
+      <li>Prompt engineering (writing a better prompt) is different from prompt <em>evaluation</em> (measuring how well it actually performs across realistic inputs, not just the examples you happened to test manually).</li>
+      <li>Basic eval loop: draft a prompt &rarr; build a labeled test-case dataset (input + expected output) &rarr; run every case through the prompt &rarr; grade actual vs. expected &rarr; revise the prompt &rarr; re-run the same eval to see whether it actually improved.</li>
+      <li>A prompt that "looks good" on a few manual tries is not evidence of reliability &mdash; real users send inputs you didn't anticipate.</li>
+    </ul>
+  </div>
+
+  <h2 id="grading">8. Grading Model Outputs</h2>
+  <div class="block">
+    <ul>
+      <li><span class="lbl">Code-based grading</span>: deterministic checks &mdash; is it valid JSON, are required fields present, is a value inside an allowed enum list. Fast, reliable, but only works for answers checkable by strict rules; can't judge quality/tone/policy-following.</li>
+      <li><span class="lbl">Model-based grading</span>: a second Claude call evaluates the first Claude call's output against explicit written criteria (not "grade whether it's good" &mdash; specific criteria like tone, policy compliance, avoiding unsupported claims). Good for helpfulness, politeness, instruction-following, safety/escalation behavior &mdash; but the grader is still a model and can be inconsistent if criteria are vague.</li>
+      <li><span class="lbl">Human grading</span>: most accurate, slowest/most expensive &mdash; used sparingly, often to spot-check or calibrate the automated graders.</li>
+      <li>Production pattern: combine code-based grading (structure/schema/syntax) with model-based grading (quality/judgment/tone), and always inspect individual failures, not just the average score &mdash; an improved average can hide a regression in one category.</li>
+    </ul>
+  </div>
+
+  <h2 id="promptstructure">9. Clear/Direct Prompting &amp; XML Structure</h2>
+  <div class="block">
+    <ul>
+      <li>Vague instructions ("help this customer," "be conservative") leave too many decisions open. A strong prompt defines role, task, explicit rules, and a length/format constraint.</li>
+      <li>Anatomy of a production prompt: task, context, rules (always/never), the actual input, output format, and (optionally) success criteria &mdash; kept as separate labeled sections rather than one dense paragraph.</li>
+      <li>XML tags are a plain, low-tech way to separate those sections (task / rules / input / output format) so both the model and future developers can tell instruction from data from expected output. Useful as prompts grow to include business rules, examples, and formatting requirements.</li>
+      <li>Prompting improves behavior; it does not replace backend enforcement of a real business rule (repeats the same theme as system prompts and D1 hooks).</li>
+    </ul>
+  </div>
+
+  <h2 id="rag">10. RAG Overview <span class="domain-tag tag-oos">not exam scope</span></h2>
+  <div class="block">
+    <ul>
+      <li>RAG = retrieve relevant context first, then generate an answer using only that retrieved context, instead of stuffing an entire knowledge base into the prompt (expensive, slow, sometimes exceeds context limits, dilutes focus even when it fits).</li>
+      <li>Flow: chunk documents &rarr; index them &rarr; on a query, retrieve the most relevant chunks &rarr; pass just those chunks + the question to the model.</li>
+      <li>Search types: <span class="lbl">keyword search</span> (exact terms/IDs, fast, strong for precise identifiers), <span class="lbl">semantic search</span> (embeddings/vector database, matches meaning even with different wording), <span class="lbl">hybrid</span> (combines both &mdash; often the strongest real-world default).</li>
+      <li>RAG quality depends on retrieval quality, not just generation quality &mdash; wrong or incomplete retrieved context produces a confident but wrong answer.</li>
+    </ul>
+    <p class="oos-note">The official guide's Appendix explicitly excludes "Embedding models or vector database implementation details." RAG itself is not named in the guide's in-scope topics. Background only.</p>
+  </div>
+
+  <h2 id="criteria">11. Explicit Criteria &amp; Few-Shot Examples <span class="domain-tag tag-d4">D4</span></h2>
+  <div class="block">
+    <ul>
+      <li>Vague judgment words ("be conservative," "only escalate serious cases") force the model to guess your boundary. Replace them with an explicit, enumerated list of triggers/criteria.</li>
+      <li>When one input could match more than one category, state an explicit priority order so classification is deterministic rather than arbitrary.</li>
+      <li>Few-shot examples do two jobs at once: they show the decision boundary (what counts vs. what doesn't, including deliberately showing a near-miss that should <em>not</em> trigger the category), and they lock in the exact output format/field names, preventing "format drift" where the model's answer is reasonable but structurally different from what your code expects.</li>
+      <li>Examples should show <em>both sides</em> of a boundary (what to flag and what not to flag) so the model generalizes the pattern rather than memorizing a fixed list of cases.</li>
+      <li>Prompting handles judgment; backend validation still checks the mechanical constraints (value is one of N allowed categories, output is valid JSON, any critical/irreversible action still runs through code, not model say-so).</li>
+    </ul>
+  </div>
+
+  <h2 id="toolbasics">12. Tool Schemas, tool_choice, First Tool Use <span class="domain-tag tag-d1">D1</span><span class="domain-tag tag-d4">D4</span></h2>
+  <div class="block">
+    <ul>
+      <li>A tool schema is a contract: tool name, description (when to use it), and an input schema defining required argument shape/types. Claude must satisfy that contract to request the tool.</li>
+      <li>When Claude wants a tool, the response's <code>stop_reason</code> is <code>tool_use</code> and the content includes a tool_use block &mdash; a <em>request</em>, not an executed action. The backend executes the real function and controls what actually happens (permissions, business rules).</li>
+      <li>Weak tool schemas are vague about scope; strong ones are narrow, specifically named, and clearly bounded (mirrors D2's 2.1 task statement almost exactly).</li>
+      <li>Required-but-nullable fields matter: if information may be legitimately absent, the model should be able to return null rather than being forced to invent a value.</li>
+      <li>Three <code>tool_choice</code> modes (same as D4 4.3 / D2 2.3 in the official guide): <code>auto</code> (may or may not use a tool), <code>any</code> (must use a tool, model picks which), forced (must use one specific named tool).</li>
+    </ul>
+  </div>
+
+  <h2 id="structuredoutput">13. Structured Output via tool_use <span class="domain-tag tag-d4">D4</span></h2>
+  <div class="block">
+    <ul>
+      <li>Asking the model to "just return JSON" as plain text is fragile &mdash; extra text, missing commas, wrong-shaped fields are all possible, and the app's parser can break.</li>
+      <li>Defining a tool with a strict input schema and using (often forced) tool_choice is the reliable path: the model's structured output must conform to the schema, largely eliminating syntax-level formatting errors.</li>
+      <li>Schema design patterns: required-but-nullable fields (field must exist in the response, but its value may be null when the source doesn't contain it); enum fields for categorization to avoid free-text label drift; an explicit <code>"unclear"</code> enum value for genuinely ambiguous input; an <code>"other"</code> + free-text detail field for cases outside the fixed category list.</li>
+      <li>A strict schema solves the <em>structural</em> problem (right shape, valid enum, right types) but not the <em>semantic</em> one &mdash; the model can still put a correctly-typed but wrong value in a field. Structure and judgment are different problems needing different fixes (schema vs. criteria/examples/evals).</li>
+      <li>Normalization rules belong in the prompt alongside the schema (e.g. "if a field is missing, return null, don't invent one"; "use 'unclear' when ambiguous"; "use 'other' only when nothing else fits").</li>
+    </ul>
+  </div>
+
+  <h2 id="validation">14. Validation, Retry, Confidence, Human Review <span class="domain-tag tag-d4">D4</span></h2>
+  <div class="block">
+    <ul>
+      <li><span class="lbl">Schema validation</span>: checks shape &mdash; required fields present, correct types, enum values from the allowed list. <span class="lbl">Semantic validation</span>: checks whether the (structurally valid) values actually make sense given the source input.</li>
+      <li><span class="lbl">Retry rule:</span> retry with specific feedback (the failed extraction + the exact validation error) when the mistake is fixable &mdash; wrong enum value, wrong field placement, structural mismatch. Do <em>not</em> retry to force information that simply isn't present in the source &mdash; the correct behavior there is returning null and flagging the field as missing, not looping until the model fabricates something plausible.</li>
+      <li><span class="lbl">Contradiction handling</span>: when a source contains conflicting signals, don't force a single answer &mdash; mark the field unclear/ambiguous, set a <code>conflict_detected</code> boolean, and record why.</li>
+      <li><span class="lbl">Numeric cross-checks</span>: extract both a stated value and a separately-calculated value (e.g. stated total vs. calculated total from line items); flag disagreement for review rather than silently trusting one.</li>
+      <li><span class="lbl">Confidence</span> should typically be field-level, not one global score &mdash; some fields in the same extraction can be obvious while others are genuinely uncertain. Confidence must be calibrated against a labeled validation set; a model can be confidently wrong, so raw self-reported confidence isn't trustworthy on its own.</li>
+      <li><span class="lbl">Stratified sampling</span>: review examples across high/medium/low confidence bands, not only the low-confidence ones &mdash; high confidence doesn't guarantee correctness, and sampling across bands catches systematic errors that would otherwise hide inside "confident" outputs.</li>
+      <li><span class="lbl">Accuracy segmentation</span>: measure accuracy by document type and by field, not just one aggregate number &mdash; a high overall accuracy can mask a much weaker sub-case.</li>
+      <li><span class="lbl">Human review routing triggers</span>: low confidence, detected conflict, missing required information, a request that looks like a policy exception, or anything with outsized financial/business impact.</li>
+    </ul>
+  </div>
+
+  <h2 id="batch">15. Batch Processing &amp; Multi-Pass Review <span class="domain-tag tag-d4">D4</span></h2>
+  <div class="block">
+    <ul>
+      <li>Batch API fits large, latency-tolerant workloads (audits, nightly analysis) &mdash; not workloads where a user is actively waiting for an answer. Roughly 50% cost savings, up to a 24-hour processing window, no guaranteed latency SLA.</li>
+      <li>No mid-request tool-calling loop inside a single batch request &mdash; if the task needs live multi-step tool use during reasoning, gather the needed context up front before submitting, rather than expecting an interactive loop.</li>
+      <li>Use a stable <code>custom_id</code> per submitted item to correlate each response back to its original input, since batch responses aren't guaranteed to return in submission order.</li>
+      <li>Refine the prompt against a small sample before scaling to a full large batch &mdash; avoids paying to run a flawed prompt across thousands of items.</li>
+      <li>On partial failure, resubmit only the failed items (identified by their <code>custom_id</code>) with a fix, not the entire batch.</li>
+      <li><span class="lbl">Self-review limitation</span>: a model reviewing its own just-generated output retains the reasoning context that produced it, making it less likely to question its own decisions. <span class="lbl">Independent review</span> (a separate call/session, different or no prior reasoning context) catches more subtle issues.</li>
+      <li><span class="lbl">Multi-pass review pattern</span>: local per-unit analysis pass (e.g. per file) first, focused and consistent in depth, then a separate integration pass looking across those local findings for conflicts, repeated issues, or cross-cutting problems &mdash; avoids the attention dilution and internal contradictions that a single massive pass over everything tends to produce.</li>
+    </ul>
+  </div>
+
+  <h2 id="loopmechanics">16. Tool-Use Loop Mechanics <span class="domain-tag tag-d1">D1</span></h2>
+  <div class="block">
+    <ul>
+      <li>Claude never executes a tool itself &mdash; it decides a tool is needed and returns a structured tool-use request; the application executes it and returns the result.</li>
+      <li>A tool_use block carries three things: the tool name, the input arguments, and a <strong>tool_use_id</strong>. That ID is what connects the eventual tool_result back to the specific request it answers &mdash; necessary because more than one tool call can be in flight.</li>
+      <li>The tool result is appended to conversation history as a message containing a tool_result block carrying that same ID, and the updated history is sent back to Claude for the next step.</li>
+      <li>Loop shape: send conversation &rarr; if <code>stop_reason == "tool_use"</code>, execute the requested tool(s) &rarr; append result(s) &rarr; call again &rarr; repeat until <code>stop_reason == "end_turn"</code>. Matches the official guide's 1.1 loop exactly; a max-iteration cap is a safety backstop only, never the primary stopping logic.</li>
+      <li>A hard-coded fixed call sequence (always call tool A, then B, then C) is brittle for messy, multi-issue real input; a tool-enabled agent chooses the next reasonable step from the current conversation state instead &mdash; but the application still enforces which requested tool calls are actually allowed to execute (e.g. rejecting an unverified-customer refund attempt even if the model requested it).</li>
+    </ul>
+  </div>
+
+  <h2 id="toolnaming">17. Tool Naming, Descriptions, Structured Errors <span class="domain-tag tag-d2">D2</span></h2>
+  <div class="block">
+    <ul>
+      <li>A specific tool name that encodes its required input (e.g. a "by email" or "by ID" suffix) helps routing before the model even reads the description.</li>
+      <li>A strong tool description states purpose, expected input, and an explicit boundary against the nearest similar tool &mdash; not just a one-line restatement of the function name.</li>
+      <li><span class="lbl">Split vs. consolidate:</span> split tools when doing so reduces ambiguity between distinct purposes; consolidate when several tiny tools are always called together on the same input and splitting only adds overhead. No universal rule &mdash; it's a judgment call based on which failure mode (misrouting vs. unnecessary complexity) is more likely.</li>
+      <li>A generic error message ("something went wrong") gives the model nothing to act on. Structured error responses should distinguish: <span class="lbl">validation</span> error (bad input shape/format, not retryable, ask for corrected input), <span class="lbl">empty result</span> (the tool worked, there's simply no matching record &mdash; not an error at all), <span class="lbl">permission</span> error (not retryable, don't leak restricted data), <span class="lbl">transient</span> error (retryable, e.g. a timeout).</li>
+      <li>A business-rule failure (e.g. request understood, permitted, but blocked by policy) is its own case: not fixable by retry, needs a customer-appropriate explanation or an escalation path.</li>
+      <li><span class="lbl">Local recovery first:</span> handle a transient failure by retrying inside the component that hit it; only propagate upward what genuinely couldn't be resolved locally.</li>
+    </ul>
+  </div>
+
+  <h2 id="toolscoping">18. Scoped Tool Access, Built-in Tools, MCP <span class="domain-tag tag-d2">D2</span></h2>
+  <div class="block">
+    <ul>
+      <li>Giving one agent every available tool (support + inventory + marketing + reporting + risky admin actions) is both a security problem and a reliability problem &mdash; more overlapping tools, more chances to pick the wrong one. Give each agent role the smallest useful set for its job; some tools can still be shared across roles when genuinely needed by more than one.</li>
+      <li><code>tool_choice</code> in practice: <code>auto</code> for normal flexible conversation, <code>any</code> when the workflow structurally requires some tool call before continuing, forced only when the application already knows the exact next required step &mdash; overusing forced choice removes the model's ability to pick a better option if one exists.</li>
+      <li><span class="lbl">Built-in tools</span> (Claude Code style): <code>Read</code> inspects a file, <code>Write</code> creates/overwrites one, <code>Edit</code> makes a targeted change via a unique text match, <code>Bash</code> runs shell commands, <code>Grep</code> searches file <em>content</em>, <code>Glob</code> matches file <em>paths</em>. If <code>Edit</code> can't find a unique anchor, the safe fallback is <code>Read</code> the file, then <code>Write</code> the modified version back.</li>
+      <li><span class="lbl">MCP tools vs. resources:</span> tools perform actions (a lookup, a state change); resources are content the model can read as reference context (policy documents, catalogs). Business action endpoints should be MCP tools; static/reference material fits better as an MCP resource.</li>
+      <li>MCP server config scoping: project-level (shared, version-controlled, e.g. <code>.mcp.json</code>) vs. user-level (personal/local setup, e.g. <code>~/.claude.json</code>). Secrets belong in environment variables referenced from the config, never hardcoded into it.</li>
+      <li>Prefer an existing community MCP server for a standard integration; reserve building a custom MCP server for something genuinely business/domain-specific, since custom servers carry their own permission, schema, and error-handling design burden.</li>
+    </ul>
+  </div>
+
+  <h2 id="coordinator">19. Coordinator&ndash;Subagent Architecture <span class="domain-tag tag-d1">D1</span></h2>
+  <div class="block">
+    <ul>
+      <li>Hub-and-spoke: the coordinator is the hub, receives the request, decides how to split work, dispatches to specialized subagents, receives their findings, produces one final synthesized answer. Subagents are the spokes and never talk to each other directly.</li>
+      <li>To spawn subagents at all, the coordinator's allowed tools must include the spawning tool (named <code>Task</code> in the exam guide's own wording). Without it, the coordinator can reason about delegation but cannot actually invoke anyone.</li>
+      <li>Each subagent should get a narrow, role-specific tool set (e.g. one subagent can only inspect data relevant to its specialty, not take an action that belongs to another specialty) &mdash; this is what actually prevents cross-specialization misuse, more than any prompt instruction could.</li>
+      <li>Subagents have <strong>isolated context</strong> by default &mdash; they do not automatically inherit the coordinator's conversation. A vague delegated task with no supporting facts produces a weak/uninformed subagent response; the coordinator must explicitly pass the exact facts the subagent needs (ID, prior findings, relevant excerpts) rather than relying on any implicit shared memory.</li>
+      <li>For larger handoffs, separate content from metadata in what's passed (source, date, confidence) so downstream synthesis can still track where each fact came from.</li>
+      <li>When two or more delegated tasks are independent (neither depends on the other's result), the coordinator can dispatch them in parallel by emitting multiple spawn-tool calls in one response, rather than waiting on one before starting the next.</li>
+      <li>All subagent output routes back through the coordinator only, which owns final routing, aggregation, and response quality &mdash; not any single subagent.</li>
+      <li><span class="lbl">Decomposition-granularity warning:</span> don't split work into subagents at too fine a grain (a separate subagent per tiny field or single lookup adds coordination overhead without benefit). Split along meaningful business/functional boundaries instead.</li>
+    </ul>
+  </div>
+
+  <h2 id="decomposition">20. Decomposition, Hooks, Handoffs <span class="domain-tag tag-d1">D1</span></h2>
+  <div class="block">
+    <ul>
+      <li><span class="lbl">Fixed sequential pipeline</span> (prompt chaining): steps and order are known in advance and don't change run to run &mdash; appropriate when the process itself is predictable (e.g. a defined verification &rarr; check &rarr; decision sequence). Keeps each individual call focused rather than asking one prompt to do everything at once.</li>
+      <li><span class="lbl">Dynamic decomposition</span>: appropriate for open-ended/investigative work where the right next step depends on what was just discovered &mdash; map the situation first, then decide what to investigate, rather than assuming a fixed path up front. Same principle applies to large review tasks: local per-unit passes plus a separate integration pass, instead of one massive undifferentiated pass.</li>
+      <li>Prompts are guidance; when compliance must be <em>guaranteed</em> (not just likely), the rule belongs in a programmatic prerequisite gate in code, not in a system-prompt instruction alone &mdash; e.g. blocking a sensitive action until a required prior step has actually completed and been confirmed.</li>
+      <li><span class="lbl">Hooks</span>: a <em>post-tool-use</em> hook can normalize/standardize a tool's raw result before the model ever reasons over it (consistent formats mean every downstream prompt doesn't have to defensively handle multiple possible shapes). An <em>interception</em> hook runs before a requested tool call executes and can block it outright if it would violate a rule (e.g. an amount over a defined limit) &mdash; the model can still request the action, but the application decides whether it's actually allowed to happen, and can redirect to an escalation path instead.</li>
+      <li><span class="lbl">Structured handoff protocol:</span> a handoff (to a human, another agent, or a later workflow step) should carry enough structured facts that the receiver doesn't have to reconstruct context from scratch &mdash; the relevant identifiers, root cause, amount/impact, evidence, and a specific reason, not a vague "please review this."</li>
+    </ul>
+  </div>
+
+  <h2 id="context">21. Context Management for Long Sessions <span class="domain-tag tag-d5">D5</span></h2>
+  <div class="block">
+    <ul>
+      <li>Core rule: the conversation transcript is not your database. As a case grows (verbose tool output, prior notes, old assumptions), important exact facts can move into the middle of a long context and get missed &mdash; the "lost in the middle" effect.</li>
+      <li>Maintain a structured <span class="lbl">persistent facts block</span> (IDs, dates, amounts, decisions, expectations) that survives retries, handoffs, and human review &mdash; not just readable prose summaries, which can quietly lose exact details each time they're re-summarized (progressive summarization risk).</li>
+      <li>Trim verbose tool output down to the fields actually needed for the current decision before it enters context, rather than passing through an entire raw record.</li>
+      <li>Place key summaries/findings at the beginning of an aggregated input rather than burying them after pages of supporting detail &mdash; mitigates position effects in how the model attends to long inputs.</li>
+      <li>For crash recovery / resumed work: each component/agent can export its state to a known location, and the coordinator loads a manifest of that state on resume rather than replaying the full history.</li>
+      <li>A retryable-vs-not decision (e.g. is it safe to redo an action) should be governed by explicit application state, not by whether the model happens to remember the previous step correctly.</li>
+      <li>Subagent output should be structured findings + metadata, not a long reasoning transcript &mdash; easier to verify, store, and pass forward accurately.</li>
+    </ul>
+  </div>
+
+  <h2 id="claudemd">22. CLAUDE.md Configuration Hierarchy <span class="domain-tag tag-d3">D3</span></h2>
+  <div class="block">
+    <ul>
+      <li>The <code>init</code>-style command scans a project and generates a starting CLAUDE.md (structure, common commands, dependencies, patterns) &mdash; a starting point to be manually refined, not a finished configuration.</li>
+      <li>Memory levels: <span class="lbl">user-level</span> (personal preferences, not shared, not version-controlled) vs. <span class="lbl">project-level</span> (shared instructions every teammate should get, belongs in version control).</li>
+      <li>Subdirectory-level CLAUDE.md files exist for area-specific rules (e.g. rules that only apply to one API folder) &mdash; useful when all the relevant files genuinely live under one directory.</li>
+      <li>When one large CLAUDE.md becomes unwieldy, use import syntax to pull in separate, more focused files rather than one monolithic document.</li>
+      <li><span class="lbl">Path-specific rules</span> (a rules directory with YAML frontmatter path/glob matching) are the better choice over subdirectory CLAUDE.md files when the matching files are spread across many different folders rather than confined to one directory (e.g. test files that live next to the code they test, throughout the repo).</li>
+      <li>A quick-add shortcut can save a new discovered convention as memory mid-session without manually editing a file. A memory-inspection command shows exactly which memory files are actually loaded &mdash; the right first debugging step when Claude Code keeps ignoring or misapplying a convention.</li>
+    </ul>
+  </div>
+
+  <h2 id="sessions">23. Claude Code Session Management <span class="domain-tag tag-d3">D3</span></h2>
+  <div class="block">
+    <ul>
+      <li>A "continue most recent session in this directory" flag picks up right where you left off without needing to specify anything. A "resume" flag with no argument opens a session picker; with a session ID or a human-chosen session name, it resumes that specific one directly. Sessions can be given a readable name at start and renamed later mid-session.</li>
+      <li>Session transcripts are saved locally and continuously, but for anything important, rely on a meaningful session name plus a scratchpad/notes file rather than only the raw chat history.</li>
+      <li><span class="lbl">Resume vs. start fresh:</span> resume when the task is unchanged and nothing has moved underneath it &mdash; but always re-verify current state (diffs, current file contents, current test results) after resuming rather than trusting stale assumptions. Start a fresh session with a written structured summary (goal, relevant files/functions, failing tests, decisions, next step) when the old session's context became noisy (abandoned explorations, unrelated detours, long pasted logs) or when the underlying code changed &mdash; a clean summary beats a messy old transcript.</li>
+      <li><span class="lbl">Compaction:</span> reduces context usage in a long session, but summarization risks losing exact details. Before/during compaction, explicitly preserve what must stay exact: file paths, function names, failing test names, exact error text, decisions made, and the next step.</li>
+      <li><span class="lbl">Scratchpad files:</span> a persistent project file (not just chat memory) holding stable facts for a long task &mdash; supports crash recovery, handoff to someone else, and clean starts in a fresh session, functioning as a lightweight work manifest.</li>
+      <li><span class="lbl">Forks:</span> used to explore two different implementation approaches in parallel without polluting the main session &mdash; each fork investigates/returns findings (files involved, risks, tests) without editing files, then the results are compared and only the chosen approach gets implemented in the main line.</li>
+      <li>The same "don't paste everything, pass structured findings" principle applies to subagent/exploration output and to raw command/test output &mdash; trim to the relevant evidence (e.g. one failing test name + expected vs. actual + the relevant file) rather than an entire raw log.</li>
+    </ul>
+  </div>
+
+  <h2 id="workflows">24. Claude Code Workflows: Commands, Skills, Plan Mode <span class="domain-tag tag-d3">D3</span></h2>
+  <div class="block">
+    <ul>
+      <li><span class="lbl">Project-scoped slash commands</span> live in the repo (version-controlled, shared team-wide). <span class="lbl">User-scoped commands</span> live in the personal home config (private, not shared).</li>
+      <li><span class="lbl">Skills</span> are for more structured on-demand workflows than a simple command, defined with a skill file and frontmatter: a description (when to invoke it), an argument hint (what input the invoker should supply), an allowed-tools restriction (e.g. read/search only, no edit, for an analysis-only skill), and a fork-context option that runs the skill in an isolated context so its (possibly verbose) exploration doesn't pollute the main conversation &mdash; the main session gets back a summary instead.</li>
+      <li>Personal skill variants use a different name than the project's shared skill, so a personal customization doesn't silently override or conflict with the team's version.</li>
+      <li><span class="lbl">CLAUDE.md vs. skills:</span> CLAUDE.md = always-loaded standing knowledge (coding standards, test commands, architecture rules). Skills = on-demand structured workflows invoked only when needed (a specific review type, a migration analysis).</li>
+      <li><span class="lbl">Plan mode vs. direct execution:</span> plan mode for complex, multi-file, architectural work with more than one valid approach &mdash; explore and design before committing to changes, avoiding costly rework from committing early. Direct execution for small, clear-scoped changes. A strong pattern: plan mode to investigate and choose an approach, then direct execution to implement the approved plan.</li>
+      <li><span class="lbl">Explore subagent:</span> used for verbose discovery work (tracing dependencies, mapping a codebase) so the main conversation gets a compact structured summary instead of the full raw exploration transcript.</li>
+      <li><span class="lbl">Refinement techniques:</span> concrete input/output examples beat vague prose descriptions for clarifying an expected transformation. Test-driven iteration: write the test first, then share the exact failure (expected vs. actual) to guide the next fix. The interview pattern: have Claude ask clarifying questions before implementing, in an unfamiliar or ambiguous domain, to surface assumptions early. Feedback batching: send interacting issues together in one message (since fixing one affects the other); fix genuinely independent issues sequentially.</li>
+    </ul>
+  </div>
+
+  <h2 id="cicd">25. Claude Code in CI/CD <span class="domain-tag tag-d3">D3</span></h2>
+  <div class="block">
+    <ul>
+      <li>A CI job can't wait on an interactive back-and-forth &mdash; run Claude Code in non-interactive/print mode so the job completes and exits automatically instead of hanging on input it will never receive.</li>
+      <li>For automation, request structured JSON output (optionally constrained by an explicit JSON schema) rather than plain text, so the CI script can reliably parse findings, post PR comments, or fail a build check on specific conditions.</li>
+      <li><span class="lbl">Duplicate-comment problem:</span> CI reviews can rerun (new commit, manual rerun) and re-find the same issue. Generate a stable fingerprint per finding (e.g. derived from file path + line + category + normalized message) and skip posting a finding whose fingerprint was already posted.</li>
+      <li>CI-invoked Claude Code still needs project context &mdash; CLAUDE.md (conventions, test commands, domain rules) plus existing tests/fixtures in context so review and generated tests are grounded in real project behavior rather than generic guesses.</li>
+      <li><span class="lbl">Blocking vs. non-blocking:</span> reserve blocking pre-merge failure for high-confidence, serious findings (security, broken tests, dangerous behavior). Lower-severity findings can post as non-blocking PR comments; broader/deeper review can run as a separate non-blocking overnight report.</li>
+      <li><span class="lbl">Independent review:</span> the same session/context that generated an implementation is a weaker reviewer of its own work (it retains the reasoning that produced it, making it less likely to question those choices). A separate, clean review invocation &mdash; reading the repo, the diff, project context, tests &mdash; without inheriting the implementation session's context, catches more.</li>
+    </ul>
+  </div>
+
+  <h2 id="reliability">26. Escalation, Error Propagation, Provenance <span class="domain-tag tag-d5">D5</span></h2>
+  <div class="block">
+    <ul>
+      <li><span class="lbl">Escalation triggers</span> should be explicit and behavioral, not sentiment-based: an explicit request for a human (honor immediately, don't force more automated investigation first), a policy that's missing/ambiguous/silent on the specific request, inability to make real progress, or an ambiguous backend match (e.g. more than one candidate record) &mdash; clarify or escalate rather than guessing via a heuristic. Being upset alone, with no other trigger, is not automatically an escalation condition.</li>
+      <li><span class="lbl">Error propagation in a multi-component system:</span> local recovery first (retry a transient failure inside the component that hit it); only propagate upward what genuinely can't be resolved locally, and propagate it with structure &mdash; failure type, what was attempted, any partial results, possible alternatives &mdash; not a bare generic status string. Distinguish an access failure (needs a retry/recovery decision) from a valid empty result (the query succeeded, there's just nothing there) &mdash; the same distinction as D2's error-category material, now applied at the coordinator level.</li>
+      <li><span class="lbl">Provenance / claim-source tracking:</span> preserve where each claim/fact came from through summarization and synthesis steps &mdash; source, and ideally a timestamp/publication date. Losing that mapping during compression is a named reliability failure, because downstream steps can no longer verify or reconcile the claim.</li>
+      <li><span class="lbl">Conflicting sources:</span> don't silently pick one value when two credible sources disagree &mdash; preserve both, annotate the conflict with attribution, and check whether a date difference explains it (a newer source may legitimately supersede an older one rather than truly "contradicting" it) before treating it as an unresolved conflict. Escalate when the decision has real financial/policy weight.</li>
+      <li>Match output rendering to content type in a synthesized report rather than flattening everything into one uniform format &mdash; e.g. tabular for numeric/financial comparisons, structured lists for technical findings, prose for narrative content.</li>
+    </ul>
+  </div>
+
+  <h2 id="mapping">27. Domain Mapping &amp; Sample Scenario</h2>
+  <div class="block">
+    <ul>
+      <li><span class="lbl">D1</span> &mdash; agentic loop + tool calls + handoffs + subagents where useful + deterministic enforcement (hooks/gates) for anything critical.</li>
+      <li><span class="lbl">D2</span> &mdash; tool interfaces with clear boundaries, structured errors.</li>
+      <li><span class="lbl">D3</span> &mdash; CLAUDE.md, slash commands, skills, plan mode, direct execution, session management, CI review.</li>
+      <li><span class="lbl">D4</span> &mdash; explicit criteria, few-shot examples, JSON schemas, validation, retry loops, structured findings.</li>
+      <li><span class="lbl">D5</span> &mdash; preserved context, safe escalation, error propagation, provenance, uncertainty handling, human-review routing.</li>
+      <li>Weighting reminder: D1 is the largest single domain; D3 and D4 are also heavily represented; D2 is narrower (tools/MCP specifically); D5 has the smallest headline percentage but its reliability concepts recur inside scenario questions from other domains too.</li>
+    </ul>
+    <p class="oos-note">Worked scenario from this lesson (paraphrased, no proprietary example names): a customer's refund request conflicts with policy &mdash; the base policy says the return window has passed, but a newer internal memo allows an exception for this specific situation, reviewable only by a human specialist. Correct move: don't deny outright (ignores the newer source), don't approve outright (applies an exception without authority), don't rely on a self-reported confidence score to decide (unreliable proxy for real risk) &mdash; explain the conflict, preserve both sources with attribution, summarize the case, and escalate to a human specialist. This is the D5 "preserve provenance + escalate under genuine uncertainty" pattern applied end to end.</p>
+  </div>
+
+  <p class="oos-note" style="text-align:center;margin-top:2rem">This file is a raw reference layer behind the domain notes (d1&ndash;d5) &mdash; go there for the exam-formatted Cornell notes, keyword glossary, and active recall per domain.</p>
+</main>
+</body>
+</html>

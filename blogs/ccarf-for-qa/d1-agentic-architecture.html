@@ -149,7 +149,7 @@
     <div class="axis-card"><div class="a-title">1.1 &middot; The loop</div><p>Continue on <code>stop_reason: "tool_use"</code>, stop on <code>"end_turn"</code>. Not text parsing, not an iteration count as the primary signal.</p></div>
     <div class="axis-card"><div class="a-title">1.2 / 1.3 &middot; Coordination</div><p>A coordinator delegates via the <code>Task</code> tool. Subagents get an isolated context, they see only what's explicitly in their prompt.</p></div>
     <div class="axis-card"><div class="a-title">1.4 / 1.5 &middot; Enforcement</div><p>Hooks give deterministic guarantees. Prompt instructions alone have a non-zero failure rate on rules that must always hold.</p></div>
-    <div class="axis-card"><div class="a-title">1.6 / 1.7 &middot; Decomposition &amp; state</div><p>Fixed pipeline vs. adaptive decomposition. Session resumption vs. starting fresh with a summary.</p></div>
+    <div class="axis-card"><div class="a-title">1.6 / 1.7 &middot; Decomposition &amp; state</div><p>Fixed pipeline vs. adaptive decomposition. Resume, start fresh with a summary, or fork, depending on what changed since the sweep paused.</p></div>
   </div>
 
   <h2>Part 1: the loop, correctly this time</h2>
@@ -171,7 +171,7 @@
         <li>Setting an arbitrary <strong style="color:var(--red)">iteration cap as the primary stopping mechanism</strong>, a cap as a safety backstop is fine, a cap as the actual logic isn't.</li>
         <li>Checking for the <strong style="color:var(--red)">presence or absence of assistant text content</strong> as a completion indicator.</li>
       </ul>
-      <p>d1-triage-agent.ts's first draft did the third one, checking whether <code>toolUses.length === 0</code>. The corrected version checks <code>stop_reason</code> directly instead.</p>
+      <p>Check <code>d1-triage-agent.ts</code>'s own header comment (lines 12&ndash;15), it names this exact anti-pattern, checking for the absence of tool_use blocks, as what an earlier draft of the file did before this revision. The corrected version checks <code>stop_reason</code> directly instead.</p>
     </div>
   </details>
 
@@ -209,7 +209,7 @@
 
   <p>The task both implementations solve: given one failing test's console output, decide which of PeakAndPack's 11 known bugs it matches, how confident that match is, and whether to file new, link existing, or flag as flaky.</p>
   <p>The workflow gets the full 11-bug catalog in one prompt and returns a verdict in a single call, no second chances. The agent gets three tools instead: search the catalog, check the live PeakAndPack API for whether a failure still reproduces right now, and search past incident reports. Its loop is the <code>stop_reason</code> pattern above, not a fixed number of steps.</p>
-  <p>Six scenarios below, five built from real, verified PeakAndPack bugs, plus Scenario 6, deliberately left out of the catalog on purpose, to see how each approach handles a failure the lookup list was never built to recognize. Most scenarios end the same way for both, marked green below, the two where they actually diverge are marked red, and those two are the ones worth paying attention to:</p>
+  <p>Six scenarios below, five built from real, verified PeakAndPack bugs, plus Scenario 6, deliberately left out of the catalog, to see how each approach handles a failure the lookup list was never built to recognize. Most scenarios end the same way for both, marked green below, the two where they actually diverge are marked red, and those two are the ones worth paying attention to:</p>
 
   <div class="example-box">
     <div class="verdict-row"><div class="verdict-icon ok">&#10003;</div><div><div class="verdict-label">Negative price &rarr; BUG-001</div><div class="verdict-sub">Both correct. Agent live-verified it.</div></div></div>
@@ -352,7 +352,7 @@ Actual: false. Failing item: { id: 4, name: "Sleeping Bag (-15C)", price: -89 }<
   </div>
 
   <div class="axis-grid">
-    <div class="axis-card"><div class="a-title">PostToolUse: normalize</div><p>A <code>PostToolUse</code> hook runs automatically right after any tool call returns, before Claude ever sees the result. Here it fixes a real mismatch: the live API returns timestamps as Unix seconds, the mock past-reports store returns them as ISO 8601 text. The hook rewrites every timestamp into one consistent format the moment it comes back, so Claude only ever sees one format and never has to reason about which one it got, instead of a prompt just asking it to "handle either."</p></div>
+    <div class="axis-card"><div class="a-title">PostToolUse: normalize</div><p>Live API returns Unix seconds, the mock past-reports store returns ISO 8601 text. The hook rewrites every timestamp to one format the moment it comes back, instead of a prompt just asking Claude to "handle either."</p></div>
     <div class="axis-card"><div class="a-title">Interception: gate</div><p>Same shape as the exam's own example: <code>process_refund</code> blocked until <code>get_customer</code> confirms an ID.</p></div>
   </div>
 
@@ -361,29 +361,25 @@ Actual: false. Failing item: { id: 4, name: "Sleeping Bag (-15C)", price: -89 }<
     <ul>
       <li><a href="d1-coordinator-subagents.ts">d1-coordinator-subagents.ts</a>: coordinator + two subagent definitions, a <code>PostToolUse</code> normalization hook, and a tool-interception prerequisite gate</li>
       <li><a href="d1-coordinator-subagents.py">d1-coordinator-subagents.py</a>: the same illustrative pattern, in Python</li>
+      <li><a href="d1-tool-scoping-demo.ts">d1-tool-scoping-demo.ts</a> / <a href="d1-tool-scoping-demo.py">d1-tool-scoping-demo.py</a>: real, runnable, no Agent SDK needed, runs the same scenario two ways, one agent with all three tools versus two isolated single-tool agents, and prints which tools each version actually called</li>
     </ul>
-    <p class="howto"><strong>How to use it:</strong> read this file for the pattern, don't try to run it, it has no entry point of its own. Every import, field name, and hook shape here is checked against the current Agent SDK documentation, <code>AgentDefinition</code> takes <code>prompt</code> not <code>systemPrompt</code>, hooks register as <code>{ EventName: [{ hooks: [fn] }] }</code> not a flat array, and the tool that spawns subagents is named <code>"Agent"</code> in <code>allowedTools</code> (the SDK renamed it from <code>"Task"</code> in Claude Code v2.1.63, this post keeps saying "Task tool" in prose because that's still the exam guide's own wording). One specific detail couldn't be confirmed from the fetched docs and is flagged directly in the file's comments: the exact property name holding a tool's raw result inside a <code>PostToolUse</code> hook's input. Everything else here is real, current syntax, not a guess.</p>
+    <p class="howto"><strong>How to use it:</strong> <code>d1-coordinator-subagents.ts/py</code> is read-only, it has no entry point of its own. Every import, field name, and hook shape in it is checked against the current Agent SDK documentation, <code>AgentDefinition</code> takes <code>prompt</code> not <code>systemPrompt</code>, hooks register as <code>{ EventName: [{ hooks: [fn] }] }</code> not a flat array, and the tool that spawns subagents is named <code>"Agent"</code> in <code>allowedTools</code> (the SDK renamed it from <code>"Task"</code> in Claude Code v2.1.63, this post keeps saying "Task tool" in prose because that's still the exam guide's own wording). One specific detail couldn't be confirmed from the fetched docs and is flagged directly in the file's comments: the exact property name holding a tool's raw result inside a <code>PostToolUse</code> hook's input. <code>d1-tool-scoping-demo.ts/py</code> is different, it's a real, standalone script using the plain Messages API, no SDK, no unconfirmed syntax, and it runs.</p>
     <div class="fw-table-wrap">
       <table class="fw-table">
         <thead><tr><th>File on this page</th><th>Save it to</th><th>Verify with</th></tr></thead>
         <tbody>
           <tr><td>d1-coordinator-subagents.ts</td><td>anywhere, it's illustrative of the pattern, not a file Claude Code loads</td><td>n/a</td></tr>
           <tr><td>d1-coordinator-subagents.py</td><td>anywhere, same as the TypeScript version</td><td>n/a</td></tr>
+          <tr><td>d1-tool-scoping-demo.ts</td><td>same folder as the Part 1 scripts</td><td><code>npx tsx d1-tool-scoping-demo.ts scenario-3.txt</code></td></tr>
+          <tr><td>d1-tool-scoping-demo.py</td><td>same folder as the Part 1 scripts</td><td><code>python d1-tool-scoping-demo.py scenario-3.txt</code></td></tr>
         </tbody>
       </table>
     </div>
-    <p class="howto"><strong>Try it:</strong> this file isn't meant to run (the SDK call shapes are illustrative, running it against the real Agent SDK needs current-docs syntax this file doesn't guarantee), so instead of a command, open it and find three specific things. Each has a real, checkable answer in the file:</p>
-    <ol>
-      <li>Which single tool can <code>verifyReproductionAgent</code> use, and what stops it from also searching past reports?</li>
-      <li>What two conditions must <strong>both</strong> be true before <code>blockPrematureFiling</code> allows a new bug report to be filed?</li>
-      <li>Where does the coordinator's own instructions say to spawn both subagents in parallel, not one after the other, and why does that matter here?</li>
-    </ol>
-    <p class="howto"><strong>Answers:</strong></p>
-    <ol>
-      <li><code>check_live_api</code> only, its <code>tools: [...]</code> array on line 28 doesn't list the others, an isolated agent can't reach past what it's explicitly scoped to.</li>
-      <li><code>state.reproductionVerified</code> and <code>state.reportsSearched</code> must both be true, see line 65, either one missing blocks the filing.</li>
-      <li>The coordinator's <code>systemPrompt</code>, "IN PARALLEL, in a single response with two Task calls, not one after the other". It matters because the two subagents don't depend on each other's results, so running them sequentially would only add latency for nothing, the same reasoning as the "why parallel, not sequential" card above.</li>
-    </ol>
+    <p class="howto"><strong>Try it:</strong> save Scenario 3 from <code>d1-triage-scenarios.md</code> as <code>scenario-3.txt</code>, the BUG-011 case, purpose-built to test whether an agent actually verifies live or just trusts the catalog:</p>
+    <pre><code>Test: "empty search query returns 400, not a crash"
+Expected: response.status === 400
+Actual: response.status === 500, body: "Internal Server Error"</code></pre>
+    <p class="howto">Run it (TypeScript: <code>npx tsx d1-tool-scoping-demo.ts scenario-3.txt</code>, Python: <code>pip install anthropic requests</code> first, then <code>python d1-tool-scoping-demo.py scenario-3.txt</code>), needs <code>ANTHROPIC_API_KEY</code> set. It prints two verdicts and, under each, exactly which tools that version called. Version B's line always includes <code>check_live_api</code>, that agent has no other tool, calling it isn't a choice. Version A's is the one worth watching, run it a few times: does it call <code>check_live_api</code> every time, or does it sometimes stop after the catalog search alone? Either way, notice what didn't change, Version B's answer doesn't depend on which way Version A happened to go this run.</p>
   </div>
 
   <h2>Part 4: decomposing the sweep, and picking the session back up</h2>
@@ -423,9 +419,19 @@ Actual: false. Failing item: { id: 4, name: "Sleeping Bag (-15C)", price: -89 }<
   <div class="deliverable-box">
     <div class="d-label">Deliverable, Part 4</div>
     <ul>
-      <li><a href="d1-sweep-decomposition.md">d1-sweep-decomposition.md</a>: the fixed-pipeline checklist for the known catalog, a dynamic-decomposition worked example for an unfiled batch, and the session commands for picking the sweep back up correctly</li>
+      <li><a href="d1-sweep-decomposition.md">d1-sweep-decomposition.md</a>: three worked sections, a fixed-pipeline checklist for re-verifying all 11 known bugs before a release, a dynamic-decomposition example for six new unfiled reports where the next step depends on what the last one found, and which session command, <code>--resume</code>, a fresh session with a summary, or <code>fork_session</code>, fits which situation when a sweep spans more than one sitting</li>
     </ul>
-    <p class="howto"><strong>How to use it:</strong> reference doc, not a file Claude Code loads. Run the fixed-pipeline checklist before a release, use the dynamic-decomposition example as a template the next time triage is genuinely open-ended.</p>
+    <p class="howto"><strong>How to use it:</strong> reference doc, not a file Claude Code loads. Run the fixed-pipeline checklist before a release. Use the dynamic-decomposition example as a template the next time triage is genuinely open-ended, order decided by what each step actually finds, not fixed in advance. Use the session-state section as a decision table: nothing changed since the sweep paused, resume; the system moved underneath it, start fresh with a summary; two remediation strategies both need investigating from the same point, fork.</p>
+    <div class="fw-table-wrap">
+      <table class="fw-table">
+        <thead><tr><th>File on this page</th><th>Save it to</th><th>Verify with</th></tr></thead>
+        <tbody>
+          <tr><td>d1-sweep-decomposition.md</td><td>anywhere, it's a reasoning doc to read, not a file Claude Code loads</td><td>n/a</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="howto"><strong>Try it:</strong> read the dynamic-decomposition section and answer this before checking: why does Report 3 reach <code>check_live_api</code> last, only after both catalog checks come back empty, instead of first?</p>
+    <p class="howto"><strong>Answer:</strong> <code>check_live_api</code> is the most expensive step, a real network call against the live app, so it's reserved for reports that survived the cheaper checks first. Reports 1 and 2 both resolve without ever needing it, Report 1 matches the catalog directly, Report 2 matches a past report. Running the expensive check against all six reports upfront, regardless of whether the cheap checks already answered the question, is exactly the fixed-pipeline shape this section is contrasting itself against.</p>
   </div>
 
   <h2>The QA angle</h2>

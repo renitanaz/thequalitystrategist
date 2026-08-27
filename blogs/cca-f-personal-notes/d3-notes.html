@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>D3 Notes: Claude Code Configuration &amp; Workflows | CCA-F Personal Notes</title>
+<meta name="robots" content="noindex, nofollow" />
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#FAFCF5;--bg2:#F5F7F0;--bg3:#EEF1E7;--border:rgba(26,31,20,0.14);--text:#1A1F14;--text-2:#3D4235;--text-3:#6B7060;--green:#1A7A3A;--green-bg:#D8F0E0;--amber:#9A6E1A;--amber-bg:#F5EDD6;--purple:#7A4A9A;--purple-bg:#EDE0F5;--red:#9A2A4A;--red-bg:#F5DDE5;--teal:#1A6B54;--teal-bg:#D8EEE8;--blue:#2A5C9A;--blue-bg:#DDE8F5}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:16px;line-height:1.65;padding:2rem 1.25rem 5rem}
+  main{max-width:940px;margin:0 auto}
+  a{color:var(--purple)}
+  .back{display:inline-block;font-size:.82rem;color:var(--text-3);text-decoration:none;margin-bottom:1rem}
+  header{border-bottom:1px solid var(--border);padding-bottom:1.4rem;margin-bottom:2rem}
+  h1{font-size:1.5rem;margin-bottom:.3rem;color:var(--purple)}
+  .meta{font-size:.85rem;color:var(--text-3)}
+  .weight-tag{display:inline-block;background:var(--purple-bg);color:var(--purple);font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;padding:2px 9px;border-radius:99px;margin-right:.5rem}
+
+  .topic{margin-top:1.6rem;border-top:1px solid var(--border);padding-top:1rem}
+  .topic:first-of-type{border-top:none;padding-top:0;margin-top:0}
+  .topic>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+  .topic>summary::-webkit-details-marker{display:none}
+  .topic>summary::after{content:"+";font-size:1.5rem;line-height:1;color:var(--text-3);flex-shrink:0}
+  .topic[open]>summary::after{content:"\2212"}
+  .topic-body{margin-top:1.3rem}
+  h2{font-size:1.2rem}
+  h2 .sec-num{color:var(--purple);margin-right:.4rem}
+  h3.subhead{font-size:.85rem;margin:2rem 0 .8rem;color:var(--text-3);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+  h3.subhead:first-of-type{margin-top:0}
+
+  .keyword-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem 1.4rem}
+  .kw{background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--border);border-radius:8px;padding:.6rem .8rem}
+  .kw dt{font-weight:700;font-size:.86rem;color:var(--teal)}
+  .kw dd{font-size:.82rem;color:var(--text-2);margin-top:.15rem}
+  .kw.g1{border-left-color:var(--purple)}
+  .kw.g2{border-left-color:var(--teal)}
+  .kw.g3{border-left-color:var(--blue)}
+  .kw.g4{border-left-color:var(--amber)}
+  .kw.g5{border-left-color:var(--green)}
+  .kw.g6{border-left-color:var(--red)}
+  .kw-legend{display:flex;flex-wrap:wrap;gap:.9rem;font-size:.76rem;color:var(--text-3);margin-bottom:1rem}
+  .kw-legend span{display:inline-flex;align-items:center;gap:.35rem}
+  .kw-legend i{width:9px;height:9px;border-radius:50%;display:inline-block}
+  @media(max-width:640px){.keyword-grid{grid-template-columns:1fr}}
+
+  .cornell{border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:1.4rem}
+  .cornell-row{display:grid;grid-template-columns:26% 74%}
+  .cornell-row+.cornell-row{border-top:1px solid var(--border)}
+  .cornell-cue{background:var(--purple-bg);padding:.9rem 1rem;font-weight:600;font-size:.85rem;color:var(--purple)}
+  .cornell-cue .ts{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;opacity:.8;margin-bottom:.2rem}
+  .cornell-cue.g1{background:var(--purple-bg);color:var(--purple)}
+  .cornell-cue.g2{background:var(--teal-bg);color:var(--teal)}
+  .cornell-cue.g3{background:var(--blue-bg);color:var(--blue)}
+  .cornell-cue.g4{background:var(--amber-bg);color:var(--amber)}
+  .cornell-cue.g5{background:var(--green-bg);color:var(--green)}
+  .cornell-cue.g6{background:var(--red-bg);color:var(--red)}
+  .cornell-note{padding:.9rem 1.1rem;font-size:.88rem;color:var(--text-2)}
+  .cornell-note ul{padding-left:1.1rem;margin-top:.3rem}
+  .cornell-note li{margin-bottom:.3rem}
+  .cornell-note code{background:var(--bg3);padding:.1rem .35rem;border-radius:4px;font-size:.85em;color:var(--teal);font-family:monospace}
+  .cornell-note .lbl{font-weight:600;color:var(--text)}
+  .cornell-note .hl{color:var(--amber);font-weight:600}
+  @media(max-width:640px){.cornell-row{grid-template-columns:1fr}.cornell-cue{padding-bottom:.4rem}}
+
+  .cornell-summary{background:var(--amber-bg);border-left:3px solid var(--amber);border-radius:0 8px 8px 0;padding:1rem 1.2rem;font-size:.86rem;color:var(--text-2);margin-bottom:.5rem}
+  .cornell-summary strong{color:var(--text)}
+  .cornell-summary .summary-label{display:block;margin-bottom:.5rem}
+  .cornell-summary ul{padding-left:1.2rem;margin:0}
+  .cornell-summary li{margin-bottom:.4rem}
+  .cornell-summary li:last-child{margin-bottom:0}
+
+  .mindmap-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:2rem}
+
+  .recall-item{background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:.7rem;overflow:hidden}
+  .recall-item summary{cursor:pointer;padding:.85rem 1.1rem;font-size:.88rem;font-weight:500;list-style:none;display:flex;justify-content:space-between;gap:1rem}
+  .recall-item summary::-webkit-details-marker{display:none}
+  .recall-item summary::after{content:"show answer";font-size:.72rem;color:var(--text-3);text-transform:uppercase;flex-shrink:0}
+  .recall-item[open] summary::after{content:"hide";}
+  .recall-item[open] summary{border-bottom:1px solid var(--border)}
+  .recall-answer{padding:.9rem 1.1rem;font-size:.86rem;color:var(--text-2)}
+  .recall-answer code{background:var(--bg3);padding:.1rem .35rem;border-radius:4px;font-size:.85em;color:var(--teal);font-family:monospace}
+
+  .mcq{background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:.9rem;overflow:hidden}
+  .mcq-q{padding:.9rem 1.1rem;font-size:.87rem;color:var(--text-2)}
+  .mcq-q .qnum{font-weight:700;color:var(--text)}
+  .mcq-opts{padding:0 1.1rem .5rem;font-size:.85rem;color:var(--text-2)}
+  .mcq-opts div{padding:.25rem 0}
+  .mcq details{border-top:1px solid var(--border)}
+  .mcq summary{cursor:pointer;padding:.7rem 1.1rem;font-size:.8rem;color:var(--purple);list-style:none}
+  .mcq summary::-webkit-details-marker{display:none}
+  .mcq-answer{padding:0 1.1rem .9rem;font-size:.85rem;color:var(--text-2)}
+  .mcq-answer .correct{color:var(--green);font-weight:700}
+
+  .progress-note{font-size:.82rem;color:var(--text-3);text-align:center;margin-top:2.5rem}
+  .src-note{font-size:.78rem;color:var(--text-3);margin-bottom:2rem}
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="index.html">&larr; CCA-F Personal Notes</a>
+  <header>
+    <span class="weight-tag">D3 &middot; 20% of exam</span>
+    <h1>Claude Code Configuration &amp; Workflows</h1>
+    <p class="meta">Task Statements 3.1&ndash;3.6</p>
+  </header>
+  <p class="src-note">Source: Claude Certified Architect &ndash; Foundations Certification Exam Guide (v0.1, last updated Feb 10 2025), Domain 3 section, official sample Questions 4, 5, 6, 10.</p>
+
+  <details class="topic">
+    <summary><h2><span class="sec-num">1</span>Topic Keywords</h2></summary>
+    <div class="topic-body">
+      <div class="kw-legend">
+        <span><i style="background:var(--purple)"></i>3.1 CLAUDE.md hierarchy</span>
+        <span><i style="background:var(--teal)"></i>3.2 Commands &amp; skills</span>
+        <span><i style="background:var(--blue)"></i>3.3 Path-specific rules</span>
+        <span><i style="background:var(--amber)"></i>3.4 Plan mode</span>
+        <span><i style="background:var(--green)"></i>3.5 Refinement</span>
+        <span><i style="background:var(--red)"></i>3.6 CI/CD</span>
+      </div>
+      <dl class="keyword-grid">
+        <div class="kw g1"><dt>CLAUDE.md hierarchy</dt><dd>User-level (<code>~/.claude/CLAUDE.md</code>), project-level (<code>.claude/CLAUDE.md</code> or root <code>CLAUDE.md</code>), directory-level (subdirectory files).</dd></div>
+        <div class="kw g1"><dt>User-level scope</dt><dd>Applies only to that one user &mdash; not shared with teammates via version control.</dd></div>
+        <div class="kw g1"><dt><code>@import</code></dt><dd>Syntax for referencing external files to keep CLAUDE.md modular, e.g. importing only the standards files relevant to one package.</dd></div>
+        <div class="kw g1"><dt><code>.claude/rules/</code></dt><dd>Directory for topic-specific rule files &mdash; an alternative to one monolithic CLAUDE.md.</dd></div>
+        <div class="kw g1"><dt><code>/memory</code> command</dt><dd>Verifies which memory files are actually loaded &mdash; the first diagnostic step for inconsistent behavior across sessions.</dd></div>
+        <div class="kw g2"><dt>Project vs. user commands</dt><dd><code>.claude/commands/</code> is shared via version control; <code>~/.claude/commands/</code> is personal.</dd></div>
+        <div class="kw g2"><dt><code>SKILL.md</code></dt><dd>Defines a skill in <code>.claude/skills/</code>, with frontmatter: <code>context: fork</code>, <code>allowed-tools</code>, <code>argument-hint</code>.</dd></div>
+        <div class="kw g2"><dt><code>context: fork</code></dt><dd>Runs a skill in an isolated sub-agent context so its output doesn't pollute the main conversation.</dd></div>
+        <div class="kw g2"><dt>Skills vs. CLAUDE.md</dt><dd>Skills = on-demand, task-specific workflows. CLAUDE.md = always-loaded universal standards.</dd></div>
+        <div class="kw g3"><dt>YAML frontmatter <code>paths</code></dt><dd>Glob patterns in a <code>.claude/rules/</code> file that conditionally activate the rule only for matching files.</dd></div>
+        <div class="kw g3"><dt>Path-scoped rules vs. directory CLAUDE.md</dt><dd>Path rules win when matching files are spread across many directories (e.g. test files next to the code they test).</dd></div>
+        <div class="kw g4"><dt>Plan mode</dt><dd>For complex tasks: large-scale changes, multiple valid approaches, architectural decisions, multi-file modifications.</dd></div>
+        <div class="kw g4"><dt>Direct execution</dt><dd>For simple, well-scoped changes with a clear, single-file fix.</dd></div>
+        <div class="kw g4"><dt>Explore subagent</dt><dd>Isolates verbose discovery output, returning a summary to preserve main conversation context.</dd></div>
+        <div class="kw g5"><dt>Concrete I/O examples</dt><dd>The most effective way to communicate an expected transformation when prose descriptions get interpreted inconsistently.</dd></div>
+        <div class="kw g5"><dt>Test-driven iteration</dt><dd>Write the test suite first, then iterate by sharing test failures to guide progressive improvement.</dd></div>
+        <div class="kw g5"><dt>Interview pattern</dt><dd>Have Claude ask questions first, to surface considerations the developer hasn't anticipated, before implementing.</dd></div>
+        <div class="kw g5"><dt>Interacting vs. independent issues</dt><dd>Interacting problems &rarr; report together in one message. Independent problems &rarr; fix sequentially.</dd></div>
+        <div class="kw g6"><dt><code>-p</code> / <code>--print</code></dt><dd>Runs Claude Code in non-interactive mode &mdash; required in CI so the job doesn't hang waiting for input.</dd></div>
+        <div class="kw g6"><dt><code>--output-format json</code></dt><dd>Combined with <code>--json-schema</code> to enforce machine-parseable structured output in CI.</dd></div>
+        <div class="kw g6"><dt>Session context isolation</dt><dd>The same session that generated code is less effective reviewing its own changes than an independent review instance.</dd></div>
+      </dl>
+    </div>
+  </details>
+
+  <details class="topic">
+    <summary><h2><span class="sec-num">2</span>Main Pointers</h2></summary>
+    <div class="topic-body">
+      <div class="cornell">
+        <div class="cornell-row">
+          <div class="cornell-cue g1"><span class="ts">Task Statement</span>3.1<br>CLAUDE.md hierarchy &amp; scoping</div>
+          <div class="cornell-note">
+            <p><span class="lbl">Knowledge:</span> three levels &mdash; <span class="hl">user, project, directory</span>. User-level settings apply only to that user, never shared via version control. <code>@import</code> keeps CLAUDE.md modular. <code>.claude/rules/</code> is the alternative to one monolithic file.</p>
+            <p><span class="lbl">Skills:</span></p>
+            <ul>
+              <li>Diagnose hierarchy issues &mdash; e.g. a new team member missing instructions because they landed in user-level config instead of project-level.</li>
+              <li>Use <code>@import</code> to selectively include only the standards files relevant to each package's maintainer.</li>
+              <li>Split a large CLAUDE.md into focused topic files under <code>.claude/rules/</code> (e.g. <code>testing.md</code>, <code>api-conventions.md</code>).</li>
+              <li>Use <code>/memory</code> to verify which files are actually loaded and diagnose inconsistent behavior across sessions.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="cornell-row">
+          <div class="cornell-cue g2"><span class="ts">Task Statement</span>3.2<br>Custom commands &amp; skills</div>
+          <div class="cornell-note">
+            <p><span class="lbl">Knowledge:</span> project-scoped commands (<code>.claude/commands/</code>) are shared via version control; user-scoped (<code>~/.claude/commands/</code>) are personal. Skills support frontmatter: <code>context: fork</code>, <code>allowed-tools</code>, <code>argument-hint</code>. <span class="hl">Personal skill variants</span> use different names so they don't affect teammates.</p>
+            <p><span class="lbl">Skills:</span></p>
+            <ul>
+              <li>Create project-scoped slash commands for team-wide availability via version control.</li>
+              <li>Use <code>context: fork</code> to isolate skills that produce verbose or exploratory output from the main session.</li>
+              <li>Configure <code>allowed-tools</code> in skill frontmatter to restrict tool access during execution (e.g. limit to write-only to prevent destructive actions).</li>
+              <li>Use <code>argument-hint</code> to prompt for required parameters when a skill is invoked without arguments.</li>
+              <li>Choose skills (on-demand, task-specific) vs. CLAUDE.md (always-loaded, universal).</li>
+            </ul>
+          </div>
+        </div>
+        <div class="cornell-row">
+          <div class="cornell-cue g3"><span class="ts">Task Statement</span>3.3<br>Path-specific rules</div>
+          <div class="cornell-note">
+            <p><span class="lbl">Knowledge:</span> <code>.claude/rules/</code> files with YAML frontmatter <code>paths</code> fields (glob patterns) for <span class="hl">conditional rule activation</span>. Path-scoped rules load only when editing matching files, reducing irrelevant context and token usage.</p>
+            <p><span class="lbl">Skills:</span></p>
+            <ul>
+              <li>Create <code>.claude/rules/</code> files with YAML frontmatter path scoping (e.g. <code>paths: ["terraform/**/*"]</code>).</li>
+              <li>Use glob patterns to apply conventions by file type regardless of directory location (e.g. <code>**/*.test.tsx</code> for all test files).</li>
+              <li>Choose path-specific rules over subdirectory CLAUDE.md files when conventions must apply to files spread across the codebase.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="cornell-row">
+          <div class="cornell-cue g4"><span class="ts">Task Statement</span>3.4<br>Plan mode vs. direct execution</div>
+          <div class="cornell-note">
+            <p><span class="lbl">Knowledge:</span> plan mode &mdash; complex tasks, large-scale changes, multiple valid approaches, architectural decisions, multi-file modifications. Direct execution &mdash; simple well-scoped changes. Plan mode enables <span class="hl">safe exploration before committing</span>, preventing costly rework.</p>
+            <p><span class="lbl">Skills:</span></p>
+            <ul>
+              <li>Select plan mode for architectural-implication tasks (microservice restructuring, a migration touching 45+ files, choosing between integration approaches).</li>
+              <li>Select direct execution for well-understood, clear-scope changes (single-file bug fix with a clear stack trace).</li>
+              <li>Use the <span class="hl">Explore subagent</span> for verbose discovery phases to prevent context window exhaustion during multi-phase tasks.</li>
+              <li>Combine plan mode for investigation with direct execution for implementation once the plan is approved.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="cornell-row">
+          <div class="cornell-cue g5"><span class="ts">Task Statement</span>3.5<br>Iterative refinement</div>
+          <div class="cornell-note">
+            <p><span class="lbl">Knowledge:</span> concrete input/output examples communicate expected transformations more reliably than prose. <span class="hl">Test-driven iteration</span>: write tests first, iterate via failures. The interview pattern surfaces considerations before implementing. Provide all issues together when they interact; fix independent issues sequentially.</p>
+            <p><span class="lbl">Skills:</span></p>
+            <ul>
+              <li>Provide 2&ndash;3 concrete I/O examples when natural-language descriptions produce inconsistent results.</li>
+              <li>Write test suites covering expected behavior, edge cases, and performance requirements before implementation, then iterate by sharing failures.</li>
+              <li>Use the interview pattern to surface design considerations (cache invalidation, failure modes) before implementing in an unfamiliar domain.</li>
+              <li>Provide specific test cases (input + expected output) to fix edge-case handling, e.g. null values in a migration script.</li>
+              <li>Address multiple <em>interacting</em> issues in one detailed message; iterate sequentially for <em>independent</em> issues.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="cornell-row">
+          <div class="cornell-cue g6"><span class="ts">Task Statement</span>3.6<br>Claude Code in CI/CD</div>
+          <div class="cornell-note">
+            <p><span class="lbl">Knowledge:</span> <code>-p</code> / <code>--print</code> runs Claude Code non-interactively so the job doesn't hang. <code>--output-format json</code> + <code>--json-schema</code> enforce structured output. CLAUDE.md provides project context to CI-invoked runs. <span class="hl">Session context isolation</span>: the session that generated code is less effective reviewing its own changes.</p>
+            <p><span class="lbl">Skills:</span></p>
+            <ul>
+              <li>Run Claude Code in CI with the <code>-p</code> flag to prevent interactive-input hangs.</li>
+              <li>Use <code>--output-format json</code> with <code>--json-schema</code> to produce machine-parseable findings for automated PR comments.</li>
+              <li>Include prior review findings in context when re-running after new commits; instruct Claude to report only new/unaddressed issues to avoid duplicate comments.</li>
+              <li>Provide existing test files in context so test generation avoids suggesting duplicate scenarios.</li>
+              <li>Document testing standards, valuable test criteria, and available fixtures in CLAUDE.md to improve CI-generated test quality.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="cornell-summary">
+        <strong class="summary-label">Summary, one line per task statement:</strong>
+        <ul>
+          <li><strong>3.1</strong> User settings are personal and never shared; project settings are; <code>@import</code> and <code>.claude/rules/</code> keep it modular.</li>
+          <li><strong>3.2</strong> Project commands/skills are shared via version control, user ones are personal; <code>context: fork</code> isolates noisy skill output.</li>
+          <li><strong>3.3</strong> Glob-scoped rule files beat subdirectory CLAUDE.md when matching files are spread across the codebase.</li>
+          <li><strong>3.4</strong> Plan mode for architectural/multi-file/ambiguous work, direct execution for clear single-file fixes.</li>
+          <li><strong>3.5</strong> Concrete examples and test failures refine faster than prose; batch interacting issues, sequence independent ones.</li>
+          <li><strong>3.6</strong> <code>-p</code> for non-interactive CI, structured JSON output, and an independent review session rather than self-review.</li>
+        </ul>
+      </div>
+    </div>
+  </details>
+
+  <details class="topic">
+    <summary><h2><span class="sec-num">3</span>Mind Map and Pictorial Info</h2></summary>
+    <div class="topic-body">
+      <h3 class="subhead">Mind Map</h3>
+      <div class="mindmap-wrap">
+        <svg viewBox="0 0 820 600" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Mind map of D3: Claude Code Configuration and Workflows, with six branches: CLAUDE.md hierarchy, commands and skills, path-specific rules, plan mode versus direct execution, iterative refinement, and CI/CD integration.">
+          <circle cx="410" cy="300" r="74" fill="#EDE0F5" stroke="#7A4A9A" stroke-width="2"/>
+          <text x="410" y="292" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="#7A4A9A">D3</text>
+          <text x="410" y="310" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="#3D4235">Claude Code Config</text>
+          <text x="410" y="324" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="#3D4235">&amp; Workflows</text>
+
+          <!-- 3.1 top-left -->
+          <line x1="345" y1="255" x2="150" y2="115" stroke="#7A4A9A" stroke-width="1.5"/>
+          <rect x="15" y="15" width="255" height="105" rx="8" fill="#EDE0F5" stroke="#7A4A9A"/>
+          <text x="142" y="35" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700" fill="#7A4A9A">3.1 CLAUDE.md Hierarchy</text>
+          <text x="142" y="52" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#3D4235">user &rarr; project &rarr; directory</text>
+          <rect x="27" y="62" width="230" height="20" rx="4" fill="#FAFCF5" stroke="#7A4A9A" stroke-opacity=".4"/>
+          <text x="142" y="76" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#7A4A9A">@import "./standards/api.md"</text>
+          <text x="142" y="98" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">/memory to verify what loaded</text>
+
+          <!-- 3.2 top-center -->
+          <line x1="410" y1="226" x2="410" y2="115" stroke="#1A6B54" stroke-width="1.5"/>
+          <rect x="285" y="15" width="250" height="105" rx="8" fill="#D8EEE8" stroke="#1A6B54"/>
+          <text x="410" y="35" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700" fill="#1A6B54">3.2 Commands &amp; Skills</text>
+          <text x="410" y="52" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#3D4235">project vs user scope</text>
+          <rect x="297" y="62" width="226" height="20" rx="4" fill="#FAFCF5" stroke="#1A6B54" stroke-opacity=".4"/>
+          <text x="410" y="76" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#1A6B54">context: fork</text>
+          <text x="410" y="98" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">allowed-tools, argument-hint</text>
+
+          <!-- 3.3 top-right -->
+          <line x1="475" y1="255" x2="670" y2="115" stroke="#2A5C9A" stroke-width="1.5"/>
+          <rect x="550" y="15" width="255" height="105" rx="8" fill="#DDE8F5" stroke="#2A5C9A"/>
+          <text x="677" y="35" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700" fill="#2A5C9A">3.3 Path-Specific Rules</text>
+          <text x="677" y="52" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#3D4235">YAML frontmatter, glob paths</text>
+          <rect x="562" y="62" width="230" height="20" rx="4" fill="#FAFCF5" stroke="#2A5C9A" stroke-opacity=".4"/>
+          <text x="677" y="76" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#2A5C9A">paths: ["**/*.test.tsx"]</text>
+          <text x="677" y="98" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">beats dir-level CLAUDE.md when spread out</text>
+
+          <!-- 3.4 bottom-left -->
+          <line x1="345" y1="345" x2="150" y2="485" stroke="#9A6E1A" stroke-width="1.5"/>
+          <rect x="15" y="480" width="255" height="105" rx="8" fill="#F5EDD6" stroke="#9A6E1A"/>
+          <text x="142" y="500" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700" fill="#9A6E1A">3.4 Plan Mode</text>
+          <text x="142" y="517" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#3D4235">complex/multi-file/architectural</text>
+          <text x="142" y="531" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#3D4235">vs. direct execution (simple, clear)</text>
+          <text x="142" y="553" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">Explore subagent for discovery</text>
+
+          <!-- 3.5 bottom-center -->
+          <line x1="410" y1="374" x2="410" y2="480" stroke="#1A7A3A" stroke-width="1.5"/>
+          <rect x="285" y="480" width="250" height="105" rx="8" fill="#D8F0E0" stroke="#1A7A3A"/>
+          <text x="410" y="500" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700" fill="#1A7A3A">3.5 Iterative Refinement</text>
+          <text x="410" y="517" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#3D4235">I/O examples, test-driven,</text>
+          <text x="410" y="531" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#3D4235">interview pattern</text>
+          <text x="410" y="553" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">interacting vs independent issues</text>
+
+          <!-- 3.6 bottom-right -->
+          <line x1="475" y1="345" x2="670" y2="485" stroke="#9A2A4A" stroke-width="1.5"/>
+          <rect x="550" y="480" width="255" height="105" rx="8" fill="#F5DDE5" stroke="#9A2A4A"/>
+          <text x="677" y="500" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700" fill="#9A2A4A">3.6 CI/CD</text>
+          <rect x="562" y="510" width="230" height="20" rx="4" fill="#FAFCF5" stroke="#9A2A4A" stroke-opacity=".4"/>
+          <text x="677" y="524" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#9A2A4A">claude -p --output-format json</text>
+          <text x="677" y="546" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">independent review, not self-review</text>
+        </svg>
+      </div>
+
+      <h3 class="subhead">Diagram: CLAUDE.md Hierarchy</h3>
+      <div class="mindmap-wrap">
+        <svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Diagram showing the three CLAUDE.md scopes stacked: user-level, personal and not version-controlled; project-level, shared with the whole team; directory-level, for one subdirectory only. A branch to the side shows dot claude slash rules as the glob-scoped alternative to directory-level files.">
+          <rect x="20" y="15" width="290" height="46" rx="8" fill="#EEF1E7" stroke="rgba(26,31,20,.2)"/>
+          <text x="165" y="34" text-anchor="middle" font-family="Consolas, monospace" font-size="9.5" fill="#3D4235">~/.claude/CLAUDE.md</text>
+          <text x="165" y="49" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#9A2A4A">personal, never shared via VC</text>
+
+          <path d="M165,61 L165,88" stroke="#6B7060" stroke-width="1.5" marker-end="url(#hi1)"/>
+          <rect x="20" y="90" width="290" height="46" rx="8" fill="#EDE0F5" stroke="#7A4A9A"/>
+          <text x="165" y="109" text-anchor="middle" font-family="Consolas, monospace" font-size="9.5" fill="#7A4A9A">.claude/CLAUDE.md</text>
+          <text x="165" y="124" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#1A7A3A">project-level, shared with the team</text>
+
+          <path d="M165,136 L165,163" stroke="#6B7060" stroke-width="1.5" marker-end="url(#hi2)"/>
+          <rect x="20" y="165" width="290" height="46" rx="8" fill="#F5F7F0" stroke="rgba(26,31,20,.2)" stroke-dasharray="4 3"/>
+          <text x="165" y="184" text-anchor="middle" font-family="Consolas, monospace" font-size="9.5" fill="#3D4235">subdir/CLAUDE.md</text>
+          <text x="165" y="199" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">directory-level, one folder only</text>
+
+          <path d="M310,188 L345,188" stroke="#6B7060" stroke-width="1.5" marker-end="url(#hi3)"/>
+          <rect x="350" y="150" width="340" height="80" rx="8" fill="#DDE8F5" stroke="#2A5C9A"/>
+          <text x="520" y="172" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="#2A5C9A">Alternative: .claude/rules/</text>
+          <text x="520" y="190" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#2A5C9A">paths: ["**/*.test.tsx"]</text>
+          <text x="520" y="210" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#3D4235">wins when matching files span many folders</text>
+
+          <use href="#icon-stick" x="345" y="43" style="color:#6B7060"/>
+          <text x="345" y="66" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#6B7060">just you</text>
+
+          <use href="#icon-stick" x="340" y="112" style="color:#7A4A9A"/>
+          <use href="#icon-stick" x="352" y="112" style="color:#7A4A9A"/>
+          <text x="349" y="139" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#7A4A9A">whole team</text>
+
+          <defs>
+            <marker id="hi1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+            <marker id="hi2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+            <marker id="hi3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+            <g id="icon-stick">
+              <circle cx="0" cy="-9" r="4" fill="none" stroke="currentColor" stroke-width="1.4"/>
+              <line x1="0" y1="-5" x2="0" y2="6" stroke="currentColor" stroke-width="1.4"/>
+              <line x1="0" y1="-1" x2="-6" y2="4" stroke="currentColor" stroke-width="1.4"/>
+              <line x1="0" y1="-1" x2="6" y2="4" stroke="currentColor" stroke-width="1.4"/>
+              <line x1="0" y1="6" x2="-5" y2="14" stroke="currentColor" stroke-width="1.4"/>
+              <line x1="0" y1="6" x2="5" y2="14" stroke="currentColor" stroke-width="1.4"/>
+            </g>
+          </defs>
+        </svg>
+      </div>
+
+      <h3 class="subhead">Diagram: CI/CD Review Flow</h3>
+      <div class="mindmap-wrap">
+        <svg viewBox="0 0 760 210" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Flow diagram: a developer at a laptop opens a pull request, which triggers Claude Code with the print flag and JSON schema output, producing structured findings. Each finding gets a fingerprint. If the fingerprint already exists it is skipped, otherwise it is posted as a new PR comment, with critical findings also failing the build check.">
+          <use href="#icon-laptop" x="45" y="38" style="color:#3D4235"/>
+          <use href="#icon-stick" x="80" y="34" style="color:#3D4235"/>
+          <text x="63" y="65" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#6B7060">developer pushes</text>
+
+          <rect x="10" y="100" width="110" height="46" rx="8" fill="#EEF1E7" stroke="rgba(26,31,20,.2)"/>
+          <text x="65" y="120" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="#3D4235">PR opened</text>
+          <text x="65" y="134" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#6B7060">or updated</text>
+          <path d="M120,123 L153,123" stroke="#6B7060" stroke-width="1.5" marker-end="url(#ci1)"/>
+
+          <use href="#icon-bot" x="230" y="80" style="color:#9A2A4A"/>
+          <rect x="155" y="100" width="150" height="46" rx="8" fill="#F5DDE5" stroke="#9A2A4A"/>
+          <text x="230" y="118" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#9A2A4A">claude -p --output-format json</text>
+          <text x="230" y="133" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">+ CLAUDE.md context, tests</text>
+          <path d="M305,123 L338,123" stroke="#6B7060" stroke-width="1.5" marker-end="url(#ci2)"/>
+
+          <rect x="340" y="100" width="130" height="46" rx="8" fill="#EEF1E7" stroke="rgba(26,31,20,.2)"/>
+          <text x="405" y="123" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="#3D4235">Fingerprint each finding</text>
+
+          <path d="M405,100 C405,75 460,70 500,80" stroke="#1A7A3A" stroke-width="1.5" fill="none" marker-end="url(#ci3)"/>
+          <text x="452" y="64" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#1A7A3A">new</text>
+          <rect x="502" y="55" width="180" height="42" rx="8" fill="#D8F0E0" stroke="#1A7A3A"/>
+          <text x="592" y="73" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#1A7A3A">Post PR comment</text>
+          <text x="592" y="87" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">critical &rarr; also fail check</text>
+
+          <path d="M405,146 C405,171 460,176 500,166" stroke="#6B7060" stroke-width="1.5" fill="none" marker-end="url(#ci4)"/>
+          <text x="452" y="185" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#6B7060">already posted</text>
+          <rect x="502" y="143" width="180" height="42" rx="8" fill="#EEF1E7" stroke="rgba(26,31,20,.2)"/>
+          <text x="592" y="161" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">Skip (no duplicate)</text>
+          <text x="592" y="175" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#6B7060">fingerprint already exists</text>
+
+          <defs>
+            <marker id="ci1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+            <marker id="ci2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+            <marker id="ci3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1A7A3A"/></marker>
+            <marker id="ci4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+            <g id="icon-stick">
+              <circle cx="0" cy="-9" r="4" fill="none" stroke="currentColor" stroke-width="1.4"/>
+              <line x1="0" y1="-5" x2="0" y2="6" stroke="currentColor" stroke-width="1.4"/>
+              <line x1="0" y1="-1" x2="-6" y2="4" stroke="currentColor" stroke-width="1.4"/>
+              <line x1="0" y1="-1" x2="6" y2="4" stroke="currentColor" stroke-width="1.4"/>
+              <line x1="0" y1="6" x2="-5" y2="14" stroke="currentColor" stroke-width="1.4"/>
+              <line x1="0" y1="6" x2="5" y2="14" stroke="currentColor" stroke-width="1.4"/>
+            </g>
+            <g id="icon-laptop">
+              <rect x="-11" y="-9" width="22" height="14" rx="1.3" fill="none" stroke="currentColor" stroke-width="1.4"/>
+              <rect x="-13" y="6" width="26" height="3.2" rx="1" fill="currentColor"/>
+            </g>
+            <g id="icon-bot">
+              <rect x="-9" y="-7" width="18" height="14" rx="4" fill="none" stroke="currentColor" stroke-width="1.4"/>
+              <circle cx="-3.5" cy="0" r="1.6" fill="currentColor"/>
+              <circle cx="3.5" cy="0" r="1.6" fill="currentColor"/>
+              <line x1="0" y1="-7" x2="0" y2="-10.5" stroke="currentColor" stroke-width="1.4"/>
+              <circle cx="0" cy="-11.5" r="1.3" fill="currentColor"/>
+            </g>
+          </defs>
+        </svg>
+      </div>
+    </div>
+  </details>
+
+  <details class="topic">
+    <summary><h2><span class="sec-num">4</span>Active Recall</h2></summary>
+    <div class="topic-body">
+      <details class="recall-item"><summary>Why might a new team member not receive the team's Claude Code instructions even though the project has a CLAUDE.md?</summary><div class="recall-answer">The instructions may have been placed in <em>user-level</em> config (<code>~/.claude/CLAUDE.md</code>) instead of <em>project-level</em> (<code>.claude/CLAUDE.md</code>) &mdash; user-level settings apply only to the person who set them and are never shared via version control.</div></details>
+
+      <details class="recall-item"><summary>What does <code>context: fork</code> in a skill's frontmatter actually do?</summary><div class="recall-answer">Runs the skill in an isolated sub-agent context so its (possibly verbose) output doesn't pollute the main conversation &mdash; the main session gets a summary back instead.</div></details>
+
+      <details class="recall-item"><summary>Path-specific rules vs. subdirectory CLAUDE.md files &mdash; when does each win?</summary><div class="recall-answer">Path-specific rules (<code>.claude/rules/</code> with glob-pattern frontmatter) win when the matching files are spread across many directories, like test files that live next to the code they test. Subdirectory CLAUDE.md works when all files needing a rule genuinely live under one folder.</div></details>
+
+      <details class="recall-item"><summary>Give the specific example the guide uses for when plan mode earns its keep.</summary><div class="recall-answer">Tasks with architectural implications: a microservice restructuring, a library migration touching 45+ files, or choosing between integration approaches with different infrastructure requirements.</div></details>
+
+      <details class="recall-item"><summary>What's the Explore subagent for?</summary><div class="recall-answer">Isolating verbose discovery-phase output (file exploration, dependency tracing) and returning a compact summary, so the main conversation's context isn't exhausted during multi-phase work.</div></details>
+
+      <details class="recall-item"><summary>What's the most effective way to fix inconsistent output when a natural-language description alone isn't landing?</summary><div class="recall-answer">Provide 2&ndash;3 concrete input/output examples &mdash; they communicate the expected transformation more reliably than more prose.</div></details>
+
+      <details class="recall-item"><summary>When should you report multiple issues in one message vs. fix them one at a time?</summary><div class="recall-answer">One message when the issues <em>interact</em> (fixing one affects another). Sequential, one at a time, when the issues are genuinely independent of each other.</div></details>
+
+      <details class="recall-item"><summary>Why does a CI pipeline need the <code>-p</code> flag specifically?</summary><div class="recall-answer">Without it, Claude Code runs interactively and waits for input that will never come in an automated pipeline, hanging the job. <code>-p</code> (<code>--print</code>) runs it non-interactively: it processes the prompt, prints the result, and exits.</div></details>
+
+      <details class="recall-item"><summary>How do you stop a CI-invoked review from posting the same finding on every commit?</summary><div class="recall-answer">Generate a stable fingerprint per finding (e.g. from file path + line + category + normalized message), include prior findings in context on re-runs, and skip posting anything whose fingerprint already exists.</div></details>
+
+      <details class="recall-item"><summary>Why is the same Claude Code session that generated a change not the best one to review it?</summary><div class="recall-answer">Session context isolation: the generating session retains the reasoning behind its own choices, making it less likely to question them. An independent review instance, without that inherited context, catches more.</div></details>
+    </div>
+  </details>
+
+  <details class="topic">
+    <summary><h2><span class="sec-num">5</span>Official Sample Questions (D3)</h2></summary>
+    <div class="topic-body">
+      <div class="mcq">
+        <div class="mcq-q"><span class="qnum">Q4.</span> (Scenario 2, Code Generation) You want a custom <code>/review</code> slash command available to every developer when they clone or pull the repo. Where should the command file live?</div>
+        <div class="mcq-opts">
+          <div>A) In <code>.claude/commands/</code> in the project repository.</div>
+          <div>B) In <code>~/.claude/commands/</code> in each developer's home directory.</div>
+          <div>C) In the CLAUDE.md file at the project root.</div>
+          <div>D) In a <code>.claude/config.json</code> file with a commands array.</div>
+        </div>
+        <details><summary>Show answer</summary><div class="mcq-answer"><span class="correct">A.</span> Project-scoped commands are version-controlled and automatically available to everyone who clones or pulls. B is personal/not shared. C is for project instructions, not command definitions. D describes a mechanism that doesn't exist in Claude Code.</div></details>
+      </div>
+
+      <div class="mcq">
+        <div class="mcq-q"><span class="qnum">Q5.</span> (Scenario 2) You're restructuring a monolithic application into microservices &mdash; dozens of files, decisions about service boundaries and module dependencies. Which approach?</div>
+        <div class="mcq-opts">
+          <div>A) Enter plan mode to explore the codebase, understand dependencies, and design an approach before making changes.</div>
+          <div>B) Start with direct execution and let the implementation reveal the natural boundaries.</div>
+          <div>C) Use direct execution with comprehensive upfront instructions detailing exactly how each service should be structured.</div>
+          <div>D) Begin in direct execution and only switch to plan mode if unexpected complexity appears.</div>
+        </div>
+        <details><summary>Show answer</summary><div class="mcq-answer"><span class="correct">A.</span> This is exactly what plan mode is for: architectural decisions, multiple valid approaches, large-scale multi-file change. B risks costly rework from dependencies discovered late. C assumes the right structure without exploring the code. D ignores that the complexity is already known up front, not something that might emerge later.</div></details>
+      </div>
+
+      <div class="mcq">
+        <div class="mcq-q"><span class="qnum">Q6.</span> (Scenario 2) Distinct coding conventions per area (React components, API handlers, DB models), plus test files spread throughout the codebase next to the code they test, all needing the same conventions regardless of location. Most maintainable way to apply conventions automatically?</div>
+        <div class="mcq-opts">
+          <div>A) Create rule files in <code>.claude/rules/</code> with YAML frontmatter specifying glob patterns to conditionally apply conventions by file path.</div>
+          <div>B) Consolidate all conventions in root CLAUDE.md under headers per area, relying on Claude to infer which section applies.</div>
+          <div>C) Create skills in <code>.claude/skills/</code> for each code type, with conventions in their SKILL.md files.</div>
+          <div>D) Place a separate CLAUDE.md file in each subdirectory with that area's conventions.</div>
+        </div>
+        <details><summary>Show answer</summary><div class="mcq-answer"><span class="correct">A.</span> Glob patterns (e.g. <code>**/*.test.tsx</code>) apply automatically based on file path regardless of directory &mdash; essential when matching files are spread throughout the codebase. B relies on inference, unreliable. C requires manual invocation or Claude choosing to load it, not deterministic automatic application. D can't cleanly handle files spread across many directories since CLAUDE.md files are directory-bound.</div></details>
+      </div>
+
+      <div class="mcq">
+        <div class="mcq-q"><span class="qnum">Q10.</span> (Scenario 5, CI) A pipeline script runs <code>claude "Analyze this pull request for security issues"</code> but the job hangs indefinitely, waiting for interactive input. Correct fix?</div>
+        <div class="mcq-opts">
+          <div>A) Add the <code>-p</code> flag: <code>claude -p "..."</code>.</div>
+          <div>B) Set environment variable <code>CLAUDE_HEADLESS=true</code> before running.</div>
+          <div>C) Redirect stdin from <code>/dev/null</code>.</div>
+          <div>D) Add a <code>--batch</code> flag.</div>
+        </div>
+        <details><summary>Show answer</summary><div class="mcq-answer"><span class="correct">A.</span> <code>-p</code> (<code>--print</code>) is the documented way to run non-interactively: processes the prompt, prints the result, exits &mdash; exactly what CI needs. B and D reference features that don't exist; C is a Unix workaround that doesn't address Claude Code's actual command syntax.</div></details>
+      </div>
+    </div>
+  </details>
+
+  <p class="progress-note">D3 done &middot; next up: D4 (Prompt Engineering &amp; Structured Output, 20%)</p>
+</main>
+</body>
+</html>

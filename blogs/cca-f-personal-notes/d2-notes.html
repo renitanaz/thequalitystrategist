@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>D2 Notes: Tool Design &amp; MCP Integration | CCA-F Personal Notes</title>
+<meta name="robots" content="noindex, nofollow" />
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#FAFCF5;--bg2:#F5F7F0;--bg3:#EEF1E7;--border:rgba(26,31,20,0.14);--text:#1A1F14;--text-2:#3D4235;--text-3:#6B7060;--green:#1A7A3A;--green-bg:#D8F0E0;--amber:#9A6E1A;--amber-bg:#F5EDD6;--purple:#7A4A9A;--purple-bg:#EDE0F5;--red:#9A2A4A;--red-bg:#F5DDE5;--teal:#1A6B54;--teal-bg:#D8EEE8;--blue:#2A5C9A;--blue-bg:#DDE8F5}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:16px;line-height:1.65;padding:2rem 1.25rem 5rem}
+  main{max-width:940px;margin:0 auto}
+  a{color:var(--purple)}
+  .back{display:inline-block;font-size:.82rem;color:var(--text-3);text-decoration:none;margin-bottom:1rem}
+  header{border-bottom:1px solid var(--border);padding-bottom:1.4rem;margin-bottom:2rem}
+  h1{font-size:1.5rem;margin-bottom:.3rem;color:var(--amber)}
+  .meta{font-size:.85rem;color:var(--text-3)}
+  .weight-tag{display:inline-block;background:var(--amber-bg);color:var(--amber);font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;padding:2px 9px;border-radius:99px;margin-right:.5rem}
+
+  .topic{margin-top:1.6rem;border-top:1px solid var(--border);padding-top:1rem}
+  .topic:first-of-type{border-top:none;padding-top:0;margin-top:0}
+  .topic>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+  .topic>summary::-webkit-details-marker{display:none}
+  .topic>summary::after{content:"+";font-size:1.5rem;line-height:1;color:var(--text-3);flex-shrink:0}
+  .topic[open]>summary::after{content:"\2212"}
+  .topic-body{margin-top:1.3rem}
+  h2{font-size:1.2rem}
+  h2 .sec-num{color:var(--purple);margin-right:.4rem}
+  h3.subhead{font-size:.85rem;margin:2rem 0 .8rem;color:var(--text-3);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+  h3.subhead:first-of-type{margin-top:0}
+
+  .keyword-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem 1.4rem}
+  .kw{background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--border);border-radius:8px;padding:.6rem .8rem}
+  .kw dt{font-weight:700;font-size:.86rem;color:var(--teal)}
+  .kw dd{font-size:.82rem;color:var(--text-2);margin-top:.15rem}
+  .kw.g1{border-left-color:var(--purple)}
+  .kw.g2{border-left-color:var(--red)}
+  .kw.g3{border-left-color:var(--teal)}
+  .kw.g4{border-left-color:var(--blue)}
+  .kw.g5{border-left-color:var(--amber)}
+  .kw-legend{display:flex;flex-wrap:wrap;gap:.9rem;font-size:.76rem;color:var(--text-3);margin-bottom:1rem}
+  .kw-legend span{display:inline-flex;align-items:center;gap:.35rem}
+  .kw-legend i{width:9px;height:9px;border-radius:50%;display:inline-block}
+  @media(max-width:640px){.keyword-grid{grid-template-columns:1fr}}
+
+  .cornell{border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:1.4rem}
+  .cornell-row{display:grid;grid-template-columns:26% 74%}
+  .cornell-row+.cornell-row{border-top:1px solid var(--border)}
+  .cornell-cue{background:var(--purple-bg);padding:.9rem 1rem;font-weight:600;font-size:.85rem;color:var(--purple)}
+  .cornell-cue.g1{background:var(--purple-bg);color:var(--purple)}
+  .cornell-cue.g2{background:var(--red-bg);color:var(--red)}
+  .cornell-cue.g3{background:var(--teal-bg);color:var(--teal)}
+  .cornell-cue.g4{background:var(--blue-bg);color:var(--blue)}
+  .cornell-cue.g5{background:var(--amber-bg);color:var(--amber)}
+  .cornell-cue .ts{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;opacity:.8;margin-bottom:.2rem}
+  .cornell-note{padding:.9rem 1.1rem;font-size:.88rem;color:var(--text-2)}
+  .cornell-note ul{padding-left:1.1rem;margin-top:.3rem}
+  .cornell-note li{margin-bottom:.3rem}
+  .cornell-note code{background:var(--bg3);padding:.1rem .35rem;border-radius:4px;font-size:.85em;color:var(--teal);font-family:monospace}
+  .cornell-note .lbl{font-weight:600;color:var(--text)}
+  .cornell-note .hl{color:var(--amber);font-weight:600}
+  @media(max-width:640px){.cornell-row{grid-template-columns:1fr}.cornell-cue{padding-bottom:.4rem}}
+
+  .cornell-summary{background:var(--amber-bg);border-left:3px solid var(--amber);border-radius:0 8px 8px 0;padding:1rem 1.2rem;font-size:.86rem;color:var(--text-2);margin-bottom:.5rem}
+  .cornell-summary strong{color:var(--text)}
+  .cornell-summary .summary-label{display:block;margin-bottom:.5rem}
+  .cornell-summary ul{padding-left:1.2rem;margin:0}
+  .cornell-summary li{margin-bottom:.4rem}
+  .cornell-summary li:last-child{margin-bottom:0}
+
+  .mindmap-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:2rem}
+
+  .decision-table{width:100%;border-collapse:collapse;font-size:.85rem;margin-bottom:1.5rem}
+  .decision-table th,.decision-table td{border:1px solid var(--border);padding:.55rem .7rem;text-align:left;vertical-align:top}
+  .decision-table th{background:var(--bg3);color:var(--text-3);font-size:.75rem;text-transform:uppercase;letter-spacing:.03em}
+  .decision-table td{color:var(--text-2)}
+  .decision-table code{background:var(--bg3);padding:.1rem .35rem;border-radius:4px;font-size:.85em;color:var(--teal);font-family:monospace}
+
+  .recall-item{background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:.7rem;overflow:hidden}
+  .recall-item summary{cursor:pointer;padding:.85rem 1.1rem;font-size:.88rem;font-weight:500;list-style:none;display:flex;justify-content:space-between;gap:1rem}
+  .recall-item summary::-webkit-details-marker{display:none}
+  .recall-item summary::after{content:"show answer";font-size:.72rem;color:var(--text-3);text-transform:uppercase;flex-shrink:0}
+  .recall-item[open] summary::after{content:"hide";}
+  .recall-item[open] summary{border-bottom:1px solid var(--border)}
+  .recall-answer{padding:.9rem 1.1rem;font-size:.86rem;color:var(--text-2)}
+  .recall-answer code{background:var(--bg3);padding:.1rem .35rem;border-radius:4px;font-size:.85em;color:var(--teal);font-family:monospace}
+
+  .mcq{background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:.9rem;overflow:hidden}
+  .mcq-q{padding:.9rem 1.1rem;font-size:.87rem;color:var(--text-2)}
+  .mcq-q .qnum{font-weight:700;color:var(--text)}
+  .mcq-opts{padding:0 1.1rem .5rem;font-size:.85rem;color:var(--text-2)}
+  .mcq-opts div{padding:.25rem 0}
+  .mcq details{border-top:1px solid var(--border)}
+  .mcq summary{cursor:pointer;padding:.7rem 1.1rem;font-size:.8rem;color:var(--purple);list-style:none}
+  .mcq summary::-webkit-details-marker{display:none}
+  .mcq-answer{padding:0 1.1rem .9rem;font-size:.85rem;color:var(--text-2)}
+  .mcq-answer .correct{color:var(--green);font-weight:700}
+
+  .progress-note{font-size:.82rem;color:var(--text-3);text-align:center;margin-top:2.5rem}
+  .src-note{font-size:.78rem;color:var(--text-3);margin-bottom:2rem}
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="index.html">&larr; CCA-F Personal Notes</a>
+  <header>
+    <span class="weight-tag">D2 &middot; 18% of exam</span>
+    <h1>Tool Design &amp; MCP Integration</h1>
+    <p class="meta">Task Statements 2.1&ndash;2.5</p>
+  </header>
+  <p class="src-note">Source: Claude Certified Architect &ndash; Foundations Certification Exam Guide (v0.1, last updated Feb 10 2025), Domain 2 section, official sample Question 2, and Exercise 1.</p>
+
+  <details class="topic">
+    <summary><h2><span class="sec-num">1</span>Topic Keywords</h2></summary>
+    <div class="topic-body">
+      <div class="kw-legend">
+        <span><i style="background:var(--purple)"></i>2.1 Interface design</span>
+        <span><i style="background:var(--red)"></i>2.2 Structured errors</span>
+        <span><i style="background:var(--teal)"></i>2.3 Distribution &amp; choice</span>
+        <span><i style="background:var(--blue)"></i>2.4 MCP servers</span>
+        <span><i style="background:var(--amber)"></i>2.5 Built-in tools</span>
+      </div>
+      <dl class="keyword-grid">
+        <div class="kw g1"><dt>Tool description</dt><dd>The primary mechanism an LLM uses for tool selection. Minimal descriptions cause unreliable selection among similar tools.</dd></div>
+        <div class="kw g1"><dt>Misrouting</dt><dd>Caused by ambiguous or overlapping descriptions &mdash; e.g. two tools whose descriptions read almost identically.</dd></div>
+        <div class="kw g1"><dt>Keyword-sensitive instructions</dt><dd>Wording in the system prompt that can create unintended tool associations, even overriding a well-written tool description.</dd></div>
+        <div class="kw g2"><dt><code>isError</code> flag</dt><dd>The MCP pattern for communicating a tool failure back to the agent.</dd></div>
+        <div class="kw g2"><dt>Error categories</dt><dd>Transient (timeout/unavailable), validation (bad input), business (policy violation), permission &mdash; each needs a different agent response.</dd></div>
+        <div class="kw g2"><dt><code>isRetryable</code></dt><dd>Boolean on structured error metadata telling the agent whether trying again could possibly succeed.</dd></div>
+        <div class="kw g2"><dt>Access failure vs. empty result</dt><dd>An access failure needs a retry decision. A valid empty result means the query succeeded and simply found nothing &mdash; not the same thing.</dd></div>
+        <div class="kw g3"><dt>Tool-count degradation</dt><dd>The named number: 18 tools instead of 4&ndash;5 measurably degrades tool-selection reliability by increasing decision complexity.</dd></div>
+        <div class="kw g3"><dt>Scoped tool access</dt><dd>Give an agent only the tools its role needs, with limited cross-role tools reserved for specific high-frequency needs.</dd></div>
+        <div class="kw g3"><dt><code>tool_choice</code></dt><dd>Three modes: <code>"auto"</code> (model may or may not call a tool), <code>"any"</code> (must call some tool, model picks which), forced (<code>{"type":"tool","name":"..."}</code>, must call this exact one).</dd></div>
+        <div class="kw g4"><dt><code>.mcp.json</code></dt><dd>Project-level MCP server config, shared team tooling, supports environment-variable expansion (e.g. <code>${GITHUB_TOKEN}</code>) so secrets aren't committed.</dd></div>
+        <div class="kw g4"><dt><code>~/.claude.json</code></dt><dd>User-level MCP server config &mdash; personal or experimental servers, not shared with the team.</dd></div>
+        <div class="kw g4"><dt>MCP tools vs. MCP resources</dt><dd>Tools perform actions. Resources expose content catalogs (issue summaries, doc hierarchies, DB schemas) so the agent doesn't need exploratory tool calls just to see what's available.</dd></div>
+        <div class="kw g4"><dt>Simultaneous server discovery</dt><dd>Tools from every configured MCP server are discovered at connection time and are all available to the agent at once.</dd></div>
+        <div class="kw g5"><dt>Grep</dt><dd>Built-in tool for content search &mdash; patterns like function names, error messages, import statements inside file contents.</dd></div>
+        <div class="kw g5"><dt>Glob</dt><dd>Built-in tool for file <em>path</em> pattern matching &mdash; finding files by name/extension pattern, not by content.</dd></div>
+        <div class="kw g5"><dt>Edit vs. Read+Write</dt><dd><code>Edit</code> needs a unique text match to apply a targeted change. When that match isn't unique, the reliable fallback is <code>Read</code> the full file, then <code>Write</code> it back modified.</dd></div>
+      </dl>
+    </div>
+  </details>
+
+  <details class="topic">
+    <summary><h2><span class="sec-num">2</span>Main Pointers</h2></summary>
+    <div class="topic-body">
+      <div class="cornell">
+        <div class="cornell-row">
+          <div class="cornell-cue g1"><span class="ts">Task Statement</span>2.1<br>Tool interface design</div>
+          <div class="cornell-note">
+            <p><span class="lbl">Knowledge:</span> descriptions are the <span class="hl">primary tool-selection signal</span> &mdash; minimal ones cause unreliable selection between similar tools. Good descriptions include input formats, example queries, edge cases, and boundary explanations. Ambiguous/overlapping descriptions cause <span class="hl">misrouting</span>. System-prompt wording can create unintended tool associations that override a good description.</p>
+            <p><span class="lbl">Skills:</span></p>
+            <ul>
+              <li>Write descriptions that clearly differentiate purpose, expected inputs/outputs, and when to use this tool versus a similar alternative.</li>
+              <li>Rename a tool and rewrite its description to remove functional overlap with another (e.g. a vague content-analysis tool renamed and re-described for one specific input type).</li>
+              <li>Split an overly generic tool into purpose-specific tools with defined input/output contracts, rather than one tool trying to do three jobs.</li>
+              <li>Review the system prompt itself for keyword-sensitive wording that might be silently overriding otherwise well-written tool descriptions.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="cornell-row">
+          <div class="cornell-cue g2"><span class="ts">Task Statement</span>2.2<br>Structured error responses</div>
+          <div class="cornell-note">
+            <p><span class="lbl">Knowledge:</span> MCP's <code>isError</code> flag communicates tool failure. Four error types matter: transient, validation, business, permission. A generic "Operation failed" message <span class="hl">prevents appropriate recovery</span>. Structured metadata (retryable vs. not) prevents wasted retry attempts.</p>
+            <p><span class="lbl">Skills:</span></p>
+            <ul>
+              <li>Return structured error metadata: <code>errorCategory</code> (transient/validation/permission), <code>isRetryable</code> boolean, human-readable description.</li>
+              <li>Include <code>retriable: false</code> plus a customer-friendly explanation for business-rule violations, so the agent can communicate appropriately rather than retry blindly.</li>
+              <li>Implement local error recovery inside a subagent for transient failures; only propagate to the coordinator errors that couldn't be resolved locally, along with partial results and what was attempted.</li>
+              <li>Distinguish an access failure (needs a retry decision) from a valid empty result (a successful query that simply found no matches) &mdash; conflating the two is a named failure mode.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="cornell-row">
+          <div class="cornell-cue g3"><span class="ts">Task Statement</span>2.3<br>Tool distribution &amp; tool_choice</div>
+          <div class="cornell-note">
+            <p><span class="lbl">Knowledge:</span> too many tools on one agent (the guide's own example: <span class="hl">18 instead of 4&ndash;5</span>) degrades tool-selection reliability by increasing decision complexity. Agents given tools outside their specialization tend to misuse them (e.g. a synthesis-only agent attempting web searches). <span class="hl">Scoped tool access</span> = give each agent only what its role needs, plus limited cross-role tools for high-frequency needs. <code>tool_choice</code> has three modes: <code>"auto"</code>, <code>"any"</code>, forced selection.</p>
+            <p><span class="lbl">Skills:</span></p>
+            <ul>
+              <li>Restrict each subagent's tool set to what its role actually requires, preventing cross-specialization misuse.</li>
+              <li>Replace an overly generic tool with a constrained alternative (e.g. a raw URL-fetch tool replaced by one that validates the URL is actually a document).</li>
+              <li>Provide a scoped cross-role tool for a high-frequency need (e.g. a narrow fact-check tool for an agent that mostly doesn't need broad access), while complex cases still route through the coordinator.</li>
+              <li>Use forced <code>tool_choice</code> to guarantee a specific tool runs first (e.g. a metadata-extraction step before enrichment steps), processing later steps in follow-up turns.</li>
+              <li>Use <code>tool_choice: "any"</code> to guarantee the model calls <em>some</em> tool instead of returning conversational text.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="cornell-row">
+          <div class="cornell-cue g4"><span class="ts">Task Statement</span>2.4<br>MCP server integration</div>
+          <div class="cornell-note">
+            <p><span class="lbl">Knowledge:</span> MCP server scoping &mdash; project-level <code>.mcp.json</code> for shared team tooling vs. user-level <code>~/.claude.json</code> for personal/experimental servers. <span class="hl">Environment-variable expansion</span> (e.g. <code>${GITHUB_TOKEN}</code>) in <code>.mcp.json</code> keeps credentials out of committed files. Tools from every configured MCP server are discovered at connection time and are all simultaneously available. MCP <em>resources</em> expose content catalogs to cut down on exploratory tool calls.</p>
+            <p><span class="lbl">Skills:</span></p>
+            <ul>
+              <li>Configure shared MCP servers in project-scoped <code>.mcp.json</code> with environment-variable expansion for auth tokens.</li>
+              <li>Configure personal/experimental MCP servers in user-scoped <code>~/.claude.json</code>.</li>
+              <li>Enhance MCP tool descriptions in detail enough that the agent doesn't default to a weaker built-in tool (like Grep) over a more capable MCP tool that could do the job better.</li>
+              <li>Prefer an existing community MCP server for a standard integration (e.g. a common SaaS tool) over building custom &mdash; reserve custom servers for genuinely team-specific workflows.</li>
+              <li>Expose a content catalog as an MCP resource so the agent has visibility into available data without needing exploratory tool calls just to find out what exists.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="cornell-row">
+          <div class="cornell-cue g5"><span class="ts">Task Statement</span>2.5<br>Built-in tools</div>
+          <div class="cornell-note">
+            <p><span class="lbl">Knowledge:</span> Grep = content search (function names, error messages, import statements inside files). Glob = file <em>path</em> pattern matching. Read/Write = full-file operations. Edit = targeted modification via <span class="hl">unique text matching</span>. When Edit's match isn't unique, Read + Write is the reliable fallback.</p>
+            <p><span class="lbl">Skills:</span></p>
+            <ul>
+              <li>Select Grep to search code content across a codebase &mdash; e.g. finding every caller of a function, locating a specific error message.</li>
+              <li>Select Glob to find files by naming pattern &mdash; e.g. all files matching a test-file extension pattern.</li>
+              <li>Use Read to load full contents, then Write, when Edit can't find a unique anchor to target.</li>
+              <li>Build codebase understanding incrementally: Grep to find entry points first, then Read to follow imports and trace flows &mdash; rather than reading every file upfront.</li>
+              <li>Trace a function's usage across wrapper modules by first identifying all its exported names, then searching for each name across the codebase.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="cornell-summary">
+        <strong class="summary-label">Summary, one line per task statement:</strong>
+        <ul>
+          <li><strong>2.1</strong> The description <em>is</em> the routing signal &mdash; vague or overlapping descriptions cause misrouting, not model failure.</li>
+          <li><strong>2.2</strong> Four error categories, each demanding a different agent response; never conflate an access failure with a valid empty result.</li>
+          <li><strong>2.3</strong> Fewer tools per agent = more reliable selection (18 vs. 4&ndash;5 is the number to remember); <code>tool_choice</code> auto/any/forced controls how much freedom the model has.</li>
+          <li><strong>2.4</strong> <code>.mcp.json</code> is shared/project, <code>~/.claude.json</code> is personal; resources are for content, tools are for actions.</li>
+          <li><strong>2.5</strong> Grep searches content, Glob matches paths, Edit needs uniqueness or falls back to Read+Write.</li>
+        </ul>
+      </div>
+    </div>
+  </details>
+
+  <details class="topic">
+    <summary><h2><span class="sec-num">3</span>Mind Map and Pictorial Info</h2></summary>
+    <div class="topic-body">
+      <h3 class="subhead">Mind Map</h3>
+      <div class="mindmap-wrap">
+        <svg viewBox="0 0 800 700" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Mind map of D2: Tool Design and MCP Integration, with five branches: tool interface design, structured errors, tool distribution and tool choice, MCP server integration, and built-in tools, each with a short code snippet.">
+          <circle cx="400" cy="280" r="74" fill="#F5EDD6" stroke="#9A6E1A" stroke-width="2"/>
+          <text x="400" y="273" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="#9A6E1A">D2</text>
+          <text x="400" y="291" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#3D4235">Tool Design &amp;</text>
+          <text x="400" y="305" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#3D4235">MCP Integration</text>
+
+          <!-- 2.1 top-left -->
+          <path d="M345,225 C280,160 230,120 155,90" fill="none" stroke="#7A4A9A" stroke-width="1.5"/>
+          <rect x="15" y="15" width="220" height="105" rx="8" fill="#EDE0F5" stroke="#7A4A9A"/>
+          <text x="125" y="35" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11.5" font-weight="700" fill="#7A4A9A">2.1 Interface Design</text>
+          <text x="125" y="52" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">description = selection signal</text>
+          <rect x="27" y="62" width="196" height="20" rx="4" fill="#FAFCF5" stroke="#7A4A9A" stroke-opacity=".4"/>
+          <text x="125" y="76" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#7A4A9A">"when to use vs X" in description</text>
+          <text x="125" y="98" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#9A2A4A">overlap &rarr; misrouting</text>
+
+          <!-- 2.2 top-right -->
+          <path d="M455,225 C520,160 570,120 645,90" fill="none" stroke="#9A2A4A" stroke-width="1.5"/>
+          <rect x="565" y="10" width="220" height="120" rx="8" fill="#F5DDE5" stroke="#9A2A4A"/>
+          <text x="675" y="30" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11.5" font-weight="700" fill="#9A2A4A">2.2 Structured Errors</text>
+          <text x="675" y="47" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">transient / validation /</text>
+          <text x="675" y="61" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">business / permission</text>
+          <rect x="577" y="71" width="196" height="20" rx="4" fill="#FAFCF5" stroke="#9A2A4A" stroke-opacity=".4"/>
+          <text x="675" y="85" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#9A2A4A">isRetryable: false</text>
+          <text x="675" y="105" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">empty result &ne; error</text>
+          <text x="675" y="119" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">local recovery before propagate</text>
+
+          <!-- 2.3 bottom-left -->
+          <path d="M340,335 C270,400 220,440 145,470" fill="none" stroke="#1A6B54" stroke-width="1.5"/>
+          <rect x="15" y="460" width="220" height="115" rx="8" fill="#D8EEE8" stroke="#1A6B54"/>
+          <text x="125" y="480" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11.5" font-weight="700" fill="#1A6B54">2.3 Distribution &amp; Choice</text>
+          <text x="125" y="497" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">18 tools vs 4&ndash;5 = worse</text>
+          <text x="125" y="511" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">tool selection</text>
+          <rect x="27" y="521" width="196" height="20" rx="4" fill="#FAFCF5" stroke="#1A6B54" stroke-opacity=".4"/>
+          <text x="125" y="535" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#1A6B54">tool_choice: "auto"|"any"|forced</text>
+          <text x="125" y="557" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">scoped access per role</text>
+
+          <!-- 2.4 bottom-right -->
+          <path d="M460,335 C530,400 580,440 655,470" fill="none" stroke="#2A5C9A" stroke-width="1.5"/>
+          <rect x="565" y="460" width="220" height="115" rx="8" fill="#DDE8F5" stroke="#2A5C9A"/>
+          <text x="675" y="480" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11.5" font-weight="700" fill="#2A5C9A">2.4 MCP Servers</text>
+          <text x="675" y="497" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">tools = actions,</text>
+          <text x="675" y="511" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">resources = content</text>
+          <rect x="577" y="521" width="196" height="20" rx="4" fill="#FAFCF5" stroke="#2A5C9A" stroke-opacity=".4"/>
+          <text x="675" y="535" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#2A5C9A">.mcp.json vs ~/.claude.json</text>
+          <text x="675" y="557" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">${GITHUB_TOKEN} expansion</text>
+
+          <!-- 2.5 bottom-center -->
+          <path d="M400,354 L400,610" fill="none" stroke="#9A6E1A" stroke-width="1.5"/>
+          <rect x="290" y="612" width="220" height="70" rx="8" fill="#F5EDD6" stroke="#9A6E1A"/>
+          <text x="400" y="632" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11.5" font-weight="700" fill="#9A6E1A">2.5 Built-in Tools</text>
+          <text x="400" y="649" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#9A6E1A">Grep=content, Glob=paths</text>
+          <text x="400" y="666" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">Edit needs a unique match</text>
+        </svg>
+      </div>
+
+      <h3 class="subhead">Decision Table: Error Categories</h3>
+      <table class="decision-table">
+        <thead><tr><th>Error type</th><th>Retryable?</th><th>Agent's correct move</th></tr></thead>
+        <tbody>
+          <tr><td>Transient (timeout, service unavailable)</td><td>Yes</td><td>Retry, ideally locally within the subagent first</td></tr>
+          <tr><td>Validation (bad input)</td><td>No</td><td>Fix the input &mdash; retrying identical input won't help</td></tr>
+          <tr><td>Business (policy violation)</td><td>No</td><td>Explain to the user / escalate, don't retry</td></tr>
+          <tr><td>Permission</td><td>No</td><td>Don't retry, don't reveal restricted data, escalate if needed</td></tr>
+          <tr><td>Valid empty result (not an error)</td><td>n/a</td><td>Query succeeded, no match &mdash; treat as a real answer, not a failure</td></tr>
+        </tbody>
+      </table>
+
+      <h3 class="subhead">Decision Table: Built-in Tools</h3>
+      <table class="decision-table">
+        <thead><tr><th>Built-in tool</th><th>Searches by</th><th>Use when</th></tr></thead>
+        <tbody>
+          <tr><td><code>Grep</code></td><td>File content</td><td>Finding function callers, error messages, import statements</td></tr>
+          <tr><td><code>Glob</code></td><td>File path pattern</td><td>Finding files by name/extension pattern</td></tr>
+          <tr><td><code>Edit</code></td><td>Unique text anchor</td><td>A targeted change with an unambiguous match</td></tr>
+          <tr><td><code>Read</code> + <code>Write</code></td><td>n/a (full file)</td><td>Fallback when Edit's anchor text isn't unique</td></tr>
+        </tbody>
+      </table>
+
+      <h3 class="subhead">Diagram: Structured Error Flow</h3>
+      <div class="mindmap-wrap">
+        <svg viewBox="0 0 720 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Flow diagram: a tool call fails and returns isError true with an errorCategory. Transient errors are retried locally. Validation, business, and permission errors are not retried and instead return a structured explanation, with unresolved cases propagating to the coordinator with partial results and what was attempted.">
+          <rect x="10" y="80" width="120" height="46" rx="8" fill="#EEF1E7" stroke="rgba(26,31,20,.2)"/>
+          <text x="70" y="99" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#3D4235">Tool call</text>
+          <text x="70" y="114" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#9A2A4A">fails</text>
+          <path d="M130,103 L163,103" stroke="#6B7060" stroke-width="1.5" marker-end="url(#ef1)"/>
+
+          <rect x="165" y="72" width="150" height="62" rx="8" fill="#F5DDE5" stroke="#9A2A4A"/>
+          <text x="240" y="93" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="#9A2A4A">isError: true</text>
+          <text x="240" y="108" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">errorCategory: "..."</text>
+          <text x="240" y="122" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">+ isRetryable, message</text>
+
+          <path d="M315,90 C345,60 365,55 390,60" stroke="#1A7A3A" stroke-width="1.5" fill="none" marker-end="url(#ef2)"/>
+          <text x="352" y="45" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#1A7A3A">transient</text>
+          <rect x="392" y="35" width="150" height="46" rx="8" fill="#D8F0E0" stroke="#1A7A3A"/>
+          <text x="467" y="55" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="#1A7A3A">Retry locally</text>
+          <text x="467" y="70" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">inside the subagent first</text>
+
+          <path d="M315,116 C345,146 365,151 390,146" stroke="#9A2A4A" stroke-width="1.5" fill="none" marker-end="url(#ef3)"/>
+          <text x="352" y="164" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#9A2A4A">validation/business/permission</text>
+          <rect x="392" y="123" width="150" height="46" rx="8" fill="#F5DDE5" stroke="#9A2A4A"/>
+          <text x="467" y="143" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="#9A2A4A">Do not retry</text>
+          <text x="467" y="158" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">explain / escalate instead</text>
+
+          <path d="M542,58 C580,58 590,85 590,103" stroke="#6B7060" stroke-width="1.5" fill="none"/>
+          <path d="M542,146 C580,146 590,120 590,103" stroke="#6B7060" stroke-width="1.5" fill="none" marker-end="url(#ef4)"/>
+          <rect x="595" y="80" width="115" height="46" rx="8" fill="#EEF1E7" stroke="rgba(26,31,20,.2)"/>
+          <text x="652" y="99" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">Unresolved &rarr;</text>
+          <text x="652" y="113" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">coordinator</text>
+
+          <defs>
+            <marker id="ef1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+            <marker id="ef2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1A7A3A"/></marker>
+            <marker id="ef3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9A2A4A"/></marker>
+            <marker id="ef4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+          </defs>
+        </svg>
+      </div>
+
+      <h3 class="subhead">Diagram: MCP Scoping</h3>
+      <div class="mindmap-wrap">
+        <svg viewBox="0 0 720 210" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Diagram comparing project-scoped MCP configuration in dot mcp dot json, shared via version control with environment variable expansion, against user-scoped configuration in the home claude dot json file, personal and experimental only.">
+          <rect x="20" y="20" width="320" height="170" rx="8" fill="#DDE8F5" stroke="#2A5C9A" stroke-width="1.5"/>
+          <text x="180" y="45" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="12" font-weight="700" fill="#2A5C9A">PROJECT SCOPE</text>
+          <rect x="40" y="58" width="280" height="24" rx="4" fill="#FAFCF5" stroke="#2A5C9A" stroke-opacity=".4"/>
+          <text x="180" y="74" text-anchor="middle" font-family="Consolas, monospace" font-size="9.5" fill="#2A5C9A">.mcp.json</text>
+          <text x="180" y="100" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">shared, version-controlled,</text>
+          <text x="180" y="115" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">whole team gets it</text>
+          <rect x="40" y="128" width="280" height="24" rx="4" fill="#FAFCF5" stroke="#2A5C9A" stroke-opacity=".4"/>
+          <text x="180" y="144" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="#2A5C9A">"env": {"TOKEN":"${GITHUB_TOKEN}"}</text>
+          <text x="180" y="172" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">secret stays out of the committed file</text>
+
+          <rect x="380" y="20" width="320" height="170" rx="8" fill="#EEF1E7" stroke="rgba(26,31,20,.25)" stroke-width="1.5"/>
+          <text x="540" y="45" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="12" font-weight="700" fill="#3D4235">USER SCOPE</text>
+          <rect x="400" y="58" width="280" height="24" rx="4" fill="#FAFCF5" stroke="rgba(26,31,20,.3)"/>
+          <text x="540" y="74" text-anchor="middle" font-family="Consolas, monospace" font-size="9.5" fill="#3D4235">~/.claude.json</text>
+          <text x="540" y="100" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">personal, not shared,</text>
+          <text x="540" y="115" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">not version-controlled</text>
+          <text x="540" y="145" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">for experimental / one-off</text>
+          <text x="540" y="160" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">servers you're trying out</text>
+        </svg>
+      </div>
+    </div>
+  </details>
+
+  <details class="topic">
+    <summary><h2><span class="sec-num">4</span>Active Recall</h2></summary>
+    <div class="topic-body">
+      <details class="recall-item"><summary>What is the single biggest factor driving whether an LLM picks the right tool?</summary><div class="recall-answer">The tool's <strong>description</strong> &mdash; it's the primary mechanism the model uses for tool selection. Minimal descriptions cause unreliable selection among similar tools.</div></details>
+
+      <details class="recall-item"><summary>Besides the description text itself, what else can silently affect tool selection?</summary><div class="recall-answer">The system prompt's wording. Keyword-sensitive instructions in the system prompt can create unintended tool associations that override an otherwise well-written tool description.</div></details>
+
+      <details class="recall-item"><summary>Name the four MCP error categories and which ones are retryable.</summary><div class="recall-answer">Transient (retryable), validation (not retryable &mdash; fix the input), business/policy (not retryable &mdash; explain or escalate), permission (not retryable &mdash; don't reveal restricted data).</div></details>
+
+      <details class="recall-item"><summary>Why is "the query returned zero results" not the same thing as "the query failed"?</summary><div class="recall-answer">A valid empty result means the tool worked and genuinely found nothing &mdash; it's a real answer. An access failure means the system couldn't be reached at all and needs a retry decision. Treating an empty result as a failure (or vice versa) is a named reliability mistake.</div></details>
+
+      <details class="recall-item"><summary>What specific number does the guide use to illustrate tool-count degradation, and why does it happen?</summary><div class="recall-answer">18 tools instead of 4&ndash;5. More tools means more decision complexity for the model at selection time, which measurably worsens reliability.</div></details>
+
+      <details class="recall-item"><summary>Explain all three <code>tool_choice</code> modes.</summary><div class="recall-answer"><code>"auto"</code>: model may return text instead of calling a tool. <code>"any"</code>: model must call a tool but picks which one. Forced (<code>{"type":"tool","name":"..."}</code>): model must call that exact named tool.</div></details>
+
+      <details class="recall-item"><summary>Where does a shared team MCP server get configured, versus a personal experimental one?</summary><div class="recall-answer">Shared/team: project-scoped <code>.mcp.json</code> (supports env-var expansion like <code>${GITHUB_TOKEN}</code> so secrets aren't committed). Personal/experimental: user-scoped <code>~/.claude.json</code>.</div></details>
+
+      <details class="recall-item"><summary>What's the functional difference between an MCP tool and an MCP resource?</summary><div class="recall-answer">A tool performs an action the agent requests. A resource exposes a content catalog (e.g. issue summaries, documentation hierarchies, database schemas) so the agent has visibility into what's available without spending tool calls just to explore.</div></details>
+
+      <details class="recall-item"><summary>When you configure multiple MCP servers at once, how does the agent see their tools?</summary><div class="recall-answer">Tools from every configured server are discovered at connection time and are all simultaneously available &mdash; not selectively loaded per-request.</div></details>
+
+      <details class="recall-item"><summary>Grep vs. Glob &mdash; what does each actually search?</summary><div class="recall-answer">Grep searches file <em>content</em> (patterns like function names, error messages, import statements). Glob matches file <em>paths</em> by naming pattern &mdash; it doesn't look inside files at all.</div></details>
+
+      <details class="recall-item"><summary>Edit just failed because the anchor text wasn't unique. What's the correct fallback?</summary><div class="recall-answer">Read the full file, then Write it back with the modification applied &mdash; the reliable fallback when Edit can't find a unique text match to target.</div></details>
+
+      <details class="recall-item"><summary>What's the recommended incremental strategy for understanding an unfamiliar codebase with these tools?</summary><div class="recall-answer">Start with Grep to find entry points, then use Read to follow imports and trace flows &mdash; rather than reading every file upfront.</div></details>
+    </div>
+  </details>
+
+  <details class="topic">
+    <summary><h2><span class="sec-num">5</span>Official Sample Question (D2)</h2></summary>
+    <div class="topic-body">
+      <div class="mcq">
+        <div class="mcq-q"><span class="qnum">Q2.</span> (Scenario 1, Customer Support) Logs show the agent frequently calls one tool when it should call another (e.g. asking about an order routes to the customer-lookup tool instead of the order-lookup tool). Both tools have minimal descriptions and accept similar identifier formats. Most effective <em>first</em> step?</div>
+        <div class="mcq-opts">
+          <div>A) Add 5&ndash;8 few-shot examples to the system prompt showing correct routing.</div>
+          <div>B) Expand each tool's description to include input formats, example queries, edge cases, and boundaries versus the other tool.</div>
+          <div>C) Add a routing layer that pre-selects the tool from keyword/identifier patterns before the model runs.</div>
+          <div>D) Consolidate both tools into one that internally determines which backend to query.</div>
+        </div>
+        <details><summary>Show answer</summary><div class="mcq-answer"><span class="correct">B.</span> Descriptions are the primary tool-selection mechanism &mdash; minimal descriptions are the root cause here, so fixing them is the lowest-effort, highest-leverage first step. A adds token overhead without touching the root cause. C bypasses the model's own language understanding and is over-engineered as a "first step." D is a legitimate architectural option but requires more effort than the situation calls for yet.</div></details>
+      </div>
+    </div>
+  </details>
+
+  <p class="progress-note">D2 done &middot; next up: whichever domain you choose (D3, D4, or D5)</p>
+</main>
+</body>
+</html>
