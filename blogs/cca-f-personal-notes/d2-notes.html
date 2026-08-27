@@ -107,7 +107,7 @@
     <h1>Tool Design &amp; MCP Integration</h1>
     <p class="meta">Task Statements 2.1&ndash;2.5</p>
   </header>
-  <p class="src-note">Source: Claude Certified Architect &ndash; Foundations Certification Exam Guide (v0.1, last updated Feb 10 2025), Domain 2 section, official sample Question 2, and Exercise 1.</p>
+  <p class="src-note">Source: Claude Certified Architect &ndash; Foundations Certification Exam Guide, Domain 2 section, official sample Question 2, and Exercise 1.</p>
 
   <details class="topic">
     <summary><h2><span class="sec-num">1</span>Topic Keywords</h2></summary>
@@ -121,21 +121,21 @@
       </div>
       <dl class="keyword-grid">
         <div class="kw g1"><dt>Tool description</dt><dd>The primary mechanism an LLM uses for tool selection. Minimal descriptions cause unreliable selection among similar tools.</dd></div>
-        <div class="kw g1"><dt>Misrouting</dt><dd>Caused by ambiguous or overlapping descriptions &mdash; e.g. two tools whose descriptions read almost identically.</dd></div>
+        <div class="kw g1"><dt>Misrouting</dt><dd>Caused by ambiguous or overlapping descriptions - e.g. two tools whose descriptions read almost identically.</dd></div>
         <div class="kw g1"><dt>Keyword-sensitive instructions</dt><dd>Wording in the system prompt that can create unintended tool associations, even overriding a well-written tool description.</dd></div>
         <div class="kw g2"><dt><code>isError</code> flag</dt><dd>The MCP pattern for communicating a tool failure back to the agent.</dd></div>
-        <div class="kw g2"><dt>Error categories</dt><dd>Transient (timeout/unavailable), validation (bad input), business (policy violation), permission &mdash; each needs a different agent response.</dd></div>
+        <div class="kw g2"><dt>Error categories</dt><dd>Transient (timeout/unavailable), validation (bad input), business (policy violation), permission - each needs a different agent response.</dd></div>
         <div class="kw g2"><dt><code>isRetryable</code></dt><dd>Boolean on structured error metadata telling the agent whether trying again could possibly succeed.</dd></div>
-        <div class="kw g2"><dt>Access failure vs. empty result</dt><dd>An access failure needs a retry decision. A valid empty result means the query succeeded and simply found nothing &mdash; not the same thing.</dd></div>
+        <div class="kw g2"><dt>Access failure vs. empty result</dt><dd>An access failure needs a retry decision. A valid empty result means the query succeeded and simply found nothing - not the same thing.</dd></div>
         <div class="kw g3"><dt>Tool-count degradation</dt><dd>The named number: 18 tools instead of 4&ndash;5 measurably degrades tool-selection reliability by increasing decision complexity.</dd></div>
         <div class="kw g3"><dt>Scoped tool access</dt><dd>Give an agent only the tools its role needs, with limited cross-role tools reserved for specific high-frequency needs.</dd></div>
         <div class="kw g3"><dt><code>tool_choice</code></dt><dd>Three modes: <code>"auto"</code> (model may or may not call a tool), <code>"any"</code> (must call some tool, model picks which), forced (<code>{"type":"tool","name":"..."}</code>, must call this exact one).</dd></div>
         <div class="kw g4"><dt><code>.mcp.json</code></dt><dd>Project-level MCP server config, shared team tooling, supports environment-variable expansion (e.g. <code>${GITHUB_TOKEN}</code>) so secrets aren't committed.</dd></div>
-        <div class="kw g4"><dt><code>~/.claude.json</code></dt><dd>User-level MCP server config &mdash; personal or experimental servers, not shared with the team.</dd></div>
+        <div class="kw g4"><dt><code>~/.claude.json</code></dt><dd>User-level MCP server config - personal or experimental servers, not shared with the team.</dd></div>
         <div class="kw g4"><dt>MCP tools vs. MCP resources</dt><dd>Tools perform actions. Resources expose content catalogs (issue summaries, doc hierarchies, DB schemas) so the agent doesn't need exploratory tool calls just to see what's available.</dd></div>
         <div class="kw g4"><dt>Simultaneous server discovery</dt><dd>Tools from every configured MCP server are discovered at connection time and are all available to the agent at once.</dd></div>
-        <div class="kw g5"><dt>Grep</dt><dd>Built-in tool for content search &mdash; patterns like function names, error messages, import statements inside file contents.</dd></div>
-        <div class="kw g5"><dt>Glob</dt><dd>Built-in tool for file <em>path</em> pattern matching &mdash; finding files by name/extension pattern, not by content.</dd></div>
+        <div class="kw g5"><dt>Grep</dt><dd>Built-in tool for content search - patterns like function names, error messages, import statements inside file contents.</dd></div>
+        <div class="kw g5"><dt>Glob</dt><dd>Built-in tool for file <em>path</em> pattern matching - finding files by name/extension pattern, not by content.</dd></div>
         <div class="kw g5"><dt>Edit vs. Read+Write</dt><dd><code>Edit</code> needs a unique text match to apply a targeted change. When that match isn't unique, the reliable fallback is <code>Read</code> the full file, then <code>Write</code> it back modified.</dd></div>
       </dl>
     </div>
@@ -148,7 +148,7 @@
         <div class="cornell-row">
           <div class="cornell-cue g1"><span class="ts">Task Statement</span>2.1<br>Tool interface design</div>
           <div class="cornell-note">
-            <p><span class="lbl">Knowledge:</span> descriptions are the <span class="hl">primary tool-selection signal</span> &mdash; minimal ones cause unreliable selection between similar tools. Good descriptions include input formats, example queries, edge cases, and boundary explanations. Ambiguous/overlapping descriptions cause <span class="hl">misrouting</span>. System-prompt wording can create unintended tool associations that override a good description.</p>
+            <p><span class="lbl">Knowledge:</span> descriptions are the <span class="hl">primary tool-selection signal</span> - minimal ones cause unreliable selection between similar tools. Good descriptions include input formats, example queries, edge cases, and boundary explanations. Ambiguous/overlapping descriptions cause <span class="hl">misrouting</span>. System-prompt wording can create unintended tool associations that override a good description.</p>
             <p><span class="lbl">Skills:</span></p>
             <ul>
               <li>Write descriptions that clearly differentiate purpose, expected inputs/outputs, and when to use this tool versus a similar alternative.</li>
@@ -167,7 +167,7 @@
               <li>Return structured error metadata: <code>errorCategory</code> (transient/validation/permission), <code>isRetryable</code> boolean, human-readable description.</li>
               <li>Include <code>retriable: false</code> plus a customer-friendly explanation for business-rule violations, so the agent can communicate appropriately rather than retry blindly.</li>
               <li>Implement local error recovery inside a subagent for transient failures; only propagate to the coordinator errors that couldn't be resolved locally, along with partial results and what was attempted.</li>
-              <li>Distinguish an access failure (needs a retry decision) from a valid empty result (a successful query that simply found no matches) &mdash; conflating the two is a named failure mode.</li>
+              <li>Distinguish an access failure (needs a retry decision) from a valid empty result (a successful query that simply found no matches) - conflating the two is a named failure mode.</li>
             </ul>
           </div>
         </div>
@@ -188,13 +188,13 @@
         <div class="cornell-row">
           <div class="cornell-cue g4"><span class="ts">Task Statement</span>2.4<br>MCP server integration</div>
           <div class="cornell-note">
-            <p><span class="lbl">Knowledge:</span> MCP server scoping &mdash; project-level <code>.mcp.json</code> for shared team tooling vs. user-level <code>~/.claude.json</code> for personal/experimental servers. <span class="hl">Environment-variable expansion</span> (e.g. <code>${GITHUB_TOKEN}</code>) in <code>.mcp.json</code> keeps credentials out of committed files. Tools from every configured MCP server are discovered at connection time and are all simultaneously available. MCP <em>resources</em> expose content catalogs to cut down on exploratory tool calls.</p>
+            <p><span class="lbl">Knowledge:</span> MCP server scoping - project-level <code>.mcp.json</code> for shared team tooling vs. user-level <code>~/.claude.json</code> for personal/experimental servers. <span class="hl">Environment-variable expansion</span> (e.g. <code>${GITHUB_TOKEN}</code>) in <code>.mcp.json</code> keeps credentials out of committed files. Tools from every configured MCP server are discovered at connection time and are all simultaneously available. MCP <em>resources</em> expose content catalogs to cut down on exploratory tool calls.</p>
             <p><span class="lbl">Skills:</span></p>
             <ul>
               <li>Configure shared MCP servers in project-scoped <code>.mcp.json</code> with environment-variable expansion for auth tokens.</li>
               <li>Configure personal/experimental MCP servers in user-scoped <code>~/.claude.json</code>.</li>
               <li>Enhance MCP tool descriptions in detail enough that the agent doesn't default to a weaker built-in tool (like Grep) over a more capable MCP tool that could do the job better.</li>
-              <li>Prefer an existing community MCP server for a standard integration (e.g. a common SaaS tool) over building custom &mdash; reserve custom servers for genuinely team-specific workflows.</li>
+              <li>Prefer an existing community MCP server for a standard integration (e.g. a common SaaS tool) over building custom - reserve custom servers for genuinely team-specific workflows.</li>
               <li>Expose a content catalog as an MCP resource so the agent has visibility into available data without needing exploratory tool calls just to find out what exists.</li>
             </ul>
           </div>
@@ -205,10 +205,10 @@
             <p><span class="lbl">Knowledge:</span> Grep = content search (function names, error messages, import statements inside files). Glob = file <em>path</em> pattern matching. Read/Write = full-file operations. Edit = targeted modification via <span class="hl">unique text matching</span>. When Edit's match isn't unique, Read + Write is the reliable fallback.</p>
             <p><span class="lbl">Skills:</span></p>
             <ul>
-              <li>Select Grep to search code content across a codebase &mdash; e.g. finding every caller of a function, locating a specific error message.</li>
-              <li>Select Glob to find files by naming pattern &mdash; e.g. all files matching a test-file extension pattern.</li>
+              <li>Select Grep to search code content across a codebase - e.g. finding every caller of a function, locating a specific error message.</li>
+              <li>Select Glob to find files by naming pattern - e.g. all files matching a test-file extension pattern.</li>
               <li>Use Read to load full contents, then Write, when Edit can't find a unique anchor to target.</li>
-              <li>Build codebase understanding incrementally: Grep to find entry points first, then Read to follow imports and trace flows &mdash; rather than reading every file upfront.</li>
+              <li>Build codebase understanding incrementally: Grep to find entry points first, then Read to follow imports and trace flows - rather than reading every file upfront.</li>
               <li>Trace a function's usage across wrapper modules by first identifying all its exported names, then searching for each name across the codebase.</li>
             </ul>
           </div>
@@ -218,7 +218,7 @@
       <div class="cornell-summary">
         <strong class="summary-label">Summary, one line per task statement:</strong>
         <ul>
-          <li><strong>2.1</strong> The description <em>is</em> the routing signal &mdash; vague or overlapping descriptions cause misrouting, not model failure.</li>
+          <li><strong>2.1</strong> The description <em>is</em> the routing signal - vague or overlapping descriptions cause misrouting, not model failure.</li>
           <li><strong>2.2</strong> Four error categories, each demanding a different agent response; never conflate an access failure with a valid empty result.</li>
           <li><strong>2.3</strong> Fewer tools per agent = more reliable selection (18 vs. 4&ndash;5 is the number to remember); <code>tool_choice</code> auto/any/forced controls how much freedom the model has.</li>
           <li><strong>2.4</strong> <code>.mcp.json</code> is shared/project, <code>~/.claude.json</code> is personal; resources are for content, tools are for actions.</li>
@@ -293,10 +293,10 @@
         <thead><tr><th>Error type</th><th>Retryable?</th><th>Agent's correct move</th></tr></thead>
         <tbody>
           <tr><td>Transient (timeout, service unavailable)</td><td>Yes</td><td>Retry, ideally locally within the subagent first</td></tr>
-          <tr><td>Validation (bad input)</td><td>No</td><td>Fix the input &mdash; retrying identical input won't help</td></tr>
+          <tr><td>Validation (bad input)</td><td>No</td><td>Fix the input - retrying identical input won't help</td></tr>
           <tr><td>Business (policy violation)</td><td>No</td><td>Explain to the user / escalate, don't retry</td></tr>
           <tr><td>Permission</td><td>No</td><td>Don't retry, don't reveal restricted data, escalate if needed</td></tr>
-          <tr><td>Valid empty result (not an error)</td><td>n/a</td><td>Query succeeded, no match &mdash; treat as a real answer, not a failure</td></tr>
+          <tr><td>Valid empty result (not an error)</td><td>n/a</td><td>Query succeeded, no match - treat as a real answer, not a failure</td></tr>
         </tbody>
       </table>
 
@@ -380,13 +380,13 @@
   <details class="topic">
     <summary><h2><span class="sec-num">4</span>Active Recall</h2></summary>
     <div class="topic-body">
-      <details class="recall-item"><summary>What is the single biggest factor driving whether an LLM picks the right tool?</summary><div class="recall-answer">The tool's <strong>description</strong> &mdash; it's the primary mechanism the model uses for tool selection. Minimal descriptions cause unreliable selection among similar tools.</div></details>
+      <details class="recall-item"><summary>What is the single biggest factor driving whether an LLM picks the right tool?</summary><div class="recall-answer">The tool's <strong>description</strong> - it's the primary mechanism the model uses for tool selection. Minimal descriptions cause unreliable selection among similar tools.</div></details>
 
       <details class="recall-item"><summary>Besides the description text itself, what else can silently affect tool selection?</summary><div class="recall-answer">The system prompt's wording. Keyword-sensitive instructions in the system prompt can create unintended tool associations that override an otherwise well-written tool description.</div></details>
 
-      <details class="recall-item"><summary>Name the four MCP error categories and which ones are retryable.</summary><div class="recall-answer">Transient (retryable), validation (not retryable &mdash; fix the input), business/policy (not retryable &mdash; explain or escalate), permission (not retryable &mdash; don't reveal restricted data).</div></details>
+      <details class="recall-item"><summary>Name the four MCP error categories and which ones are retryable.</summary><div class="recall-answer">Transient (retryable), validation (not retryable - fix the input), business/policy (not retryable - explain or escalate), permission (not retryable - don't reveal restricted data).</div></details>
 
-      <details class="recall-item"><summary>Why is "the query returned zero results" not the same thing as "the query failed"?</summary><div class="recall-answer">A valid empty result means the tool worked and genuinely found nothing &mdash; it's a real answer. An access failure means the system couldn't be reached at all and needs a retry decision. Treating an empty result as a failure (or vice versa) is a named reliability mistake.</div></details>
+      <details class="recall-item"><summary>Why is "the query returned zero results" not the same thing as "the query failed"?</summary><div class="recall-answer">A valid empty result means the tool worked and genuinely found nothing - it's a real answer. An access failure means the system couldn't be reached at all and needs a retry decision. Treating an empty result as a failure (or vice versa) is a named reliability mistake.</div></details>
 
       <details class="recall-item"><summary>What specific number does the guide use to illustrate tool-count degradation, and why does it happen?</summary><div class="recall-answer">18 tools instead of 4&ndash;5. More tools means more decision complexity for the model at selection time, which measurably worsens reliability.</div></details>
 
@@ -396,13 +396,13 @@
 
       <details class="recall-item"><summary>What's the functional difference between an MCP tool and an MCP resource?</summary><div class="recall-answer">A tool performs an action the agent requests. A resource exposes a content catalog (e.g. issue summaries, documentation hierarchies, database schemas) so the agent has visibility into what's available without spending tool calls just to explore.</div></details>
 
-      <details class="recall-item"><summary>When you configure multiple MCP servers at once, how does the agent see their tools?</summary><div class="recall-answer">Tools from every configured server are discovered at connection time and are all simultaneously available &mdash; not selectively loaded per-request.</div></details>
+      <details class="recall-item"><summary>When you configure multiple MCP servers at once, how does the agent see their tools?</summary><div class="recall-answer">Tools from every configured server are discovered at connection time and are all simultaneously available - not selectively loaded per-request.</div></details>
 
-      <details class="recall-item"><summary>Grep vs. Glob &mdash; what does each actually search?</summary><div class="recall-answer">Grep searches file <em>content</em> (patterns like function names, error messages, import statements). Glob matches file <em>paths</em> by naming pattern &mdash; it doesn't look inside files at all.</div></details>
+      <details class="recall-item"><summary>Grep vs. Glob - what does each actually search?</summary><div class="recall-answer">Grep searches file <em>content</em> (patterns like function names, error messages, import statements). Glob matches file <em>paths</em> by naming pattern - it doesn't look inside files at all.</div></details>
 
-      <details class="recall-item"><summary>Edit just failed because the anchor text wasn't unique. What's the correct fallback?</summary><div class="recall-answer">Read the full file, then Write it back with the modification applied &mdash; the reliable fallback when Edit can't find a unique text match to target.</div></details>
+      <details class="recall-item"><summary>Edit just failed because the anchor text wasn't unique. What's the correct fallback?</summary><div class="recall-answer">Read the full file, then Write it back with the modification applied - the reliable fallback when Edit can't find a unique text match to target.</div></details>
 
-      <details class="recall-item"><summary>What's the recommended incremental strategy for understanding an unfamiliar codebase with these tools?</summary><div class="recall-answer">Start with Grep to find entry points, then use Read to follow imports and trace flows &mdash; rather than reading every file upfront.</div></details>
+      <details class="recall-item"><summary>What's the recommended incremental strategy for understanding an unfamiliar codebase with these tools?</summary><div class="recall-answer">Start with Grep to find entry points, then use Read to follow imports and trace flows - rather than reading every file upfront.</div></details>
     </div>
   </details>
 
@@ -417,7 +417,7 @@
           <div>C) Add a routing layer that pre-selects the tool from keyword/identifier patterns before the model runs.</div>
           <div>D) Consolidate both tools into one that internally determines which backend to query.</div>
         </div>
-        <details><summary>Show answer</summary><div class="mcq-answer"><span class="correct">B.</span> Descriptions are the primary tool-selection mechanism &mdash; minimal descriptions are the root cause here, so fixing them is the lowest-effort, highest-leverage first step. A adds token overhead without touching the root cause. C bypasses the model's own language understanding and is over-engineered as a "first step." D is a legitimate architectural option but requires more effort than the situation calls for yet.</div></details>
+        <details><summary>Show answer</summary><div class="mcq-answer"><span class="correct">B.</span> Descriptions are the primary tool-selection mechanism - minimal descriptions are the root cause here, so fixing them is the lowest-effort, highest-leverage first step. A adds token overhead without touching the root cause. C bypasses the model's own language understanding and is over-engineered as a "first step." D is a legitimate architectural option but requires more effort than the situation calls for yet.</div></details>
       </div>
     </div>
   </details>

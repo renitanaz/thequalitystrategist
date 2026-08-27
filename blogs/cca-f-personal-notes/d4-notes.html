@@ -109,7 +109,7 @@
     <h1>Prompt Engineering &amp; Structured Output</h1>
     <p class="meta">Task Statements 4.1&ndash;4.6</p>
   </header>
-  <p class="src-note">Source: Claude Certified Architect &ndash; Foundations Certification Exam Guide (v0.1, last updated Feb 10 2025), Domain 4 section, official sample Questions 11 and 12.</p>
+  <p class="src-note">Source: Claude Certified Architect &ndash; Foundations Certification Exam Guide, Domain 4 section, official sample Questions 11 and 12.</p>
 
   <details class="topic">
     <summary><h2><span class="sec-num">1</span>Topic Keywords</h2></summary>
@@ -123,18 +123,18 @@
         <span><i style="background:var(--green)"></i>4.6 Multi-pass review</span>
       </div>
       <dl class="keyword-grid">
-        <div class="kw g1"><dt>Explicit criteria</dt><dd>Precise, categorical rules beat vague instructions like "be conservative" &mdash; the latter doesn't actually improve precision.</dd></div>
+        <div class="kw g1"><dt>Explicit criteria</dt><dd>Precise, categorical rules beat vague instructions like "be conservative" - the latter doesn't actually improve precision.</dd></div>
         <div class="kw g1"><dt>False-positive trust cost</dt><dd>A high false-positive category undermines developer trust even in the categories that are accurate.</dd></div>
         <div class="kw g1"><dt>Severity criteria</dt><dd>Explicit per-level criteria with concrete code examples, for consistent classification.</dd></div>
         <div class="kw g2"><dt>Few-shot prompting</dt><dd>The most effective technique for consistently formatted, actionable output when instructions alone produce inconsistency.</dd></div>
         <div class="kw g2"><dt>Ambiguous-case examples</dt><dd>Few-shot examples that demonstrate handling of edge cases, so the model generalizes judgment instead of matching only pre-specified cases.</dd></div>
         <div class="kw g2"><dt>2&ndash;4 targeted examples</dt><dd>Guide's own number for how many few-shot examples to add per ambiguous scenario, each showing the reasoning for the chosen action.</dd></div>
-        <div class="kw g3"><dt><code>tool_use</code> for structure</dt><dd>The most reliable approach for guaranteed schema-compliant output &mdash; eliminates JSON syntax errors (not semantic ones).</dd></div>
+        <div class="kw g3"><dt><code>tool_use</code> for structure</dt><dd>The most reliable approach for guaranteed schema-compliant output - eliminates JSON syntax errors (not semantic ones).</dd></div>
         <div class="kw g3"><dt><code>tool_choice</code> modes</dt><dd><code>"auto"</code> may skip the tool, <code>"any"</code> forces some tool, forced selection names one exact tool.</dd></div>
-        <div class="kw g3"><dt>Nullable required fields</dt><dd>Field must exist in the schema, but its value may be <code>null</code> &mdash; prevents the model fabricating data to satisfy a required field.</dd></div>
+        <div class="kw g3"><dt>Nullable required fields</dt><dd>Field must exist in the schema, but its value may be <code>null</code> - prevents the model fabricating data to satisfy a required field.</dd></div>
         <div class="kw g3"><dt>"other" + detail pattern</dt><dd>Extensible enum categorization: pick <code>"other"</code> plus a free-text detail field when nothing else fits.</dd></div>
         <div class="kw g4"><dt>Retry-with-error-feedback</dt><dd>Append the specific validation error to the prompt on retry, along with the original doc and the failed extraction.</dd></div>
-        <div class="kw g4"><dt>Limits of retry</dt><dd>Ineffective when the required information is simply absent from the source &mdash; no amount of retrying invents a fact that isn't there.</dd></div>
+        <div class="kw g4"><dt>Limits of retry</dt><dd>Ineffective when the required information is simply absent from the source - no amount of retrying invents a fact that isn't there.</dd></div>
         <div class="kw g4"><dt><code>detected_pattern</code></dt><dd>Field tracking which code construct triggered a finding, to analyze dismissal/false-positive patterns systematically.</dd></div>
         <div class="kw g4"><dt>Semantic vs. schema errors</dt><dd>Schema syntax errors are eliminated by tool use. Semantic errors (values don't sum, wrong field) still need validation.</dd></div>
         <div class="kw g5"><dt>Message Batches API</dt><dd>~50% cost savings, up to a 24-hour processing window, no guaranteed latency SLA.</dd></div>
@@ -143,7 +143,7 @@
         <div class="kw g5"><dt><code>custom_id</code></dt><dd>Correlates each batch response back to its original request; also used to resubmit only failed documents.</dd></div>
         <div class="kw g6"><dt>Self-review limitation</dt><dd>A model retains its own generation reasoning, making it less likely to question its own decisions in the same session.</dd></div>
         <div class="kw g6"><dt>Independent review instance</dt><dd>A separate Claude call without the generator's reasoning context catches subtler issues than self-review.</dd></div>
-        <div class="kw g6"><dt>Multi-pass review</dt><dd>Per-file local analysis passes, plus one separate cross-file integration pass &mdash; avoids attention dilution and contradictions.</dd></div>
+        <div class="kw g6"><dt>Multi-pass review</dt><dd>Per-file local analysis passes, plus one separate cross-file integration pass - avoids attention dilution and contradictions.</dd></div>
       </dl>
     </div>
   </details>
@@ -158,7 +158,7 @@
             <p><span class="lbl">Knowledge:</span> <span class="hl">explicit criteria</span> over vague instructions. General phrases like "be conservative" or "only report high-confidence findings" do <em>not</em> improve precision the way specific categorical criteria do. False-positive rates in one category damage trust in accurate categories too.</p>
             <p><span class="lbl">Skills:</span></p>
             <ul>
-              <li>Write specific criteria defining which issues to report (bugs, security) vs. skip (minor style, local patterns) &mdash; not confidence-based filtering.</li>
+              <li>Write specific criteria defining which issues to report (bugs, security) vs. skip (minor style, local patterns) - not confidence-based filtering.</li>
               <li>Temporarily disable a high-false-positive category to restore developer trust while the prompt for that category is being improved.</li>
               <li>Define explicit severity criteria with concrete code examples at each level for consistent classification.</li>
             </ul>
@@ -180,7 +180,7 @@
         <div class="cornell-row">
           <div class="cornell-cue g3"><span class="ts">Task Statement</span>4.3<br>Structured output via tool_use</div>
           <div class="cornell-note">
-            <p><span class="lbl">Knowledge:</span> <code>tool_use</code> + JSON schema is the most reliable route to <span class="hl">guaranteed schema-compliant output</span>, eliminating syntax errors &mdash; but not semantic ones (e.g. line items that don't sum to the total). <code>tool_choice</code>: <code>"auto"</code> / <code>"any"</code> / forced. Schema design: required vs. optional, enum + "other"/"unclear" for extensibility.</p>
+            <p><span class="lbl">Knowledge:</span> <code>tool_use</code> + JSON schema is the most reliable route to <span class="hl">guaranteed schema-compliant output</span>, eliminating syntax errors - but not semantic ones (e.g. line items that don't sum to the total). <code>tool_choice</code>: <code>"auto"</code> / <code>"any"</code> / forced. Schema design: required vs. optional, enum + "other"/"unclear" for extensibility.</p>
             <p><span class="lbl">Skills:</span></p>
             <ul>
               <li>Define extraction tools with JSON schemas as input parameters; extract structured data from the tool_use response.</li>
@@ -220,7 +220,7 @@
         <div class="cornell-row">
           <div class="cornell-cue g6"><span class="ts">Task Statement</span>4.6<br>Multi-instance &amp; multi-pass review</div>
           <div class="cornell-note">
-            <p><span class="lbl">Knowledge:</span> self-review is limited &mdash; the model retains its own generation reasoning, making it less likely to question its own decisions. <span class="hl">Independent review instances</span> (no prior reasoning context) catch subtler issues. Multi-pass review splits large reviews into per-file + integration passes to avoid attention dilution and contradictory findings.</p>
+            <p><span class="lbl">Knowledge:</span> self-review is limited - the model retains its own generation reasoning, making it less likely to question its own decisions. <span class="hl">Independent review instances</span> (no prior reasoning context) catch subtler issues. Multi-pass review splits large reviews into per-file + integration passes to avoid attention dilution and contradictory findings.</p>
             <p><span class="lbl">Skills:</span></p>
             <ul>
               <li>Use a second, independent Claude instance to review generated code without the generator's reasoning context.</li>
@@ -234,7 +234,7 @@
       <div class="cornell-summary">
         <strong class="summary-label">Summary, one line per task statement:</strong>
         <ul>
-          <li><strong>4.1</strong> Specific categorical criteria beat vague conservatism instructions &mdash; false positives cost trust across the board.</li>
+          <li><strong>4.1</strong> Specific categorical criteria beat vague conservatism instructions - false positives cost trust across the board.</li>
           <li><strong>4.2</strong> 2&ndash;4 targeted few-shot examples fix both output-format drift and ambiguous-case judgment.</li>
           <li><strong>4.3</strong> Forced/any <code>tool_choice</code> + JSON schema kills syntax errors; nullable fields stop fabrication; semantic errors still need checking.</li>
           <li><strong>4.4</strong> Retry only fixes fixable mistakes; if the source lacks the info, return null and flag it, don't loop.</li>
@@ -406,25 +406,25 @@
     <div class="topic-body">
       <details class="recall-item"><summary>Why doesn't "be conservative" or "only report high-confidence findings" actually improve precision?</summary><div class="recall-answer">These are general instructions, not specific categorical criteria. The guide is explicit: general confidence-based language doesn't improve precision the way defining exactly what to report vs. skip does.</div></details>
 
-      <details class="recall-item"><summary>How many few-shot examples does the guide suggest per ambiguous scenario, and what should each one show?</summary><div class="recall-answer">2&ndash;4 targeted examples, each showing the <em>reasoning</em> for why one action was chosen over plausible alternatives &mdash; not just the input/output pair alone.</div></details>
+      <details class="recall-item"><summary>How many few-shot examples does the guide suggest per ambiguous scenario, and what should each one show?</summary><div class="recall-answer">2&ndash;4 targeted examples, each showing the <em>reasoning</em> for why one action was chosen over plausible alternatives - not just the input/output pair alone.</div></details>
 
-      <details class="recall-item"><summary>Does a strict JSON schema via tool_use guarantee the extracted values are correct?</summary><div class="recall-answer">No. It eliminates syntax/formatting errors (missing fields, wrong types, invalid enum values) but not semantic errors &mdash; e.g. line items that don't sum to the stated total, or a value placed in the wrong field.</div></details>
+      <details class="recall-item"><summary>Does a strict JSON schema via tool_use guarantee the extracted values are correct?</summary><div class="recall-answer">No. It eliminates syntax/formatting errors (missing fields, wrong types, invalid enum values) but not semantic errors - e.g. line items that don't sum to the stated total, or a value placed in the wrong field.</div></details>
 
       <details class="recall-item"><summary>Why use a nullable field instead of a required-with-no-null field for something the customer might not provide?</summary><div class="recall-answer">A required, non-nullable field pressures the model to fabricate a plausible-looking value just to satisfy the schema. Nullable lets it honestly report "not provided" instead.</div></details>
 
-      <details class="recall-item"><summary>Your extraction failed validation. When should you retry, and when is retry pointless?</summary><div class="recall-answer">Retry when the mistake is fixable &mdash; wrong enum value, wrong field placement, a structural/format error &mdash; by appending the specific validation error to a follow-up request. Retry is pointless when the information simply isn't present in the source document; the correct move there is <code>null</code> plus a "missing" flag, not another attempt.</div></details>
+      <details class="recall-item"><summary>Your extraction failed validation. When should you retry, and when is retry pointless?</summary><div class="recall-answer">Retry when the mistake is fixable - wrong enum value, wrong field placement, a structural/format error - by appending the specific validation error to a follow-up request. Retry is pointless when the information simply isn't present in the source document; the correct move there is <code>null</code> plus a "missing" flag, not another attempt.</div></details>
 
-      <details class="recall-item"><summary>What's the <code>detected_pattern</code> field for?</summary><div class="recall-answer">Recording which code construct or phrase triggered a given finding, so you can later analyze which patterns developers tend to dismiss &mdash; i.e. systematic false-positive analysis.</div></details>
+      <details class="recall-item"><summary>What's the <code>detected_pattern</code> field for?</summary><div class="recall-answer">Recording which code construct or phrase triggered a given finding, so you can later analyze which patterns developers tend to dismiss - i.e. systematic false-positive analysis.</div></details>
 
       <details class="recall-item"><summary>Name the two headline trade-offs of the Message Batches API.</summary><div class="recall-answer">About 50% cost savings, but up to a 24-hour processing window with <strong>no guaranteed latency SLA</strong>. Good for non-blocking, latency-tolerant work; wrong for anything a user is actively waiting on.</div></details>
 
-      <details class="recall-item"><summary>Can a single batch request call a tool mid-request and use the result to continue reasoning?</summary><div class="recall-answer">No &mdash; the batch API does not support multi-turn tool calling within one request. Needed context has to be gathered and included up front before submission.</div></details>
+      <details class="recall-item"><summary>Can a single batch request call a tool mid-request and use the result to continue reasoning?</summary><div class="recall-answer">No - the batch API does not support multi-turn tool calling within one request. Needed context has to be gathered and included up front before submission.</div></details>
 
-      <details class="recall-item"><summary>A batch of 500 documents comes back with 12 failures. What's the correct recovery?</summary><div class="recall-answer">Resubmit only the 12 failed documents, identified by their <code>custom_id</code>, with whatever fix is needed (e.g. chunking ones that exceeded context limits) &mdash; not the entire batch.</div></details>
+      <details class="recall-item"><summary>A batch of 500 documents comes back with 12 failures. What's the correct recovery?</summary><div class="recall-answer">Resubmit only the 12 failed documents, identified by their <code>custom_id</code>, with whatever fix is needed (e.g. chunking ones that exceeded context limits) - not the entire batch.</div></details>
 
       <details class="recall-item"><summary>Why is a model reviewing the exact code it just generated, in the same session, a weaker check than an independent review?</summary><div class="recall-answer">It retains the reasoning context from generation, which makes it less likely to question its own prior decisions. An independent instance without that inherited context catches subtler issues.</div></details>
 
-      <details class="recall-item"><summary>Why split a 14-file review into per-file passes plus one integration pass, instead of one big pass over everything?</summary><div class="recall-answer">A single pass over many files at once causes attention dilution &mdash; inconsistent depth per file, missed bugs, and even self-contradiction (flagging a pattern in one file while approving identical code in another). Per-file local passes stay consistent; a separate integration pass then catches cross-file issues.</div></details>
+      <details class="recall-item"><summary>Why split a 14-file review into per-file passes plus one integration pass, instead of one big pass over everything?</summary><div class="recall-answer">A single pass over many files at once causes attention dilution - inconsistent depth per file, missed bugs, and even self-contradiction (flagging a pattern in one file while approving identical code in another). Per-file local passes stay consistent; a separate integration pass then catches cross-file issues.</div></details>
     </div>
   </details>
 
@@ -439,11 +439,11 @@
           <div>C) Keep real-time for both, to avoid batch result ordering issues.</div>
           <div>D) Switch both to batch with a timeout fallback to real-time.</div>
         </div>
-        <details><summary>Show answer</summary><div class="mcq-answer"><span class="correct">A.</span> Batch has no guaranteed latency SLA (up to 24h), unsuitable for a blocking workflow developers are waiting on, but ideal for an overnight job. B relies on "often faster" completion, not acceptable for a blocking check. C is a misconception &mdash; results correlate fine via <code>custom_id</code>. D adds complexity the simple per-workflow match already solves.</div></details>
+        <details><summary>Show answer</summary><div class="mcq-answer"><span class="correct">A.</span> Batch has no guaranteed latency SLA (up to 24h), unsuitable for a blocking workflow developers are waiting on, but ideal for an overnight job. B relies on "often faster" completion, not acceptable for a blocking check. C is a misconception - results correlate fine via <code>custom_id</code>. D adds complexity the simple per-workflow match already solves.</div></details>
       </div>
 
       <div class="mcq">
-        <div class="mcq-q"><span class="qnum">Q12.</span> (Scenario 5) A single-pass review of a 14-file PR produces inconsistent depth, misses obvious bugs, and even contradicts itself &mdash; flagging a pattern in one file, approving identical code in another. How should you restructure the review?</div>
+        <div class="mcq-q"><span class="qnum">Q12.</span> (Scenario 5) A single-pass review of a 14-file PR produces inconsistent depth, misses obvious bugs, and even contradicts itself - flagging a pattern in one file, approving identical code in another. How should you restructure the review?</div>
         <div class="mcq-opts">
           <div>A) Split into focused passes: analyze each file individually for local issues, then run a separate integration pass for cross-file data flow.</div>
           <div>B) Require developers to split large PRs into smaller 3&ndash;4-file submissions.</div>
