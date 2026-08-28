@@ -93,8 +93,8 @@
 
   .progress-note{font-size:.82rem;color:var(--text-3);text-align:center;margin-top:2.5rem}
   .page-nav{display:flex;gap:1rem;margin-top:1.2rem}
-  .page-nav a{flex:1;display:block;border:1px solid var(--border);border-radius:10px;padding:.8rem 1rem;text-decoration:none;color:var(--text-2);font-size:.85rem;transition:border-color .15s,background .15s}
-  .page-nav a:hover{border-color:var(--purple);background:var(--bg2)}
+  .page-nav a{flex:1;display:block;border:1px solid var(--teal);border-radius:10px;padding:.8rem 1rem;text-decoration:none;color:var(--text-2);font-size:.85rem;transition:background .15s}
+  .page-nav a:hover{background:var(--teal-bg)}
   .page-nav .nav-label{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;color:var(--text-3);margin-bottom:.25rem}
   .page-nav .nav-next{text-align:right}
   @media(max-width:640px){.page-nav{flex-direction:column}.page-nav .nav-next{text-align:left}}
@@ -304,6 +304,7 @@
               <li>Implement local recovery for transient failures inside the subagent; propagate only what couldn't be resolved locally, with partial results attached.</li>
               <li>Structure synthesis output with coverage annotations flagging which findings are well-supported vs. where sources were unavailable.</li>
             </ul>
+            <p class="cornell-see">&rarr; <a href="#diagram-error-context-example">See: Diagram, A Real Error Context</a></p>
           </div>
         </div>
         <div class="cornell-row">
@@ -382,6 +383,46 @@
   <details class="topic">
     <summary><h2><span class="sec-num">3</span>Diagrams</h2></summary>
     <div class="topic-body">
+      <h3 class="subhead" id="diagram-error-context-example">Diagram: A Real Error Context, Before and After</h3>
+      <div class="mindmap-wrap">
+        <svg viewBox="0 0 720 290" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Before: a subagent returns just status failed, giving the coordinator nothing to act on. After: the subagent returns structured error context with failureType timeout, the attempted query, partialResults, and alternatives highlighted, so the coordinator can decide what to do next. A legend below explains each highlighted field.">
+          <text x="185" y="15" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700" fill="#9A2A4A">BEFORE: generic status</text>
+          <rect x="20" y="20" width="330" height="180" rx="10" fill="#EEF1E7" stroke="rgba(26,31,20,.25)"/>
+          <text x="40" y="46" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">{</text>
+          <text x="40" y="64" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">  "status": "failed"</text>
+          <text x="40" y="82" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">}</text>
+          <rect x="35" y="100" width="300" height="80" rx="8" fill="#F5DDE5" stroke="#9A2A4A"/>
+          <text x="50" y="123" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="#9A2A4A">Nothing to act on</text>
+          <text x="50" y="139" font-family="Segoe UI, sans-serif" font-size="8" fill="#3D4235">retry? escalate? no way to tell</text>
+          <text x="50" y="153" font-family="Segoe UI, sans-serif" font-size="8" fill="#3D4235">from a bare status string</text>
+
+          <text x="555" y="15" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700" fill="#1A7A3A">AFTER: structured context</text>
+          <rect x="390" y="20" width="330" height="180" rx="10" fill="#EEF1E7" stroke="rgba(26,31,20,.25)"/>
+          <text x="410" y="46" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">{</text>
+          <rect x="402" y="55" width="310" height="18" rx="4" fill="#F5EDD6" stroke="#9A6E1A" stroke-opacity=".5"/>
+          <text x="410" y="68" font-family="Consolas, monospace" font-size="8.5" font-weight="700" fill="#9A6E1A">  "failureType": "timeout",</text>
+          <text x="410" y="86" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">  "attemptedQuery": "async retry",</text>
+          <rect x="402" y="95" width="310" height="18" rx="4" fill="#D8EEE8" stroke="#1A6B54" stroke-opacity=".5"/>
+          <text x="410" y="108" font-family="Consolas, monospace" font-size="8.5" font-weight="700" fill="#1A6B54">  "partialResults": [2 items],</text>
+          <rect x="402" y="117" width="310" height="18" rx="4" fill="#EDE0F5" stroke="#7A4A9A" stroke-opacity=".5"/>
+          <text x="410" y="130" font-family="Consolas, monospace" font-size="8.5" font-weight="700" fill="#7A4A9A">  "alternatives": ["retry",</text>
+          <text x="410" y="148" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">    "broaden query"],</text>
+          <text x="410" y="166" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">}</text>
+
+          <rect x="15" y="220" width="220" height="55" rx="8" fill="#F5EDD6" stroke="#9A6E1A"/>
+          <text x="30" y="242" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="#9A6E1A">failureType</text>
+          <text x="30" y="258" font-family="Segoe UI, sans-serif" font-size="8" fill="#3D4235">what kind of failure occurred</text>
+
+          <rect x="250" y="220" width="220" height="55" rx="8" fill="#D8EEE8" stroke="#1A6B54"/>
+          <text x="265" y="242" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="#1A6B54">partialResults</text>
+          <text x="265" y="258" font-family="Segoe UI, sans-serif" font-size="8" fill="#3D4235">don't discard what worked</text>
+
+          <rect x="485" y="220" width="220" height="55" rx="8" fill="#EDE0F5" stroke="#7A4A9A"/>
+          <text x="500" y="242" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="#7A4A9A">alternatives</text>
+          <text x="500" y="258" font-family="Segoe UI, sans-serif" font-size="8" fill="#3D4235">what the coordinator could try next</text>
+        </svg>
+      </div>
+
       <h3 class="subhead" id="diagram-escalation">Diagram: Escalation Decision</h3>
       <div class="mindmap-wrap">
         <svg viewBox="0 0 760 240" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Decision diagram: a customer message branches based on what it contains. An explicit request for a human routes straight to escalation. A genuine policy gap or repeated inability to progress also escalates. Otherwise, if the issue is within scope, the agent acknowledges and resolves it directly, even if the customer sounds frustrated.">

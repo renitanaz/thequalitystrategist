@@ -99,8 +99,8 @@
 
   .progress-note{font-size:.82rem;color:var(--text-3);text-align:center;margin-top:2.5rem}
   .page-nav{display:flex;gap:1rem;margin-top:1.2rem}
-  .page-nav a{flex:1;display:block;border:1px solid var(--border);border-radius:10px;padding:.8rem 1rem;text-decoration:none;color:var(--text-2);font-size:.85rem;transition:border-color .15s,background .15s}
-  .page-nav a:hover{border-color:var(--purple);background:var(--bg2)}
+  .page-nav a{flex:1;display:block;border:1px solid var(--green);border-radius:10px;padding:.8rem 1rem;text-decoration:none;color:var(--text-2);font-size:.85rem;transition:background .15s}
+  .page-nav a:hover{background:var(--green-bg)}
   .page-nav .nav-label{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;color:var(--text-3);margin-bottom:.25rem}
   .page-nav .nav-next{text-align:right}
   @media(max-width:640px){.page-nav{flex-direction:column}.page-nav .nav-next{text-align:left}}
@@ -206,15 +206,14 @@
       <h3 class="subhead">4.1 &middot; Explicit Criteria</h3>
       <dl class="keyword-grid">
         <div class="kw g1"><dt>Explicit criteria</dt><dd>Precise, categorical rules beat vague instructions like "be conservative" - the latter doesn't actually improve precision.</dd></div>
-        <div class="kw g1"><dt>False-positive trust cost</dt><dd>A high false-positive category undermines developer trust even in the categories that are accurate.</dd></div>
+        <div class="kw g1"><dt>False-positive trust cost</dt><dd>A high false-positive category undermines developer trust even in the categories that are accurate - e.g. if a reviewer's "security" findings are wrong 40% of the time, developers start skimming past all of its findings, including its accurate "bug" and "style" flags.</dd></div>
         <div class="kw g1"><dt>Severity criteria</dt><dd>Explicit per-level criteria with concrete code examples, for consistent classification.</dd></div>
       </dl>
 
       <h3 class="subhead">4.2 &middot; Few-Shot</h3>
       <dl class="keyword-grid">
-        <div class="kw g2"><dt>Few-shot prompting</dt><dd>The most effective technique for consistently formatted, actionable output when instructions alone produce inconsistency.</dd></div>
+        <div class="kw g2"><dt>Few-shot prompting</dt><dd>The most effective technique for consistently formatted, actionable output when instructions alone produce inconsistency - the guide's own number is 2&ndash;4 targeted examples per ambiguous scenario, each showing the reasoning for the chosen action.</dd></div>
         <div class="kw g2"><dt>Ambiguous-case examples</dt><dd>Few-shot examples that demonstrate handling of edge cases, so the model generalizes judgment instead of matching only pre-specified cases.</dd></div>
-        <div class="kw g2"><dt>2&ndash;4 targeted examples</dt><dd>Guide's own number for how many few-shot examples to add per ambiguous scenario, each showing the reasoning for the chosen action.</dd></div>
       </dl>
 
       <h3 class="subhead">4.3 &middot; Structured Output</h3>
@@ -306,7 +305,7 @@
               <li>Design nullable optional fields so the model isn't pressured to fabricate a value to satisfy a required field.</li>
               <li>Add <code>"unclear"</code> and <code>"other"</code> + detail-string enum values; include format-normalization rules alongside the strict schema.</li>
             </ul>
-            <p class="cornell-see">&rarr; <a href="#diagram-structured-extraction">See: Diagram, Structured Extraction with tool_use</a></p>
+            <p class="cornell-see">&rarr; <a href="#diagram-structured-extraction">See: Diagram, Structured Extraction with tool_use</a> &middot; <a href="#diagram-extraction-example">Diagram, A Real Extraction, Annotated</a></p>
           </div>
         </div>
         <div class="cornell-row">
@@ -363,6 +362,7 @@
               <li>Split large multi-file reviews into focused per-file passes for local issues, plus a separate integration pass for cross-file data flow.</li>
               <li>Run verification passes where the model self-reports confidence alongside each finding, to enable calibrated review routing.</li>
             </ul>
+            <p class="cornell-see">&rarr; <a href="#diagram-self-vs-independent-review">See: Diagram, Self-Review vs. Independent Review</a> &middot; <a href="#diagram-multi-pass-flow">Diagram, Multi-Pass Review Flow</a></p>
           </div>
         </div>
       </div>
@@ -405,29 +405,24 @@
           <rect x="480" y="40" width="120" height="46" rx="8" fill="#F5EDD6" stroke="#9A6E1A"/>
           <text x="540" y="68" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#9A6E1A">Validate</text>
 
-          <path d="M600,50 C630,30 650,25 670,30" stroke="#1A7A3A" stroke-width="1.5" fill="none" marker-end="url(#se4)"/>
-          <text x="635" y="18" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#1A7A3A">fixable error</text>
+          <path d="M600,66 C645,78 680,100 697,128" stroke="#1A7A3A" stroke-width="1.5" fill="none" marker-end="url(#se4)"/>
+          <text x="670" y="80" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#1A7A3A">fixable error</text>
           <rect x="620" y="130" width="150" height="52" rx="8" fill="#D8F0E0" stroke="#1A7A3A"/>
           <text x="695" y="150" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#1A7A3A">Retry with error</text>
           <text x="695" y="164" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#3D4235">appended to prompt</text>
-          <path d="M670,30 C700,35 700,80 695,128" stroke="#1A7A3A" stroke-width="1.5" fill="none" marker-end="url(#se5)"/>
 
-          <path d="M600,76 C630,100 650,110 670,108" stroke="#9A2A4A" stroke-width="1.5" fill="none" marker-end="url(#se6)"/>
-          <text x="635" y="122" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#9A2A4A">info absent from source</text>
-          <rect x="620" y="30" width="150" height="0" fill="none"/>
+          <path d="M520,86 C505,102 497,116 495,128" stroke="#9A2A4A" stroke-width="1.5" fill="none" marker-end="url(#se6)"/>
+          <text x="495" y="108" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#9A2A4A">info absent from source</text>
           <rect x="405" y="130" width="180" height="52" rx="8" fill="#F5DDE5" stroke="#9A2A4A"/>
           <text x="495" y="150" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#9A2A4A">field: null</text>
           <text x="495" y="164" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#3D4235">flagged as missing, not retried</text>
-          <path d="M670,108 C620,120 580,120 520,128" stroke="#9A2A4A" stroke-width="1.5" fill="none" marker-end="url(#se7)"/>
 
           <defs>
             <marker id="se1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
             <marker id="se2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
             <marker id="se3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
             <marker id="se4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1A7A3A"/></marker>
-            <marker id="se5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1A7A3A"/></marker>
             <marker id="se6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9A2A4A"/></marker>
-            <marker id="se7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9A2A4A"/></marker>
             <g id="icon-doc">
               <rect x="-8" y="-11" width="16" height="22" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/>
               <line x1="-4" y1="-5" x2="4" y2="-5" stroke="currentColor" stroke-width="1.2"/>
@@ -441,6 +436,65 @@
               <line x1="0" y1="-7" x2="0" y2="-10.5" stroke="currentColor" stroke-width="1.4"/>
               <circle cx="0" cy="-11.5" r="1.3" fill="currentColor"/>
             </g>
+          </defs>
+        </svg>
+      </div>
+
+      <h3 class="subhead" id="diagram-extraction-example">Diagram: A Real Extraction, Annotated</h3>
+      <div class="mindmap-wrap">
+        <svg viewBox="0 0 720 380" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="A messy invoice document on the left is extracted into a JSON object on the right. Three fields are highlighted: total, which is schema-valid but does not match the sum of the line items; customer_email, which is null because the document does not contain one; and document_type, set to the extensible enum value other with a detail string. A legend below explains each highlight.">
+          <rect x="20" y="15" width="310" height="280" rx="10" fill="#EEF1E7" stroke="rgba(26,31,20,.25)"/>
+          <text x="40" y="42" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="#3D4235">invoice #4471</text>
+          <text x="40" y="60" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#6B7060">date: 03/14/2025</text>
+          <text x="40" y="76" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#6B7060">bill to: acme corp</text>
+          <line x1="40" y1="90" x2="310" y2="90" stroke="rgba(26,31,20,.2)"/>
+          <text x="40" y="114" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">widget a</text>
+          <text x="310" y="114" text-anchor="end" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">$200</text>
+          <text x="40" y="132" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">widget b</text>
+          <text x="310" y="132" text-anchor="end" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">$340</text>
+          <text x="40" y="150" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">shipping</text>
+          <text x="310" y="150" text-anchor="end" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">$700</text>
+          <line x1="40" y1="164" x2="310" y2="164" stroke="rgba(26,31,20,.2)"/>
+          <text x="40" y="188" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700" fill="#3D4235">total</text>
+          <text x="310" y="188" text-anchor="end" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700" fill="#3D4235">$1,240.00</text>
+          <text x="40" y="275" font-family="Segoe UI, sans-serif" font-size="8" font-style="italic" fill="#6B7060">scanned, slightly messy</text>
+
+          <rect x="390" y="15" width="310" height="280" rx="10" fill="#EEF1E7" stroke="rgba(26,31,20,.25)"/>
+          <text x="408" y="42" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">{</text>
+          <text x="408" y="60" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">  "invoice_number": "4471",</text>
+          <text x="408" y="78" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">  "line_items": [3 items],</text>
+
+          <rect x="400" y="87" width="290" height="19" rx="4" fill="#F5DDE5" stroke="#9A2A4A" stroke-opacity=".5"/>
+          <text x="408" y="100" font-family="Consolas, monospace" font-size="8.5" font-weight="700" fill="#9A2A4A">  "total": 1300,</text>
+
+          <rect x="400" y="110" width="290" height="19" rx="4" fill="#F5EDD6" stroke="#9A6E1A" stroke-opacity=".5"/>
+          <text x="408" y="123" font-family="Consolas, monospace" font-size="8.5" font-weight="700" fill="#9A6E1A">  "customer_email": null,</text>
+
+          <rect x="400" y="133" width="290" height="19" rx="4" fill="#D8EEE8" stroke="#1A6B54" stroke-opacity=".5"/>
+          <text x="408" y="146" font-family="Consolas, monospace" font-size="8.5" font-weight="700" fill="#1A6B54">  "document_type": "other",</text>
+
+          <text x="408" y="164" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">  "document_type_detail":</text>
+          <text x="408" y="182" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">    "credit memo"</text>
+          <text x="408" y="200" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">}</text>
+          <text x="408" y="228" font-family="Segoe UI, sans-serif" font-size="8" font-style="italic" fill="#6B7060">3 fields flagged below</text>
+
+          <text x="360" y="145" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#6B7060">tool_use</text>
+          <path d="M334,155 L386,155" stroke="#6B7060" stroke-width="1.5" marker-end="url(#ex1)"/>
+
+          <rect x="10" y="315" width="225" height="55" rx="8" fill="#F5DDE5" stroke="#9A2A4A"/>
+          <text x="25" y="337" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="#9A2A4A">Doesn't sum to total</text>
+          <text x="25" y="353" font-family="Segoe UI, sans-serif" font-size="8" fill="#3D4235">schema-valid, semantically wrong</text>
+
+          <rect x="248" y="315" width="225" height="55" rx="8" fill="#F5EDD6" stroke="#9A6E1A"/>
+          <text x="263" y="337" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="#9A6E1A">Nullable field</text>
+          <text x="263" y="353" font-family="Segoe UI, sans-serif" font-size="8" fill="#3D4235">honest null, not fabricated</text>
+
+          <rect x="486" y="315" width="225" height="55" rx="8" fill="#D8EEE8" stroke="#1A6B54"/>
+          <text x="501" y="337" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="#1A6B54">Enum + "other"</text>
+          <text x="501" y="353" font-family="Segoe UI, sans-serif" font-size="8" fill="#3D4235">extensible without breaking</text>
+
+          <defs>
+            <marker id="ex1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
           </defs>
         </svg>
       </div>
@@ -481,6 +535,91 @@
               <circle cx="0" cy="0" r="13" fill="none" stroke="currentColor" stroke-width="1.5"/>
               <line x1="0" y1="0" x2="0" y2="-8" stroke="currentColor" stroke-width="1.5"/>
               <line x1="0" y1="0" x2="6" y2="3" stroke="currentColor" stroke-width="1.5"/>
+            </g>
+          </defs>
+        </svg>
+      </div>
+
+      <h3 class="subhead" id="diagram-self-vs-independent-review">Diagram: Self-Review vs. Independent Review</h3>
+      <div class="mindmap-wrap">
+        <svg viewBox="0 0 720 195" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Diagram: on the left, a single assistant reviews its own output, with a loop arrow showing it retains its own generation reasoning, making it less likely to question its own decisions. On the right, a generator instance hands off to a separate, independent reviewer instance with no shared context, which catches subtler issues.">
+          <use href="#sr-bot" x="120" y="42" style="color:#9A2A4A"/>
+          <path d="M136,32 C158,18 160,55 140,50" fill="none" stroke="#9A2A4A" stroke-width="1.4" marker-end="url(#sr1)"/>
+          <text x="120" y="75" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#6B7060">reviews its own output</text>
+          <rect x="10" y="90" width="220" height="80" rx="8" fill="#F5DDE5" stroke="#9A2A4A"/>
+          <text x="120" y="112" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="#9A2A4A">Self-Review</text>
+          <text x="120" y="130" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">retains its own generation</text>
+          <text x="120" y="143" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">reasoning &rarr; less likely to</text>
+          <text x="120" y="156" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">question its own decisions</text>
+
+          <line x1="360" y1="0" x2="360" y2="195" stroke="rgba(26,31,20,.12)"/>
+
+          <use href="#sr-bot" x="460" y="42" style="color:#6B7060" opacity=".55"/>
+          <text x="460" y="66" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#6B7060">generator</text>
+          <path d="M478,42 L532,42" stroke="#1A7A3A" stroke-width="1.5" stroke-dasharray="3 2" marker-end="url(#sr2)"/>
+          <text x="505" y="34" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#1A7A3A">no shared context</text>
+          <use href="#sr-bot" x="560" y="42" style="color:#1A7A3A"/>
+          <text x="560" y="66" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#1A7A3A">independent reviewer</text>
+          <rect x="490" y="90" width="220" height="80" rx="8" fill="#D8F0E0" stroke="#1A7A3A"/>
+          <text x="600" y="112" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="#1A7A3A">Independent Review</text>
+          <text x="600" y="130" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">no inherited reasoning</text>
+          <text x="600" y="143" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">context &rarr; catches subtler</text>
+          <text x="600" y="156" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">issues the generator missed</text>
+
+          <defs>
+            <marker id="sr1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9A2A4A"/></marker>
+            <marker id="sr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1A7A3A"/></marker>
+            <g id="sr-bot">
+              <rect x="-10" y="-8" width="20" height="16" rx="4.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <circle cx="-4" cy="0" r="1.8" fill="currentColor"/>
+              <circle cx="4" cy="0" r="1.8" fill="currentColor"/>
+              <line x1="0" y1="-8" x2="0" y2="-12" stroke="currentColor" stroke-width="1.5"/>
+              <circle cx="0" cy="-13.5" r="1.5" fill="currentColor"/>
+            </g>
+          </defs>
+        </svg>
+      </div>
+
+      <h3 class="subhead" id="diagram-multi-pass-flow">Diagram: Multi-Pass Review Flow</h3>
+      <div class="mindmap-wrap">
+        <svg viewBox="0 0 720 235" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Diagram: three files each get their own local review pass, checking only that file. All three local passes feed into one separate integration pass, which checks cross-file data flow and catches contradictions that per-file passes alone would miss.">
+          <use href="#mp-doc" x="90" y="28" style="color:#3D4235"/>
+          <text x="90" y="48" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#6B7060">file A</text>
+          <rect x="20" y="58" width="140" height="42" rx="6" fill="#EEF1E7" stroke="rgba(26,31,20,.25)"/>
+          <text x="90" y="76" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700" fill="#3D4235">Local pass</text>
+          <text x="90" y="90" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#6B7060">this file only</text>
+
+          <use href="#mp-doc" x="360" y="28" style="color:#3D4235"/>
+          <text x="360" y="48" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#6B7060">file B</text>
+          <rect x="290" y="58" width="140" height="42" rx="6" fill="#EEF1E7" stroke="rgba(26,31,20,.25)"/>
+          <text x="360" y="76" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700" fill="#3D4235">Local pass</text>
+          <text x="360" y="90" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#6B7060">this file only</text>
+
+          <use href="#mp-doc" x="630" y="28" style="color:#3D4235"/>
+          <text x="630" y="48" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#6B7060">file C</text>
+          <rect x="560" y="58" width="140" height="42" rx="6" fill="#EEF1E7" stroke="rgba(26,31,20,.25)"/>
+          <text x="630" y="76" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700" fill="#3D4235">Local pass</text>
+          <text x="630" y="90" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#6B7060">this file only</text>
+
+          <path d="M90,100 C90,130 250,140 320,150" fill="none" stroke="#1A7A3A" stroke-width="1.5" marker-end="url(#mp1)"/>
+          <path d="M360,100 L360,148" fill="none" stroke="#1A7A3A" stroke-width="1.5" marker-end="url(#mp2)"/>
+          <path d="M630,100 C630,130 470,140 400,150" fill="none" stroke="#1A7A3A" stroke-width="1.5" marker-end="url(#mp3)"/>
+
+          <rect x="250" y="152" width="220" height="55" rx="8" fill="#D8F0E0" stroke="#1A7A3A" stroke-width="1.6"/>
+          <text x="360" y="175" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="#1A7A3A">Integration Pass</text>
+          <text x="360" y="192" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">cross-file data flow, catches contradictions</text>
+
+          <text x="360" y="225" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" font-style="italic" fill="#6B7060">one pass per file keeps depth consistent; the integration pass catches what none of them could alone</text>
+
+          <defs>
+            <marker id="mp1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1A7A3A"/></marker>
+            <marker id="mp2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1A7A3A"/></marker>
+            <marker id="mp3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1A7A3A"/></marker>
+            <g id="mp-doc">
+              <rect x="-8" y="-11" width="16" height="22" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/>
+              <line x1="-4" y1="-5" x2="4" y2="-5" stroke="currentColor" stroke-width="1.2"/>
+              <line x1="-4" y1="-1" x2="4" y2="-1" stroke="currentColor" stroke-width="1.2"/>
+              <line x1="-4" y1="3" x2="1" y2="3" stroke="currentColor" stroke-width="1.2"/>
             </g>
           </defs>
         </svg>

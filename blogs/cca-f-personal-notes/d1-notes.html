@@ -90,8 +90,8 @@
 
   .progress-note{font-size:.82rem;color:var(--text-3);text-align:center;margin-top:2.5rem}
   .page-nav{display:flex;gap:1rem;margin-top:1.2rem}
-  .page-nav a{flex:1;display:block;border:1px solid var(--border);border-radius:10px;padding:.8rem 1rem;text-decoration:none;color:var(--text-2);font-size:.85rem;transition:border-color .15s,background .15s}
-  .page-nav a:hover{border-color:var(--purple);background:var(--bg2)}
+  .page-nav a{flex:1;display:block;border:1px solid var(--red);border-radius:10px;padding:.8rem 1rem;text-decoration:none;color:var(--text-2);font-size:.85rem;transition:background .15s}
+  .page-nav a:hover{background:var(--red-bg)}
   .page-nav .nav-label{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;color:var(--text-3);margin-bottom:.25rem}
   .page-nav .nav-next{text-align:right}
   @media(max-width:640px){.page-nav{flex-direction:column}.page-nav .nav-next{text-align:left}}
@@ -287,6 +287,7 @@
               <li>Decompose multi-concern requests into distinct items, investigate each in parallel with shared context, then synthesize one unified resolution.</li>
               <li>Compile structured handoff summaries (customer ID, root cause, refund amount, recommended action) for a human agent with no transcript access.</li>
             </ul>
+            <p class="cornell-see">&rarr; <a href="#diagram-prerequisite-gate">See: Diagram, A Real Prerequisite Gate</a></p>
           </div>
         </div>
         <div class="cornell-row">
@@ -549,6 +550,37 @@
             <marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
             <marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
           </defs>
+        </svg>
+      </div>
+
+      <h3 class="subhead" id="diagram-prerequisite-gate">Diagram: A Real Prerequisite Gate</h3>
+      <div class="mindmap-wrap">
+        <svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="A real three-step transcript: the agent calls process_refund with no customer ID and a hook blocks it, requiring get_customer first, with a note beside it explaining the hook enforces this order deterministically. The agent calls get_customer and gets back a verified customer ID. The agent retries process_refund with that ID and succeeds, with a note beside it explaining the agent adapts on its own with no re-prompting.">
+          <rect x="20" y="15" width="430" height="62" rx="8" fill="#F5DDE5" stroke="#9A2A4A" stroke-width="1.5"/>
+          <circle cx="48" cy="46" r="12" fill="#9A2A4A"/>
+          <text x="48" y="50" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700" fill="#FAFCF5">1</text>
+          <text x="70" y="40" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">process_refund({customer_id: null, amount: 45})</text>
+          <text x="70" y="58" font-family="Consolas, monospace" font-size="8.5" font-weight="700" fill="#9A2A4A">&rarr; BLOCKED: get_customer required first</text>
+
+          <rect x="460" y="15" width="240" height="62" rx="8" fill="#FAFCF5" stroke="#9A2A4A" stroke-dasharray="3 2"/>
+          <text x="475" y="40" font-family="Segoe UI, sans-serif" font-size="8.5" font-weight="700" fill="#9A2A4A">Enforced by a hook</text>
+          <text x="475" y="58" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#3D4235">guaranteed order, not a prompt ask</text>
+
+          <rect x="20" y="87" width="680" height="62" rx="8" fill="#EEF1E7" stroke="rgba(26,31,20,.25)"/>
+          <circle cx="48" cy="118" r="12" fill="#6B7060"/>
+          <text x="48" y="122" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700" fill="#FAFCF5">2</text>
+          <text x="70" y="112" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">get_customer({email: "j.doe@example.com"})</text>
+          <text x="70" y="130" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">&rarr; {customer_id: "cus_8841", verified: true}</text>
+
+          <rect x="20" y="159" width="430" height="62" rx="8" fill="#D8F0E0" stroke="#1A7A3A" stroke-width="1.5"/>
+          <circle cx="48" cy="190" r="12" fill="#1A7A3A"/>
+          <text x="48" y="194" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700" fill="#FAFCF5">3</text>
+          <text x="70" y="184" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">process_refund({customer_id: "cus_8841", amount: 45})</text>
+          <text x="70" y="202" font-family="Consolas, monospace" font-size="8.5" font-weight="700" fill="#1A7A3A">&rarr; {status: "refunded"}</text>
+
+          <rect x="460" y="159" width="240" height="62" rx="8" fill="#FAFCF5" stroke="#1A7A3A" stroke-dasharray="3 2"/>
+          <text x="475" y="184" font-family="Segoe UI, sans-serif" font-size="8.5" font-weight="700" fill="#1A7A3A">Retry succeeds once verified</text>
+          <text x="475" y="202" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#3D4235">adapts on its own, no re-prompting</text>
         </svg>
       </div>
     </div>
