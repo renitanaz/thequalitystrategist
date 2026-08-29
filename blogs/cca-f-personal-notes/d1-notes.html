@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -25,6 +25,7 @@
   .topic-body{margin-top:1.3rem}
   h2{font-size:1.2rem}
   h2 .sec-num{color:var(--purple);margin-right:.4rem}
+  h2 .topic-icon{vertical-align:-5px;margin-right:.45rem;display:inline-block}
   h3.subhead{font-size:.85rem;margin:2rem 0 .8rem;color:var(--text-3);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
   h3.subhead:first-of-type{margin-top:0}
 
@@ -224,7 +225,7 @@
   </details>
 
   <details class="topic">
-    <summary><h2><span class="sec-num">1</span>Topic Keywords</h2></summary>
+    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="2" width="14" height="20" rx="1.5" stroke="#6B7060" stroke-width="1.5"/><rect x="7.5" y="9.7" width="9" height="3" rx="0.6" fill="#F5EDD6"/><line x1="7.5" y1="6.5" x2="16.5" y2="6.5" stroke="#6B7060" stroke-width="1.3"/><line x1="7.5" y1="11.2" x2="16.5" y2="11.2" stroke="#9A6E1A" stroke-width="1.3"/><line x1="7.5" y1="15" x2="14" y2="15" stroke="#6B7060" stroke-width="1.3"/><line x1="7.5" y1="18" x2="15.5" y2="18" stroke="#6B7060" stroke-width="1.3"/></svg></span><span class="sec-num">1</span>Topic Keywords</h2></summary>
     <div class="topic-body">
       <h3 class="subhead">1.1 &middot; The Loop</h3>
       <dl class="keyword-grid">
@@ -269,138 +270,7 @@
   </details>
 
   <details class="topic">
-    <summary><h2><span class="sec-num">2</span>Main Pointers</h2></summary>
-    <div class="topic-body">
-      <div class="cornell">
-        <div class="cornell-row">
-          <div class="cornell-cue g1"><span class="ts">Task Statement</span>1.1<br>Agentic loops</div>
-          <div class="cornell-note">
-            <ul>
-              <li>The loop: send request &rarr; check <code>stop_reason</code> &rarr; run tool &rarr; append result to history &rarr; repeat.<span class="li-see">&rarr; <a href="#diagram-stop-reason">See: Diagram, stop_reason and Its Two Outputs</a></span></li>
-              <li><span class="hl">Model-driven decisions</span> (Claude picks the next tool from context) is the tested contrast against <span class="hl">pre-configured decision trees</span>.<span class="li-see">&rarr; <a href="#diagram-model-driven">See: Diagram, Decision Tree &mdash; Who Picks the Next Tool?</a></span></li>
-              <li>Loop continues while <code>stop_reason === "tool_use"</code>, terminates on <code>"end_turn"</code>.</li>
-              <li>Tool results get added to conversation context between iterations so reasoning can incorporate new information.</li>
-              <li><strong>Mechanic:</strong> a tool_use block carries the tool name, its input, and a <code>tool_use_id</code>. The application executes the tool, then appends the result as a tool_result block carrying that <em>same</em> ID - that's what lets Claude match a result back to the right request when several calls are in flight.</li>
-              <li><span class="lbl">Avoid:</span> parsing natural-language signals for termination; an iteration cap as the <em>primary</em> stop mechanism; checking for assistant text content as a completion indicator.</li>
-            </ul>
-            <p class="cornell-see">&rarr; <a href="#diagram-decision-map">See: Diagram, How 1.1, 1.3, and 1.6 Relate</a></p>
-          </div>
-        </div>
-        <div class="cornell-row">
-          <div class="cornell-cue g2"><span class="ts">Task Statement</span>1.2<br>Coordinator&ndash;subagent orchestration</div>
-          <div class="cornell-note">
-            <ul>
-              <li><span class="hl">Hub-and-spoke</span>: coordinator owns all inter-subagent communication, error handling, and routing.<span class="li-see">&rarr; <a href="#diagram-coordinator">See: Diagram, Coordinator, Subagents, and the Task Tool</a></span></li>
-              <li>Subagents have <span class="hl">isolated context</span> by default.</li>
-              <li>Coordinator owns decomposition, delegation, aggregation, and deciding which subagents to invoke based on query complexity.</li>
-              <li>Named risk: too-narrow decomposition leaves broad topics under-covered.</li>
-              <li><span class="hl">Exam vs. current Claude Code:</span> current Claude Code lets a subagent itself spawn subagents (nested delegation) - the exam's strict "subagents never talk to each other" rule is a simplification for scoring purposes, not a hard product limit. On the exam, always mark direct subagent-to-subagent communication wrong regardless.</li>
-              <li>Coordinator dynamically selects which subagents to invoke, rather than always routing through the full pipeline.</li>
-              <li>Partition research scope across subagents to minimize duplication (distinct subtopics/source types per agent).</li>
-              <li><strong>Iterative refinement loop:</strong> coordinator evaluates synthesis output for gaps, re-delegates to search/analysis subagents with targeted queries, re-invokes synthesis until coverage is sufficient.</li>
-              <li>Route all subagent communication through the coordinator - for observability, consistent error handling, controlled information flow.</li>
-            </ul>
-          </div>
-        </div>
-        <div class="cornell-row">
-          <div class="cornell-cue g2"><span class="ts">Task Statement</span>1.3<br>Subagent invocation &amp; context passing</div>
-          <div class="cornell-note">
-            <ul>
-              <li>The <code>Task</code> tool spawns subagents; coordinator's <code>allowedTools</code> must include <code>"Task"</code>.<span class="li-see">&rarr; <a href="#diagram-coordinator">See: Diagram, Coordinator, Subagents, and the Task Tool</a></span></li>
-              <li><span class="hl">Exam vs. current Claude Code:</span> current Claude Code (v2.1.63) renamed the Task tool to <code>Agent</code> - <code>Task</code> still works as an alias, and the Agent SDK emits <code>Agent</code> in tool-use blocks. The exam guide predates the rename, so the tested answer is still "Task tool."</li>
-              <li>Subagent context must be <span class="hl">explicit in the prompt</span>: no automatic inheritance, no shared memory between invocations.</li>
-              <li><code>AgentDefinition</code> holds each subagent's description, system prompt, tool restrictions.</li>
-              <li><span class="hl">Fork-based session management</span>: <code>fork_session</code> branches one session into two independent copies from the same baseline, letting you explore two approaches without disturbing the original.</li>
-              <li>Include complete findings from prior agents directly in the subagent's prompt (e.g. pass web-search + document-analysis output straight to the synthesis subagent).</li>
-              <li>Use structured data formats that separate content from metadata (source URLs, doc names, page numbers) to preserve attribution across handoffs.</li>
-              <li><strong>Parallel spawning</strong> (multiple <code>Task</code> calls in one response) for independent subagents - the default. <strong>Sequential spawning</strong> (one call per turn) only when a subagent genuinely needs a prior subagent's result first.<span class="li-see">&rarr; <a href="#diagram-spawn-modes">See: Diagram, Parallel vs. Sequential Agent Spawning</a></span></li>
-              <li>Coordinator prompts should specify goals + quality criteria, not step-by-step procedure - that's what lets subagents adapt.</li>
-            </ul>
-            <p class="cornell-see">&rarr; <a href="#diagram-decision-map">See: Diagram, How 1.1, 1.3, and 1.6 Relate</a></p>
-          </div>
-        </div>
-        <div class="cornell-row">
-          <div class="cornell-cue g3"><span class="ts">Task Statement</span>1.4<br>Enforcement &amp; handoff patterns</div>
-          <div class="cornell-note">
-            <ul>
-              <li><span class="hl">Programmatic enforcement</span> (hooks, prerequisite gates) vs. prompt-based guidance for ordering.</li>
-              <li>When <span class="hl">deterministic compliance</span> is required (e.g. identity verification before a financial operation), prompt instructions alone have a non-zero failure rate.</li>
-              <li>Structured handoff protocol for mid-process escalation: customer details, a conversation summary, root cause analysis, recommended action.</li>
-              <li>Programmatic prerequisites block a downstream tool call until a prerequisite step completes - e.g. block <code>process_refund</code> until <code>get_customer</code> returns a verified customer ID.<span class="li-see">&rarr; <a href="#diagram-prerequisite-gate">See: Diagram, A Real Prerequisite Gate</a></span></li>
-              <li>Decompose multi-concern requests into distinct items, investigate each in parallel with shared context, then synthesize one unified resolution.</li>
-              <li>Compile structured handoff summaries (customer ID, conversation summary, root cause, refund amount, recommended action) for a human agent with no transcript access.</li>
-            </ul>
-          </div>
-        </div>
-        <div class="cornell-row">
-          <div class="cornell-cue g3"><span class="ts">Task Statement</span>1.5<br>Hooks: interception &amp; normalization</div>
-          <div class="cornell-note">
-            <ul>
-              <li><code>PostToolUse</code> hooks intercept tool <em>results</em> for transformation before the model processes them.</li>
-              <li>Other hook patterns intercept <em>outgoing</em> tool calls to enforce compliance (e.g. block refunds above a threshold).<span class="li-see">&rarr; <a href="#diagram-pre-post">See: Diagram, PreToolUse vs. PostToolUse</a></span></li>
-              <li>Core distinction: hooks = <span class="hl">deterministic guarantee</span>, prompts = <span class="hl">probabilistic compliance</span>.<span class="li-see">&rarr; <a href="#diagram-hook-or-prompt">See: Diagram, Hook or Prompt?</a></span></li>
-              <li><span class="hl">Subagent lifecycle hooks</span> complement Pre/PostToolUse: <code>SubagentStart</code> fires on spawn (observational only, can't block); <code>SubagentStop</code> fires on completion and <em>can</em> block by sending the subagent back to work, but can't transform its output.<span class="li-see">&rarr; <a href="#diagram-subagent-hooks">See: Diagram, Subagent Lifecycle Hooks</a></span></li>
-              <li>A subagent's own <code>AgentDefinition</code> frontmatter can define <code>PreToolUse</code>/<code>PostToolUse</code> hooks scoped only to that subagent's calls - not the coordinator's or other subagents'.</li>
-              <li><code>PostToolUse</code> hooks normalize heterogeneous formats from different MCP tools - e.g. Unix timestamps, ISO 8601, numeric status codes - into one shape.</li>
-              <li>Tool-call interception hooks block policy-violating actions (e.g. refunds exceeding $500) and redirect to an alternative workflow (human escalation).</li>
-              <li>Choose hooks over prompt-based enforcement whenever a business rule requires <em>guaranteed</em> compliance, not just likely compliance.</li>
-              <li>To gate a subagent <em>spawn</em>, attach <code>PreToolUse</code> to the Agent tool call itself, not <code>SubagentStart</code>; to reshape what the coordinator sees, use <code>PostToolUse</code> on the Agent tool call, not <code>SubagentStop</code>.</li>
-            </ul>
-            <p class="cornell-see">&rarr; <a href="#diagram-hook-loop">See: Flow, The Loop, With a Hook in It</a></p>
-          </div>
-        </div>
-        <div class="cornell-row">
-          <div class="cornell-cue g4"><span class="ts">Task Statement</span>1.6<br>Task decomposition strategies</div>
-          <div class="cornell-note">
-            <ul>
-              <li><span class="hl">Fixed sequential pipelines</span> (prompt chaining) vs. <span class="hl">dynamic adaptive decomposition</span> based on intermediate findings.<span class="li-see">&rarr; <a href="#diagram-pipeline">See: Diagram, Fixed Pipeline vs. Dynamic Decomposition</a></span></li>
-              <li>Prompt chaining is a fixed sequence of separate prompts run in order, each step decided in advance: e.g. reviewing a 5-file pull request, one call per file first, then a final call checking whether a change in one file breaks an assumption another file was relying on.</li>
-              <li>Adaptive investigation plans generate subtasks from what's discovered at each step.</li>
-              <li><span class="hl">Attention dilution</span> is architectural, not a model-capability problem - a more powerful model or a larger context window doesn't fix it. Symptom: inconsistent depth across items, e.g. a pattern flagged in file 3 but approved unchanged in file 11.</li>
-              <li>Match the pattern to the workflow: prompt chaining for predictable multi-aspect reviews, dynamic decomposition for open-ended investigation.</li>
-              <li>Split large code reviews into per-file local analysis + a separate cross-file integration pass, to avoid attention dilution.</li>
-              <li>Decompose open-ended tasks (e.g. "add comprehensive tests to a legacy codebase") by first mapping structure, then identifying high-impact areas, then building a prioritized plan that adapts as dependencies surface.</li>
-              <li><span class="lbl">Avoid:</span> a single-pass review with a "better" prompt (still uneven depth, same root cause); batching files into groups without a dedicated cross-batch integration pass (misses issues that only show up across batches); applying a fixed pipeline to genuinely open-ended investigation.</li>
-            </ul>
-            <p class="cornell-see">&rarr; <a href="#diagram-decision-map">See: Diagram, How 1.1, 1.3, and 1.6 Relate</a></p>
-          </div>
-        </div>
-        <div class="cornell-row">
-          <div class="cornell-cue g4"><span class="ts">Task Statement</span>1.7<br>Session state, resumption, forking</div>
-          <div class="cornell-note">
-            <ul>
-              <li><code>--resume &lt;session-name&gt;</code> continues a specific named prior conversation.</li>
-              <li><code>fork_session</code> creates an independent branch from a shared baseline.</li>
-              <li>Resuming after code changes requires <span class="hl">explicitly informing the agent</span> what changed.</li>
-              <li>Starting fresh with a <span class="hl">structured summary</span> is more reliable than resuming with stale tool results.<span class="li-see">&rarr; <a href="#diagram-session-state">See: Diagram, Session Continuation Strategy</a></span></li>
-              <li><span class="hl">Exam vs. current CLI:</span> <code>--resume</code> only resumes an <em>existing</em> session - it never creates one. Name a session at start with <code>--name</code>/<code>-n</code> (or <code>/rename</code> mid-session), then resume it by name later. <code>-c</code>/<code>--continue</code> resumes the most recent session in the directory with no name needed.</li>
-              <li>Use <code>--resume</code> with session names to continue named investigation sessions across work sessions.</li>
-              <li>Use <code>fork_session</code> for parallel exploration branches - e.g. comparing two testing strategies or refactoring approaches from one codebase analysis.</li>
-              <li>Choose resumption when prior context is mostly valid; choose fresh + injected summary when prior tool results are stale.</li>
-              <li>Inform a resumed session about specific file changes for targeted re-analysis, rather than forcing full re-exploration.</li>
-              <li><span class="lbl">Avoid:</span> reaching for <code>fork_session</code> to fix stale context - a fork inherits the same stale tool results as its baseline. Only a fresh session with an injected summary actually clears them.</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <div class="cornell-summary">
-        <strong class="summary-label">Summary, one line per task statement:</strong>
-        <ul>
-          <li><strong>1.1</strong> Trust <code>stop_reason</code>, never text-guessing or a cap as primary logic.</li>
-          <li><strong>1.2</strong> Hub-and-spoke, coordinator dynamically selects subagents and iteratively refines via re-delegation.</li>
-          <li><strong>1.3</strong> Context is explicit, never inherited; parallel = same response, multiple <code>Task</code> calls.</li>
-          <li><strong>1.4</strong> Critical-path ordering is a programmatic gate, not a prompt request.</li>
-          <li><strong>1.5</strong> <code>PostToolUse</code> normalizes, interception hooks gate - both are guarantees a prompt can't give.</li>
-          <li><strong>1.6</strong> Fixed pipeline for predictable multi-aspect work, dynamic decomposition for open-ended work.</li>
-          <li><strong>1.7</strong> Resume when nothing's stale, fork to explore two paths from one baseline, fresh+summary when the ground truth moved.</li>
-        </ul>
-      </div>
-    </div>
-  </details>
-
-  <details class="topic">
-    <summary><h2><span class="sec-num">3</span>Diagrams</h2></summary>
+    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3.5" y="3" width="12" height="17" rx="1.3" stroke="#6B7060" stroke-width="1.4"/><path d="M6,15 L9,10 L11,13 L13.5,7.5" stroke="#6B7060" stroke-width="1.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="13.5" y1="19" x2="20" y2="12.5" stroke="#7A4A9A" stroke-width="1.7" stroke-linecap="round"/><circle cx="20.5" cy="11.5" r="1.6" fill="#1A6B54"/></svg></span><span class="sec-num">2</span>Diagrams</h2></summary>
     <div class="topic-body">
       <h3 class="subhead" id="diagram-stop-reason">Diagram: stop_reason and Its Two Outputs</h3>
       <div class="mindmap-wrap">
@@ -1037,7 +907,7 @@
   </details>
 
   <details class="topic">
-    <summary><h2><span class="sec-num">4</span>Active Recall</h2></summary>
+    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12,3.5 C8.5,3.5 6.8,5.8 7,8 C5.2,8.6 4.6,11 5.6,12.3 C4.6,13.7 5.2,16.1 7,16.7 C6.9,18.7 9,20.3 12,19.8 C15,20.3 17.1,18.7 17,16.7 C18.8,16.1 19.4,13.7 18.4,12.3 C19.4,11 18.8,8.6 17,8 C17.2,5.8 15.5,3.5 12,3.5 Z" stroke="#7A4A9A" stroke-width="1.4" fill="none" stroke-linejoin="round"/><path d="M12,4.5 L12,19.5" stroke="#7A4A9A" stroke-width="1.1"/><path d="M8.3,9 C9.3,9.6 8.3,11 9.3,11.6" stroke="#7A4A9A" stroke-width="1" fill="none" stroke-linecap="round"/><path d="M15.7,9 C14.7,9.6 15.7,11 14.7,11.6" stroke="#7A4A9A" stroke-width="1" fill="none" stroke-linecap="round"/></svg></span><span class="sec-num">3</span>Active Recall</h2></summary>
     <div class="topic-body">
       <details class="recall-item"><summary><span class="recall-q"><span class="recall-num">1.</span>What exact API field controls whether the agentic loop continues, and what are its two relevant values?</span></summary><div class="recall-answer"><code>stop_reason</code>. <code>"tool_use"</code> = continue the loop, <code>"end_turn"</code> = terminate. Not the model's own text output or a turn counter - those are exactly the two loop anti-patterns the guide flags, because neither one actually reads the protocol's own signal.</div></details>
 
@@ -1074,7 +944,7 @@
   </details>
 
   <details class="topic">
-    <summary><h2><span class="sec-num">5</span>Official Sample Questions (D1)</h2></summary>
+    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="2" width="14" height="20" rx="1.5" stroke="#6B7060" stroke-width="1.5"/><text x="12" y="14" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700" fill="#9A2A4A">?</text><circle cx="8" cy="18" r="1" fill="none" stroke="#6B7060" stroke-width="1"/><circle cx="12" cy="18" r="1" fill="none" stroke="#6B7060" stroke-width="1"/><circle cx="16" cy="18" r="1" fill="none" stroke="#6B7060" stroke-width="1"/></svg></span><span class="sec-num">4</span>Official Sample Questions (D1)</h2></summary>
     <div class="topic-body">
       <div class="mcq">
         <div class="mcq-q"><span class="qnum">Q1.</span> (Scenario 1, Customer Support) Production data shows the agent skips <code>get_customer</code> in 12% of cases and calls <code>lookup_order</code> on stated name alone, occasionally causing misidentified accounts and incorrect refunds. Most effective fix?</div>
@@ -1118,6 +988,137 @@
           <div>D) Have the web-search agent proactively cache extra context speculatively.</div>
         </div>
         <details><summary>Show answer</summary><div class="mcq-answer"><span class="correct">A.</span> Principle of least privilege - scoped tool for the common case, existing coordination pattern kept for the hard 15%. C violates separation of concerns (this is exactly the "tools outside specialization" risk from D2 2.3).</div></details>
+      </div>
+    </div>
+  </details>
+
+  <details class="topic">
+    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="3" width="14" height="18" rx="1.3" stroke="#6B7060" stroke-width="1.5"/><line x1="8" y1="3" x2="8" y2="21" stroke="#6B7060" stroke-width="1.1"/><path d="M13,3 L16,3 L16,11 L14.5,9.3 L13,11 Z" fill="#9A2A4A"/></svg></span><span class="sec-num">5</span>Emergency Recap</h2></summary>
+    <div class="topic-body">
+      <div class="cornell">
+        <div class="cornell-row">
+          <div class="cornell-cue g1"><span class="ts">Task Statement</span>1.1<br>Agentic loops</div>
+          <div class="cornell-note">
+            <ul>
+              <li>The loop: send request &rarr; check <code>stop_reason</code> &rarr; run tool &rarr; append result to history &rarr; repeat.<span class="li-see">&rarr; <a href="#diagram-stop-reason">See: Diagram, stop_reason and Its Two Outputs</a></span></li>
+              <li><span class="hl">Model-driven decisions</span> (Claude picks the next tool from context) is the tested contrast against <span class="hl">pre-configured decision trees</span>.<span class="li-see">&rarr; <a href="#diagram-model-driven">See: Diagram, Decision Tree &mdash; Who Picks the Next Tool?</a></span></li>
+              <li>Loop continues while <code>stop_reason === "tool_use"</code>, terminates on <code>"end_turn"</code>.</li>
+              <li>Tool results get added to conversation context between iterations so reasoning can incorporate new information.</li>
+              <li><strong>Mechanic:</strong> a tool_use block carries the tool name, its input, and a <code>tool_use_id</code>. The application executes the tool, then appends the result as a tool_result block carrying that <em>same</em> ID - that's what lets Claude match a result back to the right request when several calls are in flight.</li>
+              <li><span class="lbl">Avoid:</span> parsing natural-language signals for termination; an iteration cap as the <em>primary</em> stop mechanism; checking for assistant text content as a completion indicator.</li>
+            </ul>
+            <p class="cornell-see">&rarr; <a href="#diagram-decision-map">See: Diagram, How 1.1, 1.3, and 1.6 Relate</a></p>
+          </div>
+        </div>
+        <div class="cornell-row">
+          <div class="cornell-cue g2"><span class="ts">Task Statement</span>1.2<br>Coordinator&ndash;subagent orchestration</div>
+          <div class="cornell-note">
+            <ul>
+              <li><span class="hl">Hub-and-spoke</span>: coordinator owns all inter-subagent communication, error handling, and routing.<span class="li-see">&rarr; <a href="#diagram-coordinator">See: Diagram, Coordinator, Subagents, and the Task Tool</a></span></li>
+              <li>Subagents have <span class="hl">isolated context</span> by default.</li>
+              <li>Coordinator owns decomposition, delegation, aggregation, and deciding which subagents to invoke based on query complexity.</li>
+              <li>Named risk: too-narrow decomposition leaves broad topics under-covered.</li>
+              <li><span class="hl">Exam vs. current Claude Code:</span> current Claude Code lets a subagent itself spawn subagents (nested delegation) - the exam's strict "subagents never talk to each other" rule is a simplification for scoring purposes, not a hard product limit. On the exam, always mark direct subagent-to-subagent communication wrong regardless.</li>
+              <li>Coordinator dynamically selects which subagents to invoke, rather than always routing through the full pipeline.</li>
+              <li>Partition research scope across subagents to minimize duplication (distinct subtopics/source types per agent).</li>
+              <li><strong>Iterative refinement loop:</strong> coordinator evaluates synthesis output for gaps, re-delegates to search/analysis subagents with targeted queries, re-invokes synthesis until coverage is sufficient.</li>
+              <li>Route all subagent communication through the coordinator - for observability, consistent error handling, controlled information flow.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="cornell-row">
+          <div class="cornell-cue g2"><span class="ts">Task Statement</span>1.3<br>Subagent invocation &amp; context passing</div>
+          <div class="cornell-note">
+            <ul>
+              <li>The <code>Task</code> tool spawns subagents; coordinator's <code>allowedTools</code> must include <code>"Task"</code>.<span class="li-see">&rarr; <a href="#diagram-coordinator">See: Diagram, Coordinator, Subagents, and the Task Tool</a></span></li>
+              <li><span class="hl">Exam vs. current Claude Code:</span> current Claude Code (v2.1.63) renamed the Task tool to <code>Agent</code> - <code>Task</code> still works as an alias, and the Agent SDK emits <code>Agent</code> in tool-use blocks. The exam guide predates the rename, so the tested answer is still "Task tool."</li>
+              <li>Subagent context must be <span class="hl">explicit in the prompt</span>: no automatic inheritance, no shared memory between invocations.</li>
+              <li><code>AgentDefinition</code> holds each subagent's description, system prompt, tool restrictions.</li>
+              <li><span class="hl">Fork-based session management</span>: <code>fork_session</code> branches one session into two independent copies from the same baseline, letting you explore two approaches without disturbing the original.</li>
+              <li>Include complete findings from prior agents directly in the subagent's prompt (e.g. pass web-search + document-analysis output straight to the synthesis subagent).</li>
+              <li>Use structured data formats that separate content from metadata (source URLs, doc names, page numbers) to preserve attribution across handoffs.</li>
+              <li><strong>Parallel spawning</strong> (multiple <code>Task</code> calls in one response) for independent subagents - the default. <strong>Sequential spawning</strong> (one call per turn) only when a subagent genuinely needs a prior subagent's result first.<span class="li-see">&rarr; <a href="#diagram-spawn-modes">See: Diagram, Parallel vs. Sequential Agent Spawning</a></span></li>
+              <li>Coordinator prompts should specify goals + quality criteria, not step-by-step procedure - that's what lets subagents adapt.</li>
+            </ul>
+            <p class="cornell-see">&rarr; <a href="#diagram-decision-map">See: Diagram, How 1.1, 1.3, and 1.6 Relate</a></p>
+          </div>
+        </div>
+        <div class="cornell-row">
+          <div class="cornell-cue g3"><span class="ts">Task Statement</span>1.4<br>Enforcement &amp; handoff patterns</div>
+          <div class="cornell-note">
+            <ul>
+              <li><span class="hl">Programmatic enforcement</span> (hooks, prerequisite gates) vs. prompt-based guidance for ordering.</li>
+              <li>When <span class="hl">deterministic compliance</span> is required (e.g. identity verification before a financial operation), prompt instructions alone have a non-zero failure rate.</li>
+              <li>Structured handoff protocol for mid-process escalation: customer details, a conversation summary, root cause analysis, recommended action.</li>
+              <li>Programmatic prerequisites block a downstream tool call until a prerequisite step completes - e.g. block <code>process_refund</code> until <code>get_customer</code> returns a verified customer ID.<span class="li-see">&rarr; <a href="#diagram-prerequisite-gate">See: Diagram, A Real Prerequisite Gate</a></span></li>
+              <li>Decompose multi-concern requests into distinct items, investigate each in parallel with shared context, then synthesize one unified resolution.</li>
+              <li>Compile structured handoff summaries (customer ID, conversation summary, root cause, refund amount, recommended action) for a human agent with no transcript access.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="cornell-row">
+          <div class="cornell-cue g3"><span class="ts">Task Statement</span>1.5<br>Hooks: interception &amp; normalization</div>
+          <div class="cornell-note">
+            <ul>
+              <li><code>PostToolUse</code> hooks intercept tool <em>results</em> for transformation before the model processes them.</li>
+              <li>Other hook patterns intercept <em>outgoing</em> tool calls to enforce compliance (e.g. block refunds above a threshold).<span class="li-see">&rarr; <a href="#diagram-pre-post">See: Diagram, PreToolUse vs. PostToolUse</a></span></li>
+              <li>Core distinction: hooks = <span class="hl">deterministic guarantee</span>, prompts = <span class="hl">probabilistic compliance</span>.<span class="li-see">&rarr; <a href="#diagram-hook-or-prompt">See: Diagram, Hook or Prompt?</a></span></li>
+              <li><span class="hl">Subagent lifecycle hooks</span> complement Pre/PostToolUse: <code>SubagentStart</code> fires on spawn (observational only, can't block); <code>SubagentStop</code> fires on completion and <em>can</em> block by sending the subagent back to work, but can't transform its output.<span class="li-see">&rarr; <a href="#diagram-subagent-hooks">See: Diagram, Subagent Lifecycle Hooks</a></span></li>
+              <li>A subagent's own <code>AgentDefinition</code> frontmatter can define <code>PreToolUse</code>/<code>PostToolUse</code> hooks scoped only to that subagent's calls - not the coordinator's or other subagents'.</li>
+              <li><code>PostToolUse</code> hooks normalize heterogeneous formats from different MCP tools - e.g. Unix timestamps, ISO 8601, numeric status codes - into one shape.</li>
+              <li>Tool-call interception hooks block policy-violating actions (e.g. refunds exceeding $500) and redirect to an alternative workflow (human escalation).</li>
+              <li>Choose hooks over prompt-based enforcement whenever a business rule requires <em>guaranteed</em> compliance, not just likely compliance.</li>
+              <li>To gate a subagent <em>spawn</em>, attach <code>PreToolUse</code> to the Agent tool call itself, not <code>SubagentStart</code>; to reshape what the coordinator sees, use <code>PostToolUse</code> on the Agent tool call, not <code>SubagentStop</code>.</li>
+            </ul>
+            <p class="cornell-see">&rarr; <a href="#diagram-hook-loop">See: Flow, The Loop, With a Hook in It</a></p>
+          </div>
+        </div>
+        <div class="cornell-row">
+          <div class="cornell-cue g4"><span class="ts">Task Statement</span>1.6<br>Task decomposition strategies</div>
+          <div class="cornell-note">
+            <ul>
+              <li><span class="hl">Fixed sequential pipelines</span> (prompt chaining) vs. <span class="hl">dynamic adaptive decomposition</span> based on intermediate findings.<span class="li-see">&rarr; <a href="#diagram-pipeline">See: Diagram, Fixed Pipeline vs. Dynamic Decomposition</a></span></li>
+              <li>Prompt chaining is a fixed sequence of separate prompts run in order, each step decided in advance: e.g. reviewing a 5-file pull request, one call per file first, then a final call checking whether a change in one file breaks an assumption another file was relying on.</li>
+              <li>Adaptive investigation plans generate subtasks from what's discovered at each step.</li>
+              <li><span class="hl">Attention dilution</span> is architectural, not a model-capability problem - a more powerful model or a larger context window doesn't fix it. Symptom: inconsistent depth across items, e.g. a pattern flagged in file 3 but approved unchanged in file 11.</li>
+              <li>Match the pattern to the workflow: prompt chaining for predictable multi-aspect reviews, dynamic decomposition for open-ended investigation.</li>
+              <li>Split large code reviews into per-file local analysis + a separate cross-file integration pass, to avoid attention dilution.</li>
+              <li>Decompose open-ended tasks (e.g. "add comprehensive tests to a legacy codebase") by first mapping structure, then identifying high-impact areas, then building a prioritized plan that adapts as dependencies surface.</li>
+              <li><span class="lbl">Avoid:</span> a single-pass review with a "better" prompt (still uneven depth, same root cause); batching files into groups without a dedicated cross-batch integration pass (misses issues that only show up across batches); applying a fixed pipeline to genuinely open-ended investigation.</li>
+            </ul>
+            <p class="cornell-see">&rarr; <a href="#diagram-decision-map">See: Diagram, How 1.1, 1.3, and 1.6 Relate</a></p>
+          </div>
+        </div>
+        <div class="cornell-row">
+          <div class="cornell-cue g4"><span class="ts">Task Statement</span>1.7<br>Session state, resumption, forking</div>
+          <div class="cornell-note">
+            <ul>
+              <li><code>--resume &lt;session-name&gt;</code> continues a specific named prior conversation.</li>
+              <li><code>fork_session</code> creates an independent branch from a shared baseline.</li>
+              <li>Resuming after code changes requires <span class="hl">explicitly informing the agent</span> what changed.</li>
+              <li>Starting fresh with a <span class="hl">structured summary</span> is more reliable than resuming with stale tool results.<span class="li-see">&rarr; <a href="#diagram-session-state">See: Diagram, Session Continuation Strategy</a></span></li>
+              <li><span class="hl">Exam vs. current CLI:</span> <code>--resume</code> only resumes an <em>existing</em> session - it never creates one. Name a session at start with <code>--name</code>/<code>-n</code> (or <code>/rename</code> mid-session), then resume it by name later. <code>-c</code>/<code>--continue</code> resumes the most recent session in the directory with no name needed.</li>
+              <li>Use <code>--resume</code> with session names to continue named investigation sessions across work sessions.</li>
+              <li>Use <code>fork_session</code> for parallel exploration branches - e.g. comparing two testing strategies or refactoring approaches from one codebase analysis.</li>
+              <li>Choose resumption when prior context is mostly valid; choose fresh + injected summary when prior tool results are stale.</li>
+              <li>Inform a resumed session about specific file changes for targeted re-analysis, rather than forcing full re-exploration.</li>
+              <li><span class="lbl">Avoid:</span> reaching for <code>fork_session</code> to fix stale context - a fork inherits the same stale tool results as its baseline. Only a fresh session with an injected summary actually clears them.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="cornell-summary">
+        <strong class="summary-label">Summary, one line per task statement:</strong>
+        <ul>
+          <li><strong>1.1</strong> Trust <code>stop_reason</code>, never text-guessing or a cap as primary logic.</li>
+          <li><strong>1.2</strong> Hub-and-spoke, coordinator dynamically selects subagents and iteratively refines via re-delegation.</li>
+          <li><strong>1.3</strong> Context is explicit, never inherited; parallel = same response, multiple <code>Task</code> calls.</li>
+          <li><strong>1.4</strong> Critical-path ordering is a programmatic gate, not a prompt request.</li>
+          <li><strong>1.5</strong> <code>PostToolUse</code> normalizes, interception hooks gate - both are guarantees a prompt can't give.</li>
+          <li><strong>1.6</strong> Fixed pipeline for predictable multi-aspect work, dynamic decomposition for open-ended work.</li>
+          <li><strong>1.7</strong> Resume when nothing's stale, fork to explore two paths from one baseline, fresh+summary when the ground truth moved.</li>
+        </ul>
       </div>
     </div>
   </details>
