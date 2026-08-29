@@ -54,8 +54,23 @@
   .cornell-note .lbl{font-weight:600;color:var(--text)}
   .cornell-note .hl{color:var(--amber);font-weight:600}
   .cornell-see{font-size:.78rem;margin-top:.6rem}
-  .cornell-see a{color:var(--teal);text-decoration:none;font-weight:600}
-  .cornell-see a:hover{text-decoration:underline}
+  .cornell-see a{color:#1E3A6E;text-decoration:underline;font-weight:600}
+  .li-see{display:block;margin-top:.2rem;font-size:.78rem}
+  .li-see a{color:#1E3A6E;text-decoration:underline;font-weight:600}
+  .explain-toggle{margin-top:.9rem}
+  .explain-toggle summary{cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:.45rem;background:#E4E7F7;color:#1E3A6E;font-weight:600;font-size:.83rem;padding:.5rem 1.1rem;border-radius:999px;transition:background .15s,color .15s}
+  .explain-toggle summary::-webkit-details-marker{display:none}
+  .explain-toggle summary svg{flex-shrink:0}
+  .explain-toggle summary:hover{background:#1E3A6E;color:var(--bg)}
+  .explain-toggle[open] summary{border-radius:10px 10px 0 0}
+  .explain-toggle .explain-body{padding:.9rem 1rem;background:#E4E7F7;border-radius:0 10px 10px 10px;font-size:.86rem;color:var(--text-2);line-height:1.65}
+  .explain-toggle .explain-body p{margin-top:0}
+  .explain-toggle .explain-body p+p{margin-top:.7rem}
+  .explain-toggle .explain-body h4{margin:1rem 0 .4rem;font-size:.8rem;color:#1E3A6E;text-transform:uppercase;letter-spacing:.03em}
+  .explain-toggle .explain-body h4:first-child{margin-top:0}
+  .explain-toggle .explain-body ul{padding-left:1.1rem;margin:.3rem 0}
+  .explain-toggle .explain-body li{margin-bottom:.25rem}
+  .explain-toggle .explain-body code{background:var(--bg3);padding:.1rem .35rem;border-radius:4px;font-size:.85em;color:#1E3A6E;font-family:monospace}
   @media(max-width:640px){.cornell-row{grid-template-columns:1fr}.cornell-cue{padding-bottom:.4rem}}
 
   .cornell-summary{background:var(--amber-bg);border-left:3px solid var(--amber);border-radius:0 8px 8px 0;padding:1rem 1.2rem;font-size:.86rem;color:var(--text-2);margin-bottom:.5rem}
@@ -260,142 +275,111 @@
         <div class="cornell-row">
           <div class="cornell-cue g1"><span class="ts">Task Statement</span>1.1<br>Agentic loops</div>
           <div class="cornell-note">
-            <p><span class="lbl">Knowledge:</span></p>
             <ul>
-              <li>The loop: send request &rarr; check <code>stop_reason</code> &rarr; run tool &rarr; append result to history &rarr; repeat.</li>
-              <li><span class="hl">Model-driven decisions</span> (Claude picks the next tool from context) is the tested contrast against <span class="hl">pre-configured decision trees</span>.</li>
-            </ul>
-            <p><span class="lbl">Skills:</span></p>
-            <ul>
+              <li>The loop: send request &rarr; check <code>stop_reason</code> &rarr; run tool &rarr; append result to history &rarr; repeat.<span class="li-see">&rarr; <a href="#diagram-stop-reason">See: Diagram, stop_reason and Its Two Outputs</a></span></li>
+              <li><span class="hl">Model-driven decisions</span> (Claude picks the next tool from context) is the tested contrast against <span class="hl">pre-configured decision trees</span>.<span class="li-see">&rarr; <a href="#diagram-model-driven">See: Diagram, Decision Tree &mdash; Who Picks the Next Tool?</a></span></li>
               <li>Loop continues while <code>stop_reason === "tool_use"</code>, terminates on <code>"end_turn"</code>.</li>
               <li>Tool results get added to conversation context between iterations so reasoning can incorporate new information.</li>
               <li><strong>Mechanic:</strong> a tool_use block carries the tool name, its input, and a <code>tool_use_id</code>. The application executes the tool, then appends the result as a tool_result block carrying that <em>same</em> ID - that's what lets Claude match a result back to the right request when several calls are in flight.</li>
               <li><span class="lbl">Avoid:</span> parsing natural-language signals for termination; an iteration cap as the <em>primary</em> stop mechanism; checking for assistant text content as a completion indicator.</li>
             </ul>
-            <p class="cornell-see">&rarr; <a href="#diagram-stop-reason">See: Diagram, stop_reason and Its Two Outputs</a> &middot; <a href="#diagram-model-driven">Diagram, Decision Tree &mdash; Who Picks the Next Tool?</a></p>
+            <p class="cornell-see">&rarr; <a href="#diagram-decision-map">See: Diagram, How 1.1, 1.3, and 1.6 Relate</a></p>
           </div>
         </div>
         <div class="cornell-row">
           <div class="cornell-cue g2"><span class="ts">Task Statement</span>1.2<br>Coordinator&ndash;subagent orchestration</div>
           <div class="cornell-note">
-            <p><span class="lbl">Knowledge:</span></p>
             <ul>
-              <li><span class="hl">Hub-and-spoke</span>: coordinator owns all inter-subagent communication, error handling, and routing.</li>
+              <li><span class="hl">Hub-and-spoke</span>: coordinator owns all inter-subagent communication, error handling, and routing.<span class="li-see">&rarr; <a href="#diagram-coordinator">See: Diagram, Coordinator, Subagents, and the Task Tool</a></span></li>
               <li>Subagents have <span class="hl">isolated context</span> by default.</li>
               <li>Coordinator owns decomposition, delegation, aggregation, and deciding which subagents to invoke based on query complexity.</li>
               <li>Named risk: too-narrow decomposition leaves broad topics under-covered.</li>
               <li><span class="hl">Exam vs. current Claude Code:</span> current Claude Code lets a subagent itself spawn subagents (nested delegation) - the exam's strict "subagents never talk to each other" rule is a simplification for scoring purposes, not a hard product limit. On the exam, always mark direct subagent-to-subagent communication wrong regardless.</li>
-            </ul>
-            <p><span class="lbl">Skills:</span></p>
-            <ul>
               <li>Coordinator dynamically selects which subagents to invoke, rather than always routing through the full pipeline.</li>
               <li>Partition research scope across subagents to minimize duplication (distinct subtopics/source types per agent).</li>
               <li><strong>Iterative refinement loop:</strong> coordinator evaluates synthesis output for gaps, re-delegates to search/analysis subagents with targeted queries, re-invokes synthesis until coverage is sufficient.</li>
               <li>Route all subagent communication through the coordinator - for observability, consistent error handling, controlled information flow.</li>
             </ul>
-            <p class="cornell-see">&rarr; <a href="#diagram-coordinator">See: Diagram, Coordinator, Subagents, and the Task Tool</a></p>
           </div>
         </div>
         <div class="cornell-row">
           <div class="cornell-cue g2"><span class="ts">Task Statement</span>1.3<br>Subagent invocation &amp; context passing</div>
           <div class="cornell-note">
-            <p><span class="lbl">Knowledge:</span></p>
             <ul>
-              <li>The <code>Task</code> tool spawns subagents; coordinator's <code>allowedTools</code> must include <code>"Task"</code>.</li>
+              <li>The <code>Task</code> tool spawns subagents; coordinator's <code>allowedTools</code> must include <code>"Task"</code>.<span class="li-see">&rarr; <a href="#diagram-coordinator">See: Diagram, Coordinator, Subagents, and the Task Tool</a></span></li>
               <li><span class="hl">Exam vs. current Claude Code:</span> current Claude Code (v2.1.63) renamed the Task tool to <code>Agent</code> - <code>Task</code> still works as an alias, and the Agent SDK emits <code>Agent</code> in tool-use blocks. The exam guide predates the rename, so the tested answer is still "Task tool."</li>
               <li>Subagent context must be <span class="hl">explicit in the prompt</span>: no automatic inheritance, no shared memory between invocations.</li>
               <li><code>AgentDefinition</code> holds each subagent's description, system prompt, tool restrictions.</li>
               <li><span class="hl">Fork-based session management</span>: <code>fork_session</code> branches one session into two independent copies from the same baseline, letting you explore two approaches without disturbing the original.</li>
-            </ul>
-            <p><span class="lbl">Skills:</span></p>
-            <ul>
               <li>Include complete findings from prior agents directly in the subagent's prompt (e.g. pass web-search + document-analysis output straight to the synthesis subagent).</li>
               <li>Use structured data formats that separate content from metadata (source URLs, doc names, page numbers) to preserve attribution across handoffs.</li>
-              <li><strong>Parallel spawning</strong> (multiple <code>Task</code> calls in one response) for independent subagents - the default. <strong>Sequential spawning</strong> (one call per turn) only when a subagent genuinely needs a prior subagent's result first.</li>
+              <li><strong>Parallel spawning</strong> (multiple <code>Task</code> calls in one response) for independent subagents - the default. <strong>Sequential spawning</strong> (one call per turn) only when a subagent genuinely needs a prior subagent's result first.<span class="li-see">&rarr; <a href="#diagram-spawn-modes">See: Diagram, Parallel vs. Sequential Agent Spawning</a></span></li>
               <li>Coordinator prompts should specify goals + quality criteria, not step-by-step procedure - that's what lets subagents adapt.</li>
             </ul>
-            <p class="cornell-see">&rarr; <a href="#diagram-coordinator">See: Diagram, Coordinator, Subagents, and the Task Tool</a> &middot; <a href="#diagram-spawn-modes">Diagram, Parallel vs. Sequential Agent Spawning</a></p>
+            <p class="cornell-see">&rarr; <a href="#diagram-decision-map">See: Diagram, How 1.1, 1.3, and 1.6 Relate</a></p>
           </div>
         </div>
         <div class="cornell-row">
           <div class="cornell-cue g3"><span class="ts">Task Statement</span>1.4<br>Enforcement &amp; handoff patterns</div>
           <div class="cornell-note">
-            <p><span class="lbl">Knowledge:</span></p>
             <ul>
               <li><span class="hl">Programmatic enforcement</span> (hooks, prerequisite gates) vs. prompt-based guidance for ordering.</li>
               <li>When <span class="hl">deterministic compliance</span> is required (e.g. identity verification before a financial operation), prompt instructions alone have a non-zero failure rate.</li>
               <li>Structured handoff protocol for mid-process escalation: customer details, a conversation summary, root cause analysis, recommended action.</li>
-            </ul>
-            <p><span class="lbl">Skills:</span></p>
-            <ul>
-              <li>Programmatic prerequisites block a downstream tool call until a prerequisite step completes - e.g. block <code>process_refund</code> until <code>get_customer</code> returns a verified customer ID.</li>
+              <li>Programmatic prerequisites block a downstream tool call until a prerequisite step completes - e.g. block <code>process_refund</code> until <code>get_customer</code> returns a verified customer ID.<span class="li-see">&rarr; <a href="#diagram-prerequisite-gate">See: Diagram, A Real Prerequisite Gate</a></span></li>
               <li>Decompose multi-concern requests into distinct items, investigate each in parallel with shared context, then synthesize one unified resolution.</li>
               <li>Compile structured handoff summaries (customer ID, conversation summary, root cause, refund amount, recommended action) for a human agent with no transcript access.</li>
             </ul>
-            <p class="cornell-see">&rarr; <a href="#diagram-prerequisite-gate">See: Diagram, A Real Prerequisite Gate</a></p>
           </div>
         </div>
         <div class="cornell-row">
           <div class="cornell-cue g3"><span class="ts">Task Statement</span>1.5<br>Hooks: interception &amp; normalization</div>
           <div class="cornell-note">
-            <p><span class="lbl">Knowledge:</span></p>
             <ul>
               <li><code>PostToolUse</code> hooks intercept tool <em>results</em> for transformation before the model processes them.</li>
-              <li>Other hook patterns intercept <em>outgoing</em> tool calls to enforce compliance (e.g. block refunds above a threshold).</li>
-              <li>Core distinction: hooks = <span class="hl">deterministic guarantee</span>, prompts = <span class="hl">probabilistic compliance</span>.</li>
-              <li><span class="hl">Subagent lifecycle hooks</span> complement Pre/PostToolUse: <code>SubagentStart</code> fires on spawn (observational only, can't block); <code>SubagentStop</code> fires on completion and <em>can</em> block by sending the subagent back to work, but can't transform its output.</li>
+              <li>Other hook patterns intercept <em>outgoing</em> tool calls to enforce compliance (e.g. block refunds above a threshold).<span class="li-see">&rarr; <a href="#diagram-pre-post">See: Diagram, PreToolUse vs. PostToolUse</a></span></li>
+              <li>Core distinction: hooks = <span class="hl">deterministic guarantee</span>, prompts = <span class="hl">probabilistic compliance</span>.<span class="li-see">&rarr; <a href="#diagram-hook-or-prompt">See: Diagram, Hook or Prompt?</a></span></li>
+              <li><span class="hl">Subagent lifecycle hooks</span> complement Pre/PostToolUse: <code>SubagentStart</code> fires on spawn (observational only, can't block); <code>SubagentStop</code> fires on completion and <em>can</em> block by sending the subagent back to work, but can't transform its output.<span class="li-see">&rarr; <a href="#diagram-subagent-hooks">See: Diagram, Subagent Lifecycle Hooks</a></span></li>
               <li>A subagent's own <code>AgentDefinition</code> frontmatter can define <code>PreToolUse</code>/<code>PostToolUse</code> hooks scoped only to that subagent's calls - not the coordinator's or other subagents'.</li>
-            </ul>
-            <p><span class="lbl">Skills:</span></p>
-            <ul>
               <li><code>PostToolUse</code> hooks normalize heterogeneous formats from different MCP tools - e.g. Unix timestamps, ISO 8601, numeric status codes - into one shape.</li>
               <li>Tool-call interception hooks block policy-violating actions (e.g. refunds exceeding $500) and redirect to an alternative workflow (human escalation).</li>
               <li>Choose hooks over prompt-based enforcement whenever a business rule requires <em>guaranteed</em> compliance, not just likely compliance.</li>
               <li>To gate a subagent <em>spawn</em>, attach <code>PreToolUse</code> to the Agent tool call itself, not <code>SubagentStart</code>; to reshape what the coordinator sees, use <code>PostToolUse</code> on the Agent tool call, not <code>SubagentStop</code>.</li>
             </ul>
-            <p class="cornell-see">&rarr; <a href="#diagram-hook-loop">See: Flow, The Loop, With a Hook in It</a> &middot; <a href="#diagram-pre-post">Diagram, PreToolUse vs. PostToolUse</a> &middot; <a href="#diagram-hook-or-prompt">Diagram, Hook or Prompt?</a> &middot; <a href="#diagram-subagent-hooks">Diagram, Subagent Lifecycle Hooks</a></p>
+            <p class="cornell-see">&rarr; <a href="#diagram-hook-loop">See: Flow, The Loop, With a Hook in It</a></p>
           </div>
         </div>
         <div class="cornell-row">
           <div class="cornell-cue g4"><span class="ts">Task Statement</span>1.6<br>Task decomposition strategies</div>
           <div class="cornell-note">
-            <p><span class="lbl">Knowledge:</span></p>
             <ul>
-              <li><span class="hl">Fixed sequential pipelines</span> (prompt chaining) vs. <span class="hl">dynamic adaptive decomposition</span> based on intermediate findings.</li>
+              <li><span class="hl">Fixed sequential pipelines</span> (prompt chaining) vs. <span class="hl">dynamic adaptive decomposition</span> based on intermediate findings.<span class="li-see">&rarr; <a href="#diagram-pipeline">See: Diagram, Fixed Pipeline vs. Dynamic Decomposition</a></span></li>
               <li>Prompt chaining is a fixed sequence of separate prompts run in order, each step decided in advance: e.g. reviewing a 5-file pull request, one call per file first, then a final call checking whether a change in one file breaks an assumption another file was relying on.</li>
               <li>Adaptive investigation plans generate subtasks from what's discovered at each step.</li>
               <li><span class="hl">Attention dilution</span> is architectural, not a model-capability problem - a more powerful model or a larger context window doesn't fix it. Symptom: inconsistent depth across items, e.g. a pattern flagged in file 3 but approved unchanged in file 11.</li>
-            </ul>
-            <p><span class="lbl">Skills:</span></p>
-            <ul>
               <li>Match the pattern to the workflow: prompt chaining for predictable multi-aspect reviews, dynamic decomposition for open-ended investigation.</li>
               <li>Split large code reviews into per-file local analysis + a separate cross-file integration pass, to avoid attention dilution.</li>
               <li>Decompose open-ended tasks (e.g. "add comprehensive tests to a legacy codebase") by first mapping structure, then identifying high-impact areas, then building a prioritized plan that adapts as dependencies surface.</li>
               <li><span class="lbl">Avoid:</span> a single-pass review with a "better" prompt (still uneven depth, same root cause); batching files into groups without a dedicated cross-batch integration pass (misses issues that only show up across batches); applying a fixed pipeline to genuinely open-ended investigation.</li>
             </ul>
-            <p class="cornell-see">&rarr; <a href="#diagram-pipeline">See: Diagram, Fixed Pipeline vs. Dynamic Decomposition</a></p>
+            <p class="cornell-see">&rarr; <a href="#diagram-decision-map">See: Diagram, How 1.1, 1.3, and 1.6 Relate</a></p>
           </div>
         </div>
         <div class="cornell-row">
           <div class="cornell-cue g4"><span class="ts">Task Statement</span>1.7<br>Session state, resumption, forking</div>
           <div class="cornell-note">
-            <p><span class="lbl">Knowledge:</span></p>
             <ul>
               <li><code>--resume &lt;session-name&gt;</code> continues a specific named prior conversation.</li>
               <li><code>fork_session</code> creates an independent branch from a shared baseline.</li>
               <li>Resuming after code changes requires <span class="hl">explicitly informing the agent</span> what changed.</li>
-              <li>Starting fresh with a <span class="hl">structured summary</span> is more reliable than resuming with stale tool results.</li>
+              <li>Starting fresh with a <span class="hl">structured summary</span> is more reliable than resuming with stale tool results.<span class="li-see">&rarr; <a href="#diagram-session-state">See: Diagram, Session Continuation Strategy</a></span></li>
               <li><span class="hl">Exam vs. current CLI:</span> <code>--resume</code> only resumes an <em>existing</em> session - it never creates one. Name a session at start with <code>--name</code>/<code>-n</code> (or <code>/rename</code> mid-session), then resume it by name later. <code>-c</code>/<code>--continue</code> resumes the most recent session in the directory with no name needed.</li>
-            </ul>
-            <p><span class="lbl">Skills:</span></p>
-            <ul>
               <li>Use <code>--resume</code> with session names to continue named investigation sessions across work sessions.</li>
               <li>Use <code>fork_session</code> for parallel exploration branches - e.g. comparing two testing strategies or refactoring approaches from one codebase analysis.</li>
               <li>Choose resumption when prior context is mostly valid; choose fresh + injected summary when prior tool results are stale.</li>
               <li>Inform a resumed session about specific file changes for targeted re-analysis, rather than forcing full re-exploration.</li>
               <li><span class="lbl">Avoid:</span> reaching for <code>fork_session</code> to fix stale context - a fork inherits the same stale tool results as its baseline. Only a fresh session with an injected summary actually clears them.</li>
             </ul>
-            <p class="cornell-see">&rarr; <a href="#diagram-session-state">See: Diagram, Session Continuation Strategy</a></p>
           </div>
         </div>
       </div>
@@ -460,6 +444,12 @@
             <marker id="srr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9A2A4A"/></marker>
           </defs>
         </svg>
+        <details class="explain-toggle">
+          <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
+          <div class="explain-body">
+          <p>The loop only has two exits, and <code>stop_reason</code> is what tells you which one you're at. <code>tool_use</code> means the model wants to act - execute it, append the result, and go around again. <code>end_turn</code> means it's done - stop and hand the response back. Everything else (parsing text for phrases like "I'm finished," using an iteration cap as the primary stop signal) is a workaround for not trusting this field.</p>
+          </div>
+        </details>
       </div>
 
       <h3 class="subhead" id="diagram-model-driven">Diagram: Decision Tree &mdash; Who Picks the Next Tool?</h3>
@@ -509,6 +499,12 @@
             <marker id="mdp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7A4A9A"/></marker>
           </defs>
         </svg>
+        <details class="explain-toggle">
+          <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
+          <div class="explain-body">
+          <p>Same two requests, same two tools available (<code>get_customer</code>, <code>process_refund</code>) - the difference is entirely in how the next tool call gets chosen. A pre-configured tree can't see that Request A already has an ID, so it runs the redundant lookup anyway. Model-driven reasoning reads the context first and only calls what's actually missing.</p>
+          </div>
+        </details>
       </div>
 
       <h3 class="subhead" id="diagram-coordinator">Diagram: Coordinator, Subagents, and the Task Tool</h3>
@@ -547,6 +543,12 @@
             <marker id="cs2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
           </defs>
         </svg>
+        <details class="explain-toggle">
+          <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
+          <div class="explain-body">
+          <p><code>allowedTools: ["Task"]</code> is the gate - without it on both arrows, the coordinator has no way to spawn either subagent. Two arrows leaving in the same response is what makes this a parallel spawn. Each subagent only reports back to the coordinator, never to each other - that's the hub-and-spoke rule in picture form.</p>
+          </div>
+        </details>
       </div>
 
       <h3 class="subhead" id="diagram-spawn-modes">Diagram: Parallel vs. Sequential Agent Spawning</h3>
@@ -597,6 +599,12 @@
             <marker id="pq5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
           </defs>
         </svg>
+        <details class="explain-toggle">
+          <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
+          <div class="explain-body">
+          <p>The two halves aren't alternative UI for the same thing - they're for genuinely different situations. Parallel only makes sense when A and B don't need each other's output; that's why both <code>Task</code> calls can go out in the same response. Sequential exists specifically because turn 2 needs turn 1's result to even know what to ask for.</p>
+          </div>
+        </details>
       </div>
 
       <h3 class="subhead" id="diagram-pipeline">Diagram: Fixed Pipeline vs. Dynamic Decomposition</h3>
@@ -641,6 +649,12 @@
             <marker id="fp5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
           </defs>
         </svg>
+        <details class="explain-toggle">
+          <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
+          <div class="explain-body">
+          <p>Left column: the four steps are already decided before Verify even runs. Right column: Map issue produces two branches, and each one only gets defined by what Map issue actually found - the diagram couldn't have drawn those branches in before running it, the way it could on the left. That's the whole difference between the two patterns.</p>
+          </div>
+        </details>
       </div>
 
       <h3 class="subhead" id="diagram-session-state">Diagram: Session Continuation Strategy</h3>
@@ -677,6 +691,12 @@
             <marker id="ss3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9A2A4A"/></marker>
           </defs>
         </svg>
+        <details class="explain-toggle">
+          <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
+          <div class="explain-body">
+          <p>Same paused session, three different outcomes depending on one thing: what happened to the underlying work while you were away. Nothing changed &rarr; the history is still accurate, resume it. Comparing two approaches &rarr; you want both explored, fork. Code moved &rarr; the tool results sitting in that history are now wrong, so a fresh session with a summary beats reasoning from stale data.</p>
+          </div>
+        </details>
       </div>
 
       <h3 class="subhead" id="diagram-hook-loop">Flow: The Loop, With a Hook in It</h3>
@@ -709,6 +729,12 @@
             <marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
           </defs>
         </svg>
+        <details class="explain-toggle">
+          <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
+          <div class="explain-body">
+          <p>Both hook points sit inside the ordinary loop, not beside it - that's the point. The interception hook gets a look at the call before it runs and can stop it; the <code>PostToolUse</code> hook only sees the result after, and can only reshape it, not undo the call. The dashed line back to the top is just the loop continuing with cleaner data than it started with.</p>
+          </div>
+        </details>
       </div>
 
       <h3 class="subhead" id="diagram-pre-post">Diagram: PreToolUse vs. PostToolUse</h3>
@@ -753,6 +779,12 @@
             <marker id="pp4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1A6B54"/></marker>
           </defs>
         </svg>
+        <details class="explain-toggle">
+          <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
+          <div class="explain-body">
+          <p>Same two hook names the exam always pairs up, shown doing the two different jobs they're actually capable of. <code>PreToolUse</code> sits before the call, so it can stop <code>process_refund</code> from ever running. <code>PostToolUse</code> sits after <code>get_customer</code> already ran - it can clean up the timestamp it got back, but it could never have blocked that call in the first place.</p>
+          </div>
+        </details>
       </div>
 
       <h3 class="subhead" id="diagram-hook-or-prompt">Diagram: Hook or Prompt? The Decision Framework</h3>
@@ -793,6 +825,12 @@
             <marker id="hp2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1A7A3A"/></marker>
           </defs>
         </svg>
+        <details class="explain-toggle">
+          <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
+          <div class="explain-body">
+          <p>The branch point isn't "is this important" - it's "what happens if this fails exactly once." AML and refund approval sit on the hook side because a single miss is a compliance or financial problem. Markdown formatting sits on the prompt side because a single miss is just a slightly uglier response - annoying, not dangerous.</p>
+          </div>
+        </details>
       </div>
 
       <h3 class="subhead" id="diagram-subagent-hooks">Diagram: Subagent Lifecycle Hooks</h3>
@@ -844,6 +882,12 @@
             <marker id="sh4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
           </defs>
         </svg>
+        <details class="explain-toggle">
+          <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
+          <div class="explain-body">
+          <p>The dashed callouts are the trap the exam sets: <code>SubagentStart</code> and <code>SubagentStop</code> sound like they should be able to block and reshape a subagent the way <code>PreToolUse</code>/<code>PostToolUse</code> do - they can't. Start only observes; Stop can only send the subagent back to keep working, never touch its output. Blocking the spawn or rewriting the result is still a <code>PreToolUse</code>/<code>PostToolUse</code> job on the Agent tool call itself.</p>
+          </div>
+        </details>
       </div>
 
       <h3 class="subhead" id="diagram-prerequisite-gate">Diagram: A Real Prerequisite Gate</h3>
@@ -875,6 +919,119 @@
           <text x="475" y="184" font-family="Segoe UI, sans-serif" font-size="8.5" font-weight="700" fill="#1A7A3A">Retry succeeds once verified</text>
           <text x="475" y="202" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#3D4235">adapts on its own, no re-prompting</text>
         </svg>
+        <details class="explain-toggle">
+          <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
+          <div class="explain-body">
+          <p>Step 1 doesn't fail quietly - the hook blocks it and tells the agent exactly what's missing. Step 2 is the agent responding to that error on its own, no human re-prompting it. Step 3 succeeds because the gate's condition is now actually met. That's the deterministic-guarantee point shown as a real transcript instead of stated as a rule.</p>
+          </div>
+        </details>
+      </div>
+
+      <h3 class="subhead" id="diagram-decision-map">Diagram: How 1.1, 1.3, and 1.6 Relate</h3>
+      <div class="mindmap-wrap">
+        <svg viewBox="0 0 680 410" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Diagram: model-driven decision-making from Task 1.1 is a foundation bar underneath everything, not a step in the chain. Above it, the coordinator asks whether the work it is about to delegate is independent or dependent. Independent work leads to parallel spawning, shown with two subagent figures running at once with no shared context. Dependent work leads to sequential spawning, which splits into a decomposition strategy from Task 1.6: fixed pipeline, where the order is known upfront, or dynamic decomposition, where each next step comes from what was just found. A light purple background marks the coordinator's scope, teal marks the subagents zone, and amber marks the task and step planning zone, which works with or without subagents.">
+          <!-- Zone A: Coordinator scope -->
+          <rect x="0" y="5" width="680" height="175" rx="14" fill="#F3EEFA"/>
+          <text x="600" y="20" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" font-weight="700" letter-spacing="0.5" fill="#7A4A9A">COORDINATOR</text>
+
+          <!-- Zone B: Subagents -->
+          <rect x="20" y="185" width="250" height="135" rx="12" fill="#E5F5F0"/>
+          <text x="145" y="203" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" font-weight="700" letter-spacing="0.5" fill="#1A6B54">SUBAGENTS</text>
+
+          <!-- Zone C: Task / step planning -->
+          <rect x="290" y="185" width="370" height="135" rx="12" fill="#FAF3E0"/>
+          <text x="475" y="203" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" font-weight="700" letter-spacing="0.5" fill="#9A6E1A">TASK / STEP PLANNING</text>
+          <text x="475" y="215" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#9A6E1A">works with or without subagents</text>
+
+          <!-- Coordinator stick figure -->
+          <circle cx="30" cy="32" r="6" fill="none" stroke="#7A4A9A" stroke-width="1.6"/>
+          <line x1="30" y1="38" x2="30" y2="56" stroke="#7A4A9A" stroke-width="1.6" stroke-linecap="round"/>
+          <line x1="21" y1="43" x2="39" y2="43" stroke="#7A4A9A" stroke-width="1.6" stroke-linecap="round"/>
+          <line x1="30" y1="56" x2="23" y2="67" stroke="#7A4A9A" stroke-width="1.6" stroke-linecap="round"/>
+          <line x1="30" y1="56" x2="37" y2="67" stroke="#7A4A9A" stroke-width="1.6" stroke-linecap="round"/>
+          <text x="30" y="82" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" font-weight="700" fill="#7A4A9A">Coordinator</text>
+
+          <!-- Dependency question -->
+          <rect x="175" y="20" width="330" height="50" rx="8" fill="#EEF1E7" stroke="#6B7060" stroke-width="1.3" stroke-dasharray="4 3"/>
+          <text x="340" y="42" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="12.5" font-weight="700" fill="#1A1F14">Is the work independent or dependent?</text>
+          <text x="340" y="58" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#6B7060">the coordinator's call</text>
+
+          <path d="M230,70 C210,90 190,105 175,118" fill="none" stroke="#6B7060" stroke-width="1.3" marker-end="url(#dm1)"/>
+          <path d="M450,70 C470,90 490,105 505,118" fill="none" stroke="#6B7060" stroke-width="1.3" marker-end="url(#dm1)"/>
+
+          <rect x="60" y="120" width="230" height="50" rx="8" fill="#D8EEE8" stroke="#6B7060" stroke-width="1.3" stroke-dasharray="4 3"/>
+          <text x="175" y="141" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="12" font-weight="700" fill="#1A6B54">Independent</text>
+          <text x="175" y="158" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#1A6B54">Task 1.3 &middot; parallel spawning</text>
+
+          <rect x="390" y="120" width="230" height="50" rx="8" fill="#EDE0F5" stroke="#6B7060" stroke-width="1.3" stroke-dasharray="4 3"/>
+          <text x="505" y="141" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="12" font-weight="700" fill="#7A4A9A">Dependent</text>
+          <text x="505" y="158" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#7A4A9A">Task 1.3 &middot; sequential spawning</text>
+
+          <path d="M175,170 L175,183" fill="none" stroke="#1A6B54" stroke-width="1.3" marker-end="url(#dm2)"/>
+
+          <circle cx="95" cy="235" r="4" fill="none" stroke="#1A6B54" stroke-width="1.3"/>
+          <line x1="95" y1="239" x2="95" y2="249" stroke="#1A6B54" stroke-width="1.3" stroke-linecap="round"/>
+          <line x1="90" y1="242" x2="100" y2="242" stroke="#1A6B54" stroke-width="1.3" stroke-linecap="round"/>
+          <line x1="95" y1="249" x2="91" y2="257" stroke="#1A6B54" stroke-width="1.3" stroke-linecap="round"/>
+          <line x1="95" y1="249" x2="99" y2="257" stroke="#1A6B54" stroke-width="1.3" stroke-linecap="round"/>
+          <text x="95" y="272" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#1A6B54">Subagent A</text>
+
+          <circle cx="205" cy="235" r="4" fill="none" stroke="#1A6B54" stroke-width="1.3"/>
+          <line x1="205" y1="239" x2="205" y2="249" stroke="#1A6B54" stroke-width="1.3" stroke-linecap="round"/>
+          <line x1="200" y1="242" x2="210" y2="242" stroke="#1A6B54" stroke-width="1.3" stroke-linecap="round"/>
+          <line x1="205" y1="249" x2="201" y2="257" stroke="#1A6B54" stroke-width="1.3" stroke-linecap="round"/>
+          <line x1="205" y1="249" x2="209" y2="257" stroke="#1A6B54" stroke-width="1.3" stroke-linecap="round"/>
+          <text x="205" y="272" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#1A6B54">Subagent B</text>
+
+          <text x="145" y="292" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#1A6B54">both run at once, no shared context</text>
+
+          <path d="M505,170 L505,224" fill="none" stroke="#6B7060" stroke-width="1.3" marker-end="url(#dm1)"/>
+          <text x="505" y="234" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">splits into a decomposition strategy</text>
+
+          <path d="M470,242 C430,254 400,264 385,272" fill="none" stroke="#6B7060" stroke-width="1.3" marker-end="url(#dm1)"/>
+          <path d="M540,242 C555,254 560,264 565,272" fill="none" stroke="#6B7060" stroke-width="1.3" marker-end="url(#dm1)"/>
+
+          <rect x="300" y="274" width="170" height="40" rx="7" fill="#F5EDD6" stroke="#6B7060" stroke-width="1.3" stroke-dasharray="4 3"/>
+          <text x="385" y="291" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="#9A6E1A">Fixed pipeline</text>
+          <text x="385" y="305" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#9A6E1A">Task 1.6 &middot; order known upfront</text>
+
+          <rect x="480" y="274" width="170" height="40" rx="7" fill="#F5DDE5" stroke="#6B7060" stroke-width="1.3" stroke-dasharray="4 3"/>
+          <text x="565" y="291" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="#9A2A4A">Dynamic decomposition</text>
+          <text x="565" y="305" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#9A2A4A">Task 1.6 &middot; next step from findings</text>
+
+          <path d="M340,345 L340,325" fill="none" stroke="#6B7060" stroke-width="1" stroke-dasharray="2 3"/>
+          <text x="340" y="332" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">foundation, not a step in the chain</text>
+
+          <rect x="60" y="345" width="560" height="50" rx="8" fill="#EEF1E7" stroke="rgba(26,31,20,.2)"/>
+          <text x="340" y="365" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11.5" font-weight="700" fill="#1A1F14">Model-driven decision-making &middot; Task 1.1</text>
+          <text x="340" y="381" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#6B7060">runs underneath every step, for every agent, the whole time</text>
+
+          <defs>
+            <marker id="dm1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+            <marker id="dm2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1A6B54"/></marker>
+          </defs>
+        </svg>
+        <details class="explain-toggle">
+          <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
+          <div class="explain-body">
+          <p>Dependency is the real fork: independent work leads to parallel spawning, dependent work leads to sequential spawning - which then splits into a decomposition strategy, fixed pipeline (order known upfront) or dynamic decomposition (each next step comes from what was just found). This "independent or dependent" question is specifically the <strong>coordinator's</strong> call - it only applies once you're spawning subagents. Model-driven decision-making (1.1) is not a step in this chain at all; it's the foundation running underneath every step, for every agent, coordinator and subagent alike, the whole time. It's what makes dynamic decomposition possible at the coordinator's planning level, and it's also what a single tool-selection decision looks like at any one loop iteration. And "fixed pipeline vs. dynamic decomposition" (1.6) is broader than the coordinator/subagent picture - it also applies to one agent's own multi-step task planning with no subagents involved at all.</p>
+
+          <h4>Worked example: model-driven vs. pre-configured tree</h4>
+          <p>Same task, two different implementations - using the refund scenario again. Two incoming requests: Request A, "Refund $50 for <code>cus_8841</code>" (customer ID already known); Request B, "Customer emailed asking for a refund" (no ID given).</p>
+          <p><strong>Pre-configured decision tree</strong> - hardcoded logic: "refund request &rarr; always call <code>get_customer</code> &rarr; always call <code>check_refund_eligibility</code> &rarr; always call <code>process_refund</code>," in that fixed order, no matter what.</p>
+          <ul>
+            <li>Request A: runs <code>get_customer</code> anyway (redundant - the ID was already sitting right there in context) &rarr; <code>check_refund_eligibility</code> &rarr; <code>process_refund</code></li>
+            <li>Request B: runs <code>get_customer</code> &rarr; <code>check_refund_eligibility</code> &rarr; <code>process_refund</code></li>
+          </ul>
+          <p>Both requests get the exact same 3 steps in the exact same order. The tree can't tell the difference between them - it has no way to notice "wait, I already have the ID."</p>
+          <p><strong>Model-driven decision-making</strong> - the model reads what's actually in context at each step:</p>
+          <ul>
+            <li>Request A: model sees <code>customer_id</code> already present &rarr; skips straight to <code>check_refund_eligibility</code> &rarr; <code>process_refund</code> (2 steps)</li>
+            <li>Request B: model sees no ID &rarr; calls <code>get_customer</code> first &rarr; <code>check_refund_eligibility</code> &rarr; <code>process_refund</code> (3 steps)</li>
+          </ul>
+          <p>Different number of steps, different path - decided in the moment from what's actually there, not from a rule written in advance. That's the whole distinction the exam is testing: a decision tree treats every case identically because it can't see the specifics; model-driven reasoning adapts because it does.</p>
+          </div>
+        </details>
       </div>
     </div>
   </details>

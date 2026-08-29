@@ -58,9 +58,24 @@
   .cornell-note .lbl{font-weight:600;color:var(--text)}
   .cornell-note .hl{color:var(--amber);font-weight:600}
   .cornell-see{font-size:.78rem;margin-top:.6rem}
-  .cornell-see a{color:var(--teal);text-decoration:none;font-weight:600}
-  .cornell-see a:hover{text-decoration:underline}
+  .cornell-see a{color:#1E3A6E;text-decoration:underline;font-weight:600}
+  .li-see{display:block;margin-top:.2rem;font-size:.78rem}
+  .li-see a{color:#1E3A6E;text-decoration:underline;font-weight:600}
   @media(max-width:640px){.cornell-row{grid-template-columns:1fr}.cornell-cue{padding-bottom:.4rem}}
+  .explain-toggle{margin-top:.9rem}
+  .explain-toggle summary{cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:.45rem;background:#E4E7F7;color:#1E3A6E;font-weight:600;font-size:.83rem;padding:.5rem 1.1rem;border-radius:999px;transition:background .15s,color .15s}
+  .explain-toggle summary::-webkit-details-marker{display:none}
+  .explain-toggle summary svg{flex-shrink:0}
+  .explain-toggle summary:hover{background:#1E3A6E;color:var(--bg)}
+  .explain-toggle[open] summary{border-radius:10px 10px 0 0}
+  .explain-toggle .explain-body{padding:.9rem 1rem;background:#E4E7F7;border-radius:0 10px 10px 10px;font-size:.86rem;color:var(--text-2);line-height:1.65}
+  .explain-toggle .explain-body p{margin-top:0}
+  .explain-toggle .explain-body p+p{margin-top:.7rem}
+  .explain-toggle .explain-body h4{margin:1rem 0 .4rem;font-size:.8rem;color:#1E3A6E;text-transform:uppercase;letter-spacing:.03em}
+  .explain-toggle .explain-body h4:first-child{margin-top:0}
+  .explain-toggle .explain-body ul{padding-left:1.1rem;margin:.3rem 0}
+  .explain-toggle .explain-body li{margin-bottom:.25rem}
+  .explain-toggle .explain-body code{background:var(--bg3);padding:.1rem .35rem;border-radius:4px;font-size:.85em;color:#1E3A6E;font-family:monospace}
 
   .cornell-summary{background:var(--amber-bg);border-left:3px solid var(--amber);border-radius:0 8px 8px 0;padding:1rem 1.2rem;font-size:.86rem;color:var(--text-2);margin-bottom:.5rem}
   .cornell-summary strong{color:var(--text)}
@@ -255,53 +270,40 @@
         <div class="cornell-row">
           <div class="cornell-cue g1"><span class="ts">Task Statement</span>3.1<br>CLAUDE.md hierarchy &amp; scoping</div>
           <div class="cornell-note">
-            <p><span class="lbl">Knowledge:</span></p>
             <ul>
-              <li>Three levels: <span class="hl">user, project, directory</span>.</li>
-              <li>User-level settings apply only to that user, never shared via version control.</li>
-              <li><code>@import</code> keeps CLAUDE.md modular.</li>
+              <li>Three levels: <span class="hl">user, project, directory</span>.<span class="li-see">&rarr; <a href="#diagram-claude-md-hierarchy">See: Diagram, CLAUDE.md Hierarchy</a></span></li>
+              <li>User-level settings apply only to that user, never shared via version control.<span class="li-see">&rarr; <a href="#diagram-claude-md-git">See: Diagram, How CLAUDE.md Travels With Git</a></span></li>
+              <li><code>@import</code> keeps CLAUDE.md modular.<span class="li-see">&rarr; <a href="#diagram-import-vs-rules">See: Diagram, @import vs. Rules</a></span></li>
               <li><code>.claude/rules/</code> is the alternative to one monolithic file.</li>
-            </ul>
-            <p><span class="lbl">Skills:</span></p>
-            <ul>
               <li>Diagnose hierarchy issues - e.g. a new team member missing instructions because they landed in user-level config instead of project-level.</li>
               <li>Use <code>@import</code> to selectively include only the standards files relevant to each package's maintainer.</li>
               <li>Split a large CLAUDE.md into focused topic files under <code>.claude/rules/</code> (e.g. <code>testing.md</code>, <code>api-conventions.md</code>).</li>
               <li>Use <code>/memory</code> to verify which files are actually loaded and diagnose inconsistent behavior across sessions.</li>
             </ul>
-            <p class="cornell-see">&rarr; <a href="#diagram-claude-md-hierarchy">See: Diagram, CLAUDE.md Hierarchy</a> &middot; <a href="#screenshot-claude-folder">Screenshot, A Real .claude/ Folder</a> &middot; <a href="#diagram-import-vs-rules">Diagram, @import vs. Rules</a> &middot; <a href="#diagram-claude-md-git">Diagram, How CLAUDE.md Travels With Git</a></p>
+            <p class="cornell-see">&rarr; <a href="#screenshot-claude-folder">See: Screenshot, A Real .claude/ Folder</a></p>
           </div>
         </div>
         <div class="cornell-row">
           <div class="cornell-cue g2"><span class="ts">Task Statement</span>3.2<br>Custom commands &amp; skills</div>
           <div class="cornell-note">
-            <p><span class="lbl">Knowledge:</span></p>
             <ul>
               <li>Project-scoped commands (<code>.claude/commands/</code>) are shared via version control; user-scoped (<code>~/.claude/commands/</code>) are personal.</li>
-              <li>Skills support frontmatter: <code>context: fork</code>, <code>allowed-tools</code>, <code>argument-hint</code>.</li>
+              <li>Skills support frontmatter: <code>context: fork</code>, <code>allowed-tools</code>, <code>argument-hint</code>.<span class="li-see">&rarr; <a href="#diagram-skill-example">See: Diagram, A Real SKILL.md, Annotated</a></span></li>
               <li><span class="hl">Personal skill variants</span> use different names so they don't affect teammates.</li>
-            </ul>
-            <p><span class="lbl">Skills:</span></p>
-            <ul>
               <li>Create project-scoped slash commands for team-wide availability via version control.</li>
               <li>Use <code>context: fork</code> to isolate skills that produce verbose or exploratory output from the main session.</li>
               <li>Configure <code>allowed-tools</code> in skill frontmatter to restrict tool access during execution (e.g. limit to write-only to prevent destructive actions).</li>
               <li>Use <code>argument-hint</code> to prompt for required parameters when a skill is invoked without arguments.</li>
               <li>Choose skills (on-demand, task-specific) vs. CLAUDE.md (always-loaded, universal).</li>
             </ul>
-            <p class="cornell-see">&rarr; <a href="#diagram-skill-example">See: Diagram, A Real SKILL.md, Annotated</a></p>
           </div>
         </div>
         <div class="cornell-row">
           <div class="cornell-cue g3"><span class="ts">Task Statement</span>3.3<br>Path-specific rules</div>
           <div class="cornell-note">
-            <p><span class="lbl">Knowledge:</span></p>
             <ul>
               <li><code>.claude/rules/</code> files with YAML frontmatter <code>paths</code> fields (glob patterns) for <span class="hl">conditional rule activation</span>.</li>
               <li>Path-scoped rules load only when editing matching files, reducing irrelevant context and token usage.</li>
-            </ul>
-            <p><span class="lbl">Skills:</span></p>
-            <ul>
               <li>Create <code>.claude/rules/</code> files with YAML frontmatter path scoping (e.g. <code>paths: ["terraform/**/*"]</code>).</li>
               <li>Use glob patterns to apply conventions by file type regardless of directory location (e.g. <code>**/*.test.tsx</code> for all test files).</li>
               <li>Choose path-specific rules over subdirectory CLAUDE.md files when conventions must apply to files spread across the codebase.</li>
@@ -311,14 +313,10 @@
         <div class="cornell-row">
           <div class="cornell-cue g4"><span class="ts">Task Statement</span>3.4<br>Plan mode vs. direct execution</div>
           <div class="cornell-note">
-            <p><span class="lbl">Knowledge:</span></p>
             <ul>
               <li>Plan mode: complex tasks, large-scale changes, multiple valid approaches, architectural decisions, multi-file modifications.</li>
               <li>Direct execution: simple well-scoped changes.</li>
               <li>Plan mode enables <span class="hl">safe exploration before committing</span>, preventing costly rework.</li>
-            </ul>
-            <p><span class="lbl">Skills:</span></p>
-            <ul>
               <li>Select plan mode for architectural-implication tasks (microservice restructuring, a migration touching 45+ files, choosing between integration approaches).</li>
               <li>Select direct execution for well-understood, clear-scope changes (single-file bug fix with a clear stack trace).</li>
               <li>Use the <span class="hl">Explore subagent</span> for verbose discovery phases to prevent context window exhaustion during multi-phase tasks.</li>
