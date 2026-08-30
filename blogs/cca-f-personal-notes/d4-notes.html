@@ -156,8 +156,10 @@
           <path d="M185,31 L165,31" fill="none" stroke="#9A2A4A" stroke-width="1"/>
           <path d="M185,79 L165,79" fill="none" stroke="#9A2A4A" stroke-width="1"/>
           <rect x="185" y="15" width="80" height="80" rx="14" fill="#F5DDE5" stroke="#9A2A4A" stroke-width="1.5"/>
-          <text x="225" y="51" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="#9A2A4A">4.1</text>
-          <text x="225" y="68" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#9A2A4A">Explicit</text>
+          <text x="225" y="49" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="#9A2A4A">4.1</text>
+          <text x="225" y="63" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#9A2A4A">Explicit</text>
+          <text x="225" y="73" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#9A2A4A">Category</text>
+          <text x="225" y="83" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#9A2A4A">Criteria</text>
           <rect x="0" y="15" width="165" height="32" rx="6" fill="#FAFCF5" stroke="#9A2A4A" stroke-opacity=".4"/>
           <text x="82" y="35" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="#9A6E1A" font-weight="700">categorical</tspan><tspan fill="#3D4235">, not vague</tspan></text>
           <rect x="0" y="63" width="165" height="32" rx="6" fill="#FAFCF5" stroke="#9A2A4A" stroke-opacity=".4"/>
@@ -231,8 +233,9 @@
       <h3 class="subhead">4.1 &middot; Explicit Criteria</h3>
       <dl class="keyword-grid">
         <div class="kw g1"><dt>Explicit criteria</dt><dd>Precise, categorical rules beat vague instructions like "be conservative" - the latter doesn't actually improve precision.</dd></div>
-        <div class="kw g1"><dt>False-positive trust cost</dt><dd>A high false-positive category undermines developer trust even in the categories that are accurate - e.g. if a reviewer's "security" findings are wrong 40% of the time, developers start skimming past all of its findings, including its accurate "bug" and "style" flags.</dd></div>
         <div class="kw g1"><dt>Severity criteria</dt><dd>Explicit per-level criteria with concrete code examples, for consistent classification.</dd></div>
+        <div class="kw g1"><dt>False-positive trust cost</dt><dd>A high false-positive category undermines developer trust even in the categories that are accurate. The fix: temporarily disable it, iterate on its prompt with concrete code examples, then re-enable only once precision improves - not leave it running while you fix it.</dd></div>
+        <div class="kw g1"><dt>Why confidence filtering fails</dt><dd>LLM self-reported confidence is poorly calibrated - the model is often sure about wrong findings and hesitant about right ones. Explicit criteria come first; confidence-based routing is a second-stage refinement on top, not a substitute for criteria (see 4.6).</dd></div>
       </dl>
 
       <h3 class="subhead">4.2 &middot; Few-Shot</h3>
@@ -247,6 +250,8 @@
         <div class="kw g3"><dt><code>tool_choice</code> modes</dt><dd><code>"auto"</code> may skip the tool, <code>"any"</code> forces some tool, forced selection names one exact tool.</dd></div>
         <div class="kw g3"><dt>Nullable required fields</dt><dd>Field must exist in the schema, but its value may be <code>null</code> - prevents the model fabricating data to satisfy a required field.</dd></div>
         <div class="kw g3"><dt>"other" + detail pattern</dt><dd>Extensible enum categorization: pick <code>"other"</code> plus a free-text detail field when nothing else fits.</dd></div>
+        <div class="kw g3"><dt>"unclear" enum value</dt><dd>Distinct from <code>"other"</code>: use it when the source itself is genuinely ambiguous, so the model isn't forced into a confident-sounding but wrong classification.</dd></div>
+        <div class="kw g3"><dt>Format normalization rules</dt><dd>Formatting conventions (e.g. ISO 8601 dates, decimal currency without symbols) belong in the prompt alongside the schema - the schema enforces structure, the prompt enforces formatting consistency.</dd></div>
       </dl>
 
       <h3 class="subhead">4.4 &middot; Validation &amp; Retry</h3>
@@ -255,6 +260,7 @@
         <div class="kw g4"><dt>Limits of retry</dt><dd>Ineffective when the required information is simply absent from the source - no amount of retrying invents a fact that isn't there.</dd></div>
         <div class="kw g4"><dt><code>detected_pattern</code></dt><dd>Field tracking which code construct triggered a finding, to analyze dismissal/false-positive patterns systematically.</dd></div>
         <div class="kw g4"><dt>Semantic vs. schema errors</dt><dd>Schema syntax errors are eliminated by tool use. Semantic errors (values don't sum, wrong field) still need validation.</dd></div>
+        <div class="kw g4"><dt>Pydantic as validation layer</dt><dd>A Pydantic model does two jobs at once: parsing enforces structure (types, required fields), validators enforce semantics (cross-field rules a JSON schema can't express, like sums matching). Both surface through one <code>ValidationError</code> with per-field messages - exactly the specific error the retry loop needs.</dd></div>
       </dl>
 
       <h3 class="subhead">4.5 &middot; Batch Processing</h3>
@@ -270,6 +276,8 @@
         <div class="kw g6"><dt>Self-review limitation</dt><dd>A model retains its own generation reasoning, making it less likely to question its own decisions in the same session.</dd></div>
         <div class="kw g6"><dt>Independent review instance</dt><dd>A separate Claude call without the generator's reasoning context catches subtler issues than self-review.</dd></div>
         <div class="kw g6"><dt>Multi-pass review</dt><dd>Per-file local analysis passes, plus one separate cross-file integration pass - avoids attention dilution and contradictions.</dd></div>
+        <div class="kw g6"><dt>Context window isn't the fix</dt><dd>A named exam distractor: a bigger context window doesn't fix attention dilution, because the problem is attention quality, not capacity - the model can hold more text but still spreads attention unevenly across files. Only focused per-file passes fix it.</dd></div>
+        <div class="kw g6"><dt>Calibrated confidence</dt><dd>Raw self-reported confidence is unreliable for automated routing. Calibrate thresholds by running labelled validation sets (known answers) through the system and checking how reported confidence tracks actual accuracy.</dd></div>
       </dl>
     </div>
   </details>
@@ -277,6 +285,136 @@
   <details class="topic">
     <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3.5" y="3" width="12" height="17" rx="1.3" stroke="#6B7060" stroke-width="1.4"/><path d="M6,15 L9,10 L11,13 L13.5,7.5" stroke="#6B7060" stroke-width="1.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="13.5" y1="19" x2="20" y2="12.5" stroke="#7A4A9A" stroke-width="1.7" stroke-linecap="round"/><circle cx="20.5" cy="11.5" r="1.6" fill="#1A6B54"/></svg></span><span class="sec-num">2</span>Diagrams</h2></summary>
     <div class="topic-body">
+      <h3 class="subhead" id="diagram-explicit-criteria">Diagram: Vague vs. Explicit Criteria</h3>
+      <div class="mindmap-wrap">
+        <svg viewBox="0 0 740 360" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Diagram contrasting a vague system prompt (be conservative, only report high-confidence findings) with an explicit categorical one (flag when claimed behavior contradicts actual code, report bugs and security, skip style). Below, a top-to-bottom flow shows explicit criteria feeding into confidence-based routing as a second-stage refinement, with a dotted red-marked arrow showing the wrong shortcut of going straight to confidence routing.">
+          <text x="190" y="14" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" font-weight="700" letter-spacing="0.06em" fill="#9A2A4A">VAGUE (WRONG)</text>
+          <text x="550" y="14" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" font-weight="700" letter-spacing="0.06em" fill="#1A7A3A">EXPLICIT (CORRECT)</text>
+
+          <rect x="20" y="22" width="340" height="72" rx="8" fill="#F5DDE5" stroke="#9A2A4A" stroke-width="1.5"/>
+          <text x="190" y="43" text-anchor="middle" font-family="Segoe UI, sans-serif" font-style="italic" font-size="9" fill="#3D4235">"Be conservative. Only report</text>
+          <text x="190" y="56" text-anchor="middle" font-family="Segoe UI, sans-serif" font-style="italic" font-size="9" fill="#3D4235">high-confidence findings."</text>
+          <text x="190" y="80" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#9A2A4A">no actionable decision boundary</text>
+          <g transform="translate(330,34)">
+            <circle r="7" fill="#FAFCF5" stroke="#9A2A4A" stroke-width="1.3"/>
+            <circle cx="-2.5" cy="-1" r="1" fill="#9A2A4A"/>
+            <circle cx="2.5" cy="-1" r="1" fill="#9A2A4A"/>
+            <path d="M-3,3.5 Q-1,1.5 1,3.5 Q3,1.5 4,3.5" fill="none" stroke="#9A2A4A" stroke-width="1"/>
+            <text x="11" y="-2" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700" fill="#9A2A4A">?</text>
+          </g>
+
+          <rect x="380" y="22" width="340" height="72" rx="8" fill="#D8F0E0" stroke="#1A7A3A" stroke-width="1.5"/>
+          <text x="550" y="43" text-anchor="middle" font-family="Segoe UI, sans-serif" font-style="italic" font-size="9" fill="#3D4235">"Flag when claimed behavior contradicts</text>
+          <text x="550" y="56" text-anchor="middle" font-family="Segoe UI, sans-serif" font-style="italic" font-size="9" fill="#3D4235">actual code. Report bugs, skip style."</text>
+          <text x="550" y="80" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#1A7A3A">concrete: what to flag, what to skip</text>
+          <g transform="translate(690,34)">
+            <circle r="7" fill="#FAFCF5" stroke="#1A7A3A" stroke-width="1.3"/>
+            <circle cx="-2.5" cy="-1" r="1" fill="#1A7A3A"/>
+            <circle cx="2.5" cy="-1" r="1" fill="#1A7A3A"/>
+            <path d="M-3,2.5 Q0,5 3,2.5" fill="none" stroke="#1A7A3A" stroke-width="1"/>
+            <text x="11" y="-2" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700" fill="#1A7A3A">&#10003;</text>
+          </g>
+
+          <path d="M20,108 L720,108" stroke="#6B7060" stroke-width="1" stroke-dasharray="3 3"/>
+          <text x="370" y="126" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="#3D4235">Criteria first, confidence-routing second</text>
+
+          <rect x="245" y="140" width="250" height="50" rx="8" fill="#D8F0E0" stroke="#1A7A3A" stroke-width="1.5"/>
+          <text x="370" y="161" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="#1A7A3A">Explicit criteria</text>
+          <text x="370" y="177" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">define what to flag / skip</text>
+
+          <path d="M370,190 L370,247" stroke="#6B7060" stroke-width="1.5" marker-end="url(#ec1)"/>
+          <text x="393" y="222" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#6B7060">then</text>
+
+          <path d="M40,145 C 40,200 60,240 207,268" fill="none" stroke="#9A2A4A" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#ec5)"/>
+          <circle cx="55" cy="216" r="9" fill="#FAFCF5" stroke="#9A2A4A" stroke-width="2"/>
+          <line x1="49" y1="210" x2="61" y2="222" stroke="#9A2A4A" stroke-width="2" stroke-linecap="round"/>
+          <text x="55" y="238" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#9A2A4A">skip criteria</text>
+
+          <rect x="210" y="250" width="320" height="55" rx="8" stroke-dasharray="4 3" fill="#F5EDD6" stroke="#9A6E1A" stroke-width="1.5"/>
+          <text x="370" y="273" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="#9A6E1A">Confidence-based routing</text>
+          <text x="370" y="290" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">refinement only (4.6) - poorly calibrated alone</text>
+
+          <rect x="150" y="315" width="440" height="26" rx="13" fill="#F5DDE5" stroke="#9A2A4A" stroke-width="1.3"/>
+          <text x="370" y="332" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" font-weight="700" fill="#9A2A4A">Skipping straight to confidence filtering is the trap</text>
+
+          <defs>
+            <marker id="ec1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+            <marker id="ec5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9A2A4A"/></marker>
+          </defs>
+        </svg>
+        <details class="explain-toggle">
+          <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
+        <div class="explain-body">
+        <p>The top comparison is the whole exam trap in one glance: "be conservative" and "only report high-confidence findings" sound like careful engineering, but neither gives the model a decision boundary it can actually apply. The right-hand version replaces both with categories - what counts as a bug or security issue, what to skip as style - so every invocation applies the same test.</p>
+        <p>The bottom flow is a sequencing rule, not a menu: confidence-based routing is real and useful (it's how you decide which findings go to human review in 4.6), but only after criteria already exist. The dotted red arrow is the trap - reaching for confidence thresholds to fix a precision problem before criteria are even written, skipping the box that actually does the work. Self-reported confidence is poorly calibrated on its own, so that shortcut doesn't even work.</p>
+        </div>
+        </details>
+      </div>
+
+      <h3 class="subhead" id="diagram-false-positive-trust-cost">Diagram: False-Positive Trust Cost</h3>
+      <div class="mindmap-wrap">
+        <svg viewBox="0 0 740 170" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Diagram showing that a false-positive in one review category damages trust across all categories. The fix is a three-step cycle: disable the high-false-positive category, rework its prompt with concrete code examples, then re-enable it only once precision improves, with a dashed return arrow back to disable if precision regresses again.">
+          <text x="370" y="18" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="#3D4235">False-positive trust cost</text>
+          <text x="370" y="34" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" font-style="italic" fill="#6B7060">one high-FP category erodes trust in ALL categories, not just its own</text>
+
+          <rect x="30" y="48" width="200" height="55" rx="8" fill="#F5DDE5" stroke="#9A2A4A" stroke-width="1.5"/>
+          <use href="#fp-bot" x="55" y="66" style="color:#9A2A4A"/>
+          <line x1="63" y1="58" x2="70" y2="65" stroke="#9A2A4A" stroke-width="1.4" stroke-linecap="round"/>
+          <line x1="70" y1="58" x2="63" y2="65" stroke="#9A2A4A" stroke-width="1.4" stroke-linecap="round"/>
+          <text x="130" y="71" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="#9A2A4A">Disable</text>
+          <text x="130" y="88" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">pull the high-FP category</text>
+          <path d="M230,75 L258,75" stroke="#9A6E1A" stroke-width="1.5" marker-end="url(#fp1)"/>
+
+          <rect x="270" y="48" width="200" height="55" rx="8" fill="#F5EDD6" stroke="#9A6E1A" stroke-width="1.5"/>
+          <use href="#fp-bot" x="295" y="66" style="color:#9A6E1A"/>
+          <path d="M303,58 L309,61 L303,64" fill="none" stroke="#9A6E1A" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <text x="370" y="71" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="#9A6E1A">Rework</text>
+          <text x="370" y="88" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">iterate with concrete code examples</text>
+          <path d="M470,75 L498,75" stroke="#1A7A3A" stroke-width="1.5" marker-end="url(#fp2)"/>
+
+          <rect x="510" y="48" width="200" height="55" rx="8" fill="#D8F0E0" stroke="#1A7A3A" stroke-width="1.5"/>
+          <use href="#fp-bot" x="535" y="66" style="color:#1A7A3A"/>
+          <path d="M542,61 L546,65 L554,57" fill="none" stroke="#1A7A3A" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <text x="610" y="71" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="#1A7A3A">Re-enable</text>
+          <text x="610" y="88" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">only once precision improves</text>
+
+          <path d="M610,103 C610,128 130,128 130,103" fill="none" stroke="#9A2A4A" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#fp3)"/>
+          <text x="370" y="141" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#9A2A4A">if precision regresses, disable again</text>
+
+          <defs>
+            <marker id="fp1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9A6E1A"/></marker>
+            <marker id="fp2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1A7A3A"/></marker>
+            <marker id="fp3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9A2A4A"/></marker>
+            <g id="fp-bot">
+              <rect x="-6" y="-5" width="12" height="9" rx="3" fill="none" stroke="currentColor" stroke-width="1.2"/>
+              <circle cx="-2.5" cy="-0.5" r="1" fill="currentColor"/>
+              <circle cx="2.5" cy="-0.5" r="1" fill="currentColor"/>
+              <line x1="0" y1="-5" x2="0" y2="-7.5" stroke="currentColor" stroke-width="1.2"/>
+              <circle cx="0" cy="-8.5" r="0.9" fill="currentColor"/>
+            </g>
+          </defs>
+        </svg>
+        <details class="explain-toggle">
+          <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
+        <div class="explain-body">
+        <p>This is why you don't just leave a broken category running while you fix it: its false positives don't stay contained to that category, they bleed into how much developers trust every finding from the system. Disabling it, reworking the prompt against concrete code examples, and re-enabling only once precision recovers protects trust in the categories that already work. The dashed return arrow is the loop, not a one-off: if precision regresses after re-enabling, the same cycle applies again.</p>
+        </div>
+        </details>
+      </div>
+
+      <h3 class="subhead" id="table-fewshot-vs-other">Table: Few-Shot vs. Other Techniques</h3>
+      <table class="decision-table">
+        <thead><tr><th>Problem</th><th>Correct technique</th></tr></thead>
+        <tbody>
+          <tr><td>Inconsistent output formatting</td><td>Few-shot examples</td></tr>
+          <tr><td>Malformed JSON output</td><td><code>tool_use</code> with JSON schemas</td></tr>
+          <tr><td>Fabricated values for missing fields</td><td>Optional/nullable schema fields</td></tr>
+          <tr><td>Wrong tool selection</td><td>Better tool descriptions first, then few-shot</td></tr>
+          <tr><td>Model misses information in narrative text</td><td>Few-shot examples showing narrative extraction</td></tr>
+          <tr><td>Extraction sum does not match total</td><td>Validation-retry loop</td></tr>
+        </tbody>
+      </table>
+
       <h3 class="subhead" id="diagram-structured-extraction">Diagram: Structured Extraction with tool_use</h3>
       <div class="mindmap-wrap">
         <svg viewBox="0 0 780 230" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Flow diagram: a document goes into Claude constrained by a forced tool_choice and JSON schema, producing a tool_use block. Validation checks the result. If the mistake is fixable, retry with the specific error appended. If the information is genuinely absent from the source, return null and flag the field as missing instead of retrying.">
@@ -612,9 +750,10 @@
           <div class="cornell-cue g1"><span class="ts">Task Statement</span>4.1<br>Explicit criteria for precision</div>
           <div class="cornell-note">
             <ul>
-              <li><span class="hl">Explicit, categorical criteria</span> beat vague instructions like "be conservative" - write specific rules for what to report vs. skip, not confidence-based filtering.</li>
-              <li>False-positive rates in one category damage trust in accurate categories too - temporarily disable a high-false-positive category while its prompt is improved.</li>
+              <li><span class="hl">Explicit, categorical criteria</span> beat vague instructions like "be conservative" - write specific rules for what to report vs. skip, not confidence-based filtering.<span class="li-see">&rarr; <a href="#diagram-explicit-criteria">See: Diagram, Vague vs. Explicit Criteria</a></span></li>
+              <li>False-positive rates in one category damage trust in accurate categories too - <span class="hl">disable, rework, re-enable</span>: temporarily turn off the high-false-positive category, rework its prompt with concrete examples, and only switch it back on once precision improves.<span class="li-see">&rarr; <a href="#diagram-false-positive-trust-cost">See: Diagram, False-Positive Trust Cost</a></span></li>
               <li>Define explicit severity criteria with concrete code examples at each level, for consistent classification.</li>
+              <li>Confidence-based filtering fails because self-reported confidence is poorly calibrated - the model is often sure about wrong findings and hesitant about right ones. Criteria come first; confidence-based routing is a later refinement (see 4.6), never a substitute.</li>
             </ul>
           </div>
         </div>
@@ -626,6 +765,7 @@
               <li>They demonstrate <span class="hl">ambiguous-case handling</span>, letting the model generalize judgment - e.g. distinguishing acceptable code patterns from genuine issues.</li>
               <li>Include examples that demonstrate the exact desired output format (location, issue, severity, suggested fix).</li>
               <li>Also reduces hallucination in extraction - examples across varied document formats fix empty/null extraction of required fields.</li>
+              <li>Not every problem is a few-shot problem - malformed JSON wants <code>tool_use</code>, fabricated fields want nullable schema fields, sum mismatches want a validation-retry loop.<span class="li-see">&rarr; <a href="#table-fewshot-vs-other">See: Table, Few-Shot vs. Other Techniques</a></span></li>
             </ul>
           </div>
         </div>
@@ -636,6 +776,7 @@
               <li><code>tool_use</code> + JSON schema is the most reliable route to <span class="hl">guaranteed schema-compliant output</span>, eliminating syntax errors, but not semantic ones (e.g. line items that don't sum to the total).<span class="li-see">&rarr; <a href="#diagram-structured-extraction">See: Diagram, Structured Extraction with tool_use</a></span></li>
               <li><code>tool_choice</code>: <code>"auto"</code> (may skip), <code>"any"</code> (guarantees a call when the document type is unknown), forced (ensures a specific extraction runs before dependent enrichment steps).</li>
               <li>Schema design: nullable optional fields so the model isn't pressured to fabricate a value, plus <code>"unclear"</code>/<code>"other"</code> + detail-string enum values for extensibility.<span class="li-see">&rarr; <a href="#diagram-extraction-example">See: Diagram, A Real Extraction, Annotated</a></span></li>
+              <li>Format normalization rules (ISO 8601 dates, decimal currency without symbols) belong in the prompt alongside the schema - the schema enforces structure, the prompt enforces formatting consistency.</li>
             </ul>
           </div>
         </div>
@@ -647,6 +788,7 @@
               <li>Retries are <span class="hl">ineffective when information is simply absent</span> from the source - only useful for format/structural errors.</li>
               <li><code>detected_pattern</code> fields enable systematic analysis of why developers dismiss certain findings.</li>
               <li>Design self-correction flows: extract <code>calculated_total</code> alongside <code>stated_total</code> to flag discrepancies; add <code>conflict_detected</code> booleans.</li>
+              <li><span class="hl">Pydantic</span> - named directly in the exam guide alongside JSON Schema - does both jobs at once: parsing enforces structure, validators enforce semantics (like sums matching). Both surface through one <code>ValidationError</code> with the per-field message the retry loop needs.</li>
             </ul>
           </div>
         </div>
@@ -669,7 +811,8 @@
               <li>Self-review is limited: the model retains its own generation reasoning, making it less likely to question its own decisions.</li>
               <li><span class="hl">Independent review instances</span> (no prior reasoning context) catch subtler issues - use a second, separate Claude instance.<span class="li-see">&rarr; <a href="#diagram-self-vs-independent-review">See: Diagram, Self-Review vs. Independent Review</a></span></li>
               <li>Multi-pass review splits large reviews into per-file passes (local issues) plus a separate integration pass (cross-file data flow), avoiding attention dilution and contradictions.<span class="li-see">&rarr; <a href="#diagram-multi-pass-flow">See: Diagram, Multi-Pass Review Flow</a></span></li>
-              <li>Run verification passes where the model self-reports confidence alongside each finding, to enable calibrated review routing.</li>
+              <li>A bigger context window is a distractor here - the problem is attention quality, not capacity. The model can hold more text but still spreads attention unevenly; only focused per-file passes fix it.</li>
+              <li>Run verification passes where the model self-reports confidence alongside each finding, to enable calibrated review routing. <span class="hl">Calibrate</span> thresholds against labelled validation sets (known answers) - raw, uncalibrated confidence is unreliable for automated routing.</li>
             </ul>
           </div>
         </div>
