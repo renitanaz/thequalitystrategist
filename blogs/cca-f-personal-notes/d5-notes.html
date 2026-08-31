@@ -193,16 +193,26 @@
           <text x="82" y="353" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="#9A6E1A" font-weight="700">never suppress</tspan><tspan fill="#3D4235"> errors</tspan></text>
 
           <!-- Branch 5.4, right, square node -->
-          <path d="M555,31 L575,31" fill="none" stroke="#2A5C9A" stroke-width="1"/>
-          <path d="M555,79 L575,79" fill="none" stroke="#2A5C9A" stroke-width="1"/>
+          <path d="M555,15 L575,26" fill="none" stroke="#2A5C9A" stroke-width="1"/>
+          <path d="M555,35 L575,52" fill="none" stroke="#2A5C9A" stroke-width="1"/>
+          <path d="M555,55 L575,78" fill="none" stroke="#2A5C9A" stroke-width="1"/>
+          <path d="M555,75 L575,104" fill="none" stroke="#2A5C9A" stroke-width="1"/>
+          <path d="M555,95 L575,130" fill="none" stroke="#2A5C9A" stroke-width="1"/>
           <rect x="475" y="15" width="80" height="80" rx="14" fill="#DDE8F5" stroke="#2A5C9A" stroke-width="1.5"/>
           <text x="515" y="47" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="#2A5C9A">5.4</text>
           <text x="515" y="62" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#2A5C9A">Codebase</text>
           <text x="515" y="73" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#2A5C9A">Context</text>
-          <rect x="575" y="15" width="165" height="32" rx="6" fill="#FAFCF5" stroke="#2A5C9A" stroke-opacity=".4"/>
-          <text x="657" y="35" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="#9A6E1A" font-weight="700">scratchpads</tspan><tspan fill="#3D4235"> persist findings</tspan></text>
-          <rect x="575" y="63" width="165" height="32" rx="6" fill="#FAFCF5" stroke="#2A5C9A" stroke-opacity=".4"/>
-          <text x="657" y="83" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="#1A7A3A">/compact, used proactively</text>
+          <rect x="575" y="15" width="165" height="22" rx="6" fill="#FAFCF5" stroke="#2A5C9A" stroke-opacity=".4"/>
+          <text x="657" y="29" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9"><tspan fill="#9A6E1A" font-weight="700">Scratchpads</tspan><tspan fill="#3D4235"> persist findings</tspan></text>
+          <rect x="575" y="41" width="165" height="22" rx="6" fill="#FAFCF5" stroke="#2A5C9A" stroke-opacity=".4"/>
+          <text x="657" y="55" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5"><tspan fill="#9A6E1A" font-weight="700">Subagent</tspan><tspan fill="#3D4235"> delegation</tspan></text>
+          <rect x="575" y="67" width="165" height="22" rx="6" fill="#FAFCF5" stroke="#2A5C9A" stroke-opacity=".4"/>
+          <text x="657" y="76" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5"><tspan fill="#3D4235">Summary </tspan><tspan fill="#9A6E1A" font-weight="700">injection</tspan></text>
+          <text x="657" y="86" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">between phases</text>
+          <rect x="575" y="93" width="165" height="22" rx="6" fill="#FAFCF5" stroke="#2A5C9A" stroke-opacity=".4"/>
+          <text x="657" y="107" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9"><tspan fill="#9A6E1A" font-weight="700">Structured</tspan><tspan fill="#3D4235"> state manifests</tspan></text>
+          <rect x="575" y="119" width="165" height="22" rx="6" fill="#FAFCF5" stroke="#2A5C9A" stroke-opacity=".4"/>
+          <text x="657" y="133" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="#1A7A3A">/compact, used proactively</text>
 
           <!-- Branch 5.5, right, square node -->
           <path d="M555,166 L575,166" fill="none" stroke="#1A7A3A" stroke-width="1"/>
@@ -271,10 +281,26 @@
 
       <h3 class="subhead">5.4 &middot; Codebase Context</h3>
       <dl class="keyword-grid">
-        <div class="kw g4"><dt>Context degradation</dt><dd>In extended sessions, the model starts giving inconsistent answers or citing "typical patterns" instead of the specific things it found earlier.</dd></div>
-        <div class="kw g4"><dt>Scratchpad file</dt><dd>A persistent project file recording key findings, so they survive context boundaries and support crash recovery/handoff.</dd></div>
-        <div class="kw g4"><dt>Recovery manifest</dt><dd>Structured state each agent exports to a known location; the coordinator loads it on resume instead of replaying history.</dd></div>
-        <div class="kw g4"><dt><code>/compact</code>, used proactively</dt><dd>Run it proactively during extended sessions, not only once context is already full - protects quality, not just quantity.</dd></div>
+        <div class="kw g4"><dt>Context degradation and Scratchpad file</dt><dd><ul>
+          <li><strong>Issue</strong> - in extended sessions, the model starts giving inconsistent answers or citing "typical patterns" instead of the specific things it found earlier; not a token-limit problem, but verbose discovery output burying earlier precise findings under newer text.</li>
+          <li><strong>Mitigation strategy</strong> - a persistent project file recording key findings; reference it instead of conversation context, so it survives context boundaries and keeps the main agent's context clean.</li>
+        </ul></dd></div>
+        <div class="kw g4"><dt>Subagent Delegation</dt><dd><ul>
+          <li><strong>Issue</strong> - the main agent doing all exploration directly fills its own context with verbose output from every file read and search.</li>
+          <li><strong>Mitigation strategy</strong> - delegate specific investigation questions to subagents with their own isolated context; each returns a structured summary. The real value is context isolation, not just parallelisation.</li>
+        </ul></dd></div>
+        <div class="kw g4"><dt>Summary Injection Between Phases</dt><dd><ul>
+          <li><strong>Issue</strong> - Phase 2 subagents with no knowledge of Phase 1 findings duplicate exploration already done - a "cold start" problem.</li>
+          <li><strong>Mitigation strategy</strong> - summarise key findings from Phase 1 and inject that summary into Phase 2 subagents' initial context before they start.</li>
+        </ul></dd></div>
+        <div class="kw g4"><dt>Crash Recovery via Structured State Manifests</dt><dd><ul>
+          <li><strong>Issue</strong> - a session crash or interruption loses all accumulated exploration progress.</li>
+          <li><strong>Mitigation strategy</strong> - each agent exports structured state (explored paths, findings, next steps) to a known location; the coordinator loads it on resume instead of replaying history.</li>
+        </ul></dd></div>
+        <div class="kw g4"><dt><code>/compact</code>, used proactively</dt><dd><ul>
+          <li><strong>Issue</strong> - waiting until context is already full means the degradation it's meant to prevent has often already happened.</li>
+          <li><strong>Mitigation strategy</strong> - run it proactively during extended sessions, not only once the limit is hit - protects quality, not just quantity.</li>
+        </ul></dd></div>
       </dl>
 
       <h3 class="subhead">5.5 &middot; Human Review</h3>
