@@ -355,7 +355,13 @@
         <details class="explain-toggle">
           <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
         <div class="explain-body">
-        <p>Read top to bottom for load order, not for who overrides whom in a conflict: user-level loads first and is invisible to teammates, project-level loads next and is the one the whole team shares through git, directory-level loads last and only applies inside that one folder. <code>.claude/rules/</code> branches off to the side deliberately - it isn't a fourth rung on this ladder, it's a parallel mechanism keyed on file-path globs instead of folder location, which is why it wins when matching files are scattered across many directories.</p>
+        <p>Read top to bottom for load order, not for who overrides whom in a conflict.</p>
+        <ul>
+          <li><strong>User-level</strong> (top) - loads first, invisible to teammates.</li>
+          <li><strong>Project-level</strong> (middle) - loads next, shared with the whole team through git.</li>
+          <li><strong>Directory-level</strong> (bottom) - loads last, applies only inside that one folder.</li>
+        </ul>
+        <p><code>.claude/rules/</code> branches off to the side deliberately - it isn't a fourth rung on this ladder, it's a parallel mechanism keyed on file-path globs instead of folder location, which is why it wins when matching files are scattered across many directories.</p>
         </div>
         </details>
       </div>
@@ -440,9 +446,9 @@
         <details class="explain-toggle">
           <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
         <div class="explain-body">
-        <p>The top row is a reading order, not a ranking - by the time all four files have loaded, none of them has "won" anything. They're just concatenated into the same context, broadest first, <code>CLAUDE.local.md</code> appended last at whatever level it sits. That's why the box underneath says "concatenated," not "resolved."</p>
-        <p>The middle row is what actually happens when two of those loaded instructions disagree: there's no tiebreaker built in. Claude may pick either rule, arbitrarily. That's a real behavior, not a gap in this page's explanation - the docs are explicit about it.</p>
-        <p>The bottom row is the fix. <code>settings.json</code> has what CLAUDE.md doesn't: a real precedence chain (managed beats local beats project beats user) that the client enforces regardless of what Claude decides. If a rule has to hold on every single run - a blocked tool, a required formatter - it belongs there, or in a hook, not in CLAUDE.md scoping.</p>
+        <p><strong>Top row</strong> - a reading order, not a ranking. By the time all four files have loaded, none of them has "won" anything. They're just concatenated into the same context, broadest first, <code>CLAUDE.local.md</code> appended last at whatever level it sits. That's why the box underneath says "concatenated," not "resolved."</p>
+        <p><strong>Middle row</strong> - what actually happens when two of those loaded instructions disagree: there's no tiebreaker built in. Claude may pick either rule, arbitrarily. That's a real behavior, not a gap in this page's explanation - the docs are explicit about it.</p>
+        <p><strong>Bottom row</strong> - the fix. <code>settings.json</code> has what CLAUDE.md doesn't: a real precedence chain (managed beats local beats project beats user) that the client enforces regardless of what Claude decides. If a rule has to hold on every single run - a blocked tool, a required formatter - it belongs there, or in a hook, not in CLAUDE.md scoping.</p>
         </div>
         </details>
       </div>
@@ -495,7 +501,12 @@
         <details class="explain-toggle">
           <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
         <div class="explain-body">
-        <p>The dashed vs. solid boxes are the whole diagram: dashed means it never leaves this machine - user-level CLAUDE.md lives in your home directory, outside the repo entirely, so <code>git pull</code> can't touch it. Solid means it's a tracked file - project and subdirectory CLAUDE.md live inside the repo, so <code>git pull</code> hands them to every teammate identically. Same three levels as the hierarchy diagram earlier - this one just answers "which of these does my coworker actually get."</p>
+        <p>The dashed vs. solid boxes are the whole diagram.</p>
+        <ul>
+          <li><strong>Dashed</strong> - never leaves this machine. User-level CLAUDE.md lives in your home directory, outside the repo entirely, so <code>git pull</code> can't touch it.</li>
+          <li><strong>Solid</strong> - a tracked file. Project and subdirectory CLAUDE.md live inside the repo, so <code>git pull</code> hands them to every teammate identically.</li>
+        </ul>
+        <p>Same three levels as the hierarchy diagram earlier - this one just answers "which of these does my coworker actually get."</p>
         </div>
         </details>
       </div>
@@ -534,22 +545,182 @@
         <details class="explain-toggle">
           <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
         <div class="explain-body">
-        <p>The arrow only goes one place: from project-level CLAUDE.md down into its own <code>@</code> path import. Nothing points at <code>.claude/rules/</code> - that's the whole point of the red note in the middle. The import is explicit and lives inside CLAUDE.md itself (there's no <code>@import</code> keyword - it's just <code>@</code> followed by a path), so it only ever loads what CLAUDE.md says to load, and it loads eagerly: the imported file's full content lands in context the moment CLAUDE.md is read, same size as if you'd pasted it in directly. <code>.claude/rules/</code> is discovered independently by Claude Code and activates itself based on which file you're editing - it never needs CLAUDE.md to mention it at all, which is exactly why it's drawn as a separate box below rather than connected to anything above, and why it's the actual tool for shrinking per-session context rather than just organizing a file.</p>
+        <p><strong>The <code>@</code> import (top)</strong> - the arrow only goes one place: from project-level CLAUDE.md down into its own <code>@</code> path import. The import is explicit and lives inside CLAUDE.md itself (there's no <code>@import</code> keyword - it's just <code>@</code> followed by a path), so it only ever loads what CLAUDE.md says to load, and it loads eagerly: the imported file's full content lands in context the moment CLAUDE.md is read, same size as if you'd pasted it in directly.</p>
+        <p><strong><code>.claude/rules/</code> (bottom)</strong> - nothing points at it, which is the whole point of the red note in the middle. It's discovered independently by Claude Code and activates itself based on which file you're editing - it never needs CLAUDE.md to mention it at all, which is exactly why it's drawn as a separate box below rather than connected to anything above, and why it's the actual tool for shrinking per-session context rather than just organizing a file.</p>
         </div>
         </details>
       </div>
 
-      <h3 class="subhead" id="screenshot-claude-folder">Screenshot: A Real .claude/ Folder</h3>
-      <figure class="screenshot-wrap">
-        <img src="assets/ccarf-practice-folder.png" alt="VS Code file explorer showing a project folder with .claude/CLAUDE.md, .claude/environment-facts.md, .claude/commands/, .claude/skills/reproduce-bug/, and .claude/rules/ containing bug-reports.md and playwright-tests.md.">
-        <figcaption>Every piece from the hierarchy above, in one real project: root <code>CLAUDE.md</code>, a skill under <code>.claude/skills/</code>, and path-scoped rule files under <code>.claude/rules/</code>.</figcaption>
+      <h3 class="subhead" id="diagram-claude-folder-anatomy">Diagram: Anatomy of the .claude/ Folder</h3>
+      <div class="mindmap-wrap">
+        <svg viewBox="0 0 820 695" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Annotated file tree of a real project, with a colored bar down the left margin grouping each major section, dotted leader lines connecting each name to its annotation, and a color-key legend at the bottom. Root: CLAUDE.md, team instructions, committed - purple; CLAUDE.local.md, personal overrides, gitignored - red; .claude/, the control center - purple. Inside .claude/: settings.json, permissions and config, committed - purple, with a shield icon marked permissions; settings.local.json, personal permissions, gitignored - red; commands/ holding review.md, fix-issue.md, deploy.md, each mapping to a slash command - teal; rules/ holding code-style.md, testing.md, api-conventions.md - blue; skills/ holding security-review/SKILL.md and deploy/SKILL.md, auto-invoked workflows - teal, with a lightning icon marked auto; agents/ holding code-reviewer.md and security-auditor.md, subagent personas covered in D1, shown in neutral gray. A person in the corner has a speech bubble reminding you to commit .claude/ to git, except the .local files. Caption: everything Claude needs to know about your project lives here.">
+          <path d="M555,10 C555,4 560,0 566,0 L748,0 C754,0 759,4 759,10 L759,34 C759,40 754,44 748,44 L610,44 L592,60 L598,44 L566,44 C560,44 555,40 555,34 Z" fill="#FAFCF5" stroke="#6B7060" stroke-width="1.3"/>
+          <text x="657" y="18" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="#3D4235">commit <tspan font-family="Consolas, monospace" fill="#7A4A9A">.claude/</tspan> to git -</text>
+          <text x="657" y="33" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="#3D4235">except the <tspan font-family="Consolas, monospace" fill="#9A2A4A">*.local</tspan> files</text>
+          <g transform="translate(790,55)" stroke="#3D4235" stroke-width="1.6" stroke-linecap="round">
+            <circle r="8" fill="#FAFCF5"/>
+            <line x1="0" y1="8" x2="0" y2="26"/>
+            <line x1="-11" y1="14" x2="11" y2="14"/>
+            <line x1="0" y1="26" x2="-9" y2="40"/>
+            <line x1="0" y1="26" x2="9" y2="40"/>
+          </g>
+
+          <use href="#d3-folder" x="22" y="66" style="color:#3D4235"/>
+          <text x="40" y="74" font-family="Consolas, monospace" font-size="13" font-weight="700" fill="#3D4235">your-project/</text>
+
+          <line x1="44" y1="88" x2="44" y2="155" stroke="rgba(26,31,20,.3)" stroke-width="1.4"/>
+          <line x1="76" y1="175" x2="76" y2="610" stroke="rgba(26,31,20,.3)" stroke-width="1.4"/>
+
+          <rect x="6" y="84" width="5" height="138" rx="2.5" fill="#7A4A9A"/>
+          <rect x="6" y="254" width="5" height="80" rx="2.5" fill="#1A6B54"/>
+          <rect x="6" y="366" width="5" height="80" rx="2.5" fill="#2A5C9A"/>
+          <rect x="6" y="478" width="5" height="53" rx="2.5" fill="#1A6B54"/>
+          <rect x="6" y="563" width="5" height="53" rx="2.5" fill="#6B7060"/>
+
+          <use href="#d3-file" x="56" y="93" style="color:#7A4A9A"/>
+          <rect x="70" y="84" width="94" height="20" rx="5" fill="#EDE0F5"/>
+          <text x="76" y="98" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#7A4A9A">CLAUDE.md</text>
+          <line x1="172" y1="94" x2="483" y2="94" stroke="rgba(26,31,20,.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
+          <text x="490" y="98" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#6B7060">team instructions, committed</text>
+
+          <use href="#d3-file" x="56" y="120" style="color:#9A2A4A"/>
+          <rect x="70" y="111" width="140" height="20" rx="5" fill="#F5DDE5"/>
+          <text x="76" y="125" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#9A2A4A">CLAUDE.local.md</text>
+          <line x1="218" y1="121" x2="483" y2="121" stroke="rgba(26,31,20,.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
+          <text x="490" y="125" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#6B7060">personal overrides, gitignored</text>
+
+          <use href="#d3-folder" x="56" y="147" style="color:#7A4A9A"/>
+          <rect x="70" y="138" width="76" height="20" rx="5" fill="#EDE0F5"/>
+          <text x="76" y="152" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#7A4A9A">.claude/</text>
+          <line x1="154" y1="148" x2="483" y2="148" stroke="rgba(26,31,20,.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
+          <text x="490" y="152" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#6B7060">the control center</text>
+
+          <use href="#d3-file" x="88" y="178" style="color:#7A4A9A"/>
+          <rect x="102" y="169" width="118" height="20" rx="5" fill="#EDE0F5"/>
+          <text x="108" y="183" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#7A4A9A">settings.json</text>
+          <line x1="228" y1="179" x2="483" y2="179" stroke="rgba(26,31,20,.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
+          <text x="490" y="183" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#6B7060">permissions + config, committed</text>
+          <use href="#d3-shield" x="770" y="180" style="color:#7A4A9A"/>
+          <text x="770" y="202" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#7A4A9A">permissions</text>
+
+          <use href="#d3-file" x="88" y="205" style="color:#9A2A4A"/>
+          <rect x="102" y="196" width="172" height="20" rx="5" fill="#F5DDE5"/>
+          <text x="108" y="210" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#9A2A4A">settings.local.json</text>
+          <line x1="282" y1="206" x2="483" y2="206" stroke="rgba(26,31,20,.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
+          <text x="490" y="210" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#6B7060">personal permissions, gitignored</text>
+
+          <use href="#d3-folder" x="88" y="236" style="color:#1A6B54"/>
+          <rect x="102" y="227" width="92" height="20" rx="5" fill="#D8EEE8"/>
+          <text x="108" y="241" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#1A6B54">commands/</text>
+          <line x1="202" y1="237" x2="483" y2="237" stroke="rgba(26,31,20,.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
+          <text x="490" y="241" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#6B7060">custom slash commands</text>
+
+          <use href="#d3-file" x="118" y="263" style="color:#6B7060"/>
+          <text x="134" y="270" font-family="Consolas, monospace" font-size="11" fill="#3D4235">review.md</text>
+          <line x1="201" y1="266" x2="483" y2="266" stroke="rgba(26,31,20,.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
+          <text x="490" y="270" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#6B7060">&rarr; /project:review</text>
+
+          <use href="#d3-file" x="118" y="290" style="color:#6B7060"/>
+          <text x="134" y="297" font-family="Consolas, monospace" font-size="11" fill="#3D4235">fix-issue.md</text>
+          <line x1="221" y1="293" x2="483" y2="293" stroke="rgba(26,31,20,.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
+          <text x="490" y="297" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#6B7060">&rarr; /project:fix-issue</text>
+
+          <use href="#d3-file" x="118" y="317" style="color:#6B7060"/>
+          <text x="134" y="324" font-family="Consolas, monospace" font-size="11" fill="#3D4235">deploy.md</text>
+          <line x1="201" y1="320" x2="483" y2="320" stroke="rgba(26,31,20,.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
+          <text x="490" y="324" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#6B7060">&rarr; /project:deploy</text>
+
+          <use href="#d3-folder" x="88" y="348" style="color:#2A5C9A"/>
+          <rect x="102" y="339" width="62" height="20" rx="5" fill="#DDE8F5"/>
+          <text x="108" y="353" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#2A5C9A">rules/</text>
+          <line x1="172" y1="349" x2="483" y2="349" stroke="rgba(26,31,20,.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
+          <text x="490" y="353" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#6B7060">modular instruction files</text>
+
+          <use href="#d3-file" x="118" y="375" style="color:#6B7060"/>
+          <text x="134" y="382" font-family="Consolas, monospace" font-size="11" fill="#3D4235">code-style.md</text>
+
+          <use href="#d3-file" x="118" y="402" style="color:#6B7060"/>
+          <text x="134" y="409" font-family="Consolas, monospace" font-size="11" fill="#3D4235">testing.md</text>
+
+          <use href="#d3-file" x="118" y="429" style="color:#6B7060"/>
+          <text x="134" y="436" font-family="Consolas, monospace" font-size="11" fill="#3D4235">api-conventions.md</text>
+
+          <use href="#d3-folder" x="88" y="460" style="color:#1A6B54"/>
+          <rect x="102" y="451" width="68" height="20" rx="5" fill="#D8EEE8"/>
+          <text x="108" y="465" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#1A6B54">skills/</text>
+          <line x1="178" y1="461" x2="483" y2="461" stroke="rgba(26,31,20,.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
+          <text x="490" y="465" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#6B7060">auto-invoked workflows</text>
+          <use href="#d3-bolt" x="770" y="460" style="color:#1A6B54"/>
+          <text x="770" y="482" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#1A6B54">auto</text>
+
+          <use href="#d3-file" x="118" y="487" style="color:#6B7060"/>
+          <text x="134" y="494" font-family="Consolas, monospace" font-size="11" fill="#3D4235">security-review/SKILL.md</text>
+
+          <use href="#d3-file" x="118" y="514" style="color:#6B7060"/>
+          <text x="134" y="521" font-family="Consolas, monospace" font-size="11" fill="#3D4235">deploy/SKILL.md</text>
+
+          <use href="#d3-folder" x="88" y="545" style="color:#6B7060"/>
+          <text x="108" y="550" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#6B7060">agents/</text>
+          <line x1="165" y1="546" x2="483" y2="546" stroke="rgba(26,31,20,.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
+          <text x="490" y="550" font-family="Segoe UI, sans-serif" font-style="italic" font-size="10.5" fill="#6B7060">subagent personas (see D1)</text>
+
+          <use href="#d3-file" x="118" y="572" style="color:#6B7060"/>
+          <text x="134" y="579" font-family="Consolas, monospace" font-size="11" fill="#3D4235">code-reviewer.md</text>
+
+          <use href="#d3-file" x="118" y="599" style="color:#6B7060"/>
+          <text x="134" y="606" font-family="Consolas, monospace" font-size="11" fill="#3D4235">security-auditor.md</text>
+
+          <text x="410" y="642" text-anchor="middle" font-family="Segoe UI, sans-serif" font-style="italic" font-size="11" fill="#3D4235">Everything Claude needs to know about your project lives here.</text>
+
+          <line x1="30" y1="660" x2="790" y2="660" stroke="rgba(26,31,20,.15)" stroke-width="1"/>
+
+          <rect x="80" y="670" width="11" height="11" rx="2.5" fill="#7A4A9A"/>
+          <text x="96" y="679" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">committed, shared</text>
+
+          <rect x="230" y="670" width="11" height="11" rx="2.5" fill="#9A2A4A"/>
+          <text x="246" y="679" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">personal, gitignored</text>
+
+          <rect x="400" y="670" width="11" height="11" rx="2.5" fill="#1A6B54"/>
+          <text x="416" y="679" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">commands &amp; skills</text>
+
+          <rect x="560" y="670" width="11" height="11" rx="2.5" fill="#2A5C9A"/>
+          <text x="576" y="679" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">rules</text>
+
+          <rect x="650" y="670" width="11" height="11" rx="2.5" fill="#6B7060"/>
+          <text x="666" y="679" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">agents (D1)</text>
+
+          <defs>
+            <g id="d3-folder">
+              <path d="M-8,-4 L-1,-4 L0,-7 L8,-7 L8,5 L-8,5 Z" fill="none" stroke="currentColor" stroke-width="1.6"/>
+            </g>
+            <g id="d3-file">
+              <rect x="-5" y="-8" width="10" height="14" rx="1.3" fill="none" stroke="currentColor" stroke-width="1.2"/>
+              <line x1="-2.5" y1="-3" x2="2.5" y2="-3" stroke="currentColor" stroke-width="1"/>
+              <line x1="-2.5" y1="1.5" x2="2.5" y2="1.5" stroke="currentColor" stroke-width="1"/>
+            </g>
+            <g id="d3-shield">
+              <path d="M0,-9 L8,-5 L8,3 C8,8 4,11 0,12.5 C-4,11 -8,8 -8,3 L-8,-5 Z" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M-4,1 L-1,4.5 L4.5,-2.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </g>
+            <g id="d3-bolt">
+              <path d="M1.3,-10 L-6.5,1.3 L-0.6,1.3 L-1.3,10 L6.5,-1.3 L0.6,-1.3 Z" fill="currentColor"/>
+            </g>
+          </defs>
+        </svg>
         <details class="explain-toggle">
           <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
         <div class="explain-body">
-        <p>This is what the hierarchy diagram above looks like as an actual file tree, not a stack of abstract boxes. If you're staring at your own project wondering where a piece of config should go, this is the shape to match it against: one root <code>CLAUDE.md</code>, one <code>.claude/skills/</code> folder per skill, and <code>.claude/rules/</code> holding the path-scoped exceptions rather than a directory-level <code>CLAUDE.md</code>.</p>
+        <p>Color is doing the categorizing here.</p>
+        <ul>
+          <li><strong>Purple</strong> - the CLAUDE.md/config territory (<code>CLAUDE.md</code>, <code>.claude/</code>, <code>settings.json</code>) - committed, shared with the team.</li>
+          <li><strong>Red</strong> - anything personal and gitignored-by-convention (<code>CLAUDE.local.md</code>, <code>settings.local.json</code>) - your own overrides, never pushed.</li>
+          <li><strong>Teal</strong> - <code>commands/</code> and <code>skills/</code> together, because the unified Skills system treats a flat command file and a <code>SKILL.md</code> directory as the same mechanism.</li>
+          <li><strong>Blue</strong> - <code>rules/</code>, path-scoped instruction files, distinct from both.</li>
+        </ul>
+        <p><code>agents/</code> is drawn in neutral gray on purpose: subagent persona files are real and belong under <code>.claude/</code>, but the mechanics of invoking them - <code>AgentDefinition</code> config, the <code>Task</code> tool, <code>allowedTools</code> scoping - are Domain 1 content, not this domain's. It's here for completeness of the folder, not as something this section tests.</p>
         </div>
         </details>
-      </figure>
+      </div>
 
       <h3 class="subhead" id="diagram-skill-example">Diagram: A Real SKILL.md, Annotated</h3>
       <div class="mindmap-wrap">
@@ -587,7 +758,12 @@
         <details class="explain-toggle">
           <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
         <div class="explain-body">
-        <p>The three highlighted lines are the fields the exam's guide names explicitly - <code>name</code> and the skill body are ordinary YAML/prose anyone would guess correctly. <code>context: fork</code> decides <em>where the output goes</em>: into an isolated subagent, not the main conversation. <code>allowed-tools</code> only <em>pre-approves</em> the listed tools so they skip the permission prompt - it doesn't restrict anything; every other tool stays callable. <code>argument-hint</code> only affects the autocomplete UI when you type <code>/reproduce-bug</code> with no arguments - it doesn't validate or enforce anything at runtime.</p>
+        <p>The three highlighted lines are the fields the exam's guide names explicitly - <code>name</code> and the skill body are ordinary YAML/prose anyone would guess correctly.</p>
+        <ul>
+          <li><code>context: fork</code> - decides <em>where the output goes</em>: into an isolated subagent, not the main conversation.</li>
+          <li><code>allowed-tools</code> - only <em>pre-approves</em> the listed tools so they skip the permission prompt; it doesn't restrict anything, every other tool stays callable.</li>
+          <li><code>argument-hint</code> - only affects the autocomplete UI when you type <code>/reproduce-bug</code> with no arguments; it doesn't validate or enforce anything at runtime.</li>
+        </ul>
         <p>The one field not highlighted here but worth watching for is <code>description</code>, on line 2 - it's not in the exam's named three, but it's what Claude actually reads to decide whether this skill matches what you just asked for. Leave it out and the skill only ever runs when you type <code>/reproduce-bug</code> yourself.</p>
         </div>
         </details>
@@ -657,8 +833,14 @@
         <details class="explain-toggle">
           <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
         <div class="explain-body">
-        <p>The top half is the decision itself, and it only has one real question: is the task ambiguous or architectural, not how hard it is. A "no" goes straight to direct execution - short and done. A "yes" doesn't skip direct execution, it defers it: plan mode runs first to explore and choose an approach, and direct execution still does the actual implementing once that approach is locked in. That's the hybrid pattern the purple pill calls out - it's the same direct execution box either way, just entered after a planning pass instead of immediately.</p>
-        <p>The worked example below makes the hybrid pattern concrete: a 30-file logging library migration is exactly the kind of task where jumping straight to direct execution risks applying an inconsistent fix across files. Plan phase does the one-time thinking - which files, what the API diff looks like, what the pattern should be, where the edge cases are - so the execute phase becomes mechanical repetition of an already-decided strategy, not 30 separate design decisions.</p>
+        <p>The top half is the decision itself, and it only has one real question: is the task ambiguous or architectural, not how hard it is.</p>
+        <ul>
+          <li><strong>No</strong> - goes straight to direct execution, short and done.</li>
+          <li><strong>Yes</strong> - doesn't skip direct execution, it defers it: plan mode runs first to explore and choose an approach, and direct execution still does the actual implementing once that approach is locked in.</li>
+        </ul>
+        <p>That's the hybrid pattern the purple pill calls out - it's the same direct execution box either way, just entered after a planning pass instead of immediately.</p>
+        <p>The worked example below makes the hybrid pattern concrete - a 30-file logging library migration is exactly the kind of task where jumping straight to direct execution risks applying an inconsistent fix across files.</p>
+        <p>Plan phase does the one-time thinking - which files, what the API diff looks like, what the pattern should be, where the edge cases are - so the execute phase becomes mechanical repetition of an already-decided strategy, not 30 separate design decisions.</p>
         </div>
         </details>
       </div>
@@ -803,7 +985,8 @@
         <details class="explain-toggle">
           <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
         <div class="explain-body">
-        <p>The fingerprint step is the part people forget: without it, every re-run against the same PR posts the same finding again. Fingerprinting each finding (file + line + category, typically) before deciding new-vs-already-posted is what makes a CI review idempotent across repeated pushes, instead of spamming the thread on every commit. Critical findings take a second path out of that same fingerprint step - straight to failing the build check, on top of the PR comment.</p>
+        <p>The fingerprint step is the part people forget - without it, every re-run against the same PR posts the same finding again. Fingerprinting each finding (file + line + category, typically) before deciding new-vs-already-posted is what makes a CI review idempotent across repeated pushes, instead of spamming the thread on every commit.</p>
+        <p><strong>Critical findings</strong> take a second path out of that same fingerprint step - straight to failing the build check, on top of the PR comment.</p>
         </div>
         </details>
       </div>
@@ -966,7 +1149,7 @@
               <li><code>/context</code> confirms what actually loaded; <code>/memory</code> only lists locations. Exam guide still keys <code>/memory</code> as the answer.</li>
               <li>After <code>/compact</code>: root CLAUDE.md returns immediately; nested/path-scoped <code>.claude/rules/</code> reload on the next matching file.</li>
             </ul>
-            <p class="cornell-see">&rarr; <a href="#screenshot-claude-folder">See: Screenshot, A Real .claude/ Folder</a></p>
+            <p class="cornell-see">&rarr; <a href="#diagram-claude-folder-anatomy">See: Diagram, Anatomy of the .claude/ Folder</a></p>
           </div>
         </div>
         <div class="cornell-row">

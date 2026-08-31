@@ -324,7 +324,12 @@
         <details class="explain-toggle">
           <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
           <div class="explain-body">
-          <p>The loop only has two exits, and <code>stop_reason</code> is what tells you which one you're at. <code>tool_use</code> means the model wants to act - execute it, append the result, and go around again. <code>end_turn</code> means it's done - stop and hand the response back. Everything else (parsing text for phrases like "I'm finished," using an iteration cap as the primary stop signal) is a workaround for not trusting this field.</p>
+          <p>The loop only has two exits, and <code>stop_reason</code> is what tells you which one you're at.</p>
+          <ul>
+            <li><strong><code>tool_use</code></strong> - the model wants to act: execute it, append the result, and go around again.</li>
+            <li><strong><code>end_turn</code></strong> - it's done: stop and hand the response back.</li>
+          </ul>
+          <p>Everything else (parsing text for phrases like "I'm finished," using an iteration cap as the primary stop signal) is a workaround for not trusting this field.</p>
           </div>
         </details>
       </div>
@@ -397,7 +402,11 @@
         <details class="explain-toggle">
           <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
           <div class="explain-body">
-          <p>Same two requests, same two tools available (<code>get_customer</code>, <code>process_refund</code>) - the difference is entirely in how the next tool call gets chosen. A pre-configured tree can't see that Request A already has an ID, so it runs the redundant lookup anyway. Model-driven reasoning reads the context first and only calls what's actually missing.</p>
+          <p>Same two requests, same two tools available (<code>get_customer</code>, <code>process_refund</code>) - the difference is entirely in how the next tool call gets chosen.</p>
+          <ul>
+            <li><strong>Pre-configured tree</strong> - can't see that Request A already has an ID, so it runs the redundant lookup anyway.</li>
+            <li><strong>Model-driven reasoning</strong> - reads the context first and only calls what's actually missing.</li>
+          </ul>
           </div>
         </details>
       </div>
@@ -462,7 +471,11 @@
         <details class="explain-toggle">
           <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
           <div class="explain-body">
-          <p><code>allowedTools: ["Task"]</code> is the gate - without it on both arrows, the coordinator has no way to spawn either subagent. Two arrows leaving in the same response is what makes this a parallel spawn. Each subagent only reports back to the coordinator, never to each other - that's the hub-and-spoke rule in picture form.</p>
+          <ul>
+            <li><strong><code>allowedTools: ["Task"]</code></strong> is the gate - without it on both arrows, the coordinator has no way to spawn either subagent.</li>
+            <li><strong>Two arrows in the same response</strong> is what makes this a parallel spawn.</li>
+            <li><strong>Hub-and-spoke</strong> - each subagent only reports back to the coordinator, never to each other.</li>
+          </ul>
           </div>
         </details>
       </div>
@@ -518,108 +531,11 @@
         <details class="explain-toggle">
           <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
           <div class="explain-body">
-          <p>The two halves aren't alternative UI for the same thing - they're for genuinely different situations. Parallel only makes sense when A and B don't need each other's output; that's why both <code>Task</code> calls can go out in the same response. Sequential exists specifically because turn 2 needs turn 1's result to even know what to ask for.</p>
-          </div>
-        </details>
-      </div>
-
-      <h3 class="subhead" id="diagram-pipeline">Diagram: Fixed Pipeline vs. Dynamic Decomposition</h3>
-      <div class="mindmap-wrap">
-        <svg viewBox="0 0 720 280" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Diagram comparing a fixed sequential pipeline on the left, four steps stacked top to bottom decided in advance, against dynamic decomposition on the right, where a mapping step branches downward into checks generated by what it found.">
-          <text x="110" y="20" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700" fill="#9A6E1A">FIXED PIPELINE</text>
-          <rect x="55" y="35" width="110" height="38" rx="6" fill="#F5EDD6" stroke="#9A6E1A"/>
-          <text x="110" y="59" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="#3D4235">Verify</text>
-          <path d="M110,73 L110,91" stroke="#6B7060" stroke-width="1.5" marker-end="url(#fp1)"/>
-          <rect x="55" y="93" width="110" height="38" rx="6" fill="#F5EDD6" stroke="#9A6E1A"/>
-          <text x="110" y="117" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="#3D4235">Check</text>
-          <path d="M110,131 L110,149" stroke="#6B7060" stroke-width="1.5" marker-end="url(#fp2)"/>
-          <rect x="55" y="151" width="110" height="38" rx="6" fill="#F5EDD6" stroke="#9A6E1A"/>
-          <text x="110" y="175" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="#3D4235">Policy</text>
-          <path d="M110,189 L110,207" stroke="#6B7060" stroke-width="1.5" marker-end="url(#fp3)"/>
-          <rect x="55" y="209" width="110" height="38" rx="6" fill="#F5DDE5" stroke="#9A2A4A"/>
-          <text x="110" y="233" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="#9A2A4A">Decide</text>
-          <text x="110" y="258" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">order fixed before the run starts</text>
-          <text x="110" y="272" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">same steps every time, top to bottom</text>
-
-          <line x1="360" y1="10" x2="360" y2="270" stroke="rgba(26,31,20,.12)"/>
-
-          <text x="560" y="50" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700" fill="#7A4A9A">DYNAMIC DECOMPOSITION</text>
-
-          <rect x="505" y="65" width="110" height="38" rx="6" fill="#EDE0F5" stroke="#7A4A9A"/>
-          <text x="560" y="89" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="#3D4235">Map issue</text>
-          <path d="M560,103 C560,120 525,123 502,138" stroke="#6B7060" stroke-width="1.5" fill="none" marker-end="url(#fp4)"/>
-          <path d="M560,103 C560,120 610,123 637,138" stroke="#6B7060" stroke-width="1.5" fill="none" marker-end="url(#fp5)"/>
-          <rect x="440" y="140" width="124" height="38" rx="6" fill="#F5F7F0" stroke="rgba(26,31,20,.15)" stroke-dasharray="4 3"/>
-          <text x="502" y="163" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">next check A?</text>
-          <rect x="575" y="140" width="124" height="38" rx="6" fill="#F5F7F0" stroke="rgba(26,31,20,.15)" stroke-dasharray="4 3"/>
-          <text x="637" y="163" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">next check B?</text>
-          <text x="560" y="200" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">each branch is generated top-down by</text>
-          <text x="560" y="214" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">what the previous step actually found -</text>
-          <text x="560" y="228" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">not fixed in advance</text>
-
-          <defs>
-            <marker id="fp1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
-            <marker id="fp2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
-            <marker id="fp3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
-            <marker id="fp4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
-            <marker id="fp5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
-          </defs>
-        </svg>
-        <details class="explain-toggle">
-          <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
-          <div class="explain-body">
-          <p>Left column: the four steps are already decided before Verify even runs. Right column: Map issue produces two branches, and each one only gets defined by what Map issue actually found - the diagram couldn't have drawn those branches in before running it, the way it could on the left. That's the whole difference between the two patterns.</p>
-          </div>
-        </details>
-      </div>
-
-      <h3 class="subhead" id="diagram-session-state">Diagram: Session Continuation Strategy</h3>
-      <div class="mindmap-wrap">
-        <svg viewBox="0 0 720 250" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Decision diagram: a paused session branches three ways depending on what changed. Nothing changed leads to resume with session name. Two approaches need exploring leads to fork session. The underlying code moved leads to a fresh session with a structured summary.">
-          <text x="360" y="6" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#6B7060">walks away</text>
-          <g transform="translate(360,16)" stroke="#6B7060" stroke-width="1.3" stroke-linecap="round">
-            <circle r="5" fill="none"/>
-            <line x1="0" y1="5" x2="0" y2="16"/>
-            <line x1="-7" y1="9" x2="7" y2="9"/>
-            <line x1="0" y1="16" x2="-6" y2="25" stroke-dasharray="2 2"/>
-            <line x1="0" y1="16" x2="6" y2="25" stroke-dasharray="2 2"/>
-          </g>
-
-          <rect x="300" y="45" width="120" height="42" rx="8" fill="#EEF1E7" stroke="rgba(26,31,20,.2)"/>
-          <text x="360" y="71" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#3D4235">Session paused</text>
-
-          <path d="M330,87 C220,120 140,130 90,153" fill="none" stroke="#1A7A3A" stroke-width="1.5" marker-end="url(#ss1)"/>
-          <rect x="172" y="109" width="98" height="17" fill="#FAFCF5"/>
-          <text x="221" y="121" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#1A7A3A">nothing changed</text>
-          <rect x="15" y="155" width="180" height="60" rx="8" fill="#D8F0E0" stroke="#1A7A3A"/>
-          <text x="105" y="178" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700" fill="#1A7A3A">Resume</text>
-          <text x="105" y="195" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#1A6B54">--resume &lt;session-name&gt;</text>
-
-          <path d="M360,87 L360,153" fill="none" stroke="#2A5C9A" stroke-width="1.5" marker-end="url(#ss2)"/>
-          <rect x="325" y="116" width="140" height="17" fill="#FAFCF5"/>
-          <text x="395" y="128" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#2A5C9A">2 approaches to compare</text>
-          <rect x="270" y="155" width="180" height="60" rx="8" fill="#DDE8F5" stroke="#2A5C9A"/>
-          <text x="360" y="178" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700" fill="#2A5C9A">Fork</text>
-          <text x="360" y="195" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#2A5C9A">fork_session()</text>
-
-          <path d="M400,87 C500,120 570,130 615,153" fill="none" stroke="#9A2A4A" stroke-width="1.5" marker-end="url(#ss3)"/>
-          <rect x="452" y="109" width="140" height="17" fill="#FAFCF5"/>
-          <text x="522" y="121" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#9A2A4A">code moved underneath it</text>
-          <rect x="525" y="155" width="180" height="60" rx="8" fill="#F5DDE5" stroke="#9A2A4A"/>
-          <text x="615" y="175" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700" fill="#9A2A4A">Fresh session</text>
-          <text x="615" y="191" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#9A2A4A">+ structured summary</text>
-          <text x="615" y="207" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#3D4235">stale results are worse than none</text>
-
-          <defs>
-            <marker id="ss1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1A7A3A"/></marker>
-            <marker id="ss2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2A5C9A"/></marker>
-            <marker id="ss3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9A2A4A"/></marker>
-          </defs>
-        </svg>
-        <details class="explain-toggle">
-          <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
-          <div class="explain-body">
-          <p>Same paused session, three different outcomes depending on one thing: what happened to the underlying work while you were away. Nothing changed &rarr; the history is still accurate, resume it. Comparing two approaches &rarr; you want both explored, fork. Code moved &rarr; the tool results sitting in that history are now wrong, so a fresh session with a summary beats reasoning from stale data.</p>
+          <p>The two halves aren't alternative UI for the same thing - they're for genuinely different situations.</p>
+          <ul>
+            <li><strong>Parallel</strong> - only makes sense when A and B don't need each other's output; that's why both <code>Task</code> calls can go out in the same response.</li>
+            <li><strong>Sequential</strong> - exists specifically because turn 2 needs turn 1's result to even know what to ask for.</li>
+          </ul>
           </div>
         </details>
       </div>
@@ -657,7 +573,12 @@
         <details class="explain-toggle">
           <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
           <div class="explain-body">
-          <p>Both hook points sit inside the ordinary loop, not beside it - that's the point. The interception hook gets a look at the call before it runs and can stop it; the <code>PostToolUse</code> hook only sees the result after, and can only reshape it, not undo the call. The dashed line back to the top is just the loop continuing with cleaner data than it started with.</p>
+          <p>Both hook points sit inside the ordinary loop, not beside it - that's the point.</p>
+          <ul>
+            <li><strong>Interception hook</strong> - gets a look at the call before it runs and can stop it.</li>
+            <li><strong><code>PostToolUse</code> hook</strong> - only sees the result after, and can only reshape it, not undo the call.</li>
+          </ul>
+          <p>The dashed line back to the top is just the loop continuing with cleaner data than it started with.</p>
           </div>
         </details>
       </div>
@@ -707,7 +628,11 @@
         <details class="explain-toggle">
           <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
           <div class="explain-body">
-          <p>Same two hook names the exam always pairs up, shown doing the two different jobs they're actually capable of. <code>PreToolUse</code> sits before the call, so it can stop <code>process_refund</code> from ever running. <code>PostToolUse</code> sits after <code>get_customer</code> already ran - it can clean up the timestamp it got back, but it could never have blocked that call in the first place.</p>
+          <p>Same two hook names the exam always pairs up, shown doing the two different jobs they're actually capable of.</p>
+          <ul>
+            <li><strong><code>PreToolUse</code></strong> - sits before the call, so it can stop <code>process_refund</code> from ever running.</li>
+            <li><strong><code>PostToolUse</code></strong> - sits after <code>get_customer</code> already ran; it can clean up the timestamp it got back, but it could never have blocked that call in the first place.</li>
+          </ul>
           </div>
         </details>
       </div>
@@ -753,7 +678,11 @@
         <details class="explain-toggle">
           <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
           <div class="explain-body">
-          <p>The branch point isn't "is this important" - it's "what happens if this fails exactly once." AML and refund approval sit on the hook side because a single miss is a compliance or financial problem. Markdown formatting sits on the prompt side because a single miss is just a slightly uglier response - annoying, not dangerous.</p>
+          <p>The branch point isn't "is this important" - it's "what happens if this fails exactly once."</p>
+          <ul>
+            <li><strong>Hook side</strong> - AML and refund approval, because a single miss is a compliance or financial problem.</li>
+            <li><strong>Prompt side</strong> - markdown formatting, because a single miss is just a slightly uglier response, annoying, not dangerous.</li>
+          </ul>
           </div>
         </details>
       </div>
@@ -831,7 +760,12 @@
         <details class="explain-toggle">
           <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
           <div class="explain-body">
-          <p>The dashed callouts are the trap the exam sets: <code>SubagentStart</code> and <code>SubagentStop</code> sound like they should be able to block and reshape a subagent the way <code>PreToolUse</code>/<code>PostToolUse</code> do - they can't. Start only observes; Stop can only send the subagent back to keep working, never touch its output. Blocking the spawn or rewriting the result is still a <code>PreToolUse</code>/<code>PostToolUse</code> job on the Agent tool call itself.</p>
+          <p>The dashed callouts are the trap the exam sets: <code>SubagentStart</code> and <code>SubagentStop</code> sound like they should be able to block and reshape a subagent the way <code>PreToolUse</code>/<code>PostToolUse</code> do - they can't.</p>
+          <ul>
+            <li><strong><code>SubagentStart</code></strong> - only observes.</li>
+            <li><strong><code>SubagentStop</code></strong> - can only send the subagent back to keep working, never touch its output.</li>
+          </ul>
+          <p>Blocking the spawn or rewriting the result is still a <code>PreToolUse</code>/<code>PostToolUse</code> job on the Agent tool call itself.</p>
           </div>
         </details>
       </div>
@@ -868,7 +802,122 @@
         <details class="explain-toggle">
           <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
           <div class="explain-body">
-          <p>Step 1 doesn't fail quietly - the hook blocks it and tells the agent exactly what's missing. Step 2 is the agent responding to that error on its own, no human re-prompting it. Step 3 succeeds because the gate's condition is now actually met. That's the deterministic-guarantee point shown as a real transcript instead of stated as a rule.</p>
+          <ul>
+            <li><strong>Step 1</strong> - doesn't fail quietly: the hook blocks it and tells the agent exactly what's missing.</li>
+            <li><strong>Step 2</strong> - the agent responding to that error on its own, no human re-prompting it.</li>
+            <li><strong>Step 3</strong> - succeeds because the gate's condition is now actually met.</li>
+          </ul>
+          <p>That's the deterministic-guarantee point shown as a real transcript instead of stated as a rule.</p>
+          </div>
+        </details>
+      </div>
+
+      <h3 class="subhead" id="diagram-pipeline">Diagram: Fixed Pipeline vs. Dynamic Decomposition</h3>
+      <div class="mindmap-wrap">
+        <svg viewBox="0 0 720 280" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Diagram comparing a fixed sequential pipeline on the left, four steps stacked top to bottom decided in advance, against dynamic decomposition on the right, where a mapping step branches downward into checks generated by what it found.">
+          <text x="110" y="20" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700" fill="#9A6E1A">FIXED PIPELINE</text>
+          <rect x="55" y="35" width="110" height="38" rx="6" fill="#F5EDD6" stroke="#9A6E1A"/>
+          <text x="110" y="59" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="#3D4235">Verify</text>
+          <path d="M110,73 L110,91" stroke="#6B7060" stroke-width="1.5" marker-end="url(#fp1)"/>
+          <rect x="55" y="93" width="110" height="38" rx="6" fill="#F5EDD6" stroke="#9A6E1A"/>
+          <text x="110" y="117" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="#3D4235">Check</text>
+          <path d="M110,131 L110,149" stroke="#6B7060" stroke-width="1.5" marker-end="url(#fp2)"/>
+          <rect x="55" y="151" width="110" height="38" rx="6" fill="#F5EDD6" stroke="#9A6E1A"/>
+          <text x="110" y="175" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="#3D4235">Policy</text>
+          <path d="M110,189 L110,207" stroke="#6B7060" stroke-width="1.5" marker-end="url(#fp3)"/>
+          <rect x="55" y="209" width="110" height="38" rx="6" fill="#F5DDE5" stroke="#9A2A4A"/>
+          <text x="110" y="233" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="#9A2A4A">Decide</text>
+          <text x="110" y="258" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">order fixed before the run starts</text>
+          <text x="110" y="272" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">same steps every time, top to bottom</text>
+
+          <line x1="360" y1="10" x2="360" y2="270" stroke="rgba(26,31,20,.12)"/>
+
+          <text x="560" y="50" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700" fill="#7A4A9A">DYNAMIC DECOMPOSITION</text>
+
+          <rect x="505" y="65" width="110" height="38" rx="6" fill="#EDE0F5" stroke="#7A4A9A"/>
+          <text x="560" y="89" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="#3D4235">Map issue</text>
+          <path d="M560,103 C560,120 525,123 502,138" stroke="#6B7060" stroke-width="1.5" fill="none" marker-end="url(#fp4)"/>
+          <path d="M560,103 C560,120 610,123 637,138" stroke="#6B7060" stroke-width="1.5" fill="none" marker-end="url(#fp5)"/>
+          <rect x="440" y="140" width="124" height="38" rx="6" fill="#F5F7F0" stroke="rgba(26,31,20,.15)" stroke-dasharray="4 3"/>
+          <text x="502" y="163" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">next check A?</text>
+          <rect x="575" y="140" width="124" height="38" rx="6" fill="#F5F7F0" stroke="rgba(26,31,20,.15)" stroke-dasharray="4 3"/>
+          <text x="637" y="163" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">next check B?</text>
+          <text x="560" y="200" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">each branch is generated top-down by</text>
+          <text x="560" y="214" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">what the previous step actually found -</text>
+          <text x="560" y="228" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">not fixed in advance</text>
+
+          <defs>
+            <marker id="fp1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+            <marker id="fp2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+            <marker id="fp3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+            <marker id="fp4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+            <marker id="fp5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+          </defs>
+        </svg>
+        <details class="explain-toggle">
+          <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
+          <div class="explain-body">
+          <ul>
+            <li><strong>Left column (fixed pipeline)</strong> - the four steps are already decided before Verify even runs.</li>
+            <li><strong>Right column (dynamic decomposition)</strong> - Map issue produces two branches, and each one only gets defined by what Map issue actually found; the diagram couldn't have drawn those branches in before running it, the way it could on the left.</li>
+          </ul>
+          <p>That's the whole difference between the two patterns.</p>
+          </div>
+        </details>
+      </div>
+
+      <h3 class="subhead" id="diagram-session-state">Diagram: Session Continuation Strategy</h3>
+      <div class="mindmap-wrap">
+        <svg viewBox="0 0 720 250" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Decision diagram: a paused session branches three ways depending on what changed. Nothing changed leads to resume with session name. Two approaches need exploring leads to fork session. The underlying code moved leads to a fresh session with a structured summary.">
+          <text x="360" y="6" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#6B7060">walks away</text>
+          <g transform="translate(360,16)" stroke="#6B7060" stroke-width="1.3" stroke-linecap="round">
+            <circle r="5" fill="none"/>
+            <line x1="0" y1="5" x2="0" y2="16"/>
+            <line x1="-7" y1="9" x2="7" y2="9"/>
+            <line x1="0" y1="16" x2="-6" y2="25" stroke-dasharray="2 2"/>
+            <line x1="0" y1="16" x2="6" y2="25" stroke-dasharray="2 2"/>
+          </g>
+
+          <rect x="300" y="45" width="120" height="42" rx="8" fill="#EEF1E7" stroke="rgba(26,31,20,.2)"/>
+          <text x="360" y="71" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#3D4235">Session paused</text>
+
+          <path d="M330,87 C220,120 140,130 90,153" fill="none" stroke="#1A7A3A" stroke-width="1.5" marker-end="url(#ss1)"/>
+          <rect x="172" y="109" width="98" height="17" fill="#FAFCF5"/>
+          <text x="221" y="121" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#1A7A3A">nothing changed</text>
+          <rect x="15" y="155" width="180" height="60" rx="8" fill="#D8F0E0" stroke="#1A7A3A"/>
+          <text x="105" y="178" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700" fill="#1A7A3A">Resume</text>
+          <text x="105" y="195" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#1A6B54">--resume &lt;session-name&gt;</text>
+
+          <path d="M360,87 L360,153" fill="none" stroke="#2A5C9A" stroke-width="1.5" marker-end="url(#ss2)"/>
+          <rect x="325" y="116" width="140" height="17" fill="#FAFCF5"/>
+          <text x="395" y="128" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#2A5C9A">2 approaches to compare</text>
+          <rect x="270" y="155" width="180" height="60" rx="8" fill="#DDE8F5" stroke="#2A5C9A"/>
+          <text x="360" y="178" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700" fill="#2A5C9A">Fork</text>
+          <text x="360" y="195" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#2A5C9A">fork_session()</text>
+
+          <path d="M400,87 C500,120 570,130 615,153" fill="none" stroke="#9A2A4A" stroke-width="1.5" marker-end="url(#ss3)"/>
+          <rect x="452" y="109" width="140" height="17" fill="#FAFCF5"/>
+          <text x="522" y="121" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#9A2A4A">code moved underneath it</text>
+          <rect x="525" y="155" width="180" height="60" rx="8" fill="#F5DDE5" stroke="#9A2A4A"/>
+          <text x="615" y="175" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700" fill="#9A2A4A">Fresh session</text>
+          <text x="615" y="191" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#9A2A4A">+ structured summary</text>
+          <text x="615" y="207" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#3D4235">stale results are worse than none</text>
+
+          <defs>
+            <marker id="ss1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1A7A3A"/></marker>
+            <marker id="ss2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2A5C9A"/></marker>
+            <marker id="ss3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9A2A4A"/></marker>
+          </defs>
+        </svg>
+        <details class="explain-toggle">
+          <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
+          <div class="explain-body">
+          <p>Same paused session, three different outcomes depending on one thing: what happened to the underlying work while you were away.</p>
+          <ul>
+            <li><strong>Nothing changed</strong> - the history is still accurate, resume it.</li>
+            <li><strong>Comparing two approaches</strong> - you want both explored, fork.</li>
+            <li><strong>Code moved</strong> - the tool results sitting in that history are now wrong, so a fresh session with a summary beats reasoning from stale data.</li>
+          </ul>
           </div>
         </details>
       </div>
@@ -960,7 +1009,12 @@
         <details class="explain-toggle">
           <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
           <div class="explain-body">
-          <p>Dependency is the real fork: independent work leads to parallel spawning, dependent work leads to sequential spawning - which then splits into a decomposition strategy, fixed pipeline (order known upfront) or dynamic decomposition (each next step comes from what was just found). This "independent or dependent" question is specifically the <strong>coordinator's</strong> call - it only applies once you're spawning subagents. Model-driven decision-making (1.1) is not a step in this chain at all; it's the foundation running underneath every step, for every agent, coordinator and subagent alike, the whole time. It's what makes dynamic decomposition possible at the coordinator's planning level, and it's also what a single tool-selection decision looks like at any one loop iteration. And "fixed pipeline vs. dynamic decomposition" (1.6) is broader than the coordinator/subagent picture - it also applies to one agent's own multi-step task planning with no subagents involved at all.</p>
+          <p>Dependency is the real fork: independent work leads to parallel spawning, dependent work leads to sequential spawning - which then splits into a decomposition strategy, fixed pipeline (order known upfront) or dynamic decomposition (each next step comes from what was just found).</p>
+          <ul>
+            <li><strong>"Independent or dependent?"</strong> is specifically the <strong>coordinator's</strong> call - it only applies once you're spawning subagents.</li>
+            <li><strong>Model-driven decision-making (1.1)</strong> is not a step in this chain at all - it's the foundation running underneath every step, for every agent, coordinator and subagent alike, the whole time. It's what makes dynamic decomposition possible at the coordinator's planning level, and it's also what a single tool-selection decision looks like at any one loop iteration.</li>
+            <li><strong>Fixed pipeline vs. dynamic decomposition (1.6)</strong> is broader than the coordinator/subagent picture - it also applies to one agent's own multi-step task planning with no subagents involved at all.</li>
+          </ul>
 
           <h4>Worked example: model-driven vs. pre-configured tree</h4>
           <p>Same task, two different implementations - using the refund scenario again. Two incoming requests: Request A, "Refund $50 for <code>cus_8841</code>" (customer ID already known); Request B, "Customer emailed asking for a refund" (no ID given).</p>

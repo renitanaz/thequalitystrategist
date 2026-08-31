@@ -269,7 +269,12 @@
       <details class="explain-toggle">
         <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
       <div class="explain-body">
-      <p>The "retryable" column is the whole point of categorizing errors at all: a transient failure is worth retrying, but retrying a validation, business, or permission error just burns another call on input that was never going to succeed. The fifth row exists to head off a common bug - a valid empty result isn't an error at all, so it shouldn't be routed through this table in the first place.</p>
+      <p>The "retryable" column is the whole point of categorizing errors at all.</p>
+      <ul>
+        <li><strong>Transient</strong> - worth retrying; the failure was circumstantial, not caused by the input.</li>
+        <li><strong>Validation, business, permission</strong> - not worth retrying; each just burns another call on input that was never going to succeed.</li>
+        <li><strong>Valid empty result</strong> (fifth row) - heads off a common bug: this isn't an error at all, so it shouldn't be routed through this table in the first place.</li>
+      </ul>
       </div>
       </details>
 
@@ -304,7 +309,9 @@
         <details class="explain-toggle">
           <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
         <div class="explain-body">
-        <p>Same failure, two representations. The before panel has an <code>isError</code> flag and a message - which tells the agent something went wrong but nothing about what to do next. The after panel adds exactly two fields, <code>errorCategory</code> and <code>isRetryable</code>, and that's enough for the agent to make a retry decision without guessing. Everything else about the response can stay the same.</p>
+        <p>Same failure, two representations.</p>
+        <p><strong>Before</strong> - just an <code>isError</code> flag and a message, which tells the agent something went wrong but nothing about what to do next.</p>
+        <p><strong>After</strong> - adds exactly two fields, <code>errorCategory</code> and <code>isRetryable</code>, and that's enough for the agent to make a retry decision without guessing. Everything else about the response can stay the same.</p>
         </div>
         </details>
       </div>
@@ -364,7 +371,12 @@
         <details class="explain-toggle">
           <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
         <div class="explain-body">
-        <p>The fork right after <code>isError: true</code> is the one to internalize: transient goes one way (retry locally, inside the subagent, before anyone else finds out it happened), while validation/business/permission all go the other way (no retry, straight to an explanation). Only what's left unresolved after that - a transient error that kept failing, or a non-retryable one needing escalation - actually reaches the coordinator, and it arrives with partial results and a record of what was attempted, not just a bare failure.</p>
+        <p>The fork right after <code>isError: true</code> is the one to internalize:</p>
+        <ul>
+          <li><strong>Transient</strong> - retry locally, inside the subagent, before anyone else finds out it happened.</li>
+          <li><strong>Validation / business / permission</strong> - no retry, straight to an explanation instead.</li>
+        </ul>
+        <p>Only what's left unresolved after that - a transient error that kept failing, or a non-retryable one needing escalation - actually reaches the coordinator, and it arrives with partial results and a record of what was attempted, not just a bare failure.</p>
         </div>
         </details>
       </div>
@@ -394,7 +406,9 @@
         <details class="explain-toggle">
           <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
         <div class="explain-body">
-        <p>Same shape as the CLAUDE.md scoping split covered in D3: one config is checked into git and shared, the other lives outside the repo and stays personal. <code>.mcp.json</code>'s <code>${GITHUB_TOKEN}</code>-style expansion is what makes the shared file safe to commit - the token itself never appears in it. <code>~/.claude.json</code> skips that concern entirely because it's never shared in the first place.</p>
+        <p>Same shape as the CLAUDE.md scoping split covered in D3: one config is checked into git and shared, the other lives outside the repo and stays personal.</p>
+        <p><strong><code>.mcp.json</code></strong> - its <code>${GITHUB_TOKEN}</code>-style expansion is what makes the shared file safe to commit; the token itself never appears in it.</p>
+        <p><strong><code>~/.claude.json</code></strong> - skips that concern entirely because it's never shared in the first place.</p>
         </div>
         </details>
       </div>
@@ -412,7 +426,8 @@
       <details class="explain-toggle">
         <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
       <div class="explain-body">
-      <p>Grep and Glob split on content vs. path for a reason: reaching for Glob to search inside files (or Grep to find files by name) either returns nothing or returns noise. Edit's row is the one to remember - it needs a genuinely unique anchor, and the moment that's not guaranteed, Read + Write is the correct fallback, not a smaller or fuzzier Edit call.</p>
+      <p><strong>Grep vs. Glob</strong> split on content vs. path for a reason - reaching for Glob to search inside files (or Grep to find files by name) either returns nothing or returns noise.</p>
+      <p><strong>Edit's row</strong> is the one to remember - it needs a genuinely unique anchor, and the moment that's not guaranteed, Read + Write is the correct fallback, not a smaller or fuzzier Edit call.</p>
       </div>
       </details>
     </div>
