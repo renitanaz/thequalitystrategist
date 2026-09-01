@@ -4,17 +4,19 @@
 <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>D5 Notes: Context Management &amp; Reliability | CCA-F Personal Notes</title>
 <meta name="robots" content="noindex, nofollow" />
+<link rel="stylesheet" href="assets/theme.css" />
+<script src="assets/theme.js"></script>
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  :root{--bg:#FAFCF5;--bg2:#F5F7F0;--bg3:#EEF1E7;--border:rgba(26,31,20,0.14);--text:#1A1F14;--text-2:#3D4235;--text-3:#6B7060;--green:#1A7A3A;--green-bg:#D8F0E0;--amber:#9A6E1A;--amber-bg:#F5EDD6;--purple:#7A4A9A;--purple-bg:#EDE0F5;--red:#9A2A4A;--red-bg:#F5DDE5;--teal:#1A6B54;--teal-bg:#D8EEE8;--blue:#2A5C9A;--blue-bg:#DDE8F5}
+  :root{--bg:#FAFCF5;--bg2:#F5F7F0;--bg3:#EEF1E7;--border:rgba(var(--ink-rgb),0.14);--text:#1A1F14;--text-2:#3D4235;--text-3:#6B7060;--green:#1A7A3A;--green-bg:#D8F0E0;--amber:#9A6E1A;--amber-bg:#F5EDD6;--purple:#7A4A9A;--purple-bg:#EDE0F5;--red:#9A2A4A;--red-bg:#F5DDE5;--teal:#1A6B54;--teal-bg:#D8EEE8;--blue:#2A5C9A;--blue-bg:#DDE8F5}
   body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:16px;line-height:1.65;padding:2rem 1.25rem 5rem}
   main{max-width:940px;margin:0 auto}
   a{color:var(--purple)}
   .back{display:inline-block;font-size:.82rem;color:var(--text-3);text-decoration:none;margin-bottom:1rem}
   header{border-bottom:1px solid var(--border);padding-bottom:1.4rem;margin-bottom:2rem}
-  h1{font-size:1.5rem;margin-bottom:.3rem;color:var(--teal)}
+  h1{font-size:1.5rem;margin-bottom:.3rem;color:var(--steel)}
   .meta{font-size:.85rem;color:var(--text-3)}
-  .weight-tag{display:inline-block;background:var(--teal-bg);color:var(--teal);font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;padding:2px 9px;border-radius:99px;margin-right:.5rem}
+  .weight-tag{display:inline-block;background:var(--steel-bg);color:var(--steel);font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;padding:2px 9px;border-radius:99px;margin-right:.5rem}
 
   .topic{margin-top:1.6rem;border-top:1px solid var(--border);padding-top:1rem}
   .topic:first-of-type{border-top:none;padding-top:0;margin-top:0}
@@ -61,24 +63,24 @@
   .cornell-note .lbl{font-weight:600;color:var(--text)}
   .cornell-note .hl{color:var(--amber);font-weight:600}
   .cornell-see{font-size:.78rem;margin-top:.6rem}
-  .cornell-see a{color:#1E3A6E;text-decoration:underline;font-weight:600}
+  .cornell-see a{color:var(--navy);text-decoration:underline;font-weight:600}
   .li-see{display:block;margin-top:.2rem;font-size:.78rem}
-  .li-see a{color:#1E3A6E;text-decoration:underline;font-weight:600}
+  .li-see a{color:var(--navy);text-decoration:underline;font-weight:600}
   @media(max-width:640px){.cornell-row{grid-template-columns:1fr}.cornell-cue{padding-bottom:.4rem}}
   .explain-toggle{margin-top:.9rem}
-  .explain-toggle summary{cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:.45rem;background:#E4E7F7;color:#1E3A6E;font-weight:600;font-size:.83rem;padding:.5rem 1.1rem;border-radius:999px;transition:background .15s,color .15s}
+  .explain-toggle summary{cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:.45rem;background:var(--navy-bg);color:var(--navy);font-weight:600;font-size:.83rem;padding:.5rem 1.1rem;border-radius:999px;transition:background .15s,color .15s}
   .explain-toggle summary::-webkit-details-marker{display:none}
   .explain-toggle summary svg{flex-shrink:0}
-  .explain-toggle summary:hover{background:#1E3A6E;color:var(--bg)}
+  .explain-toggle summary:hover{background:var(--navy);color:var(--bg)}
   .explain-toggle[open] summary{border-radius:10px 10px 0 0}
-  .explain-toggle .explain-body{padding:.9rem 1rem;background:#E4E7F7;border-radius:0 10px 10px 10px;font-size:.86rem;color:var(--text-2);line-height:1.65}
+  .explain-toggle .explain-body{padding:.9rem 1rem;background:var(--navy-bg);border-radius:0 10px 10px 10px;font-size:.86rem;color:var(--text-2);line-height:1.65}
   .explain-toggle .explain-body p{margin-top:0}
   .explain-toggle .explain-body p+p{margin-top:.7rem}
-  .explain-toggle .explain-body h4{margin:1rem 0 .4rem;font-size:.8rem;color:#1E3A6E;text-transform:uppercase;letter-spacing:.03em}
+  .explain-toggle .explain-body h4{margin:1rem 0 .4rem;font-size:.8rem;color:var(--navy);text-transform:uppercase;letter-spacing:.03em}
   .explain-toggle .explain-body h4:first-child{margin-top:0}
   .explain-toggle .explain-body ul{padding-left:1.1rem;margin:.3rem 0}
   .explain-toggle .explain-body li{margin-bottom:.25rem}
-  .explain-toggle .explain-body code{background:var(--bg3);padding:.1rem .35rem;border-radius:4px;font-size:.85em;color:#1E3A6E;font-family:monospace}
+  .explain-toggle .explain-body code{background:var(--bg3);padding:.1rem .35rem;border-radius:4px;font-size:.85em;color:var(--navy);font-family:monospace}
 
   .cornell-summary{background:var(--amber-bg);border-left:3px solid var(--amber);border-radius:0 8px 8px 0;padding:1rem 1.2rem;font-size:.86rem;color:var(--text-2);margin-bottom:.5rem}
   .cornell-summary strong{color:var(--text)}
@@ -111,17 +113,76 @@
 
   .progress-note{font-size:.82rem;color:var(--text-3);text-align:center;margin-top:2.5rem}
   .page-nav{display:flex;gap:1rem;margin-top:1.2rem}
-  .page-nav a{flex:1;display:block;border:1px solid var(--teal);border-radius:10px;padding:.8rem 1rem;text-decoration:none;color:var(--text-2);font-size:.85rem;transition:background .15s}
-  .page-nav a:hover{background:var(--teal-bg)}
+  .page-nav a{flex:1;display:block;border:1px solid var(--steel);border-radius:10px;padding:.8rem 1rem;text-decoration:none;color:var(--text-2);font-size:.85rem;transition:background .15s}
+  .page-nav a:hover{background:var(--steel-bg)}
   .page-nav .nav-label{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;color:var(--text-3);margin-bottom:.25rem}
   .page-nav .nav-next{text-align:right}
   @media(max-width:640px){.page-nav{flex-direction:column}.page-nav .nav-next{text-align:left}}
   .src-note{font-size:.78rem;color:var(--text-3);margin-bottom:2rem}
+
+  /* Dark-mode-only overrides: keep the light theme exactly as designed.
+     h1/weight-tag/hub/page-nav aren't listed here anymore - they now
+     reference var(--steel) directly in the base rules above, and
+     theme.css already gives --steel a light and a dark value.
+     Per-subheading rainbow accents collapse to D5's single steel identity. */
+  [data-theme="dark"] .kw.g1{border-left-color:var(--steel-1)}
+  [data-theme="dark"] .kw.g2{border-left-color:var(--steel-2)}
+  [data-theme="dark"] .kw.g3{border-left-color:var(--steel-3)}
+  [data-theme="dark"] .kw.g4{border-left-color:var(--steel-4)}
+  [data-theme="dark"] .kw.g5{border-left-color:var(--steel-5)}
+  [data-theme="dark"] .kw.g6{border-left-color:var(--steel-6)}
+  [data-theme="dark"] .cornell-cue.g1{background:var(--steel-bg);color:var(--steel-1)}
+  [data-theme="dark"] .cornell-cue.g2{background:var(--steel-bg);color:var(--steel-2)}
+  [data-theme="dark"] .cornell-cue.g3{background:var(--steel-bg);color:var(--steel-3)}
+  [data-theme="dark"] .cornell-cue.g4{background:var(--steel-bg);color:var(--steel-4)}
+  [data-theme="dark"] .cornell-cue.g5{background:var(--steel-bg);color:var(--steel-5)}
+  [data-theme="dark"] .cornell-cue.g6{background:var(--steel-bg);color:var(--steel-6)}
+  [data-theme="dark"] .cornell-note .hl{color:var(--green)}
+
+  /* Mind-map: every branch (5.1-5.6) recolors from its own hue to a
+     shade of D5's steel identity, using the same tier numbering as the
+     Cornell-cue gradient above. Amber keyword-highlight tspans (never
+     carry a bcolor-N class) are untouched. The Aggregate-Accuracy-Trap
+     diagram elsewhere on this page uses red/amber/green for real data
+     values and is intentionally not touched here. */
+  [data-theme="dark"] path.bcolor-1{stroke:var(--steel-1)}
+  [data-theme="dark"] rect.bcolor-1{stroke:var(--steel-1)}
+  [data-theme="dark"] text.bcolor-1{fill:var(--steel-1)}
+  [data-theme="dark"] rect.bnode-1{fill:var(--steel-bg)}
+  [data-theme="dark"] path.bcolor-2{stroke:var(--steel-2)}
+  [data-theme="dark"] rect.bcolor-2{stroke:var(--steel-2)}
+  [data-theme="dark"] text.bcolor-2{fill:var(--steel-2)}
+  [data-theme="dark"] rect.bnode-2{fill:var(--steel-bg)}
+  [data-theme="dark"] path.bcolor-3{stroke:var(--steel-3)}
+  [data-theme="dark"] rect.bcolor-3{stroke:var(--steel-3)}
+  [data-theme="dark"] text.bcolor-3{fill:var(--steel-3)}
+  [data-theme="dark"] rect.bnode-3{fill:var(--steel-bg)}
+  [data-theme="dark"] path.bcolor-4{stroke:var(--steel-4)}
+  [data-theme="dark"] rect.bcolor-4{stroke:var(--steel-4)}
+  [data-theme="dark"] text.bcolor-4{fill:var(--steel-4)}
+  [data-theme="dark"] rect.bnode-4{fill:var(--steel-bg)}
+  [data-theme="dark"] path.bcolor-5{stroke:var(--steel-5)}
+  [data-theme="dark"] rect.bcolor-5{stroke:var(--steel-5)}
+  [data-theme="dark"] text.bcolor-5{fill:var(--steel-5)}
+  [data-theme="dark"] rect.bnode-5{fill:var(--steel-bg)}
+  [data-theme="dark"] path.bcolor-6{stroke:var(--steel-6)}
+  [data-theme="dark"] rect.bcolor-6{stroke:var(--steel-6)}
+  [data-theme="dark"] text.bcolor-6{fill:var(--steel-6)}
+  [data-theme="dark"] rect.bnode-6{fill:var(--steel-bg)}
 </style>
 </head>
 <body>
 <main>
-  <a class="back" href="index.html">&larr; CCA-F Personal Notes</a>
+  <div class="page-topbar">
+    <a class="back" href="index.html">&larr; CCA-F Personal Notes</a>
+    <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle dark mode" aria-pressed="false">
+      <span class="ttk-track" aria-hidden="true">
+        <span class="ttk-icon">&#9728;</span>
+        <span class="ttk-thumb"></span>
+        <span class="ttk-icon">&#9789;</span>
+      </span>
+    </button>
+  </div>
   <header>
     <span class="weight-tag">D5 &middot; 15% of exam</span>
     <h1>Context Management &amp; Reliability</h1>
@@ -135,113 +196,118 @@
       <div class="mindmap-wrap">
         <svg viewBox="0 0 740 400" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Mind map of D5 with the root node Context Management and Reliability centered: 5.1, 5.2, and 5.3 branch off to the left as square nodes with their leaves extending further left, while 5.4, 5.5, and 5.6 branch off to the right as square nodes with their leaves extending further right.">
           <!-- root, centered -->
-          <circle cx="370" cy="190" r="50" fill="#D8EEE8" stroke="#1A6B54" stroke-width="2"/>
-          <text x="370" y="183" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="14" font-weight="700" fill="#1A6B54">D5</text>
-          <text x="370" y="198" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#3D4235">Context Mgmt</text>
-          <text x="370" y="210" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#3D4235">&amp; Reliability</text>
+          <circle class="d5-hub" cx="370" cy="190" r="50" fill="var(--steel-bg)" stroke="var(--steel)" stroke-width="2"/>
+          <text class="d5-hub" x="370" y="183" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="14" font-weight="700" fill="var(--steel)">D5</text>
+          <text x="370" y="198" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="var(--text-2)">Context Mgmt</text>
+          <text x="370" y="210" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="var(--text-2)">&amp; Reliability</text>
 
           <!-- root to branch lines, from the true circle boundary -->
-          <path d="M339.3,150.6 C300,110 280,75 265,55" fill="none" stroke="#1A6B54" stroke-width="1.5"/>
-          <path d="M320,190 L265,190" fill="none" stroke="#9A2A4A" stroke-width="1.5"/>
-          <path d="M339.3,229.4 C300,270 280,305 265,325" fill="none" stroke="#9A6E1A" stroke-width="1.5"/>
-          <path d="M400.7,150.6 C440,110 460,75 475,55" fill="none" stroke="#2A5C9A" stroke-width="1.5"/>
-          <path d="M420,190 L475,190" fill="none" stroke="#1A7A3A" stroke-width="1.5"/>
-          <path d="M400.7,229.4 C440,270 460,305 475,325" fill="none" stroke="#7A4A9A" stroke-width="1.5"/>
+          <path class="bcolor-1" d="M339.3,150.6 C300,110 280,75 265,55" fill="none" stroke="var(--teal)" stroke-width="1.5"/>
+          <path class="bcolor-2" d="M320,190 L265,190" fill="none" stroke="var(--red)" stroke-width="1.5"/>
+          <path class="bcolor-3" d="M339.3,229.4 C300,270 280,305 265,325" fill="none" stroke="var(--amber)" stroke-width="1.5"/>
+          <path class="bcolor-4" d="M400.7,150.6 C440,110 460,75 475,55" fill="none" stroke="var(--blue)" stroke-width="1.5"/>
+          <path class="bcolor-5" d="M420,190 L475,212" fill="none" stroke="var(--green)" stroke-width="1.5"/>
+          <path class="bcolor-6" d="M400.7,229.4 C440,270 460,305 475,325" fill="none" stroke="var(--purple)" stroke-width="1.5"/>
 
           <!-- Branch 5.1, left, square node -->
-          <path d="M185,24.5 L165,24.5" fill="none" stroke="#1A6B54" stroke-width="1"/>
-          <path d="M185,44.5 L165,44.5" fill="none" stroke="#1A6B54" stroke-width="1"/>
-          <path d="M185,64.5 L165,64.5" fill="none" stroke="#1A6B54" stroke-width="1"/>
-          <path d="M185,84.5 L165,84.5" fill="none" stroke="#1A6B54" stroke-width="1"/>
-          <rect x="185" y="15" width="80" height="80" rx="14" fill="#D8EEE8" stroke="#1A6B54" stroke-width="1.5"/>
-          <text x="225" y="47" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="#1A6B54">5.1</text>
-          <text x="225" y="62" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#1A6B54">Preserve</text>
-          <text x="225" y="73" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#1A6B54">Context</text>
-          <rect x="0" y="16" width="165" height="17" rx="5" fill="#FAFCF5" stroke="#1A6B54" stroke-opacity=".4"/>
-          <text x="82" y="28" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8"><tspan fill="#9A6E1A" font-weight="700">Persistent</tspan><tspan fill="#3D4235"> case facts block</tspan></text>
-          <rect x="0" y="36" width="165" height="17" rx="5" fill="#FAFCF5" stroke="#1A6B54" stroke-opacity=".4"/>
-          <text x="82" y="48" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8"><tspan fill="#9A6E1A" font-weight="700">Lost</tspan><tspan fill="#3D4235"> in the middle</tspan></text>
-          <rect x="0" y="56" width="165" height="17" rx="5" fill="#FAFCF5" stroke="#1A6B54" stroke-opacity=".4"/>
-          <text x="82" y="68" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8"><tspan fill="#3D4235">Trim </tspan><tspan fill="#9A6E1A" font-weight="700">external output</tspan></text>
-          <rect x="0" y="76" width="165" height="17" rx="5" fill="#FAFCF5" stroke="#1A6B54" stroke-opacity=".4"/>
-          <text x="82" y="88" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8"><tspan fill="#9A6E1A" font-weight="700">Prompt</tspan><tspan fill="#3D4235"> caching</tspan></text>
+          <path class="bcolor-1" d="M185,24.5 L165,24.5" fill="none" stroke="var(--teal)" stroke-width="1"/>
+          <path class="bcolor-1" d="M185,44.5 L165,44.5" fill="none" stroke="var(--teal)" stroke-width="1"/>
+          <path class="bcolor-1" d="M185,64.5 L165,64.5" fill="none" stroke="var(--teal)" stroke-width="1"/>
+          <path class="bcolor-1" d="M185,84.5 L165,84.5" fill="none" stroke="var(--teal)" stroke-width="1"/>
+          <rect class="bcolor-1 bnode-1" x="185" y="15" width="80" height="80" rx="14" fill="var(--teal-bg)" stroke="var(--teal)" stroke-width="1.5"/>
+          <text class="bcolor-1" x="225" y="47" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="var(--teal)">5.1</text>
+          <text class="bcolor-1" x="225" y="62" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--teal)">Preserve</text>
+          <text class="bcolor-1" x="225" y="73" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--teal)">Context</text>
+          <rect class="bcolor-1" x="0" y="16" width="165" height="17" rx="5" fill="var(--bg)" stroke="var(--teal)" stroke-opacity=".4"/>
+          <text x="82" y="28" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8"><tspan fill="var(--amber)" font-weight="700">Persistent</tspan><tspan fill="var(--text-2)"> case facts block</tspan></text>
+          <rect class="bcolor-1" x="0" y="36" width="165" height="17" rx="5" fill="var(--bg)" stroke="var(--teal)" stroke-opacity=".4"/>
+          <text x="82" y="48" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8"><tspan fill="var(--amber)" font-weight="700">Lost</tspan><tspan fill="var(--text-2)"> in the middle</tspan></text>
+          <rect class="bcolor-1" x="0" y="56" width="165" height="17" rx="5" fill="var(--bg)" stroke="var(--teal)" stroke-opacity=".4"/>
+          <text x="82" y="68" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8"><tspan fill="var(--text-2)">Trim </tspan><tspan fill="var(--amber)" font-weight="700">external output</tspan></text>
+          <rect class="bcolor-1" x="0" y="76" width="165" height="17" rx="5" fill="var(--bg)" stroke="var(--teal)" stroke-opacity=".4"/>
+          <text x="82" y="88" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8"><tspan fill="var(--amber)" font-weight="700">Prompt</tspan><tspan fill="var(--text-2)"> caching</tspan></text>
 
           <!-- Branch 5.2, left, square node -->
-          <path d="M185,161 L165,161" fill="none" stroke="#9A2A4A" stroke-width="1"/>
-          <path d="M185,187 L165,187" fill="none" stroke="#9A2A4A" stroke-width="1"/>
-          <path d="M185,213 L165,213" fill="none" stroke="#9A2A4A" stroke-width="1"/>
-          <rect x="185" y="150" width="80" height="80" rx="14" fill="#F5DDE5" stroke="#9A2A4A" stroke-width="1.5"/>
-          <text x="225" y="186" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="#9A2A4A">5.2</text>
-          <text x="225" y="203" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#9A2A4A">Escalation</text>
-          <rect x="0" y="150" width="165" height="22" rx="6" fill="#FAFCF5" stroke="#9A2A4A" stroke-opacity=".4"/>
-          <text x="82" y="165" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5"><tspan fill="#9A6E1A" font-weight="700">Valid</tspan><tspan fill="#3D4235"> escalation triggers</tspan></text>
-          <rect x="0" y="176" width="165" height="22" rx="6" fill="#FAFCF5" stroke="#9A2A4A" stroke-opacity=".4"/>
-          <text x="82" y="191" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5"><tspan fill="#9A6E1A" font-weight="700">Unreliable</tspan><tspan fill="#3D4235"> triggers</tspan></text>
-          <rect x="0" y="202" width="165" height="22" rx="6" fill="#FAFCF5" stroke="#9A2A4A" stroke-opacity=".4"/>
-          <text x="82" y="217" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5"><tspan fill="#3D4235">Ambiguous </tspan><tspan fill="#9A6E1A" font-weight="700">customer matching</tspan></text>
+          <path class="bcolor-2" d="M185,161 L165,161" fill="none" stroke="var(--red)" stroke-width="1"/>
+          <path class="bcolor-2" d="M185,187 L165,187" fill="none" stroke="var(--red)" stroke-width="1"/>
+          <path class="bcolor-2" d="M185,213 L165,213" fill="none" stroke="var(--red)" stroke-width="1"/>
+          <rect class="bcolor-2 bnode-2" x="185" y="150" width="80" height="80" rx="14" fill="var(--red-bg)" stroke="var(--red)" stroke-width="1.5"/>
+          <text class="bcolor-2" x="225" y="186" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="var(--red)">5.2</text>
+          <text class="bcolor-2" x="225" y="203" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="var(--red)">Escalation</text>
+          <rect class="bcolor-2" x="0" y="150" width="165" height="22" rx="6" fill="var(--bg)" stroke="var(--red)" stroke-opacity=".4"/>
+          <text x="82" y="165" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5"><tspan fill="var(--amber)" font-weight="700">Valid</tspan><tspan fill="var(--text-2)"> escalation triggers</tspan></text>
+          <rect class="bcolor-2" x="0" y="176" width="165" height="22" rx="6" fill="var(--bg)" stroke="var(--red)" stroke-opacity=".4"/>
+          <text x="82" y="191" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5"><tspan fill="var(--amber)" font-weight="700">Unreliable</tspan><tspan fill="var(--text-2)"> triggers</tspan></text>
+          <rect class="bcolor-2" x="0" y="202" width="165" height="22" rx="6" fill="var(--bg)" stroke="var(--red)" stroke-opacity=".4"/>
+          <text x="82" y="217" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5"><tspan fill="var(--text-2)">Ambiguous </tspan><tspan fill="var(--amber)" font-weight="700">customer matching</tspan></text>
 
           <!-- Branch 5.3, left, square node -->
-          <path d="M185,301 L165,301" fill="none" stroke="#9A6E1A" stroke-width="1"/>
-          <path d="M185,349 L165,349" fill="none" stroke="#9A6E1A" stroke-width="1"/>
-          <rect x="185" y="285" width="80" height="80" rx="14" fill="#F5EDD6" stroke="#9A6E1A" stroke-width="1.5"/>
-          <text x="225" y="317" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="#9A6E1A">5.3</text>
-          <text x="225" y="332" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#9A6E1A">Error</text>
-          <text x="225" y="343" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#9A6E1A">Propagation</text>
-          <rect x="0" y="285" width="165" height="32" rx="6" fill="#FAFCF5" stroke="#9A6E1A" stroke-opacity=".4"/>
-          <text x="82" y="305" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="#9A6E1A" font-weight="700">structured</tspan><tspan fill="#3D4235"> error context</tspan></text>
-          <rect x="0" y="333" width="165" height="32" rx="6" fill="#FAFCF5" stroke="#9A6E1A" stroke-opacity=".4"/>
-          <text x="82" y="353" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="#9A6E1A" font-weight="700">never suppress</tspan><tspan fill="#3D4235"> errors</tspan></text>
+          <path class="bcolor-3" d="M185,301 L165,301" fill="none" stroke="var(--amber)" stroke-width="1"/>
+          <path class="bcolor-3" d="M185,349 L165,349" fill="none" stroke="var(--amber)" stroke-width="1"/>
+          <rect class="bcolor-3 bnode-3" x="185" y="285" width="80" height="80" rx="14" fill="var(--amber-bg)" stroke="var(--amber)" stroke-width="1.5"/>
+          <text class="bcolor-3" x="225" y="317" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="var(--amber)">5.3</text>
+          <text class="bcolor-3" x="225" y="332" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--amber)">Error</text>
+          <text class="bcolor-3" x="225" y="343" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--amber)">Propagation</text>
+          <rect class="bcolor-3" x="0" y="285" width="165" height="32" rx="6" fill="var(--bg)" stroke="var(--amber)" stroke-opacity=".4"/>
+          <text x="82" y="305" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="var(--amber)" font-weight="700">structured</tspan><tspan fill="var(--text-2)"> error context</tspan></text>
+          <rect class="bcolor-3" x="0" y="333" width="165" height="32" rx="6" fill="var(--bg)" stroke="var(--amber)" stroke-opacity=".4"/>
+          <text x="82" y="353" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="var(--amber)" font-weight="700">never suppress</tspan><tspan fill="var(--text-2)"> errors</tspan></text>
 
           <!-- Branch 5.4, right, square node -->
-          <path d="M555,15 L575,26" fill="none" stroke="#2A5C9A" stroke-width="1"/>
-          <path d="M555,35 L575,52" fill="none" stroke="#2A5C9A" stroke-width="1"/>
-          <path d="M555,55 L575,78" fill="none" stroke="#2A5C9A" stroke-width="1"/>
-          <path d="M555,75 L575,104" fill="none" stroke="#2A5C9A" stroke-width="1"/>
-          <path d="M555,95 L575,130" fill="none" stroke="#2A5C9A" stroke-width="1"/>
-          <rect x="475" y="15" width="80" height="80" rx="14" fill="#DDE8F5" stroke="#2A5C9A" stroke-width="1.5"/>
-          <text x="515" y="47" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="#2A5C9A">5.4</text>
-          <text x="515" y="62" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#2A5C9A">Codebase</text>
-          <text x="515" y="73" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#2A5C9A">Context</text>
-          <rect x="575" y="15" width="165" height="22" rx="6" fill="#FAFCF5" stroke="#2A5C9A" stroke-opacity=".4"/>
-          <text x="657" y="29" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9"><tspan fill="#9A6E1A" font-weight="700">Scratchpads</tspan><tspan fill="#3D4235"> persist findings</tspan></text>
-          <rect x="575" y="41" width="165" height="22" rx="6" fill="#FAFCF5" stroke="#2A5C9A" stroke-opacity=".4"/>
-          <text x="657" y="55" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5"><tspan fill="#9A6E1A" font-weight="700">Subagent</tspan><tspan fill="#3D4235"> delegation</tspan></text>
-          <rect x="575" y="67" width="165" height="22" rx="6" fill="#FAFCF5" stroke="#2A5C9A" stroke-opacity=".4"/>
-          <text x="657" y="76" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5"><tspan fill="#3D4235">Summary </tspan><tspan fill="#9A6E1A" font-weight="700">injection</tspan></text>
-          <text x="657" y="86" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">between phases</text>
-          <rect x="575" y="93" width="165" height="22" rx="6" fill="#FAFCF5" stroke="#2A5C9A" stroke-opacity=".4"/>
-          <text x="657" y="107" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9"><tspan fill="#9A6E1A" font-weight="700">Structured</tspan><tspan fill="#3D4235"> state manifests</tspan></text>
-          <rect x="575" y="119" width="165" height="22" rx="6" fill="#FAFCF5" stroke="#2A5C9A" stroke-opacity=".4"/>
-          <text x="657" y="133" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="#1A7A3A">/compact, used proactively</text>
+          <path class="bcolor-4" d="M555,29 L575,26" fill="none" stroke="var(--blue)" stroke-width="1"/>
+          <path class="bcolor-4" d="M555,42 L575,52" fill="none" stroke="var(--blue)" stroke-width="1"/>
+          <path class="bcolor-4" d="M555,55 L575,78" fill="none" stroke="var(--blue)" stroke-width="1"/>
+          <path class="bcolor-4" d="M555,68 L575,104" fill="none" stroke="var(--blue)" stroke-width="1"/>
+          <path class="bcolor-4" d="M555,81 L575,130" fill="none" stroke="var(--blue)" stroke-width="1"/>
+          <rect class="bcolor-4 bnode-4" x="475" y="15" width="80" height="80" rx="14" fill="var(--blue-bg)" stroke="var(--blue)" stroke-width="1.5"/>
+          <text class="bcolor-4" x="515" y="47" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="var(--blue)">5.4</text>
+          <text class="bcolor-4" x="515" y="62" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--blue)">Codebase</text>
+          <text class="bcolor-4" x="515" y="73" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--blue)">Context</text>
+          <rect class="bcolor-4" x="575" y="15" width="165" height="22" rx="6" fill="var(--bg)" stroke="var(--blue)" stroke-opacity=".4"/>
+          <text x="657" y="29" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9"><tspan fill="var(--amber)" font-weight="700">Scratchpads</tspan><tspan fill="var(--text-2)"> persist findings</tspan></text>
+          <rect class="bcolor-4" x="575" y="41" width="165" height="22" rx="6" fill="var(--bg)" stroke="var(--blue)" stroke-opacity=".4"/>
+          <text x="657" y="55" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5"><tspan fill="var(--amber)" font-weight="700">Subagent</tspan><tspan fill="var(--text-2)"> delegation</tspan></text>
+          <rect class="bcolor-4" x="575" y="67" width="165" height="22" rx="6" fill="var(--bg)" stroke="var(--blue)" stroke-opacity=".4"/>
+          <text x="657" y="81" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7.5"><tspan fill="var(--text-2)">Summary </tspan><tspan fill="var(--amber)" font-weight="700">injection</tspan><tspan fill="var(--text-2)"> between phases</tspan></text>
+          <rect class="bcolor-4" x="575" y="93" width="165" height="22" rx="6" fill="var(--bg)" stroke="var(--blue)" stroke-opacity=".4"/>
+          <text x="657" y="107" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9"><tspan fill="var(--amber)" font-weight="700">Structured</tspan><tspan fill="var(--text-2)"> state manifests</tspan></text>
+          <rect class="bcolor-4" x="575" y="119" width="165" height="22" rx="6" fill="var(--bg)" stroke="var(--blue)" stroke-opacity=".4"/>
+          <text class="bcolor-4" x="657" y="133" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="var(--green)">/compact, used proactively</text>
 
           <!-- Branch 5.5, right, square node -->
-          <path d="M555,166 L575,166" fill="none" stroke="#1A7A3A" stroke-width="1"/>
-          <path d="M555,214 L575,214" fill="none" stroke="#1A7A3A" stroke-width="1"/>
-          <rect x="475" y="150" width="80" height="80" rx="14" fill="#D8F0E0" stroke="#1A7A3A" stroke-width="1.5"/>
-          <text x="515" y="186" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="#1A7A3A">5.5</text>
-          <text x="515" y="203" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#1A7A3A">Human Review</text>
-          <rect x="575" y="150" width="165" height="32" rx="6" fill="#FAFCF5" stroke="#1A7A3A" stroke-opacity=".4"/>
-          <text x="657" y="170" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="#9A6E1A" font-weight="700">stratified</tspan><tspan fill="#3D4235"> sampling</tspan></text>
-          <rect x="575" y="198" width="165" height="32" rx="6" fill="#FAFCF5" stroke="#1A7A3A" stroke-opacity=".4"/>
-          <text x="657" y="218" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="#3D4235">aggregate accuracy </tspan><tspan fill="#9A6E1A" font-weight="700">misleads</tspan></text>
+          <path class="bcolor-5" d="M555,182 L575,182" fill="none" stroke="var(--green)" stroke-width="1"/>
+          <path class="bcolor-5" d="M555,202 L575,202" fill="none" stroke="var(--green)" stroke-width="1"/>
+          <path class="bcolor-5" d="M555,222 L575,222" fill="none" stroke="var(--green)" stroke-width="1"/>
+          <path class="bcolor-5" d="M555,242 L575,242" fill="none" stroke="var(--green)" stroke-width="1"/>
+          <rect class="bcolor-5 bnode-5" x="475" y="172" width="80" height="80" rx="14" fill="var(--green-bg)" stroke="var(--green)" stroke-width="1.5"/>
+          <text class="bcolor-5" x="515" y="208" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="var(--green)">5.5</text>
+          <text class="bcolor-5" x="515" y="225" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="var(--green)">Human Review</text>
+          <rect class="bcolor-5" x="575" y="173" width="165" height="18" rx="5" fill="var(--bg)" stroke="var(--green)" stroke-opacity=".4"/>
+          <text x="657" y="185" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8"><tspan fill="var(--amber)" font-weight="700">stratified</tspan><tspan fill="var(--text-2)"> sampling</tspan></text>
+          <rect class="bcolor-5" x="575" y="193" width="165" height="18" rx="5" fill="var(--bg)" stroke="var(--green)" stroke-opacity=".4"/>
+          <text x="657" y="205" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8"><tspan fill="var(--text-2)">aggregate accuracy </tspan><tspan fill="var(--amber)" font-weight="700">misleads</tspan></text>
+          <rect class="bcolor-5" x="575" y="213" width="165" height="18" rx="5" fill="var(--bg)" stroke="var(--green)" stroke-opacity=".4"/>
+          <text x="657" y="225" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8"><tspan fill="var(--text-2)">Reviewer </tspan><tspan fill="var(--amber)" font-weight="700">capacity prioritization</tspan></text>
+          <rect class="bcolor-5" x="575" y="233" width="165" height="18" rx="5" fill="var(--bg)" stroke="var(--green)" stroke-opacity=".4"/>
+          <text x="657" y="245" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8"><tspan fill="var(--amber)" font-weight="700">Validations</tspan><tspan fill="var(--text-2)"> before automation</tspan></text>
 
           <!-- Branch 5.6, right, square node -->
-          <path d="M555,301 L575,301" fill="none" stroke="#7A4A9A" stroke-width="1"/>
-          <path d="M555,349 L575,349" fill="none" stroke="#7A4A9A" stroke-width="1"/>
-          <rect x="475" y="285" width="80" height="80" rx="14" fill="#EDE0F5" stroke="#7A4A9A" stroke-width="1.5"/>
-          <text x="515" y="321" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="#7A4A9A">5.6</text>
-          <text x="515" y="338" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#7A4A9A">Provenance</text>
-          <rect x="575" y="285" width="165" height="32" rx="6" fill="#FAFCF5" stroke="#7A4A9A" stroke-opacity=".4"/>
-          <text x="657" y="305" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="#3D4235">claim-source link </tspan><tspan fill="#9A6E1A" font-weight="700">preserved</tspan></text>
-          <rect x="575" y="333" width="165" height="32" rx="6" fill="#FAFCF5" stroke="#7A4A9A" stroke-opacity=".4"/>
-          <text x="657" y="353" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="#9A6E1A" font-weight="700">never</tspan><tspan fill="#3D4235"> arbitrarily pick one</tspan></text>
+          <path class="bcolor-6" d="M555,301 L575,301" fill="none" stroke="var(--purple)" stroke-width="1"/>
+          <path class="bcolor-6" d="M555,349 L575,349" fill="none" stroke="var(--purple)" stroke-width="1"/>
+          <rect class="bcolor-6 bnode-6" x="475" y="285" width="80" height="80" rx="14" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="1.5"/>
+          <text class="bcolor-6" x="515" y="321" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="var(--purple)">5.6</text>
+          <text class="bcolor-6" x="515" y="338" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="var(--purple)">Provenance</text>
+          <rect class="bcolor-6" x="575" y="285" width="165" height="32" rx="6" fill="var(--bg)" stroke="var(--purple)" stroke-opacity=".4"/>
+          <text x="657" y="305" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="var(--text-2)">claim-source link </tspan><tspan fill="var(--amber)" font-weight="700">preserved</tspan></text>
+          <rect class="bcolor-6" x="575" y="333" width="165" height="32" rx="6" fill="var(--bg)" stroke="var(--purple)" stroke-opacity=".4"/>
+          <text x="657" y="353" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="var(--amber)" font-weight="700">never</tspan><tspan fill="var(--text-2)"> arbitrarily pick one</tspan></text>
         </svg>
       </div>
     </div>
   </details>
 
   <details class="topic">
-    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="2" width="14" height="20" rx="1.5" stroke="#6B7060" stroke-width="1.5"/><rect x="7.5" y="9.7" width="9" height="3" rx="0.6" fill="#F5EDD6"/><line x1="7.5" y1="6.5" x2="16.5" y2="6.5" stroke="#6B7060" stroke-width="1.3"/><line x1="7.5" y1="11.2" x2="16.5" y2="11.2" stroke="#9A6E1A" stroke-width="1.3"/><line x1="7.5" y1="15" x2="14" y2="15" stroke="#6B7060" stroke-width="1.3"/><line x1="7.5" y1="18" x2="15.5" y2="18" stroke="#6B7060" stroke-width="1.3"/></svg></span><span class="sec-num">1</span>Topic Keywords</h2></summary>
+    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="2" width="14" height="20" rx="1.5" stroke="var(--text-3)" stroke-width="1.5"/><rect x="7.5" y="9.7" width="9" height="3" rx="0.6" fill="var(--amber-bg)"/><line x1="7.5" y1="6.5" x2="16.5" y2="6.5" stroke="var(--text-3)" stroke-width="1.3"/><line x1="7.5" y1="11.2" x2="16.5" y2="11.2" stroke="var(--amber)" stroke-width="1.3"/><line x1="7.5" y1="15" x2="14" y2="15" stroke="var(--text-3)" stroke-width="1.3"/><line x1="7.5" y1="18" x2="15.5" y2="18" stroke="var(--text-3)" stroke-width="1.3"/></svg></span><span class="sec-num">1</span>Topic Keywords</h2></summary>
     <div class="topic-body">
       <h3 class="subhead">5.1 &middot; Context Management</h3>
       <dl class="keyword-grid">
@@ -322,36 +388,36 @@
   </details>
 
   <details class="topic">
-    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3.5" y="3" width="12" height="17" rx="1.3" stroke="#6B7060" stroke-width="1.4"/><path d="M6,15 L9,10 L11,13 L13.5,7.5" stroke="#6B7060" stroke-width="1.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="13.5" y1="19" x2="20" y2="12.5" stroke="#7A4A9A" stroke-width="1.7" stroke-linecap="round"/><circle cx="20.5" cy="11.5" r="1.6" fill="#1A6B54"/></svg></span><span class="sec-num">2</span>Diagrams</h2></summary>
+    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3.5" y="3" width="12" height="17" rx="1.3" stroke="var(--text-3)" stroke-width="1.4"/><path d="M6,15 L9,10 L11,13 L13.5,7.5" stroke="var(--text-3)" stroke-width="1.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="13.5" y1="19" x2="20" y2="12.5" stroke="var(--purple)" stroke-width="1.7" stroke-linecap="round"/><circle cx="20.5" cy="11.5" r="1.6" fill="var(--teal)"/></svg></span><span class="sec-num">2</span>Diagrams</h2></summary>
     <div class="topic-body">
       <h3 class="subhead" id="diagram-case-facts">Diagram: Case Facts vs. the Fading Transcript</h3>
       <div class="mindmap-wrap">
         <svg viewBox="0 0 720 190" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Diagram: a long chat transcript fades toward the middle, showing how a summarized conversation can quietly lose exact numbers and dates. Beside it, a persistent case facts block stays sharp and unfading across the same conversation, holding the exact order ID, amount, and date every prompt can read from.">
-          <rect x="20" y="20" width="300" height="150" rx="8" fill="#EEF1E7" stroke="rgba(26,31,20,.2)"/>
-          <text x="170" y="40" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="#3D4235">Summarized transcript</text>
-          <text x="35" y="60" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">Turn 1: order #48213, $61.20&hellip;</text>
-          <text x="35" y="78" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#6B7060" opacity=".7">Turn 4: customer mentioned&hellip;</text>
-          <text x="35" y="96" font-family="Segoe UI, sans-serif" font-size="8" fill="#6B7060" opacity=".45">Turn 7: something about a date&hellip;</text>
-          <text x="35" y="114" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060" opacity=".3">Turn 9: (compressed away)</text>
-          <text x="35" y="132" font-family="Segoe UI, sans-serif" font-size="8" fill="#6B7060" opacity=".55">Turn 11: refund requested&hellip;</text>
-          <text x="35" y="150" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">Turn 14: current message</text>
-          <text x="170" y="167" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#9A2A4A" font-style="italic">exact facts fade toward the middle</text>
+          <rect x="20" y="20" width="300" height="150" rx="8" fill="var(--bg3)" stroke="rgba(var(--ink-rgb),.2)"/>
+          <text x="170" y="40" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="var(--text-2)">Summarized transcript</text>
+          <text x="35" y="60" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">Turn 1: order #48213, $61.20&hellip;</text>
+          <text x="35" y="78" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-3)" opacity=".7">Turn 4: customer mentioned&hellip;</text>
+          <text x="35" y="96" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--text-3)" opacity=".45">Turn 7: something about a date&hellip;</text>
+          <text x="35" y="114" font-family="Segoe UI, sans-serif" font-size="9" fill="var(--text-3)" opacity=".3">Turn 9: (compressed away)</text>
+          <text x="35" y="132" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--text-3)" opacity=".55">Turn 11: refund requested&hellip;</text>
+          <text x="35" y="150" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">Turn 14: current message</text>
+          <text x="170" y="167" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--red)" font-style="italic">exact facts fade toward the middle</text>
 
-          <path d="M320,95 L353,95" stroke="#6B7060" stroke-width="1.5" marker-end="url(#cf1)"/>
+          <path d="M320,95 L353,95" stroke="var(--text-3)" stroke-width="1.5" marker-end="url(#cf1)"/>
 
-          <rect x="400" y="20" width="300" height="150" rx="8" fill="#D8EEE8" stroke="#1A6B54"/>
-          <text x="550" y="40" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="#1A6B54">Persistent case facts</text>
-          <rect x="415" y="52" width="270" height="20" rx="4" fill="#FAFCF5" stroke="#1A6B54" stroke-opacity=".4"/>
-          <text x="550" y="66" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#1A6B54">order_id: 48213</text>
-          <rect x="415" y="76" width="270" height="20" rx="4" fill="#FAFCF5" stroke="#1A6B54" stroke-opacity=".4"/>
-          <text x="550" y="90" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#1A6B54">amount: $61.20</text>
-          <rect x="415" y="100" width="270" height="20" rx="4" fill="#FAFCF5" stroke="#1A6B54" stroke-opacity=".4"/>
-          <text x="550" y="114" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#1A6B54">delivered: 2026-08-02</text>
-          <text x="550" y="150" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#1A7A3A">included in full, every turn</text>
-          <text x="550" y="163" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#1A7A3A">never fades, never summarized away</text>
+          <rect x="400" y="20" width="300" height="150" rx="8" fill="var(--teal-bg)" stroke="var(--teal)"/>
+          <text x="550" y="40" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="var(--teal)">Persistent case facts</text>
+          <rect x="415" y="52" width="270" height="20" rx="4" fill="var(--bg)" stroke="var(--teal)" stroke-opacity=".4"/>
+          <text x="550" y="66" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="var(--teal)">order_id: 48213</text>
+          <rect x="415" y="76" width="270" height="20" rx="4" fill="var(--bg)" stroke="var(--teal)" stroke-opacity=".4"/>
+          <text x="550" y="90" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="var(--teal)">amount: $61.20</text>
+          <rect x="415" y="100" width="270" height="20" rx="4" fill="var(--bg)" stroke="var(--teal)" stroke-opacity=".4"/>
+          <text x="550" y="114" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="var(--teal)">delivered: 2026-08-02</text>
+          <text x="550" y="150" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--green)">included in full, every turn</text>
+          <text x="550" y="163" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--green)">never fades, never summarized away</text>
 
           <defs>
-            <marker id="cf1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+            <marker id="cf1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--text-3)"/></marker>
           </defs>
         </svg>
         <details class="explain-toggle">
@@ -366,58 +432,58 @@
       <h3 class="subhead" id="diagram-escalation">Diagram: Escalation Decision</h3>
       <div class="mindmap-wrap">
         <svg viewBox="0 0 800 240" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Decision diagram: a customer message branches based on what it contains. An explicit request for a human routes straight to escalation. A genuine policy gap, or a separate inability to make meaningful progress, also escalates with a structured handoff. Otherwise, if the issue is within scope, the agent acknowledges and resolves it directly, even if the customer sounds frustrated. Dotted lines connect both escalation outcomes to a human support agent on the right, since only those paths actually reach a person; the acknowledge-and-resolve path has no such line. At the bottom, two rejected triggers are marked: sentiment-based escalation and self-reported confidence scores, both crossed out as unreliable.">
-          <use href="#icon-stick3" x="55" y="55" style="color:#3D4235"/>
-          <text x="55" y="85" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#6B7060">customer message</text>
-          <path d="M85,60 L118,60" stroke="#6B7060" stroke-width="1.5" marker-end="url(#es1)"/>
+          <use href="#icon-stick3" x="55" y="55" style="color:var(--text-2)"/>
+          <text x="55" y="85" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-3)">customer message</text>
+          <path d="M85,60 L118,60" stroke="var(--text-3)" stroke-width="1.5" marker-end="url(#es1)"/>
 
-          <rect x="120" y="35" width="170" height="50" rx="8" fill="#EEF1E7" stroke="rgba(26,31,20,.2)"/>
-          <text x="205" y="55" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">What does it actually</text>
-          <text x="205" y="70" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">contain?</text>
+          <rect x="120" y="35" width="170" height="50" rx="8" fill="var(--bg3)" stroke="rgba(var(--ink-rgb),.2)"/>
+          <text x="205" y="55" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="var(--text-2)">What does it actually</text>
+          <text x="205" y="70" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="var(--text-2)">contain?</text>
 
-          <path d="M290,50 C330,20 350,15 380,20" stroke="#9A2A4A" stroke-width="1.5" fill="none" marker-end="url(#es2)"/>
-          <text x="335" y="10" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#9A2A4A">"talk to a human"</text>
-          <rect x="382" y="0" width="200" height="42" rx="8" fill="#F5DDE5" stroke="#9A2A4A"/>
-          <use href="#icon-stick3" x="405" y="21" style="color:#9A2A4A"/>
-          <text x="500" y="16" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#9A2A4A">Escalate</text>
-          <text x="500" y="30" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#3D4235">immediately, no more digging</text>
+          <path d="M290,50 C330,20 350,15 380,20" stroke="var(--red)" stroke-width="1.5" fill="none" marker-end="url(#es2)"/>
+          <text x="335" y="10" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--red)">"talk to a human"</text>
+          <rect x="382" y="0" width="200" height="42" rx="8" fill="var(--red-bg)" stroke="var(--red)"/>
+          <use href="#icon-stick3" x="405" y="21" style="color:var(--red)"/>
+          <text x="500" y="16" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="var(--red)">Escalate</text>
+          <text x="500" y="30" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--text-2)">immediately, no more digging</text>
 
-          <path d="M290,62 C325,67 350,69 380,71" stroke="#9A6E1A" stroke-width="1.5" fill="none" marker-end="url(#es3)"/>
-          <text x="333" y="57" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#9A6E1A">policy gap</text>
-          <path d="M290,73 C325,88 350,92 380,93" stroke="#9A6E1A" stroke-width="1.5" fill="none" marker-end="url(#es3)"/>
-          <text x="333" y="107" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#9A6E1A">can't make progress</text>
-          <rect x="382" y="62" width="200" height="42" rx="8" fill="#F5EDD6" stroke="#9A6E1A"/>
-          <text x="482" y="81" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#9A6E1A">Escalate</text>
-          <text x="482" y="95" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#3D4235">with a structured handoff</text>
+          <path d="M290,62 C325,67 350,69 380,71" stroke="var(--amber)" stroke-width="1.5" fill="none" marker-end="url(#es3)"/>
+          <text x="333" y="57" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--amber)">policy gap</text>
+          <path d="M290,73 C325,88 350,92 380,93" stroke="var(--amber)" stroke-width="1.5" fill="none" marker-end="url(#es3)"/>
+          <text x="333" y="107" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--amber)">can't make progress</text>
+          <rect x="382" y="62" width="200" height="42" rx="8" fill="var(--amber-bg)" stroke="var(--amber)"/>
+          <text x="482" y="81" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="var(--amber)">Escalate</text>
+          <text x="482" y="95" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--text-2)">with a structured handoff</text>
 
-          <path d="M205,85 C205,140 300,160 380,152" stroke="#1A7A3A" stroke-width="1.5" fill="none" marker-end="url(#es4)"/>
-          <text x="322" y="178" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#1A7A3A">in scope, even if frustrated</text>
-          <rect x="382" y="130" width="220" height="52" rx="8" fill="#D8F0E0" stroke="#1A7A3A"/>
-          <use href="#icon-bot2" x="405" y="156" style="color:#1A7A3A"/>
-          <text x="505" y="150" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#1A7A3A">Acknowledge &amp; resolve</text>
-          <text x="505" y="165" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#3D4235">escalate only if they still ask</text>
+          <path d="M205,85 C205,140 300,160 380,152" stroke="var(--green)" stroke-width="1.5" fill="none" marker-end="url(#es4)"/>
+          <text x="322" y="178" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--green)">in scope, even if frustrated</text>
+          <rect x="382" y="130" width="220" height="52" rx="8" fill="var(--green-bg)" stroke="var(--green)"/>
+          <use href="#icon-bot2" x="405" y="156" style="color:var(--green)"/>
+          <text x="505" y="150" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="var(--green)">Acknowledge &amp; resolve</text>
+          <text x="505" y="165" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--text-2)">escalate only if they still ask</text>
 
-          <path d="M582,21 C645,21 665,42 700,52" stroke="#9A2A4A" stroke-width="1.3" stroke-dasharray="3 3" fill="none" marker-end="url(#es2)"/>
-          <path d="M582,83 C645,83 665,68 700,68" stroke="#9A6E1A" stroke-width="1.3" stroke-dasharray="3 3" fill="none" marker-end="url(#es3)"/>
-          <use href="#icon-support" x="722" y="60" style="color:#3D4235"/>
-          <text x="722" y="98" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" font-weight="700" fill="#3D4235">Human support</text>
-          <text x="722" y="110" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7" font-style="italic" fill="#6B7060">only escalated paths</text>
-          <text x="722" y="121" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7" font-style="italic" fill="#6B7060">reach here</text>
+          <path d="M582,21 C645,21 665,42 700,52" stroke="var(--red)" stroke-width="1.3" stroke-dasharray="3 3" fill="none" marker-end="url(#es2)"/>
+          <path d="M582,83 C645,83 665,68 700,68" stroke="var(--amber)" stroke-width="1.3" stroke-dasharray="3 3" fill="none" marker-end="url(#es3)"/>
+          <use href="#icon-support" x="722" y="60" style="color:var(--text-2)"/>
+          <text x="722" y="98" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" font-weight="700" fill="var(--text-2)">Human support</text>
+          <text x="722" y="110" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7" font-style="italic" fill="var(--text-3)">only escalated paths</text>
+          <text x="722" y="121" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7" font-style="italic" fill="var(--text-3)">reach here</text>
 
-          <rect x="15" y="194" width="270" height="38" rx="8" fill="#F5DDE5" stroke="#9A2A4A" stroke-width="1.3"/>
-          <use href="#icon-x" x="35" y="213" style="color:#9A2A4A"/>
-          <text x="50" y="209" font-family="Segoe UI, sans-serif" font-size="8" font-weight="700" fill="#9A2A4A">Sentiment-based escalation</text>
-          <text x="50" y="222" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#3D4235">frustration &ne; case complexity</text>
+          <rect x="15" y="194" width="270" height="38" rx="8" fill="var(--red-bg)" stroke="var(--red)" stroke-width="1.3"/>
+          <use href="#icon-x" x="35" y="213" style="color:var(--red)"/>
+          <text x="50" y="209" font-family="Segoe UI, sans-serif" font-size="8" font-weight="700" fill="var(--red)">Sentiment-based escalation</text>
+          <text x="50" y="222" font-family="Segoe UI, sans-serif" font-size="7.5" fill="var(--text-2)">frustration &ne; case complexity</text>
 
-          <rect x="295" y="194" width="270" height="38" rx="8" fill="#F5DDE5" stroke="#9A2A4A" stroke-width="1.3"/>
-          <use href="#icon-x" x="315" y="213" style="color:#9A2A4A"/>
-          <text x="330" y="209" font-family="Segoe UI, sans-serif" font-size="8" font-weight="700" fill="#9A2A4A">Self-reported confidence scores</text>
-          <text x="330" y="222" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#3D4235">poorly calibrated - confident when wrong</text>
+          <rect x="295" y="194" width="270" height="38" rx="8" fill="var(--red-bg)" stroke="var(--red)" stroke-width="1.3"/>
+          <use href="#icon-x" x="315" y="213" style="color:var(--red)"/>
+          <text x="330" y="209" font-family="Segoe UI, sans-serif" font-size="8" font-weight="700" fill="var(--red)">Self-reported confidence scores</text>
+          <text x="330" y="222" font-family="Segoe UI, sans-serif" font-size="7.5" fill="var(--text-2)">poorly calibrated - confident when wrong</text>
 
           <defs>
-            <marker id="es1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
-            <marker id="es2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9A2A4A"/></marker>
-            <marker id="es3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9A6E1A"/></marker>
-            <marker id="es4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1A7A3A"/></marker>
+            <marker id="es1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--text-3)"/></marker>
+            <marker id="es2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--red)"/></marker>
+            <marker id="es3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--amber)"/></marker>
+            <marker id="es4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--green)"/></marker>
             <g id="icon-x">
               <circle cx="0" cy="0" r="7" fill="none" stroke="currentColor" stroke-width="1.4"/>
               <line x1="-3.2" y1="-3.2" x2="3.2" y2="3.2" stroke="currentColor" stroke-width="1.4"/>
@@ -471,40 +537,40 @@
       <h3 class="subhead" id="diagram-error-context-example">Diagram: A Real Error Context, Before and After</h3>
       <div class="mindmap-wrap">
         <svg viewBox="0 0 720 290" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Before: a subagent returns just status failed, giving the coordinator nothing to act on. After: the subagent returns structured error context with failureType timeout, the attempted query, partialResults, and alternatives highlighted, so the coordinator can decide what to do next. A legend below explains each highlighted field.">
-          <text x="185" y="15" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700" fill="#9A2A4A">BEFORE: generic status</text>
-          <rect x="20" y="20" width="330" height="180" rx="10" fill="#EEF1E7" stroke="rgba(26,31,20,.25)"/>
-          <text x="40" y="46" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">{</text>
-          <text x="40" y="64" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">  "status": "failed"</text>
-          <text x="40" y="82" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">}</text>
-          <rect x="35" y="100" width="300" height="80" rx="8" fill="#F5DDE5" stroke="#9A2A4A"/>
-          <text x="50" y="123" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="#9A2A4A">Nothing to act on</text>
-          <text x="50" y="139" font-family="Segoe UI, sans-serif" font-size="8" fill="#3D4235">retry? escalate? no way to tell</text>
-          <text x="50" y="153" font-family="Segoe UI, sans-serif" font-size="8" fill="#3D4235">from a bare status string</text>
+          <text x="185" y="15" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700" fill="var(--red)">BEFORE: generic status</text>
+          <rect x="20" y="20" width="330" height="180" rx="10" fill="var(--bg3)" stroke="rgba(var(--ink-rgb),.25)"/>
+          <text x="40" y="46" font-family="Consolas, monospace" font-size="8.5" fill="var(--text-2)">{</text>
+          <text x="40" y="64" font-family="Consolas, monospace" font-size="8.5" fill="var(--text-2)">  "status": "failed"</text>
+          <text x="40" y="82" font-family="Consolas, monospace" font-size="8.5" fill="var(--text-2)">}</text>
+          <rect x="35" y="100" width="300" height="80" rx="8" fill="var(--red-bg)" stroke="var(--red)"/>
+          <text x="50" y="123" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="var(--red)">Nothing to act on</text>
+          <text x="50" y="139" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--text-2)">retry? escalate? no way to tell</text>
+          <text x="50" y="153" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--text-2)">from a bare status string</text>
 
-          <text x="555" y="15" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700" fill="#1A7A3A">AFTER: structured context</text>
-          <rect x="390" y="20" width="330" height="180" rx="10" fill="#EEF1E7" stroke="rgba(26,31,20,.25)"/>
-          <text x="410" y="46" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">{</text>
-          <rect x="402" y="55" width="310" height="18" rx="4" fill="#F5EDD6" stroke="#9A6E1A" stroke-opacity=".5"/>
-          <text x="410" y="68" font-family="Consolas, monospace" font-size="8.5" font-weight="700" fill="#9A6E1A">  "failureType": "timeout",</text>
-          <text x="410" y="86" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">  "attemptedQuery": "async retry",</text>
-          <rect x="402" y="95" width="310" height="18" rx="4" fill="#D8EEE8" stroke="#1A6B54" stroke-opacity=".5"/>
-          <text x="410" y="108" font-family="Consolas, monospace" font-size="8.5" font-weight="700" fill="#1A6B54">  "partialResults": [2 items],</text>
-          <rect x="402" y="117" width="310" height="18" rx="4" fill="#EDE0F5" stroke="#7A4A9A" stroke-opacity=".5"/>
-          <text x="410" y="130" font-family="Consolas, monospace" font-size="8.5" font-weight="700" fill="#7A4A9A">  "alternatives": ["retry",</text>
-          <text x="410" y="148" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">    "broaden query"],</text>
-          <text x="410" y="166" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">}</text>
+          <text x="555" y="15" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700" fill="var(--green)">AFTER: structured context</text>
+          <rect x="390" y="20" width="330" height="180" rx="10" fill="var(--bg3)" stroke="rgba(var(--ink-rgb),.25)"/>
+          <text x="410" y="46" font-family="Consolas, monospace" font-size="8.5" fill="var(--text-2)">{</text>
+          <rect x="402" y="55" width="310" height="18" rx="4" fill="var(--amber-bg)" stroke="var(--amber)" stroke-opacity=".5"/>
+          <text x="410" y="68" font-family="Consolas, monospace" font-size="8.5" font-weight="700" fill="var(--amber)">  "failureType": "timeout",</text>
+          <text x="410" y="86" font-family="Consolas, monospace" font-size="8.5" fill="var(--text-2)">  "attemptedQuery": "async retry",</text>
+          <rect x="402" y="95" width="310" height="18" rx="4" fill="var(--teal-bg)" stroke="var(--teal)" stroke-opacity=".5"/>
+          <text x="410" y="108" font-family="Consolas, monospace" font-size="8.5" font-weight="700" fill="var(--teal)">  "partialResults": [2 items],</text>
+          <rect x="402" y="117" width="310" height="18" rx="4" fill="var(--purple-bg)" stroke="var(--purple)" stroke-opacity=".5"/>
+          <text x="410" y="130" font-family="Consolas, monospace" font-size="8.5" font-weight="700" fill="var(--purple)">  "alternatives": ["retry",</text>
+          <text x="410" y="148" font-family="Consolas, monospace" font-size="8.5" fill="var(--text-2)">    "broaden query"],</text>
+          <text x="410" y="166" font-family="Consolas, monospace" font-size="8.5" fill="var(--text-2)">}</text>
 
-          <rect x="15" y="220" width="220" height="55" rx="8" fill="#F5EDD6" stroke="#9A6E1A"/>
-          <text x="30" y="242" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="#9A6E1A">failureType</text>
-          <text x="30" y="258" font-family="Segoe UI, sans-serif" font-size="8" fill="#3D4235">what kind of failure occurred</text>
+          <rect x="15" y="220" width="220" height="55" rx="8" fill="var(--amber-bg)" stroke="var(--amber)"/>
+          <text x="30" y="242" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="var(--amber)">failureType</text>
+          <text x="30" y="258" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--text-2)">what kind of failure occurred</text>
 
-          <rect x="250" y="220" width="220" height="55" rx="8" fill="#D8EEE8" stroke="#1A6B54"/>
-          <text x="265" y="242" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="#1A6B54">partialResults</text>
-          <text x="265" y="258" font-family="Segoe UI, sans-serif" font-size="8" fill="#3D4235">don't discard what worked</text>
+          <rect x="250" y="220" width="220" height="55" rx="8" fill="var(--teal-bg)" stroke="var(--teal)"/>
+          <text x="265" y="242" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="var(--teal)">partialResults</text>
+          <text x="265" y="258" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--text-2)">don't discard what worked</text>
 
-          <rect x="485" y="220" width="220" height="55" rx="8" fill="#EDE0F5" stroke="#7A4A9A"/>
-          <text x="500" y="242" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="#7A4A9A">alternatives</text>
-          <text x="500" y="258" font-family="Segoe UI, sans-serif" font-size="8" fill="#3D4235">what the coordinator could try next</text>
+          <rect x="485" y="220" width="220" height="55" rx="8" fill="var(--purple-bg)" stroke="var(--purple)"/>
+          <text x="500" y="242" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="var(--purple)">alternatives</text>
+          <text x="500" y="258" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--text-2)">what the coordinator could try next</text>
         </svg>
         <details class="explain-toggle">
           <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
@@ -519,11 +585,93 @@
         </div>
         </details>
       </div>
+
+      <h3 class="subhead" id="diagram-aggregate-trap">Diagram: The Aggregate Accuracy Trap</h3>
+      <div class="mindmap-wrap">
+        <svg viewBox="0 0 740 375" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Diagram in two sections. Top, the aggregate accuracy trap: a 97% aggregate accuracy figure looks production-ready, but breaks down into 99.5% for standard invoices, 72.4% for scanned PDFs, 60.1% for handwritten receipts, and 45.2% for international formats - the aggregate is volume-weighted toward the segment that already works. Bottom, reviewer capacity routed by uncertainty: a queue of extraction items runs from high-uncertainty red blocks reviewed first through to high-confidence green blocks that get automated, with dashed arrows showing that stratified sampling still periodically checks the confident end too, to catch a novel error pattern hiding there.">
+          <text x="370" y="16" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" letter-spacing="0.04em" fill="var(--text-2)">THE AGGREGATE ACCURACY TRAP</text>
+
+          <rect x="220" y="26" width="300" height="42" rx="10" fill="var(--green-bg)" stroke="var(--green)" stroke-width="1.5"/>
+          <text x="370" y="47" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13.5" font-weight="700" fill="var(--green)">Aggregate accuracy: 97%</text>
+          <text x="370" y="61" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" font-style="italic" fill="var(--text-2)">looks production-ready</text>
+
+          <text x="15" y="83" font-family="Segoe UI, sans-serif" font-size="8" font-style="italic" fill="var(--text-3)">but broken down by document type:</text>
+
+          <text x="180" y="105" text-anchor="end" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">Standard invoices</text>
+          <rect x="195" y="93" width="298" height="14" rx="3" fill="var(--green)"/>
+          <text x="500" y="105" font-family="Segoe UI, sans-serif" font-size="8.5" font-weight="700" fill="var(--green)">99.5%</text>
+
+          <text x="180" y="130" text-anchor="end" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">Scanned PDFs</text>
+          <rect x="195" y="118" width="217" height="14" rx="3" fill="var(--amber)"/>
+          <text x="420" y="130" font-family="Segoe UI, sans-serif" font-size="8.5" font-weight="700" fill="var(--amber)">72.4%</text>
+
+          <text x="180" y="155" text-anchor="end" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">Handwritten receipts</text>
+          <rect x="195" y="143" width="180" height="14" rx="3" fill="var(--red)"/>
+          <text x="383" y="155" font-family="Segoe UI, sans-serif" font-size="8.5" font-weight="700" fill="var(--red)">60.1%</text>
+
+          <text x="180" y="180" text-anchor="end" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">International formats</text>
+          <rect x="195" y="168" width="136" height="14" rx="3" fill="var(--red)"/>
+          <text x="339" y="180" font-family="Segoe UI, sans-serif" font-size="8.5" font-weight="700" fill="var(--red)">45.2%</text>
+
+          <text x="370" y="200" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" font-style="italic" fill="var(--red)">the aggregate is volume-weighted toward the segment that already works</text>
+
+          <path d="M15,213 L725,213" stroke="var(--text-3)" stroke-width="1" stroke-dasharray="3 3"/>
+
+          <text x="370" y="233" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" letter-spacing="0.04em" fill="var(--text-2)">REVIEWER CAPACITY: ROUTE BY UNCERTAINTY</text>
+
+          <use href="#hr-reviewer" x="14" y="267" style="color:var(--text-2)"/>
+          <text x="14" y="292" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7.5" fill="var(--text-3)">reviewer</text>
+          <path d="M24,267 L28,267" stroke="var(--text-3)" stroke-width="1.3" marker-end="url(#hr1)"/>
+
+          <rect x="30" y="245" width="80" height="44" rx="6" fill="var(--red-bg)" stroke="var(--red)" stroke-width="1.3"/>
+          <rect x="115" y="245" width="80" height="44" rx="6" fill="var(--red-bg)" stroke="var(--red)" stroke-width="1.3"/>
+          <rect x="200" y="245" width="80" height="44" rx="6" fill="var(--amber-bg)" stroke="var(--amber)" stroke-width="1.3"/>
+          <rect x="285" y="245" width="80" height="44" rx="6" fill="var(--amber-bg)" stroke="var(--amber)" stroke-width="1.3"/>
+          <rect x="370" y="245" width="80" height="44" rx="6" fill="var(--teal-bg)" stroke="var(--teal)" stroke-width="1.3"/>
+          <rect x="455" y="245" width="80" height="44" rx="6" fill="var(--teal-bg)" stroke="var(--teal)" stroke-width="1.3"/>
+          <rect x="540" y="245" width="80" height="44" rx="6" fill="var(--green-bg)" stroke="var(--green)" stroke-width="1.3"/>
+          <rect x="625" y="245" width="80" height="44" rx="6" fill="var(--green-bg)" stroke="var(--green)" stroke-width="1.3"/>
+
+          <text x="718" y="263" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" font-weight="700" fill="var(--green)">&#10003;</text>
+          <text x="718" y="277" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7.5" fill="var(--green)">auto</text>
+
+          <text x="112" y="304" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7.5" font-style="italic" fill="var(--red)">highest uncertainty - reviewed first</text>
+          <text x="622" y="240" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7" font-style="italic" fill="var(--green)">high confidence - automated</text>
+
+          <path d="M580,289 C580,300 588,302 592,312" fill="none" stroke="var(--amber)" stroke-width="1.2" stroke-dasharray="3 3" marker-end="url(#hr2)"/>
+          <path d="M665,289 C665,300 625,304 608,312" fill="none" stroke="var(--amber)" stroke-width="1.2" stroke-dasharray="3 3" marker-end="url(#hr2)"/>
+
+          <rect x="480" y="315" width="220" height="44" rx="8" fill="var(--amber-bg)" stroke="var(--amber)" stroke-width="1.3"/>
+          <text x="590" y="332" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700" fill="var(--amber)">Stratified sampling checks here too</text>
+          <text x="590" y="346" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7.5" fill="var(--text-2)">a novel error could hide in the confident end</text>
+
+          <defs>
+            <marker id="hr1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--text-3)"/></marker>
+            <marker id="hr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--amber)"/></marker>
+            <g id="hr-reviewer">
+              <circle cx="0" cy="-9" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <line x1="0" y1="-4" x2="0" y2="9" stroke="currentColor" stroke-width="1.5"/>
+              <line x1="0" y1="0" x2="-8" y2="6" stroke="currentColor" stroke-width="1.5"/>
+              <line x1="0" y1="0" x2="8" y2="6" stroke="currentColor" stroke-width="1.5"/>
+              <line x1="0" y1="9" x2="-6" y2="20" stroke="currentColor" stroke-width="1.5"/>
+              <line x1="0" y1="9" x2="6" y2="20" stroke="currentColor" stroke-width="1.5"/>
+            </g>
+          </defs>
+        </svg>
+        <details class="explain-toggle">
+          <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
+        <div class="explain-body">
+        <p><strong>Top half - the trap:</strong> 97% sounds like a green light for full automation. But that number is volume-weighted - standard invoices dominate total volume and score 99.5%, so they pull the average up while three weaker segments (scanned PDFs, handwritten receipts, international formats) hide underneath it. The exam-relevant move is to always check accuracy by document type <em>and</em> field before automating anything.</p>
+        <p><strong>Bottom half - what to do about it:</strong> once you've automated the strong segments, reviewer capacity should route to the highest-uncertainty items first (the red end), not spread evenly across everything.</p>
+        <p>The dashed arrows are the part people skip: <strong>stratified sampling still checks the green, high-confidence end</strong>, because a model can be confidently wrong - a novel error pattern that starts showing up in "automated" territory would otherwise go undetected until it's already caused damage.</p>
+        </div>
+        </details>
+      </div>
     </div>
   </details>
 
   <details class="topic">
-    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12,3.5 C8.5,3.5 6.8,5.8 7,8 C5.2,8.6 4.6,11 5.6,12.3 C4.6,13.7 5.2,16.1 7,16.7 C6.9,18.7 9,20.3 12,19.8 C15,20.3 17.1,18.7 17,16.7 C18.8,16.1 19.4,13.7 18.4,12.3 C19.4,11 18.8,8.6 17,8 C17.2,5.8 15.5,3.5 12,3.5 Z" stroke="#7A4A9A" stroke-width="1.4" fill="none" stroke-linejoin="round"/><path d="M12,4.5 L12,19.5" stroke="#7A4A9A" stroke-width="1.1"/><path d="M8.3,9 C9.3,9.6 8.3,11 9.3,11.6" stroke="#7A4A9A" stroke-width="1" fill="none" stroke-linecap="round"/><path d="M15.7,9 C14.7,9.6 15.7,11 14.7,11.6" stroke="#7A4A9A" stroke-width="1" fill="none" stroke-linecap="round"/></svg></span><span class="sec-num">3</span>Active Recall</h2></summary>
+    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12,3.5 C8.5,3.5 6.8,5.8 7,8 C5.2,8.6 4.6,11 5.6,12.3 C4.6,13.7 5.2,16.1 7,16.7 C6.9,18.7 9,20.3 12,19.8 C15,20.3 17.1,18.7 17,16.7 C18.8,16.1 19.4,13.7 18.4,12.3 C19.4,11 18.8,8.6 17,8 C17.2,5.8 15.5,3.5 12,3.5 Z" stroke="var(--purple)" stroke-width="1.4" fill="none" stroke-linejoin="round"/><path d="M12,4.5 L12,19.5" stroke="var(--purple)" stroke-width="1.1"/><path d="M8.3,9 C9.3,9.6 8.3,11 9.3,11.6" stroke="var(--purple)" stroke-width="1" fill="none" stroke-linecap="round"/><path d="M15.7,9 C14.7,9.6 15.7,11 14.7,11.6" stroke="var(--purple)" stroke-width="1" fill="none" stroke-linecap="round"/></svg></span><span class="sec-num">3</span>Active Recall</h2></summary>
     <div class="topic-body">
       <details class="recall-item"><summary>What exactly does progressive summarization risk losing, according to the guide?</summary><div class="recall-answer">Numerical values, percentages, dates, and customer-stated expectations - the exact details that matter most tend to be the first things a vague summary blurs away.</div></details>
 
@@ -550,7 +698,7 @@
   </details>
 
   <details class="topic">
-    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="2" width="14" height="20" rx="1.5" stroke="#6B7060" stroke-width="1.5"/><text x="12" y="14" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700" fill="#9A2A4A">?</text><circle cx="8" cy="18" r="1" fill="none" stroke="#6B7060" stroke-width="1"/><circle cx="12" cy="18" r="1" fill="none" stroke="#6B7060" stroke-width="1"/><circle cx="16" cy="18" r="1" fill="none" stroke="#6B7060" stroke-width="1"/></svg></span><span class="sec-num">4</span>Official Sample Questions (D5)</h2></summary>
+    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="2" width="14" height="20" rx="1.5" stroke="var(--text-3)" stroke-width="1.5"/><text x="12" y="14" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700" fill="var(--red)">?</text><circle cx="8" cy="18" r="1" fill="none" stroke="var(--text-3)" stroke-width="1"/><circle cx="12" cy="18" r="1" fill="none" stroke="var(--text-3)" stroke-width="1"/><circle cx="16" cy="18" r="1" fill="none" stroke="var(--text-3)" stroke-width="1"/></svg></span><span class="sec-num">4</span>Official Sample Questions (D5)</h2></summary>
     <div class="topic-body">
       <div class="mcq">
         <div class="mcq-q"><span class="qnum">Q3.</span> (Scenario 1, Customer Support) First-contact resolution is 55%, well below an 80% target. Logs show the agent escalates straightforward cases (standard damage replacements with photo evidence) while attempting to autonomously handle complex policy-exception cases. Most effective fix for escalation calibration?</div>
@@ -577,7 +725,7 @@
   </details>
 
   <details class="topic">
-    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="3" width="14" height="18" rx="1.3" stroke="#6B7060" stroke-width="1.5"/><line x1="8" y1="3" x2="8" y2="21" stroke="#6B7060" stroke-width="1.1"/><path d="M13,3 L16,3 L16,11 L14.5,9.3 L13,11 Z" fill="#9A2A4A"/></svg></span><span class="sec-num">5</span>Emergency Recap</h2></summary>
+    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="3" width="14" height="18" rx="1.3" stroke="var(--text-3)" stroke-width="1.5"/><line x1="8" y1="3" x2="8" y2="21" stroke="var(--text-3)" stroke-width="1.1"/><path d="M13,3 L16,3 L16,11 L14.5,9.3 L13,11 Z" fill="var(--red)"/></svg></span><span class="sec-num">5</span>Emergency Recap</h2></summary>
     <div class="topic-body">
       <div class="cornell">
         <div class="cornell-row">
@@ -637,7 +785,7 @@
           <div class="cornell-cue g5"><span class="ts">Task Statement</span>5.5<br>Human review &amp; confidence calibration</div>
           <div class="cornell-note">
             <ul>
-              <li>Aggregate accuracy (e.g. 97% overall) can <span class="hl">mask poor performance</span> on specific document types or fields - analyze accuracy by segment before reducing human review.</li>
+              <li>Aggregate accuracy (e.g. 97% overall) can <span class="hl">mask poor performance</span> on specific document types or fields - analyze accuracy by segment before reducing human review.<span class="li-see">&rarr; <a href="#diagram-aggregate-trap">See: Diagram, The Aggregate Accuracy Trap</a></span></li>
               <li>Stratified random sampling measures error rates across confidence bands, not just low-confidence ones - catches systematic errors hiding in "confident" outputs.</li>
               <li>Field-level confidence must be calibrated against labeled validation sets before trusting it.</li>
               <li>Route low-confidence or ambiguous/contradictory-source extractions to human review, prioritizing limited reviewer capacity.</li>

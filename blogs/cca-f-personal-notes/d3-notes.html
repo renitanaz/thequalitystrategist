@@ -4,9 +4,11 @@
 <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>D3 Notes: Claude Code Configuration &amp; Workflows | CCA-F Personal Notes</title>
 <meta name="robots" content="noindex, nofollow" />
+<link rel="stylesheet" href="assets/theme.css" />
+<script src="assets/theme.js"></script>
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  :root{--bg:#FAFCF5;--bg2:#F5F7F0;--bg3:#EEF1E7;--border:rgba(26,31,20,0.14);--text:#1A1F14;--text-2:#3D4235;--text-3:#6B7060;--green:#1A7A3A;--green-bg:#D8F0E0;--amber:#9A6E1A;--amber-bg:#F5EDD6;--purple:#7A4A9A;--purple-bg:#EDE0F5;--red:#9A2A4A;--red-bg:#F5DDE5;--teal:#1A6B54;--teal-bg:#D8EEE8;--blue:#2A5C9A;--blue-bg:#DDE8F5}
+  :root{--bg:#FAFCF5;--bg2:#F5F7F0;--bg3:#EEF1E7;--border:rgba(var(--ink-rgb),0.14);--text:#1A1F14;--text-2:#3D4235;--text-3:#6B7060;--green:#1A7A3A;--green-bg:#D8F0E0;--amber:#9A6E1A;--amber-bg:#F5EDD6;--purple:#7A4A9A;--purple-bg:#EDE0F5;--red:#9A2A4A;--red-bg:#F5DDE5;--teal:#1A6B54;--teal-bg:#D8EEE8;--blue:#2A5C9A;--blue-bg:#DDE8F5}
   body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:16px;line-height:1.65;padding:2rem 1.25rem 5rem}
   main{max-width:940px;margin:0 auto}
   a{color:var(--purple)}
@@ -62,24 +64,24 @@
   .cornell-note .lbl{font-weight:600;color:var(--text)}
   .cornell-note .hl{color:var(--amber);font-weight:600}
   .cornell-see{font-size:.78rem;margin-top:.6rem}
-  .cornell-see a{color:#1E3A6E;text-decoration:underline;font-weight:600}
+  .cornell-see a{color:var(--navy);text-decoration:underline;font-weight:600}
   .li-see{display:block;margin-top:.2rem;font-size:.78rem}
-  .li-see a{color:#1E3A6E;text-decoration:underline;font-weight:600}
+  .li-see a{color:var(--navy);text-decoration:underline;font-weight:600}
   @media(max-width:640px){.cornell-row{grid-template-columns:1fr}.cornell-cue{padding-bottom:.4rem}}
   .explain-toggle{margin-top:.9rem}
-  .explain-toggle summary{cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:.45rem;background:#E4E7F7;color:#1E3A6E;font-weight:600;font-size:.83rem;padding:.5rem 1.1rem;border-radius:999px;transition:background .15s,color .15s}
+  .explain-toggle summary{cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:.45rem;background:var(--navy-bg);color:var(--navy);font-weight:600;font-size:.83rem;padding:.5rem 1.1rem;border-radius:999px;transition:background .15s,color .15s}
   .explain-toggle summary::-webkit-details-marker{display:none}
   .explain-toggle summary svg{flex-shrink:0}
-  .explain-toggle summary:hover{background:#1E3A6E;color:var(--bg)}
+  .explain-toggle summary:hover{background:var(--navy);color:var(--bg)}
   .explain-toggle[open] summary{border-radius:10px 10px 0 0}
-  .explain-toggle .explain-body{padding:.9rem 1rem;background:#E4E7F7;border-radius:0 10px 10px 10px;font-size:.86rem;color:var(--text-2);line-height:1.65}
+  .explain-toggle .explain-body{padding:.9rem 1rem;background:var(--navy-bg);border-radius:0 10px 10px 10px;font-size:.86rem;color:var(--text-2);line-height:1.65}
   .explain-toggle .explain-body p{margin-top:0}
   .explain-toggle .explain-body p+p{margin-top:.7rem}
-  .explain-toggle .explain-body h4{margin:1rem 0 .4rem;font-size:.8rem;color:#1E3A6E;text-transform:uppercase;letter-spacing:.03em}
+  .explain-toggle .explain-body h4{margin:1rem 0 .4rem;font-size:.8rem;color:var(--navy);text-transform:uppercase;letter-spacing:.03em}
   .explain-toggle .explain-body h4:first-child{margin-top:0}
   .explain-toggle .explain-body ul{padding-left:1.1rem;margin:.3rem 0}
   .explain-toggle .explain-body li{margin-bottom:.25rem}
-  .explain-toggle .explain-body code{background:var(--bg3);padding:.1rem .35rem;border-radius:4px;font-size:.85em;color:#1E3A6E;font-family:monospace}
+  .explain-toggle .explain-body code{background:var(--bg3);padding:.1rem .35rem;border-radius:4px;font-size:.85em;color:var(--navy);font-family:monospace}
 
   .cornell-summary{background:var(--amber-bg);border-left:3px solid var(--amber);border-radius:0 8px 8px 0;padding:1rem 1.2rem;font-size:.86rem;color:var(--text-2);margin-bottom:.5rem}
   .cornell-summary strong{color:var(--text)}
@@ -129,11 +131,67 @@
   .page-nav .nav-next{text-align:right}
   @media(max-width:640px){.page-nav{flex-direction:column}.page-nav .nav-next{text-align:left}}
   .src-note{font-size:.78rem;color:var(--text-3);margin-bottom:2rem}
+
+  /* Dark-mode-only overrides: keep the light theme exactly as designed.
+     Per-subheading rainbow accents collapse to D3's single purple identity. */
+  [data-theme="dark"] .kw.g1{border-left-color:var(--purple-1)}
+  [data-theme="dark"] .kw.g2{border-left-color:var(--purple-2)}
+  [data-theme="dark"] .kw.g3{border-left-color:var(--purple-3)}
+  [data-theme="dark"] .kw.g4{border-left-color:var(--purple-4)}
+  [data-theme="dark"] .kw.g5{border-left-color:var(--purple-5)}
+  [data-theme="dark"] .kw.g6{border-left-color:var(--purple-6)}
+  [data-theme="dark"] .cornell-cue.g1{background:var(--purple-bg);color:var(--purple-1)}
+  [data-theme="dark"] .cornell-cue.g2{background:var(--purple-bg);color:var(--purple-2)}
+  [data-theme="dark"] .cornell-cue.g3{background:var(--purple-bg);color:var(--purple-3)}
+  [data-theme="dark"] .cornell-cue.g4{background:var(--purple-bg);color:var(--purple-4)}
+  [data-theme="dark"] .cornell-cue.g5{background:var(--purple-bg);color:var(--purple-5)}
+  [data-theme="dark"] .cornell-cue.g6{background:var(--purple-bg);color:var(--purple-6)}
+  [data-theme="dark"] .cornell-note .hl{color:var(--green)}
+
+  /* Mind-map: every branch (3.1-3.6) recolors from its own hue to a
+     shade of D3's purple identity, using the same tier numbering as the
+     Cornell-cue gradient above. Amber keyword-highlight tspans (never
+     carry a bcolor-N class) are untouched. */
+  [data-theme="dark"] .d3-hub{fill:var(--purple)}
+  [data-theme="dark"] circle.d3-hub{fill:var(--purple-bg);stroke:var(--purple)}
+  [data-theme="dark"] path.bcolor-1{stroke:var(--purple-1)}
+  [data-theme="dark"] rect.bcolor-1{stroke:var(--purple-1)}
+  [data-theme="dark"] text.bcolor-1{fill:var(--purple-1)}
+  [data-theme="dark"] rect.bnode-1{fill:var(--purple-bg)}
+  [data-theme="dark"] path.bcolor-2{stroke:var(--purple-2)}
+  [data-theme="dark"] rect.bcolor-2{stroke:var(--purple-2)}
+  [data-theme="dark"] text.bcolor-2{fill:var(--purple-2)}
+  [data-theme="dark"] rect.bnode-2{fill:var(--purple-bg)}
+  [data-theme="dark"] path.bcolor-3{stroke:var(--purple-3)}
+  [data-theme="dark"] rect.bcolor-3{stroke:var(--purple-3)}
+  [data-theme="dark"] text.bcolor-3{fill:var(--purple-3)}
+  [data-theme="dark"] rect.bnode-3{fill:var(--purple-bg)}
+  [data-theme="dark"] path.bcolor-4{stroke:var(--purple-4)}
+  [data-theme="dark"] rect.bcolor-4{stroke:var(--purple-4)}
+  [data-theme="dark"] text.bcolor-4{fill:var(--purple-4)}
+  [data-theme="dark"] rect.bnode-4{fill:var(--purple-bg)}
+  [data-theme="dark"] path.bcolor-5{stroke:var(--purple-5)}
+  [data-theme="dark"] rect.bcolor-5{stroke:var(--purple-5)}
+  [data-theme="dark"] text.bcolor-5{fill:var(--purple-5)}
+  [data-theme="dark"] rect.bnode-5{fill:var(--purple-bg)}
+  [data-theme="dark"] path.bcolor-6{stroke:var(--purple-6)}
+  [data-theme="dark"] rect.bcolor-6{stroke:var(--purple-6)}
+  [data-theme="dark"] text.bcolor-6{fill:var(--purple-6)}
+  [data-theme="dark"] rect.bnode-6{fill:var(--purple-bg)}
 </style>
 </head>
 <body>
 <main>
-  <a class="back" href="index.html">&larr; CCA-F Personal Notes</a>
+  <div class="page-topbar">
+    <a class="back" href="index.html">&larr; CCA-F Personal Notes</a>
+    <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle dark mode" aria-pressed="false">
+      <span class="ttk-track" aria-hidden="true">
+        <span class="ttk-icon">&#9728;</span>
+        <span class="ttk-thumb"></span>
+        <span class="ttk-icon">&#9789;</span>
+      </span>
+    </button>
+  </div>
   <header>
     <span class="weight-tag">D3 &middot; 20% of exam</span>
     <h1>Claude Code Configuration &amp; Workflows</h1>
@@ -147,93 +205,93 @@
       <div class="mindmap-wrap">
         <svg viewBox="0 0 740 400" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Mind map of D3 with the root node Claude Code Configuration and Workflows centered: 3.1, 3.2, and 3.3 branch off to the left as square nodes with their leaves extending further left, while 3.4, 3.5, and 3.6 branch off to the right as square nodes with their leaves extending further right.">
           <!-- root, centered -->
-          <circle cx="370" cy="190" r="50" fill="#EDE0F5" stroke="#7A4A9A" stroke-width="2"/>
-          <text x="370" y="183" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="14" font-weight="700" fill="#7A4A9A">D3</text>
-          <text x="370" y="198" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#3D4235">Claude Code</text>
-          <text x="370" y="210" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#3D4235">Config &amp; Workflows</text>
+          <circle class="d3-hub" cx="370" cy="190" r="50" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="2"/>
+          <text class="d3-hub" x="370" y="183" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="14" font-weight="700" fill="var(--purple)">D3</text>
+          <text x="370" y="198" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="var(--text-2)">Claude Code</text>
+          <text x="370" y="210" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="var(--text-2)">Config &amp; Workflows</text>
 
           <!-- root to branch lines, from the true circle boundary -->
-          <path d="M339.3,150.6 C300,110 280,75 265,55" fill="none" stroke="#7A4A9A" stroke-width="1.5"/>
-          <path d="M320,190 L265,190" fill="none" stroke="#1A6B54" stroke-width="1.5"/>
-          <path d="M339.3,229.4 C300,270 280,305 265,325" fill="none" stroke="#2A5C9A" stroke-width="1.5"/>
-          <path d="M400.7,150.6 C440,110 460,75 475,55" fill="none" stroke="#9A6E1A" stroke-width="1.5"/>
-          <path d="M420,190 L475,190" fill="none" stroke="#1A7A3A" stroke-width="1.5"/>
-          <path d="M400.7,229.4 C440,270 460,305 475,325" fill="none" stroke="#9A2A4A" stroke-width="1.5"/>
+          <path class="bcolor-1" d="M339.3,150.6 C300,110 280,75 265,55" fill="none" stroke="var(--purple)" stroke-width="1.5"/>
+          <path class="bcolor-2" d="M320,190 L265,190" fill="none" stroke="var(--teal)" stroke-width="1.5"/>
+          <path class="bcolor-3" d="M339.3,229.4 C300,270 280,305 265,325" fill="none" stroke="var(--blue)" stroke-width="1.5"/>
+          <path class="bcolor-4" d="M400.7,150.6 C440,110 460,75 475,55" fill="none" stroke="var(--amber)" stroke-width="1.5"/>
+          <path class="bcolor-5" d="M420,190 L475,190" fill="none" stroke="var(--green)" stroke-width="1.5"/>
+          <path class="bcolor-6" d="M400.7,229.4 C440,270 460,305 475,325" fill="none" stroke="var(--red)" stroke-width="1.5"/>
 
           <!-- Branch 3.1, left, square node -->
-          <path d="M185,31 L165,31" fill="none" stroke="#7A4A9A" stroke-width="1"/>
-          <path d="M185,79 L165,79" fill="none" stroke="#7A4A9A" stroke-width="1"/>
-          <rect x="185" y="15" width="80" height="80" rx="14" fill="#EDE0F5" stroke="#7A4A9A" stroke-width="1.5"/>
-          <text x="225" y="51" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="#7A4A9A">3.1</text>
-          <text x="225" y="68" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#7A4A9A">CLAUDE.md</text>
-          <rect x="0" y="15" width="165" height="32" rx="6" fill="#FAFCF5" stroke="#7A4A9A" stroke-opacity=".4"/>
-          <text x="82" y="35" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="#9A6E1A" font-weight="700">user</tspan><tspan fill="#3D4235"> &rarr; project &rarr; directory</tspan></text>
-          <rect x="0" y="63" width="165" height="32" rx="6" fill="#FAFCF5" stroke="#7A4A9A" stroke-opacity=".4"/>
-          <text x="82" y="83" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="#1A7A3A">@ imports for modularity</text>
+          <path class="bcolor-1" d="M185,31 L165,31" fill="none" stroke="var(--purple)" stroke-width="1"/>
+          <path class="bcolor-1" d="M185,79 L165,79" fill="none" stroke="var(--purple)" stroke-width="1"/>
+          <rect class="bcolor-1 bnode-1" x="185" y="15" width="80" height="80" rx="14" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="1.5"/>
+          <text class="bcolor-1" x="225" y="51" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="var(--purple)">3.1</text>
+          <text class="bcolor-1" x="225" y="68" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="var(--purple)">CLAUDE.md</text>
+          <rect class="bcolor-1" x="0" y="15" width="165" height="32" rx="6" fill="var(--bg)" stroke="var(--purple)" stroke-opacity=".4"/>
+          <text x="82" y="35" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="var(--amber)" font-weight="700">user</tspan><tspan fill="var(--text-2)"> &rarr; project &rarr; directory</tspan></text>
+          <rect class="bcolor-1" x="0" y="63" width="165" height="32" rx="6" fill="var(--bg)" stroke="var(--purple)" stroke-opacity=".4"/>
+          <text class="bcolor-1" x="82" y="83" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="var(--green)">@ imports for modularity</text>
 
           <!-- Branch 3.2, left, square node -->
-          <path d="M185,166 L165,166" fill="none" stroke="#1A6B54" stroke-width="1"/>
-          <path d="M185,214 L165,214" fill="none" stroke="#1A6B54" stroke-width="1"/>
-          <rect x="185" y="150" width="80" height="80" rx="14" fill="#D8EEE8" stroke="#1A6B54" stroke-width="1.5"/>
-          <text x="225" y="186" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="#1A6B54">3.2</text>
-          <text x="225" y="201" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#1A6B54">Commands</text>
-          <text x="225" y="212" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#1A6B54">&amp; Skills</text>
-          <rect x="0" y="150" width="165" height="32" rx="6" fill="#FAFCF5" stroke="#1A6B54" stroke-opacity=".4"/>
-          <text x="82" y="170" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="#3D4235">project vs user </tspan><tspan fill="#9A6E1A" font-weight="700">scope</tspan></text>
-          <rect x="0" y="198" width="165" height="32" rx="6" fill="#FAFCF5" stroke="#1A6B54" stroke-opacity=".4"/>
-          <text x="82" y="212" text-anchor="middle" font-family="Consolas, monospace" font-size="8" fill="#1A7A3A">context:fork, allowed-tools,</text>
-          <text x="82" y="224" text-anchor="middle" font-family="Consolas, monospace" font-size="8" fill="#1A7A3A">argument-hint</text>
+          <path class="bcolor-2" d="M185,166 L165,166" fill="none" stroke="var(--teal)" stroke-width="1"/>
+          <path class="bcolor-2" d="M185,214 L165,214" fill="none" stroke="var(--teal)" stroke-width="1"/>
+          <rect class="bcolor-2 bnode-2" x="185" y="150" width="80" height="80" rx="14" fill="var(--teal-bg)" stroke="var(--teal)" stroke-width="1.5"/>
+          <text class="bcolor-2" x="225" y="186" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="var(--teal)">3.2</text>
+          <text class="bcolor-2" x="225" y="201" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--teal)">Commands</text>
+          <text class="bcolor-2" x="225" y="212" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--teal)">&amp; Skills</text>
+          <rect class="bcolor-2" x="0" y="150" width="165" height="32" rx="6" fill="var(--bg)" stroke="var(--teal)" stroke-opacity=".4"/>
+          <text x="82" y="170" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="var(--text-2)">project vs user </tspan><tspan fill="var(--amber)" font-weight="700">scope</tspan></text>
+          <rect class="bcolor-2" x="0" y="198" width="165" height="32" rx="6" fill="var(--bg)" stroke="var(--teal)" stroke-opacity=".4"/>
+          <text class="bcolor-2" x="82" y="212" text-anchor="middle" font-family="Consolas, monospace" font-size="8" fill="var(--green)">context:fork, allowed-tools,</text>
+          <text class="bcolor-2" x="82" y="224" text-anchor="middle" font-family="Consolas, monospace" font-size="8" fill="var(--green)">argument-hint</text>
 
           <!-- Branch 3.3, left, square node -->
-          <path d="M185,301 L165,301" fill="none" stroke="#2A5C9A" stroke-width="1"/>
-          <path d="M185,349 L165,349" fill="none" stroke="#2A5C9A" stroke-width="1"/>
-          <rect x="185" y="285" width="80" height="80" rx="14" fill="#DDE8F5" stroke="#2A5C9A" stroke-width="1.5"/>
-          <text x="225" y="321" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="#2A5C9A">3.3</text>
-          <text x="225" y="338" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#2A5C9A">Path Rules</text>
-          <rect x="0" y="285" width="165" height="32" rx="6" fill="#FAFCF5" stroke="#2A5C9A" stroke-opacity=".4"/>
-          <text x="82" y="305" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="#1A7A3A">paths: [glob pattern]</text>
-          <rect x="0" y="333" width="165" height="32" rx="6" fill="#FAFCF5" stroke="#2A5C9A" stroke-opacity=".4"/>
-          <text x="82" y="353" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="#3D4235">beats </tspan><tspan fill="#9A6E1A" font-weight="700">subdir CLAUDE.md</tspan></text>
+          <path class="bcolor-3" d="M185,301 L165,301" fill="none" stroke="var(--blue)" stroke-width="1"/>
+          <path class="bcolor-3" d="M185,349 L165,349" fill="none" stroke="var(--blue)" stroke-width="1"/>
+          <rect class="bcolor-3 bnode-3" x="185" y="285" width="80" height="80" rx="14" fill="var(--blue-bg)" stroke="var(--blue)" stroke-width="1.5"/>
+          <text class="bcolor-3" x="225" y="321" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="var(--blue)">3.3</text>
+          <text class="bcolor-3" x="225" y="338" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="var(--blue)">Path Rules</text>
+          <rect class="bcolor-3" x="0" y="285" width="165" height="32" rx="6" fill="var(--bg)" stroke="var(--blue)" stroke-opacity=".4"/>
+          <text class="bcolor-3" x="82" y="305" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="var(--green)">paths: [glob pattern]</text>
+          <rect class="bcolor-3" x="0" y="333" width="165" height="32" rx="6" fill="var(--bg)" stroke="var(--blue)" stroke-opacity=".4"/>
+          <text x="82" y="353" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="var(--text-2)">beats </tspan><tspan fill="var(--amber)" font-weight="700">subdir CLAUDE.md</tspan></text>
 
           <!-- Branch 3.4, right, square node -->
-          <path d="M555,31 L575,31" fill="none" stroke="#9A6E1A" stroke-width="1"/>
-          <path d="M555,79 L575,79" fill="none" stroke="#9A6E1A" stroke-width="1"/>
-          <rect x="475" y="15" width="80" height="80" rx="14" fill="#F5EDD6" stroke="#9A6E1A" stroke-width="1.5"/>
-          <text x="515" y="51" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="#9A6E1A">3.4</text>
-          <text x="515" y="68" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#9A6E1A">Plan Mode</text>
-          <rect x="575" y="15" width="165" height="32" rx="6" fill="#FAFCF5" stroke="#9A6E1A" stroke-opacity=".4"/>
-          <text x="657" y="35" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="#9A6E1A" font-weight="700">complex</tspan><tspan fill="#3D4235">, multi-file work</tspan></text>
-          <rect x="575" y="63" width="165" height="32" rx="6" fill="#FAFCF5" stroke="#9A6E1A" stroke-opacity=".4"/>
-          <text x="657" y="83" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="#9A6E1A" font-weight="700">Explore</tspan><tspan fill="#3D4235"> isolates discovery</tspan></text>
+          <path class="bcolor-4" d="M555,31 L575,31" fill="none" stroke="var(--amber)" stroke-width="1"/>
+          <path class="bcolor-4" d="M555,79 L575,79" fill="none" stroke="var(--amber)" stroke-width="1"/>
+          <rect class="bcolor-4 bnode-4" x="475" y="15" width="80" height="80" rx="14" fill="var(--amber-bg)" stroke="var(--amber)" stroke-width="1.5"/>
+          <text class="bcolor-4" x="515" y="51" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="var(--amber)">3.4</text>
+          <text class="bcolor-4" x="515" y="68" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="var(--amber)">Plan Mode</text>
+          <rect class="bcolor-4" x="575" y="15" width="165" height="32" rx="6" fill="var(--bg)" stroke="var(--amber)" stroke-opacity=".4"/>
+          <text x="657" y="35" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="var(--amber)" font-weight="700">complex</tspan><tspan fill="var(--text-2)">, multi-file work</tspan></text>
+          <rect class="bcolor-4" x="575" y="63" width="165" height="32" rx="6" fill="var(--bg)" stroke="var(--amber)" stroke-opacity=".4"/>
+          <text x="657" y="83" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="var(--amber)" font-weight="700">Explore</tspan><tspan fill="var(--text-2)"> isolates discovery</tspan></text>
 
           <!-- Branch 3.5, right, square node -->
-          <path d="M555,166 L575,166" fill="none" stroke="#1A7A3A" stroke-width="1"/>
-          <path d="M555,214 L575,214" fill="none" stroke="#1A7A3A" stroke-width="1"/>
-          <rect x="475" y="150" width="80" height="80" rx="14" fill="#D8F0E0" stroke="#1A7A3A" stroke-width="1.5"/>
-          <text x="515" y="186" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="#1A7A3A">3.5</text>
-          <text x="515" y="203" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#1A7A3A">Refinement</text>
-          <rect x="575" y="150" width="165" height="32" rx="6" fill="#FAFCF5" stroke="#1A7A3A" stroke-opacity=".4"/>
-          <text x="657" y="170" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="#3D4235">I/O examples, </tspan><tspan fill="#9A6E1A" font-weight="700">test-driven</tspan></text>
-          <rect x="575" y="198" width="165" height="32" rx="6" fill="#FAFCF5" stroke="#1A7A3A" stroke-opacity=".4"/>
-          <text x="657" y="218" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="#9A6E1A" font-weight="700">interacting</tspan><tspan fill="#3D4235"> vs independent</tspan></text>
+          <path class="bcolor-5" d="M555,166 L575,166" fill="none" stroke="var(--green)" stroke-width="1"/>
+          <path class="bcolor-5" d="M555,214 L575,214" fill="none" stroke="var(--green)" stroke-width="1"/>
+          <rect class="bcolor-5 bnode-5" x="475" y="150" width="80" height="80" rx="14" fill="var(--green-bg)" stroke="var(--green)" stroke-width="1.5"/>
+          <text class="bcolor-5" x="515" y="186" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="var(--green)">3.5</text>
+          <text class="bcolor-5" x="515" y="203" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="var(--green)">Refinement</text>
+          <rect class="bcolor-5" x="575" y="150" width="165" height="32" rx="6" fill="var(--bg)" stroke="var(--green)" stroke-opacity=".4"/>
+          <text x="657" y="170" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="var(--text-2)">I/O examples, </tspan><tspan fill="var(--amber)" font-weight="700">test-driven</tspan></text>
+          <rect class="bcolor-5" x="575" y="198" width="165" height="32" rx="6" fill="var(--bg)" stroke="var(--green)" stroke-opacity=".4"/>
+          <text x="657" y="218" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="var(--amber)" font-weight="700">interacting</tspan><tspan fill="var(--text-2)"> vs independent</tspan></text>
 
           <!-- Branch 3.6, right, square node -->
-          <path d="M555,301 L575,301" fill="none" stroke="#9A2A4A" stroke-width="1"/>
-          <path d="M555,349 L575,349" fill="none" stroke="#9A2A4A" stroke-width="1"/>
-          <rect x="475" y="285" width="80" height="80" rx="14" fill="#F5DDE5" stroke="#9A2A4A" stroke-width="1.5"/>
-          <text x="515" y="321" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="#9A2A4A">3.6</text>
-          <text x="515" y="338" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#9A2A4A">CI/CD</text>
-          <rect x="575" y="285" width="165" height="32" rx="6" fill="#FAFCF5" stroke="#9A2A4A" stroke-opacity=".4"/>
-          <text x="657" y="305" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="#1A7A3A">-p --output-format json</text>
-          <rect x="575" y="333" width="165" height="32" rx="6" fill="#FAFCF5" stroke="#9A2A4A" stroke-opacity=".4"/>
-          <text x="657" y="353" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="#9A6E1A" font-weight="700">independent</tspan><tspan fill="#3D4235"> review &gt; self</tspan></text>
+          <path class="bcolor-6" d="M555,301 L575,301" fill="none" stroke="var(--red)" stroke-width="1"/>
+          <path class="bcolor-6" d="M555,349 L575,349" fill="none" stroke="var(--red)" stroke-width="1"/>
+          <rect class="bcolor-6 bnode-6" x="475" y="285" width="80" height="80" rx="14" fill="var(--red-bg)" stroke="var(--red)" stroke-width="1.5"/>
+          <text class="bcolor-6" x="515" y="321" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="var(--red)">3.6</text>
+          <text class="bcolor-6" x="515" y="338" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="var(--red)">CI/CD</text>
+          <rect class="bcolor-6" x="575" y="285" width="165" height="32" rx="6" fill="var(--bg)" stroke="var(--red)" stroke-opacity=".4"/>
+          <text class="bcolor-6" x="657" y="305" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="var(--green)">-p --output-format json</text>
+          <rect class="bcolor-6" x="575" y="333" width="165" height="32" rx="6" fill="var(--bg)" stroke="var(--red)" stroke-opacity=".4"/>
+          <text x="657" y="353" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="var(--amber)" font-weight="700">independent</tspan><tspan fill="var(--text-2)"> review &gt; self</tspan></text>
         </svg>
       </div>
     </div>
   </details>
 
   <details class="topic">
-    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="2" width="14" height="20" rx="1.5" stroke="#6B7060" stroke-width="1.5"/><rect x="7.5" y="9.7" width="9" height="3" rx="0.6" fill="#F5EDD6"/><line x1="7.5" y1="6.5" x2="16.5" y2="6.5" stroke="#6B7060" stroke-width="1.3"/><line x1="7.5" y1="11.2" x2="16.5" y2="11.2" stroke="#9A6E1A" stroke-width="1.3"/><line x1="7.5" y1="15" x2="14" y2="15" stroke="#6B7060" stroke-width="1.3"/><line x1="7.5" y1="18" x2="15.5" y2="18" stroke="#6B7060" stroke-width="1.3"/></svg></span><span class="sec-num">1</span>Topic Keywords</h2></summary>
+    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="2" width="14" height="20" rx="1.5" stroke="var(--text-3)" stroke-width="1.5"/><rect x="7.5" y="9.7" width="9" height="3" rx="0.6" fill="var(--amber-bg)"/><line x1="7.5" y1="6.5" x2="16.5" y2="6.5" stroke="var(--text-3)" stroke-width="1.3"/><line x1="7.5" y1="11.2" x2="16.5" y2="11.2" stroke="var(--amber)" stroke-width="1.3"/><line x1="7.5" y1="15" x2="14" y2="15" stroke="var(--text-3)" stroke-width="1.3"/><line x1="7.5" y1="18" x2="15.5" y2="18" stroke="var(--text-3)" stroke-width="1.3"/></svg></span><span class="sec-num">1</span>Topic Keywords</h2></summary>
     <div class="topic-body">
       <h3 class="subhead">3.1 &middot; CLAUDE.md Hierarchy</h3>
       <dl class="keyword-grid">
@@ -263,6 +321,7 @@
         <div class="kw g2"><dt><code>allowed-tools</code></dt><dd>Pre-approves listed tools so they run without a permission prompt - it does <em>not</em> restrict which tools are available. Every other tool remains callable; use <code>disallowed-tools</code> for actual restriction.</dd></div>
         <div class="kw g2"><dt>Auto-invocation</dt><dd>Claude can invoke a skill automatically when its <code>description</code> matches user intent, or when a <code>paths</code> frontmatter field matches the file being edited - not just via explicit <code>/name</code>.</dd></div>
         <div class="kw g2"><dt>Skills vs. CLAUDE.md</dt><dd>Skills = on-demand, task-specific workflows. CLAUDE.md = always-loaded universal standards.</dd></div>
+        <div class="kw g2"><dt>Skill source precedence</dt><dd>When the same skill name exists in more than one source, precedence runs <strong>Enterprise &gt; Personal &gt; Project &gt; Plugins</strong> - an enterprise-managed skill always wins over a personal, project, or plugin-provided one with the same name.</dd></div>
       </dl>
 
       <h3 class="subhead">3.3 &middot; Path-Specific Rules</h3>
@@ -306,42 +365,42 @@
   </details>
 
   <details class="topic">
-    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3.5" y="3" width="12" height="17" rx="1.3" stroke="#6B7060" stroke-width="1.4"/><path d="M6,15 L9,10 L11,13 L13.5,7.5" stroke="#6B7060" stroke-width="1.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="13.5" y1="19" x2="20" y2="12.5" stroke="#7A4A9A" stroke-width="1.7" stroke-linecap="round"/><circle cx="20.5" cy="11.5" r="1.6" fill="#1A6B54"/></svg></span><span class="sec-num">2</span>Diagrams</h2></summary>
+    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3.5" y="3" width="12" height="17" rx="1.3" stroke="var(--text-3)" stroke-width="1.4"/><path d="M6,15 L9,10 L11,13 L13.5,7.5" stroke="var(--text-3)" stroke-width="1.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="13.5" y1="19" x2="20" y2="12.5" stroke="var(--purple)" stroke-width="1.7" stroke-linecap="round"/><circle cx="20.5" cy="11.5" r="1.6" fill="var(--teal)"/></svg></span><span class="sec-num">2</span>Diagrams</h2></summary>
     <div class="topic-body">
       <h3 class="subhead" id="diagram-claude-md-hierarchy">Diagram: CLAUDE.md Hierarchy</h3>
       <div class="mindmap-wrap">
         <svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Diagram showing the three CLAUDE.md scopes stacked: user-level, personal and not version-controlled; project-level, shared with the whole team; directory-level, for one subdirectory only. A branch to the side shows dot claude slash rules as the glob-scoped alternative to directory-level files.">
-          <rect x="20" y="15" width="290" height="46" rx="8" fill="#EEF1E7" stroke="rgba(26,31,20,.2)"/>
-          <text x="165" y="34" text-anchor="middle" font-family="Consolas, monospace" font-size="9.5" fill="#3D4235">~/.claude/CLAUDE.md</text>
-          <text x="165" y="49" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#9A2A4A">personal, never shared via VC</text>
+          <rect x="20" y="15" width="290" height="46" rx="8" fill="var(--bg3)" stroke="rgba(var(--ink-rgb),.2)"/>
+          <text x="165" y="34" text-anchor="middle" font-family="Consolas, monospace" font-size="9.5" fill="var(--text-2)">~/.claude/CLAUDE.md</text>
+          <text x="165" y="49" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="var(--red)">personal, never shared via VC</text>
 
-          <path d="M165,61 L165,88" stroke="#6B7060" stroke-width="1.5" marker-end="url(#hi1)"/>
-          <rect x="20" y="90" width="290" height="46" rx="8" fill="#EDE0F5" stroke="#7A4A9A"/>
-          <text x="165" y="109" text-anchor="middle" font-family="Consolas, monospace" font-size="9.5" fill="#7A4A9A">.claude/CLAUDE.md</text>
-          <text x="165" y="124" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#1A7A3A">project-level, shared with the team</text>
+          <path d="M165,61 L165,88" stroke="var(--text-3)" stroke-width="1.5" marker-end="url(#hi1)"/>
+          <rect x="20" y="90" width="290" height="46" rx="8" fill="var(--purple-bg)" stroke="var(--purple)"/>
+          <text x="165" y="109" text-anchor="middle" font-family="Consolas, monospace" font-size="9.5" fill="var(--purple)">.claude/CLAUDE.md</text>
+          <text x="165" y="124" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="var(--green)">project-level, shared with the team</text>
 
-          <path d="M165,136 L165,163" stroke="#6B7060" stroke-width="1.5" marker-end="url(#hi2)"/>
-          <rect x="20" y="165" width="290" height="46" rx="8" fill="#F5F7F0" stroke="rgba(26,31,20,.2)" stroke-dasharray="4 3"/>
-          <text x="165" y="184" text-anchor="middle" font-family="Consolas, monospace" font-size="9.5" fill="#3D4235">subdir/CLAUDE.md</text>
-          <text x="165" y="199" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">directory-level, one folder only</text>
+          <path d="M165,136 L165,163" stroke="var(--text-3)" stroke-width="1.5" marker-end="url(#hi2)"/>
+          <rect x="20" y="165" width="290" height="46" rx="8" fill="var(--bg2)" stroke="rgba(var(--ink-rgb),.2)" stroke-dasharray="4 3"/>
+          <text x="165" y="184" text-anchor="middle" font-family="Consolas, monospace" font-size="9.5" fill="var(--text-2)">subdir/CLAUDE.md</text>
+          <text x="165" y="199" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="var(--text-3)">directory-level, one folder only</text>
 
-          <path d="M310,188 L345,188" stroke="#6B7060" stroke-width="1.5" marker-end="url(#hi3)"/>
-          <rect x="350" y="150" width="340" height="80" rx="8" fill="#DDE8F5" stroke="#2A5C9A"/>
-          <text x="520" y="172" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="#2A5C9A">Alternative: .claude/rules/</text>
-          <text x="520" y="190" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#2A5C9A">paths: ["**/*.test.tsx"]</text>
-          <text x="520" y="210" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#3D4235">wins when matching files span many folders</text>
+          <path d="M310,188 L345,188" stroke="var(--text-3)" stroke-width="1.5" marker-end="url(#hi3)"/>
+          <rect x="350" y="150" width="340" height="80" rx="8" fill="var(--blue-bg)" stroke="var(--blue)"/>
+          <text x="520" y="172" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="var(--blue)">Alternative: .claude/rules/</text>
+          <text x="520" y="190" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="var(--blue)">paths: ["**/*.test.tsx"]</text>
+          <text x="520" y="210" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="var(--text-2)">wins when matching files span many folders</text>
 
-          <use href="#icon-stick" x="345" y="43" style="color:#6B7060"/>
-          <text x="345" y="66" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#6B7060">just you</text>
+          <use href="#icon-stick" x="345" y="43" style="color:var(--text-3)"/>
+          <text x="345" y="66" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--text-3)">just you</text>
 
-          <use href="#icon-stick" x="340" y="112" style="color:#7A4A9A"/>
-          <use href="#icon-stick" x="352" y="112" style="color:#7A4A9A"/>
-          <text x="349" y="139" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#7A4A9A">whole team</text>
+          <use href="#icon-stick" x="340" y="112" style="color:var(--purple)"/>
+          <use href="#icon-stick" x="352" y="112" style="color:var(--purple)"/>
+          <text x="349" y="139" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--purple)">whole team</text>
 
           <defs>
-            <marker id="hi1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
-            <marker id="hi2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
-            <marker id="hi3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+            <marker id="hi1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--text-3)"/></marker>
+            <marker id="hi2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--text-3)"/></marker>
+            <marker id="hi3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--text-3)"/></marker>
             <g id="icon-stick">
               <circle cx="0" cy="-9" r="4" fill="none" stroke="currentColor" stroke-width="1.4"/>
               <line x1="0" y1="-5" x2="0" y2="6" stroke="currentColor" stroke-width="1.4"/>
@@ -369,78 +428,78 @@
       <h3 class="subhead" id="diagram-load-order">Diagram: CLAUDE.md Load Order &amp; Conflict Handling</h3>
       <div class="mindmap-wrap">
         <svg viewBox="0 0 720 420" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Diagram: four CLAUDE.md sources load in order - user-level, project-level, directory-level, then CLAUDE.local.md appended last at its level - all flowing into one box labeled concatenated into the same context, not overridden. Below, two conflicting rules from different files feed into a box showing Claude may pick either one arbitrarily. A comparison panel at the bottom contrasts CLAUDE.md, a user message the model usually follows with no guaranteed compliance, against settings.json, which has strict client-enforced precedence: managed greater than local greater than project greater than user.">
-          <rect x="10" y="20" width="155" height="55" rx="8" fill="#EEF1E7" stroke="rgba(26,31,20,.25)"/>
-          <text x="87" y="42" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="#3D4235">~/.claude/CLAUDE.md</text>
-          <text x="87" y="58" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#9A2A4A">user-level, loads first</text>
-          <path d="M165,47 L182,47" stroke="#6B7060" stroke-width="1.5" marker-end="url(#lo1)"/>
+          <rect x="10" y="20" width="155" height="55" rx="8" fill="var(--bg3)" stroke="rgba(var(--ink-rgb),.25)"/>
+          <text x="87" y="42" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="var(--text-2)">~/.claude/CLAUDE.md</text>
+          <text x="87" y="58" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--red)">user-level, loads first</text>
+          <path d="M165,47 L182,47" stroke="var(--text-3)" stroke-width="1.5" marker-end="url(#lo1)"/>
 
-          <rect x="185" y="20" width="150" height="55" rx="8" fill="#EDE0F5" stroke="#7A4A9A" stroke-width="1.5"/>
-          <text x="260" y="42" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="#7A4A9A">.claude/CLAUDE.md</text>
-          <text x="260" y="58" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#1A7A3A">project-level</text>
-          <path d="M335,47 L352,47" stroke="#6B7060" stroke-width="1.5" marker-end="url(#lo2)"/>
+          <rect x="185" y="20" width="150" height="55" rx="8" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="1.5"/>
+          <text x="260" y="42" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="var(--purple)">.claude/CLAUDE.md</text>
+          <text x="260" y="58" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--green)">project-level</text>
+          <path d="M335,47 L352,47" stroke="var(--text-3)" stroke-width="1.5" marker-end="url(#lo2)"/>
 
-          <rect x="355" y="20" width="150" height="55" rx="8" fill="#F5F7F0" stroke="rgba(26,31,20,.3)" stroke-dasharray="4 3"/>
-          <text x="430" y="42" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="#3D4235">subdir/CLAUDE.md</text>
-          <text x="430" y="58" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#6B7060">directory-level</text>
-          <path d="M505,47 L522,47" stroke="#6B7060" stroke-width="1.5" marker-end="url(#lo3)"/>
+          <rect x="355" y="20" width="150" height="55" rx="8" fill="var(--bg2)" stroke="rgba(var(--ink-rgb),.3)" stroke-dasharray="4 3"/>
+          <text x="430" y="42" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="var(--text-2)">subdir/CLAUDE.md</text>
+          <text x="430" y="58" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--text-3)">directory-level</text>
+          <path d="M505,47 L522,47" stroke="var(--text-3)" stroke-width="1.5" marker-end="url(#lo3)"/>
 
-          <rect x="525" y="20" width="185" height="55" rx="8" fill="#F5EDD6" stroke="#9A6E1A" stroke-width="1.5"/>
-          <text x="617" y="42" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="#9A6E1A">CLAUDE.local.md</text>
-          <text x="617" y="58" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#3D4235">appended last, same level</text>
+          <rect x="525" y="20" width="185" height="55" rx="8" fill="var(--amber-bg)" stroke="var(--amber)" stroke-width="1.5"/>
+          <text x="617" y="42" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="var(--amber)">CLAUDE.local.md</text>
+          <text x="617" y="58" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--text-2)">appended last, same level</text>
 
-          <text x="360" y="95" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" font-style="italic" fill="#6B7060">read order = broadest to most specific - not a precedence chain</text>
+          <text x="360" y="95" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" font-style="italic" fill="var(--text-3)">read order = broadest to most specific - not a precedence chain</text>
 
-          <path d="M360,105 L360,128" stroke="#6B7060" stroke-width="1.5" marker-end="url(#lo4)"/>
+          <path d="M360,105 L360,128" stroke="var(--text-3)" stroke-width="1.5" marker-end="url(#lo4)"/>
 
-          <rect x="60" y="130" width="600" height="46" rx="8" fill="#D8EEE8" stroke="#1A6B54" stroke-width="1.6"/>
-          <text x="360" y="150" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="#1A6B54">All four concatenated into the same context</text>
-          <text x="360" y="166" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">not merged with precedence - none of them "wins," they're just all present</text>
+          <rect x="60" y="130" width="600" height="46" rx="8" fill="var(--teal-bg)" stroke="var(--teal)" stroke-width="1.6"/>
+          <text x="360" y="150" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="var(--teal)">All four concatenated into the same context</text>
+          <text x="360" y="166" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">not merged with precedence - none of them "wins," they're just all present</text>
 
-          <path d="M200,176 C200,195 260,205 300,213" stroke="#9A2A4A" stroke-width="1.4" fill="none" marker-end="url(#lo5)"/>
-          <path d="M520,176 C520,195 460,205 420,213" stroke="#9A2A4A" stroke-width="1.4" fill="none" marker-end="url(#lo6)"/>
+          <path d="M200,176 C200,195 260,205 300,213" stroke="var(--red)" stroke-width="1.4" fill="none" marker-end="url(#lo5)"/>
+          <path d="M520,176 C520,195 460,205 420,213" stroke="var(--red)" stroke-width="1.4" fill="none" marker-end="url(#lo6)"/>
 
-          <rect x="70" y="192" width="200" height="42" rx="7" fill="#F5DDE5" stroke="#9A2A4A" stroke-width="1.3"/>
-          <text x="170" y="210" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#9A2A4A">project CLAUDE.md:</text>
-          <text x="170" y="224" text-anchor="middle" font-family="Consolas, monospace" font-size="8" fill="#3D4235">"use 2-space indent"</text>
+          <rect x="70" y="192" width="200" height="42" rx="7" fill="var(--red-bg)" stroke="var(--red)" stroke-width="1.3"/>
+          <text x="170" y="210" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--red)">project CLAUDE.md:</text>
+          <text x="170" y="224" text-anchor="middle" font-family="Consolas, monospace" font-size="8" fill="var(--text-2)">"use 2-space indent"</text>
 
-          <rect x="450" y="192" width="200" height="42" rx="7" fill="#F5DDE5" stroke="#9A2A4A" stroke-width="1.3"/>
-          <text x="550" y="210" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#9A2A4A">subdir CLAUDE.md:</text>
-          <text x="550" y="224" text-anchor="middle" font-family="Consolas, monospace" font-size="8" fill="#3D4235">"use tabs"</text>
+          <rect x="450" y="192" width="200" height="42" rx="7" fill="var(--red-bg)" stroke="var(--red)" stroke-width="1.3"/>
+          <text x="550" y="210" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--red)">subdir CLAUDE.md:</text>
+          <text x="550" y="224" text-anchor="middle" font-family="Consolas, monospace" font-size="8" fill="var(--text-2)">"use tabs"</text>
 
-          <circle cx="360" cy="228" r="26" fill="#F5DDE5" stroke="#9A2A4A" stroke-width="1.6"/>
-          <text x="360" y="235" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="20" font-weight="700" fill="#9A2A4A">?</text>
-          <text x="360" y="266" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" font-weight="600" fill="#9A2A4A">If there is a conflicting instruction,</text>
-          <text x="360" y="279" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" font-weight="600" fill="#9A2A4A">Claude may pick either, arbitrarily</text>
+          <circle cx="360" cy="228" r="26" fill="var(--red-bg)" stroke="var(--red)" stroke-width="1.6"/>
+          <text x="360" y="235" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="20" font-weight="700" fill="var(--red)">?</text>
+          <text x="360" y="266" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" font-weight="600" fill="var(--red)">If there is a conflicting instruction,</text>
+          <text x="360" y="279" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" font-weight="600" fill="var(--red)">Claude may pick either, arbitrarily</text>
 
-          <path d="M30,292 L690,292" stroke="#6B7060" stroke-width="1.2" stroke-dasharray="3 3"/>
-          <circle cx="230" cy="299" r="5" fill="none" stroke="#9A6E1A" stroke-width="1.4"/>
-          <line x1="230" y1="304" x2="230" y2="318" stroke="#9A6E1A" stroke-width="1.4"/>
-          <line x1="230" y1="308" x2="223" y2="303" stroke="#9A6E1A" stroke-width="1.4"/>
-          <line x1="230" y1="308" x2="238" y2="312" stroke="#9A6E1A" stroke-width="1.4"/>
-          <line x1="230" y1="318" x2="224" y2="327" stroke="#9A6E1A" stroke-width="1.4"/>
-          <line x1="230" y1="318" x2="236" y2="327" stroke="#9A6E1A" stroke-width="1.4"/>
-          <text x="241" y="294" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="14" font-weight="700" fill="#9A6E1A">?</text>
-          <text x="255" y="312" text-anchor="start" font-family="Segoe UI, sans-serif" font-size="12" font-weight="700" fill="#3D4235">so what actually holds every time?</text>
+          <path d="M30,292 L690,292" stroke="var(--text-3)" stroke-width="1.2" stroke-dasharray="3 3"/>
+          <circle cx="230" cy="299" r="5" fill="none" stroke="var(--amber)" stroke-width="1.4"/>
+          <line x1="230" y1="304" x2="230" y2="318" stroke="var(--amber)" stroke-width="1.4"/>
+          <line x1="230" y1="308" x2="223" y2="303" stroke="var(--amber)" stroke-width="1.4"/>
+          <line x1="230" y1="308" x2="238" y2="312" stroke="var(--amber)" stroke-width="1.4"/>
+          <line x1="230" y1="318" x2="224" y2="327" stroke="var(--amber)" stroke-width="1.4"/>
+          <line x1="230" y1="318" x2="236" y2="327" stroke="var(--amber)" stroke-width="1.4"/>
+          <text x="241" y="294" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="14" font-weight="700" fill="var(--amber)">?</text>
+          <text x="255" y="312" text-anchor="start" font-family="Segoe UI, sans-serif" font-size="12" font-weight="700" fill="var(--text-2)">so what actually holds every time?</text>
 
-          <rect x="30" y="332" width="320" height="80" rx="8" fill="#F5F7F0" stroke="rgba(26,31,20,.3)" stroke-dasharray="4 3"/>
-          <text x="190" y="355" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="#3D4235">CLAUDE.md</text>
-          <text x="190" y="372" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#6B7060">a user message - the model</text>
-          <text x="190" y="386" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#6B7060">usually follows it, no guarantee</text>
-          <text x="190" y="402" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" font-weight="700" fill="#9A2A4A">not a hard enforcement layer</text>
+          <rect x="30" y="332" width="320" height="80" rx="8" fill="var(--bg2)" stroke="rgba(var(--ink-rgb),.3)" stroke-dasharray="4 3"/>
+          <text x="190" y="355" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="var(--text-2)">CLAUDE.md</text>
+          <text x="190" y="372" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-3)">a user message - the model</text>
+          <text x="190" y="386" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-3)">usually follows it, no guarantee</text>
+          <text x="190" y="402" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" font-weight="700" fill="var(--red)">not a hard enforcement layer</text>
 
-          <rect x="370" y="332" width="320" height="80" rx="8" fill="#DDE8F5" stroke="#2A5C9A" stroke-width="1.6"/>
-          <text x="530" y="355" text-anchor="middle" font-family="Consolas, monospace" font-size="10" font-weight="700" fill="#2A5C9A">settings.json</text>
-          <text x="530" y="372" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">managed &gt; local &gt; project &gt; user</text>
-          <text x="530" y="386" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">strict precedence, always resolves</text>
-          <text x="530" y="402" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" font-weight="700" fill="#1A7A3A">enforced by the client, always</text>
+          <rect x="370" y="332" width="320" height="80" rx="8" fill="var(--blue-bg)" stroke="var(--blue)" stroke-width="1.6"/>
+          <text x="530" y="355" text-anchor="middle" font-family="Consolas, monospace" font-size="10" font-weight="700" fill="var(--blue)">settings.json</text>
+          <text x="530" y="372" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">managed &gt; local &gt; project &gt; user</text>
+          <text x="530" y="386" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">strict precedence, always resolves</text>
+          <text x="530" y="402" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" font-weight="700" fill="var(--green)">enforced by the client, always</text>
 
           <defs>
-            <marker id="lo1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
-            <marker id="lo2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
-            <marker id="lo3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
-            <marker id="lo4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
-            <marker id="lo5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9A2A4A"/></marker>
-            <marker id="lo6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9A2A4A"/></marker>
+            <marker id="lo1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--text-3)"/></marker>
+            <marker id="lo2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--text-3)"/></marker>
+            <marker id="lo3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--text-3)"/></marker>
+            <marker id="lo4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--text-3)"/></marker>
+            <marker id="lo5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--red)"/></marker>
+            <marker id="lo6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--red)"/></marker>
           </defs>
         </svg>
         <details class="explain-toggle">
@@ -456,43 +515,43 @@
       <h3 class="subhead" id="diagram-claude-md-git">Diagram: How CLAUDE.md Travels With Git</h3>
       <div class="mindmap-wrap">
         <svg viewBox="0 0 720 330" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Diagram: a git repository, the single source of truth, connects by dashed lines to Developer A and Developer B's local machines, each shown as a monitor. Under each monitor, a dashed box holds the user-level CLAUDE.md that never leaves that machine, and a solid box holds the project and subdirectory-level CLAUDE.md files that live in the repo and travel with it. A caption states that only what's inside the repo travels between machines, home-directory config never does.">
-          <rect x="290" y="15" width="140" height="48" rx="8" fill="#EDE0F5" stroke="#7A4A9A" stroke-width="1.8"/>
-          <text x="360" y="36" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700" fill="#7A4A9A">Git repository</text>
-          <text x="360" y="52" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#3D4235">single source of truth</text>
+          <rect x="290" y="15" width="140" height="48" rx="8" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="1.8"/>
+          <text x="360" y="36" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700" fill="var(--purple)">Git repository</text>
+          <text x="360" y="52" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--text-2)">single source of truth</text>
 
-          <path d="M330,63 C300,78 260,88 232,98" fill="none" stroke="#7A4A9A" stroke-width="1.5" stroke-dasharray="3 2" marker-end="url(#git1)"/>
-          <path d="M392,63 C425,78 460,88 490,98" fill="none" stroke="#7A4A9A" stroke-width="1.5" stroke-dasharray="3 2" marker-end="url(#git2)"/>
+          <path d="M330,63 C300,78 260,88 232,98" fill="none" stroke="var(--purple)" stroke-width="1.5" stroke-dasharray="3 2" marker-end="url(#git1)"/>
+          <path d="M392,63 C425,78 460,88 490,98" fill="none" stroke="var(--purple)" stroke-width="1.5" stroke-dasharray="3 2" marker-end="url(#git2)"/>
 
-          <text x="230" y="115" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="#3D4235">Developer A</text>
-          <text x="490" y="115" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="#3D4235">Developer B</text>
+          <text x="230" y="115" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="var(--text-2)">Developer A</text>
+          <text x="490" y="115" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="var(--text-2)">Developer B</text>
 
-          <use href="#cg-monitor" x="230" y="155" style="color:#3D4235"/>
-          <use href="#cg-monitor" x="490" y="155" style="color:#3D4235"/>
+          <use href="#cg-monitor" x="230" y="155" style="color:var(--text-2)"/>
+          <use href="#cg-monitor" x="490" y="155" style="color:var(--text-2)"/>
 
-          <rect x="140" y="200" width="180" height="42" rx="6" fill="#F5F7F0" stroke="rgba(26,31,20,.35)" stroke-width="1.3" stroke-dasharray="4 3"/>
-          <text x="230" y="217" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">~/.claude/CLAUDE.md</text>
-          <text x="230" y="232" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#6B7060">user-level, stays on this machine</text>
+          <rect x="140" y="200" width="180" height="42" rx="6" fill="var(--bg2)" stroke="rgba(var(--ink-rgb),.35)" stroke-width="1.3" stroke-dasharray="4 3"/>
+          <text x="230" y="217" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="var(--text-2)">~/.claude/CLAUDE.md</text>
+          <text x="230" y="232" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7.5" fill="var(--text-3)">user-level, stays on this machine</text>
 
-          <rect x="140" y="248" width="180" height="42" rx="6" fill="#EDE0F5" stroke="#7A4A9A" stroke-width="1.6"/>
-          <text x="230" y="266" text-anchor="middle" font-family="Consolas, monospace" font-size="8" font-weight="700" fill="#7A4A9A">.claude/ + subdir/CLAUDE.md</text>
-          <text x="230" y="281" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#3D4235">project + subdir level, lives in the repo</text>
+          <rect x="140" y="248" width="180" height="42" rx="6" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="1.6"/>
+          <text x="230" y="266" text-anchor="middle" font-family="Consolas, monospace" font-size="8" font-weight="700" fill="var(--purple)">.claude/ + subdir/CLAUDE.md</text>
+          <text x="230" y="281" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7.5" fill="var(--text-2)">project + subdir level, lives in the repo</text>
 
-          <rect x="400" y="200" width="180" height="42" rx="6" fill="#F5F7F0" stroke="rgba(26,31,20,.35)" stroke-width="1.3" stroke-dasharray="4 3"/>
-          <text x="490" y="217" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">~/.claude/CLAUDE.md</text>
-          <text x="490" y="232" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#6B7060">user-level, stays on this machine</text>
+          <rect x="400" y="200" width="180" height="42" rx="6" fill="var(--bg2)" stroke="rgba(var(--ink-rgb),.35)" stroke-width="1.3" stroke-dasharray="4 3"/>
+          <text x="490" y="217" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="var(--text-2)">~/.claude/CLAUDE.md</text>
+          <text x="490" y="232" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7.5" fill="var(--text-3)">user-level, stays on this machine</text>
 
-          <rect x="400" y="248" width="180" height="42" rx="6" fill="#EDE0F5" stroke="#7A4A9A" stroke-width="1.6"/>
-          <text x="490" y="266" text-anchor="middle" font-family="Consolas, monospace" font-size="8" font-weight="700" fill="#7A4A9A">.claude/ + subdir/CLAUDE.md</text>
-          <text x="490" y="281" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#3D4235">project + subdir level, lives in the repo</text>
+          <rect x="400" y="248" width="180" height="42" rx="6" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="1.6"/>
+          <text x="490" y="266" text-anchor="middle" font-family="Consolas, monospace" font-size="8" font-weight="700" fill="var(--purple)">.claude/ + subdir/CLAUDE.md</text>
+          <text x="490" y="281" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7.5" fill="var(--text-2)">project + subdir level, lives in the repo</text>
 
-          <text x="360" y="315" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" font-style="italic" fill="#6B7060">Only what's inside the repo travels between machines. Home-directory config never does.</text>
+          <text x="360" y="315" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" font-style="italic" fill="var(--text-3)">Only what's inside the repo travels between machines. Home-directory config never does.</text>
 
           <defs>
-            <marker id="git1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7A4A9A"/></marker>
-            <marker id="git2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7A4A9A"/></marker>
+            <marker id="git1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--purple)"/></marker>
+            <marker id="git2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--purple)"/></marker>
             <g id="cg-monitor">
-              <rect x="-30" y="-22" width="60" height="40" rx="4" fill="#EEF1E7" stroke="currentColor" stroke-width="1.4"/>
-              <rect x="-24" y="-16" width="48" height="28" rx="2" fill="#FAFCF5" stroke="currentColor" stroke-width="1"/>
+              <rect x="-30" y="-22" width="60" height="40" rx="4" fill="var(--bg3)" stroke="currentColor" stroke-width="1.4"/>
+              <rect x="-24" y="-16" width="48" height="28" rx="2" fill="var(--bg)" stroke="currentColor" stroke-width="1"/>
               <rect x="-10" y="18" width="20" height="4" rx="1.5" fill="currentColor"/>
               <rect x="-16" y="22" width="32" height="3" rx="1.5" fill="currentColor"/>
             </g>
@@ -514,32 +573,32 @@
       <h3 class="subhead" id="diagram-import-vs-rules">Diagram: CLAUDE.md, @ Imports, and Rules</h3>
       <div class="mindmap-wrap">
         <svg viewBox="0 0 720 250" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Diagram: the three CLAUDE.md scopes sit in a row, user-level, project-level, and directory-level. An arrow from project-level CLAUDE.md leads to an at-sign path import of environment-facts.md, explicit and always loaded into CLAUDE.md itself. A red note clarifies that dot claude slash rules is a separate, unconnected mechanism, not reached through CLAUDE.md at all, shown as its own box below with a glob path example.">
-          <rect x="30" y="15" width="210" height="55" rx="8" fill="#F5F7F0" stroke="rgba(26,31,20,.35)" stroke-width="1.3" stroke-dasharray="4 3"/>
-          <text x="135" y="37" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="#3D4235">~/.claude/CLAUDE.md</text>
-          <text x="135" y="55" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#6B7060">user-level, not shared</text>
+          <rect x="30" y="15" width="210" height="55" rx="8" fill="var(--bg2)" stroke="rgba(var(--ink-rgb),.35)" stroke-width="1.3" stroke-dasharray="4 3"/>
+          <text x="135" y="37" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="var(--text-2)">~/.claude/CLAUDE.md</text>
+          <text x="135" y="55" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--text-3)">user-level, not shared</text>
 
-          <rect x="255" y="15" width="210" height="55" rx="8" fill="#EDE0F5" stroke="#7A4A9A" stroke-width="2"/>
-          <text x="360" y="37" text-anchor="middle" font-family="Consolas, monospace" font-size="10" font-weight="700" fill="#7A4A9A">.claude/CLAUDE.md</text>
-          <text x="360" y="55" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#3D4235">project-level, version-controlled</text>
+          <rect x="255" y="15" width="210" height="55" rx="8" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="2"/>
+          <text x="360" y="37" text-anchor="middle" font-family="Consolas, monospace" font-size="10" font-weight="700" fill="var(--purple)">.claude/CLAUDE.md</text>
+          <text x="360" y="55" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--text-2)">project-level, version-controlled</text>
 
-          <rect x="480" y="15" width="210" height="55" rx="8" fill="#F5F7F0" stroke="rgba(26,31,20,.35)" stroke-width="1.3" stroke-dasharray="4 3"/>
-          <text x="585" y="37" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="#3D4235">subdir/CLAUDE.md</text>
-          <text x="585" y="55" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#6B7060">directory-level, bound to that folder</text>
+          <rect x="480" y="15" width="210" height="55" rx="8" fill="var(--bg2)" stroke="rgba(var(--ink-rgb),.35)" stroke-width="1.3" stroke-dasharray="4 3"/>
+          <text x="585" y="37" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="var(--text-2)">subdir/CLAUDE.md</text>
+          <text x="585" y="55" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7.5" fill="var(--text-3)">directory-level, bound to that folder</text>
 
-          <path d="M360,70 L360,93" stroke="#7A4A9A" stroke-width="1.6" marker-end="url(#ivr1)"/>
+          <path d="M360,70 L360,93" stroke="var(--purple)" stroke-width="1.6" marker-end="url(#ivr1)"/>
 
-          <rect x="170" y="95" width="380" height="50" rx="8" fill="#EEF1E7" stroke="#7A4A9A" stroke-width="1.3" stroke-dasharray="4 3"/>
-          <text x="360" y="116" text-anchor="middle" font-family="Consolas, monospace" font-size="9" font-weight="700" fill="#7A4A9A">@./environment-facts.md</text>
-          <text x="360" y="133" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#3D4235">explicit, always loaded into CLAUDE.md itself</text>
+          <rect x="170" y="95" width="380" height="50" rx="8" fill="var(--bg3)" stroke="var(--purple)" stroke-width="1.3" stroke-dasharray="4 3"/>
+          <text x="360" y="116" text-anchor="middle" font-family="Consolas, monospace" font-size="9" font-weight="700" fill="var(--purple)">@./environment-facts.md</text>
+          <text x="360" y="133" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--text-2)">explicit, always loaded into CLAUDE.md itself</text>
 
-          <text x="360" y="163" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" font-weight="600" fill="#9A2A4A">a separate, unconnected mechanism, not reached through CLAUDE.md at all</text>
+          <text x="360" y="163" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" font-weight="600" fill="var(--red)">a separate, unconnected mechanism, not reached through CLAUDE.md at all</text>
 
-          <rect x="110" y="178" width="500" height="55" rx="8" fill="#DDE8F5" stroke="#2A5C9A" stroke-width="1.6"/>
-          <text x="360" y="200" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" font-weight="700" fill="#2A5C9A">.claude/rules/*.md: paths: ["tests/**/*.spec.ts"]</text>
-          <text x="360" y="218" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#3D4235">discovered directly by Claude Code, loads only for matching files</text>
+          <rect x="110" y="178" width="500" height="55" rx="8" fill="var(--blue-bg)" stroke="var(--blue)" stroke-width="1.6"/>
+          <text x="360" y="200" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" font-weight="700" fill="var(--blue)">.claude/rules/*.md: paths: ["tests/**/*.spec.ts"]</text>
+          <text x="360" y="218" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--text-2)">discovered directly by Claude Code, loads only for matching files</text>
 
           <defs>
-            <marker id="ivr1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7A4A9A"/></marker>
+            <marker id="ivr1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--purple)"/></marker>
           </defs>
         </svg>
         <details class="explain-toggle">
@@ -554,140 +613,140 @@
       <h3 class="subhead" id="diagram-claude-folder-anatomy">Diagram: Anatomy of the .claude/ Folder</h3>
       <div class="mindmap-wrap">
         <svg viewBox="0 0 820 695" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Annotated file tree of a real project, with a colored bar down the left margin grouping each major section, dotted leader lines connecting each name to its annotation, and a color-key legend at the bottom. Root: CLAUDE.md, team instructions, committed - purple; CLAUDE.local.md, personal overrides, gitignored - red; .claude/, the control center - purple. Inside .claude/: settings.json, permissions and config, committed - purple, with a shield icon marked permissions; settings.local.json, personal permissions, gitignored - red; commands/ holding review.md, fix-issue.md, deploy.md, each mapping to a slash command - teal; rules/ holding code-style.md, testing.md, api-conventions.md - blue; skills/ holding security-review/SKILL.md and deploy/SKILL.md, auto-invoked workflows - teal, with a lightning icon marked auto; agents/ holding code-reviewer.md and security-auditor.md, subagent personas covered in D1, shown in neutral gray. A person in the corner has a speech bubble reminding you to commit .claude/ to git, except the .local files. Caption: everything Claude needs to know about your project lives here.">
-          <path d="M555,10 C555,4 560,0 566,0 L748,0 C754,0 759,4 759,10 L759,34 C759,40 754,44 748,44 L610,44 L592,60 L598,44 L566,44 C560,44 555,40 555,34 Z" fill="#FAFCF5" stroke="#6B7060" stroke-width="1.3"/>
-          <text x="657" y="18" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="#3D4235">commit <tspan font-family="Consolas, monospace" fill="#7A4A9A">.claude/</tspan> to git -</text>
-          <text x="657" y="33" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="#3D4235">except the <tspan font-family="Consolas, monospace" fill="#9A2A4A">*.local</tspan> files</text>
-          <g transform="translate(790,55)" stroke="#3D4235" stroke-width="1.6" stroke-linecap="round">
-            <circle r="8" fill="#FAFCF5"/>
+          <path d="M555,10 C555,4 560,0 566,0 L748,0 C754,0 759,4 759,10 L759,34 C759,40 754,44 748,44 L610,44 L592,60 L598,44 L566,44 C560,44 555,40 555,34 Z" fill="var(--bg)" stroke="var(--text-3)" stroke-width="1.3"/>
+          <text x="657" y="18" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="var(--text-2)">commit <tspan font-family="Consolas, monospace" fill="var(--purple)">.claude/</tspan> to git -</text>
+          <text x="657" y="33" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="var(--text-2)">except the <tspan font-family="Consolas, monospace" fill="var(--red)">*.local</tspan> files</text>
+          <g transform="translate(790,55)" stroke="var(--text-2)" stroke-width="1.6" stroke-linecap="round">
+            <circle r="8" fill="var(--bg)"/>
             <line x1="0" y1="8" x2="0" y2="26"/>
             <line x1="-11" y1="14" x2="11" y2="14"/>
             <line x1="0" y1="26" x2="-9" y2="40"/>
             <line x1="0" y1="26" x2="9" y2="40"/>
           </g>
 
-          <use href="#d3-folder" x="22" y="66" style="color:#3D4235"/>
-          <text x="40" y="74" font-family="Consolas, monospace" font-size="13" font-weight="700" fill="#3D4235">your-project/</text>
+          <use href="#d3-folder" x="22" y="66" style="color:var(--text-2)"/>
+          <text x="40" y="74" font-family="Consolas, monospace" font-size="13" font-weight="700" fill="var(--text-2)">your-project/</text>
 
-          <line x1="44" y1="88" x2="44" y2="155" stroke="rgba(26,31,20,.3)" stroke-width="1.4"/>
-          <line x1="76" y1="175" x2="76" y2="610" stroke="rgba(26,31,20,.3)" stroke-width="1.4"/>
+          <line x1="44" y1="88" x2="44" y2="155" stroke="rgba(var(--ink-rgb),.3)" stroke-width="1.4"/>
+          <line x1="76" y1="175" x2="76" y2="610" stroke="rgba(var(--ink-rgb),.3)" stroke-width="1.4"/>
 
-          <rect x="6" y="84" width="5" height="138" rx="2.5" fill="#7A4A9A"/>
-          <rect x="6" y="254" width="5" height="80" rx="2.5" fill="#1A6B54"/>
-          <rect x="6" y="366" width="5" height="80" rx="2.5" fill="#2A5C9A"/>
-          <rect x="6" y="478" width="5" height="53" rx="2.5" fill="#1A6B54"/>
-          <rect x="6" y="563" width="5" height="53" rx="2.5" fill="#6B7060"/>
+          <rect x="6" y="84" width="5" height="138" rx="2.5" fill="var(--purple)"/>
+          <rect x="6" y="254" width="5" height="80" rx="2.5" fill="var(--teal)"/>
+          <rect x="6" y="366" width="5" height="80" rx="2.5" fill="var(--blue)"/>
+          <rect x="6" y="478" width="5" height="53" rx="2.5" fill="var(--teal)"/>
+          <rect x="6" y="563" width="5" height="53" rx="2.5" fill="var(--text-3)"/>
 
-          <use href="#d3-file" x="56" y="93" style="color:#7A4A9A"/>
-          <rect x="70" y="84" width="94" height="20" rx="5" fill="#EDE0F5"/>
-          <text x="76" y="98" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#7A4A9A">CLAUDE.md</text>
-          <line x1="172" y1="94" x2="483" y2="94" stroke="rgba(26,31,20,.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
-          <text x="490" y="98" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#6B7060">team instructions, committed</text>
+          <use href="#d3-file" x="56" y="93" style="color:var(--purple)"/>
+          <rect x="70" y="84" width="94" height="20" rx="5" fill="var(--purple-bg)"/>
+          <text x="76" y="98" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="var(--purple)">CLAUDE.md</text>
+          <line x1="172" y1="94" x2="483" y2="94" stroke="rgba(var(--ink-rgb),.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
+          <text x="490" y="98" font-family="Segoe UI, sans-serif" font-size="10.5" fill="var(--text-3)">team instructions, committed</text>
 
-          <use href="#d3-file" x="56" y="120" style="color:#9A2A4A"/>
-          <rect x="70" y="111" width="140" height="20" rx="5" fill="#F5DDE5"/>
-          <text x="76" y="125" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#9A2A4A">CLAUDE.local.md</text>
-          <line x1="218" y1="121" x2="483" y2="121" stroke="rgba(26,31,20,.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
-          <text x="490" y="125" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#6B7060">personal overrides, gitignored</text>
+          <use href="#d3-file" x="56" y="120" style="color:var(--red)"/>
+          <rect x="70" y="111" width="140" height="20" rx="5" fill="var(--red-bg)"/>
+          <text x="76" y="125" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="var(--red)">CLAUDE.local.md</text>
+          <line x1="218" y1="121" x2="483" y2="121" stroke="rgba(var(--ink-rgb),.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
+          <text x="490" y="125" font-family="Segoe UI, sans-serif" font-size="10.5" fill="var(--text-3)">personal overrides, gitignored</text>
 
-          <use href="#d3-folder" x="56" y="147" style="color:#7A4A9A"/>
-          <rect x="70" y="138" width="76" height="20" rx="5" fill="#EDE0F5"/>
-          <text x="76" y="152" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#7A4A9A">.claude/</text>
-          <line x1="154" y1="148" x2="483" y2="148" stroke="rgba(26,31,20,.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
-          <text x="490" y="152" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#6B7060">the control center</text>
+          <use href="#d3-folder" x="56" y="147" style="color:var(--purple)"/>
+          <rect x="70" y="138" width="76" height="20" rx="5" fill="var(--purple-bg)"/>
+          <text x="76" y="152" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="var(--purple)">.claude/</text>
+          <line x1="154" y1="148" x2="483" y2="148" stroke="rgba(var(--ink-rgb),.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
+          <text x="490" y="152" font-family="Segoe UI, sans-serif" font-size="10.5" fill="var(--text-3)">the control center</text>
 
-          <use href="#d3-file" x="88" y="178" style="color:#7A4A9A"/>
-          <rect x="102" y="169" width="118" height="20" rx="5" fill="#EDE0F5"/>
-          <text x="108" y="183" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#7A4A9A">settings.json</text>
-          <line x1="228" y1="179" x2="483" y2="179" stroke="rgba(26,31,20,.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
-          <text x="490" y="183" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#6B7060">permissions + config, committed</text>
-          <use href="#d3-shield" x="770" y="180" style="color:#7A4A9A"/>
-          <text x="770" y="202" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#7A4A9A">permissions</text>
+          <use href="#d3-file" x="88" y="178" style="color:var(--purple)"/>
+          <rect x="102" y="169" width="118" height="20" rx="5" fill="var(--purple-bg)"/>
+          <text x="108" y="183" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="var(--purple)">settings.json</text>
+          <line x1="228" y1="179" x2="483" y2="179" stroke="rgba(var(--ink-rgb),.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
+          <text x="490" y="183" font-family="Segoe UI, sans-serif" font-size="10.5" fill="var(--text-3)">permissions + config, committed</text>
+          <use href="#d3-shield" x="770" y="180" style="color:var(--purple)"/>
+          <text x="770" y="202" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--purple)">permissions</text>
 
-          <use href="#d3-file" x="88" y="205" style="color:#9A2A4A"/>
-          <rect x="102" y="196" width="172" height="20" rx="5" fill="#F5DDE5"/>
-          <text x="108" y="210" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#9A2A4A">settings.local.json</text>
-          <line x1="282" y1="206" x2="483" y2="206" stroke="rgba(26,31,20,.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
-          <text x="490" y="210" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#6B7060">personal permissions, gitignored</text>
+          <use href="#d3-file" x="88" y="205" style="color:var(--red)"/>
+          <rect x="102" y="196" width="172" height="20" rx="5" fill="var(--red-bg)"/>
+          <text x="108" y="210" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="var(--red)">settings.local.json</text>
+          <line x1="282" y1="206" x2="483" y2="206" stroke="rgba(var(--ink-rgb),.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
+          <text x="490" y="210" font-family="Segoe UI, sans-serif" font-size="10.5" fill="var(--text-3)">personal permissions, gitignored</text>
 
-          <use href="#d3-folder" x="88" y="236" style="color:#1A6B54"/>
-          <rect x="102" y="227" width="92" height="20" rx="5" fill="#D8EEE8"/>
-          <text x="108" y="241" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#1A6B54">commands/</text>
-          <line x1="202" y1="237" x2="483" y2="237" stroke="rgba(26,31,20,.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
-          <text x="490" y="241" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#6B7060">custom slash commands</text>
+          <use href="#d3-folder" x="88" y="236" style="color:var(--teal)"/>
+          <rect x="102" y="227" width="92" height="20" rx="5" fill="var(--teal-bg)"/>
+          <text x="108" y="241" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="var(--teal)">commands/</text>
+          <line x1="202" y1="237" x2="483" y2="237" stroke="rgba(var(--ink-rgb),.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
+          <text x="490" y="241" font-family="Segoe UI, sans-serif" font-size="10.5" fill="var(--text-3)">custom slash commands</text>
 
-          <use href="#d3-file" x="118" y="263" style="color:#6B7060"/>
-          <text x="134" y="270" font-family="Consolas, monospace" font-size="11" fill="#3D4235">review.md</text>
-          <line x1="201" y1="266" x2="483" y2="266" stroke="rgba(26,31,20,.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
-          <text x="490" y="270" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#6B7060">&rarr; /project:review</text>
+          <use href="#d3-file" x="118" y="263" style="color:var(--text-3)"/>
+          <text x="134" y="270" font-family="Consolas, monospace" font-size="11" fill="var(--text-2)">review.md</text>
+          <line x1="201" y1="266" x2="483" y2="266" stroke="rgba(var(--ink-rgb),.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
+          <text x="490" y="270" font-family="Segoe UI, sans-serif" font-size="10.5" fill="var(--text-3)">&rarr; /project:review</text>
 
-          <use href="#d3-file" x="118" y="290" style="color:#6B7060"/>
-          <text x="134" y="297" font-family="Consolas, monospace" font-size="11" fill="#3D4235">fix-issue.md</text>
-          <line x1="221" y1="293" x2="483" y2="293" stroke="rgba(26,31,20,.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
-          <text x="490" y="297" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#6B7060">&rarr; /project:fix-issue</text>
+          <use href="#d3-file" x="118" y="290" style="color:var(--text-3)"/>
+          <text x="134" y="297" font-family="Consolas, monospace" font-size="11" fill="var(--text-2)">fix-issue.md</text>
+          <line x1="221" y1="293" x2="483" y2="293" stroke="rgba(var(--ink-rgb),.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
+          <text x="490" y="297" font-family="Segoe UI, sans-serif" font-size="10.5" fill="var(--text-3)">&rarr; /project:fix-issue</text>
 
-          <use href="#d3-file" x="118" y="317" style="color:#6B7060"/>
-          <text x="134" y="324" font-family="Consolas, monospace" font-size="11" fill="#3D4235">deploy.md</text>
-          <line x1="201" y1="320" x2="483" y2="320" stroke="rgba(26,31,20,.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
-          <text x="490" y="324" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#6B7060">&rarr; /project:deploy</text>
+          <use href="#d3-file" x="118" y="317" style="color:var(--text-3)"/>
+          <text x="134" y="324" font-family="Consolas, monospace" font-size="11" fill="var(--text-2)">deploy.md</text>
+          <line x1="201" y1="320" x2="483" y2="320" stroke="rgba(var(--ink-rgb),.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
+          <text x="490" y="324" font-family="Segoe UI, sans-serif" font-size="10.5" fill="var(--text-3)">&rarr; /project:deploy</text>
 
-          <use href="#d3-folder" x="88" y="348" style="color:#2A5C9A"/>
-          <rect x="102" y="339" width="62" height="20" rx="5" fill="#DDE8F5"/>
-          <text x="108" y="353" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#2A5C9A">rules/</text>
-          <line x1="172" y1="349" x2="483" y2="349" stroke="rgba(26,31,20,.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
-          <text x="490" y="353" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#6B7060">modular instruction files</text>
+          <use href="#d3-folder" x="88" y="348" style="color:var(--blue)"/>
+          <rect x="102" y="339" width="62" height="20" rx="5" fill="var(--blue-bg)"/>
+          <text x="108" y="353" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="var(--blue)">rules/</text>
+          <line x1="172" y1="349" x2="483" y2="349" stroke="rgba(var(--ink-rgb),.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
+          <text x="490" y="353" font-family="Segoe UI, sans-serif" font-size="10.5" fill="var(--text-3)">modular instruction files</text>
 
-          <use href="#d3-file" x="118" y="375" style="color:#6B7060"/>
-          <text x="134" y="382" font-family="Consolas, monospace" font-size="11" fill="#3D4235">code-style.md</text>
+          <use href="#d3-file" x="118" y="375" style="color:var(--text-3)"/>
+          <text x="134" y="382" font-family="Consolas, monospace" font-size="11" fill="var(--text-2)">code-style.md</text>
 
-          <use href="#d3-file" x="118" y="402" style="color:#6B7060"/>
-          <text x="134" y="409" font-family="Consolas, monospace" font-size="11" fill="#3D4235">testing.md</text>
+          <use href="#d3-file" x="118" y="402" style="color:var(--text-3)"/>
+          <text x="134" y="409" font-family="Consolas, monospace" font-size="11" fill="var(--text-2)">testing.md</text>
 
-          <use href="#d3-file" x="118" y="429" style="color:#6B7060"/>
-          <text x="134" y="436" font-family="Consolas, monospace" font-size="11" fill="#3D4235">api-conventions.md</text>
+          <use href="#d3-file" x="118" y="429" style="color:var(--text-3)"/>
+          <text x="134" y="436" font-family="Consolas, monospace" font-size="11" fill="var(--text-2)">api-conventions.md</text>
 
-          <use href="#d3-folder" x="88" y="460" style="color:#1A6B54"/>
-          <rect x="102" y="451" width="68" height="20" rx="5" fill="#D8EEE8"/>
-          <text x="108" y="465" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#1A6B54">skills/</text>
-          <line x1="178" y1="461" x2="483" y2="461" stroke="rgba(26,31,20,.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
-          <text x="490" y="465" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#6B7060">auto-invoked workflows</text>
-          <use href="#d3-bolt" x="770" y="460" style="color:#1A6B54"/>
-          <text x="770" y="482" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#1A6B54">auto</text>
+          <use href="#d3-folder" x="88" y="460" style="color:var(--teal)"/>
+          <rect x="102" y="451" width="68" height="20" rx="5" fill="var(--teal-bg)"/>
+          <text x="108" y="465" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="var(--teal)">skills/</text>
+          <line x1="178" y1="461" x2="483" y2="461" stroke="rgba(var(--ink-rgb),.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
+          <text x="490" y="465" font-family="Segoe UI, sans-serif" font-size="10.5" fill="var(--text-3)">auto-invoked workflows</text>
+          <use href="#d3-bolt" x="770" y="460" style="color:var(--teal)"/>
+          <text x="770" y="482" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--teal)">auto</text>
 
-          <use href="#d3-file" x="118" y="487" style="color:#6B7060"/>
-          <text x="134" y="494" font-family="Consolas, monospace" font-size="11" fill="#3D4235">security-review/SKILL.md</text>
+          <use href="#d3-file" x="118" y="487" style="color:var(--text-3)"/>
+          <text x="134" y="494" font-family="Consolas, monospace" font-size="11" fill="var(--text-2)">security-review/SKILL.md</text>
 
-          <use href="#d3-file" x="118" y="514" style="color:#6B7060"/>
-          <text x="134" y="521" font-family="Consolas, monospace" font-size="11" fill="#3D4235">deploy/SKILL.md</text>
+          <use href="#d3-file" x="118" y="514" style="color:var(--text-3)"/>
+          <text x="134" y="521" font-family="Consolas, monospace" font-size="11" fill="var(--text-2)">deploy/SKILL.md</text>
 
-          <use href="#d3-folder" x="88" y="545" style="color:#6B7060"/>
-          <text x="108" y="550" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#6B7060">agents/</text>
-          <line x1="165" y1="546" x2="483" y2="546" stroke="rgba(26,31,20,.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
-          <text x="490" y="550" font-family="Segoe UI, sans-serif" font-style="italic" font-size="10.5" fill="#6B7060">subagent personas (see D1)</text>
+          <use href="#d3-folder" x="88" y="545" style="color:var(--text-3)"/>
+          <text x="108" y="550" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="var(--text-3)">agents/</text>
+          <line x1="165" y1="546" x2="483" y2="546" stroke="rgba(var(--ink-rgb),.3)" stroke-width="1" stroke-dasharray="1.5 2.5"/>
+          <text x="490" y="550" font-family="Segoe UI, sans-serif" font-style="italic" font-size="10.5" fill="var(--text-3)">subagent personas (see D1)</text>
 
-          <use href="#d3-file" x="118" y="572" style="color:#6B7060"/>
-          <text x="134" y="579" font-family="Consolas, monospace" font-size="11" fill="#3D4235">code-reviewer.md</text>
+          <use href="#d3-file" x="118" y="572" style="color:var(--text-3)"/>
+          <text x="134" y="579" font-family="Consolas, monospace" font-size="11" fill="var(--text-2)">code-reviewer.md</text>
 
-          <use href="#d3-file" x="118" y="599" style="color:#6B7060"/>
-          <text x="134" y="606" font-family="Consolas, monospace" font-size="11" fill="#3D4235">security-auditor.md</text>
+          <use href="#d3-file" x="118" y="599" style="color:var(--text-3)"/>
+          <text x="134" y="606" font-family="Consolas, monospace" font-size="11" fill="var(--text-2)">security-auditor.md</text>
 
-          <text x="410" y="642" text-anchor="middle" font-family="Segoe UI, sans-serif" font-style="italic" font-size="11" fill="#3D4235">Everything Claude needs to know about your project lives here.</text>
+          <text x="410" y="642" text-anchor="middle" font-family="Segoe UI, sans-serif" font-style="italic" font-size="11" fill="var(--text-2)">Everything Claude needs to know about your project lives here.</text>
 
-          <line x1="30" y1="660" x2="790" y2="660" stroke="rgba(26,31,20,.15)" stroke-width="1"/>
+          <line x1="30" y1="660" x2="790" y2="660" stroke="rgba(var(--ink-rgb),.15)" stroke-width="1"/>
 
-          <rect x="80" y="670" width="11" height="11" rx="2.5" fill="#7A4A9A"/>
-          <text x="96" y="679" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">committed, shared</text>
+          <rect x="80" y="670" width="11" height="11" rx="2.5" fill="var(--purple)"/>
+          <text x="96" y="679" font-family="Segoe UI, sans-serif" font-size="9.5" fill="var(--text-2)">committed, shared</text>
 
-          <rect x="230" y="670" width="11" height="11" rx="2.5" fill="#9A2A4A"/>
-          <text x="246" y="679" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">personal, gitignored</text>
+          <rect x="230" y="670" width="11" height="11" rx="2.5" fill="var(--red)"/>
+          <text x="246" y="679" font-family="Segoe UI, sans-serif" font-size="9.5" fill="var(--text-2)">personal, gitignored</text>
 
-          <rect x="400" y="670" width="11" height="11" rx="2.5" fill="#1A6B54"/>
-          <text x="416" y="679" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">commands &amp; skills</text>
+          <rect x="400" y="670" width="11" height="11" rx="2.5" fill="var(--teal)"/>
+          <text x="416" y="679" font-family="Segoe UI, sans-serif" font-size="9.5" fill="var(--text-2)">commands &amp; skills</text>
 
-          <rect x="560" y="670" width="11" height="11" rx="2.5" fill="#2A5C9A"/>
-          <text x="576" y="679" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">rules</text>
+          <rect x="560" y="670" width="11" height="11" rx="2.5" fill="var(--blue)"/>
+          <text x="576" y="679" font-family="Segoe UI, sans-serif" font-size="9.5" fill="var(--text-2)">rules</text>
 
-          <rect x="650" y="670" width="11" height="11" rx="2.5" fill="#6B7060"/>
-          <text x="666" y="679" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">agents (D1)</text>
+          <rect x="650" y="670" width="11" height="11" rx="2.5" fill="var(--text-3)"/>
+          <text x="666" y="679" font-family="Segoe UI, sans-serif" font-size="9.5" fill="var(--text-2)">agents (D1)</text>
 
           <defs>
             <g id="d3-folder">
@@ -725,35 +784,35 @@
       <h3 class="subhead" id="diagram-skill-example">Diagram: A Real SKILL.md, Annotated</h3>
       <div class="mindmap-wrap">
         <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="A real SKILL.md file with YAML frontmatter: name, description, context fork, allowed-tools, and argument-hint, followed by the skill body. The context fork, allowed-tools, and argument-hint lines are highlighted, with a legend below explaining what each one does.">
-          <rect x="20" y="15" width="680" height="195" rx="10" fill="#EEF1E7" stroke="rgba(26,31,20,.25)"/>
-          <text x="40" y="40" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">---</text>
-          <text x="40" y="58" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">name: reproduce-bug</text>
-          <text x="40" y="76" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">description: reproduces a reported bug with Playwright</text>
+          <rect x="20" y="15" width="680" height="195" rx="10" fill="var(--bg3)" stroke="rgba(var(--ink-rgb),.25)"/>
+          <text x="40" y="40" font-family="Consolas, monospace" font-size="8.5" fill="var(--text-2)">---</text>
+          <text x="40" y="58" font-family="Consolas, monospace" font-size="8.5" fill="var(--text-2)">name: reproduce-bug</text>
+          <text x="40" y="76" font-family="Consolas, monospace" font-size="8.5" fill="var(--text-2)">description: reproduces a reported bug with Playwright</text>
 
-          <rect x="32" y="85" width="656" height="18" rx="4" fill="#D8EEE8" stroke="#1A6B54" stroke-opacity=".5"/>
-          <text x="40" y="98" font-family="Consolas, monospace" font-size="8.5" font-weight="700" fill="#1A6B54">context: fork</text>
+          <rect x="32" y="85" width="656" height="18" rx="4" fill="var(--teal-bg)" stroke="var(--teal)" stroke-opacity=".5"/>
+          <text x="40" y="98" font-family="Consolas, monospace" font-size="8.5" font-weight="700" fill="var(--teal)">context: fork</text>
 
-          <rect x="32" y="103" width="656" height="18" rx="4" fill="#F5EDD6" stroke="#9A6E1A" stroke-opacity=".5"/>
-          <text x="40" y="116" font-family="Consolas, monospace" font-size="8.5" font-weight="700" fill="#9A6E1A">allowed-tools: Bash, Read, Write</text>
+          <rect x="32" y="103" width="656" height="18" rx="4" fill="var(--amber-bg)" stroke="var(--amber)" stroke-opacity=".5"/>
+          <text x="40" y="116" font-family="Consolas, monospace" font-size="8.5" font-weight="700" fill="var(--amber)">allowed-tools: Bash, Read, Write</text>
 
-          <rect x="32" y="121" width="656" height="18" rx="4" fill="#EDE0F5" stroke="#7A4A9A" stroke-opacity=".5"/>
-          <text x="40" y="134" font-family="Consolas, monospace" font-size="8.5" font-weight="700" fill="#7A4A9A">argument-hint: [issue-number]</text>
+          <rect x="32" y="121" width="656" height="18" rx="4" fill="var(--purple-bg)" stroke="var(--purple)" stroke-opacity=".5"/>
+          <text x="40" y="134" font-family="Consolas, monospace" font-size="8.5" font-weight="700" fill="var(--purple)">argument-hint: [issue-number]</text>
 
-          <text x="40" y="152" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">---</text>
-          <text x="40" y="170" font-family="Consolas, monospace" font-size="8.5" font-style="italic" fill="#6B7060">Run the reproduction steps for issue $ARGUMENTS...</text>
-          <text x="40" y="192" font-family="Segoe UI, sans-serif" font-size="8" fill="#6B7060">3 frontmatter fields flagged below</text>
+          <text x="40" y="152" font-family="Consolas, monospace" font-size="8.5" fill="var(--text-2)">---</text>
+          <text x="40" y="170" font-family="Consolas, monospace" font-size="8.5" font-style="italic" fill="var(--text-3)">Run the reproduction steps for issue $ARGUMENTS...</text>
+          <text x="40" y="192" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--text-3)">3 frontmatter fields flagged below</text>
 
-          <rect x="15" y="230" width="220" height="55" rx="8" fill="#D8EEE8" stroke="#1A6B54"/>
-          <text x="30" y="252" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="#1A6B54">context: fork</text>
-          <text x="30" y="268" font-family="Segoe UI, sans-serif" font-size="8" fill="#3D4235">isolates output in a subagent</text>
+          <rect x="15" y="230" width="220" height="55" rx="8" fill="var(--teal-bg)" stroke="var(--teal)"/>
+          <text x="30" y="252" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="var(--teal)">context: fork</text>
+          <text x="30" y="268" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--text-2)">isolates output in a subagent</text>
 
-          <rect x="250" y="230" width="220" height="55" rx="8" fill="#F5EDD6" stroke="#9A6E1A"/>
-          <text x="265" y="252" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="#9A6E1A">allowed-tools</text>
-          <text x="265" y="268" font-family="Segoe UI, sans-serif" font-size="8" fill="#3D4235">pre-approves tools, doesn't restrict</text>
+          <rect x="250" y="230" width="220" height="55" rx="8" fill="var(--amber-bg)" stroke="var(--amber)"/>
+          <text x="265" y="252" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="var(--amber)">allowed-tools</text>
+          <text x="265" y="268" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--text-2)">pre-approves tools, doesn't restrict</text>
 
-          <rect x="485" y="230" width="220" height="55" rx="8" fill="#EDE0F5" stroke="#7A4A9A"/>
-          <text x="500" y="252" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="#7A4A9A">argument-hint</text>
-          <text x="500" y="268" font-family="Segoe UI, sans-serif" font-size="8" fill="#3D4235">shown in autocomplete</text>
+          <rect x="485" y="230" width="220" height="55" rx="8" fill="var(--purple-bg)" stroke="var(--purple)"/>
+          <text x="500" y="252" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="var(--purple)">argument-hint</text>
+          <text x="500" y="268" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--text-2)">shown in autocomplete</text>
         </svg>
         <details class="explain-toggle">
           <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
@@ -772,62 +831,62 @@
       <h3 class="subhead" id="diagram-plan-vs-direct">Diagram: Plan Mode vs. Direct Execution</h3>
       <div class="mindmap-wrap">
         <svg viewBox="0 0 740 410" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Decision flow diagram. A new task arrives and hits a decision diamond: is it architectural, multi-file, or does it have multiple valid approaches? If no, it goes straight to direct execution - a clear, single-scoped change. If yes, it goes to plan mode to explore and design, then to direct execution to implement the approved plan, labeled the hybrid pattern: plan then execute, not plan or execute. Below, a worked example shows a 30-file logging library migration split into a plan phase - find files, map API differences, design the pattern, check edge cases - and an execute phase - apply the pattern to each file using the strategy already decided.">
-          <rect x="20" y="20" width="120" height="50" rx="8" fill="#EEF1E7" stroke="rgba(26,31,20,.25)"/>
-          <text x="80" y="50" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="#3D4235">New task arrives</text>
-          <path d="M140,45 L173,45" stroke="#6B7060" stroke-width="1.5" marker-end="url(#pm1)"/>
+          <rect x="20" y="20" width="120" height="50" rx="8" fill="var(--bg3)" stroke="rgba(var(--ink-rgb),.25)"/>
+          <text x="80" y="50" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="var(--text-2)">New task arrives</text>
+          <path d="M140,45 L173,45" stroke="var(--text-3)" stroke-width="1.5" marker-end="url(#pm1)"/>
 
-          <polygon points="290,10 400,45 290,80 180,45" fill="#F5F7F0" stroke="#6B7060" stroke-width="1.5"/>
-          <text x="290" y="41" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.3" fill="#3D4235">Architectural, multi-file, or</text>
-          <text x="290" y="53" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.3" fill="#3D4235">multiple valid approaches?</text>
+          <polygon points="290,10 400,45 290,80 180,45" fill="var(--bg2)" stroke="var(--text-3)" stroke-width="1.5"/>
+          <text x="290" y="41" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.3" fill="var(--text-2)">Architectural, multi-file, or</text>
+          <text x="290" y="53" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.3" fill="var(--text-2)">multiple valid approaches?</text>
 
-          <path d="M400,45 L427,45" stroke="#1A6B54" stroke-width="1.5" marker-end="url(#pm2)"/>
-          <text x="413" y="35" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" font-weight="700" fill="#1A6B54">No</text>
-          <rect x="430" y="15" width="280" height="60" rx="8" fill="#D8EEE8" stroke="#1A6B54" stroke-width="1.5"/>
-          <text x="570" y="38" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="#1A6B54">Direct execution</text>
-          <text x="570" y="55" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">clear scope, known approach, single file</text>
+          <path d="M400,45 L427,45" stroke="var(--teal)" stroke-width="1.5" marker-end="url(#pm2)"/>
+          <text x="413" y="35" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" font-weight="700" fill="var(--teal)">No</text>
+          <rect x="430" y="15" width="280" height="60" rx="8" fill="var(--teal-bg)" stroke="var(--teal)" stroke-width="1.5"/>
+          <text x="570" y="38" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="var(--teal)">Direct execution</text>
+          <text x="570" y="55" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">clear scope, known approach, single file</text>
 
-          <path d="M290,80 L290,107" stroke="#9A6E1A" stroke-width="1.5" marker-end="url(#pm3)"/>
-          <text x="303" y="97" text-anchor="start" font-family="Segoe UI, sans-serif" font-size="8" font-weight="700" fill="#9A6E1A">Yes</text>
+          <path d="M290,80 L290,107" stroke="var(--amber)" stroke-width="1.5" marker-end="url(#pm3)"/>
+          <text x="303" y="97" text-anchor="start" font-family="Segoe UI, sans-serif" font-size="8" font-weight="700" fill="var(--amber)">Yes</text>
 
-          <rect x="160" y="110" width="260" height="60" rx="8" fill="#F5EDD6" stroke="#9A6E1A" stroke-width="1.5"/>
-          <text x="290" y="133" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="#9A6E1A">Plan mode</text>
-          <text x="290" y="150" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">explore, evaluate approaches, design</text>
+          <rect x="160" y="110" width="260" height="60" rx="8" fill="var(--amber-bg)" stroke="var(--amber)" stroke-width="1.5"/>
+          <text x="290" y="133" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="var(--amber)">Plan mode</text>
+          <text x="290" y="150" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">explore, evaluate approaches, design</text>
 
-          <path d="M420,140 L447,140" stroke="#1A7A3A" stroke-width="1.5" marker-end="url(#pm4)"/>
-          <rect x="450" y="110" width="260" height="60" rx="8" fill="#D8F0E0" stroke="#1A7A3A" stroke-width="1.5"/>
-          <text x="580" y="133" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="#1A7A3A">Direct execution</text>
-          <text x="580" y="150" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">implement the approved plan, file by file</text>
+          <path d="M420,140 L447,140" stroke="var(--green)" stroke-width="1.5" marker-end="url(#pm4)"/>
+          <rect x="450" y="110" width="260" height="60" rx="8" fill="var(--green-bg)" stroke="var(--green)" stroke-width="1.5"/>
+          <text x="580" y="133" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="var(--green)">Direct execution</text>
+          <text x="580" y="150" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">implement the approved plan, file by file</text>
 
-          <rect x="175" y="185" width="520" height="28" rx="14" fill="#EDE0F5" stroke="#7A4A9A" stroke-width="1.3"/>
-          <text x="435" y="203" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700" fill="#7A4A9A">Hybrid pattern - plan mode THEN direct execution, not plan OR direct</text>
+          <rect x="175" y="185" width="520" height="28" rx="14" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="1.3"/>
+          <text x="435" y="203" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700" fill="var(--purple)">Hybrid pattern - plan mode THEN direct execution, not plan OR direct</text>
 
-          <text x="370" y="233" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" font-style="italic" fill="#6B7060">the test is ambiguity, not difficulty - a hard, well-defined bug fix is still direct execution</text>
+          <text x="370" y="233" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" font-style="italic" fill="var(--text-3)">the test is ambiguity, not difficulty - a hard, well-defined bug fix is still direct execution</text>
 
-          <path d="M20,250 L720,250" stroke="#6B7060" stroke-width="1" stroke-dasharray="3 3"/>
+          <path d="M20,250 L720,250" stroke="var(--text-3)" stroke-width="1" stroke-dasharray="3 3"/>
 
-          <text x="370" y="270" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="#3D4235">Worked example - migrating a logging library across 30 files</text>
+          <text x="370" y="270" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="var(--text-2)">Worked example - migrating a logging library across 30 files</text>
 
-          <rect x="40" y="285" width="320" height="110" rx="8" fill="#F5EDD6" stroke="#9A6E1A" stroke-width="1.5"/>
-          <text x="200" y="305" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700" fill="#9A6E1A">Plan phase</text>
-          <text x="200" y="323" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">Find files importing the old library</text>
-          <text x="200" y="338" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">Map API differences, old vs. new</text>
-          <text x="200" y="353" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">Design the migration pattern</text>
-          <text x="200" y="368" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">Check for edge cases</text>
+          <rect x="40" y="285" width="320" height="110" rx="8" fill="var(--amber-bg)" stroke="var(--amber)" stroke-width="1.5"/>
+          <text x="200" y="305" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700" fill="var(--amber)">Plan phase</text>
+          <text x="200" y="323" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">Find files importing the old library</text>
+          <text x="200" y="338" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">Map API differences, old vs. new</text>
+          <text x="200" y="353" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">Design the migration pattern</text>
+          <text x="200" y="368" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">Check for edge cases</text>
 
-          <path d="M360,340 L387,340" stroke="#1A7A3A" stroke-width="1.5" marker-end="url(#pm5)"/>
+          <path d="M360,340 L387,340" stroke="var(--green)" stroke-width="1.5" marker-end="url(#pm5)"/>
 
-          <rect x="390" y="285" width="310" height="110" rx="8" fill="#D8F0E0" stroke="#1A7A3A" stroke-width="1.5"/>
-          <text x="545" y="305" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700" fill="#1A7A3A">Execute phase</text>
-          <text x="545" y="325" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">Apply the migration pattern to each file,</text>
-          <text x="545" y="340" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">using the strategy already decided -</text>
-          <text x="545" y="355" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">no per-file re-deciding along the way</text>
+          <rect x="390" y="285" width="310" height="110" rx="8" fill="var(--green-bg)" stroke="var(--green)" stroke-width="1.5"/>
+          <text x="545" y="305" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700" fill="var(--green)">Execute phase</text>
+          <text x="545" y="325" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">Apply the migration pattern to each file,</text>
+          <text x="545" y="340" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">using the strategy already decided -</text>
+          <text x="545" y="355" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">no per-file re-deciding along the way</text>
 
           <defs>
-            <marker id="pm1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
-            <marker id="pm2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1A6B54"/></marker>
-            <marker id="pm3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9A6E1A"/></marker>
-            <marker id="pm4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1A7A3A"/></marker>
-            <marker id="pm5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1A7A3A"/></marker>
+            <marker id="pm1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--text-3)"/></marker>
+            <marker id="pm2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--teal)"/></marker>
+            <marker id="pm3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--amber)"/></marker>
+            <marker id="pm4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--green)"/></marker>
+            <marker id="pm5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--green)"/></marker>
           </defs>
         </svg>
         <details class="explain-toggle">
@@ -848,61 +907,61 @@
       <h3 class="subhead" id="diagram-refinement-techniques">Diagram: Refinement Technique Selection</h3>
       <div class="mindmap-wrap">
         <svg viewBox="0 0 740 482" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Diagram mapping refinement situations to techniques. Prose interpreted differently each time maps to concrete input output examples. A complex transformation with many edge cases maps to test-driven iteration, sharing test failures. Working in an unfamiliar domain maps to the interview pattern, having Claude ask questions first. A callout warns that examples and the interview pattern solve different problems and should not be conflated. Below, a second pair maps interacting issues to batch feedback in one message, and independent issues to sequential feedback fixed one at a time.">
-          <text x="165" y="14" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" font-weight="700" letter-spacing="0.06em" fill="#6B7060">SITUATION</text>
-          <text x="515" y="14" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" font-weight="700" letter-spacing="0.06em" fill="#6B7060">TECHNIQUE</text>
+          <text x="165" y="14" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" font-weight="700" letter-spacing="0.06em" fill="var(--text-3)">SITUATION</text>
+          <text x="515" y="14" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" font-weight="700" letter-spacing="0.06em" fill="var(--text-3)">TECHNIQUE</text>
 
-          <rect x="20" y="37" width="290" height="55" rx="8" fill="#EEF1E7" stroke="rgba(26,31,20,.25)"/>
-          <text x="165" y="60" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">You know the right answer,</text>
-          <text x="165" y="74" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">Claude Code interprets it differently each time</text>
-          <path d="M310,64 L327,64" stroke="#9A6E1A" stroke-width="1.5" marker-end="url(#rt1)"/>
-          <rect x="330" y="37" width="370" height="55" rx="8" fill="#F5EDD6" stroke="#9A6E1A" stroke-width="1.5"/>
-          <text x="515" y="60" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="#9A6E1A">Concrete I/O examples</text>
-          <text x="515" y="77" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">2-3 before/after pairs set the pattern</text>
+          <rect x="20" y="37" width="290" height="55" rx="8" fill="var(--bg3)" stroke="rgba(var(--ink-rgb),.25)"/>
+          <text x="165" y="60" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">You know the right answer,</text>
+          <text x="165" y="74" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">Claude Code interprets it differently each time</text>
+          <path d="M310,64 L327,64" stroke="var(--amber)" stroke-width="1.5" marker-end="url(#rt1)"/>
+          <rect x="330" y="37" width="370" height="55" rx="8" fill="var(--amber-bg)" stroke="var(--amber)" stroke-width="1.5"/>
+          <text x="515" y="60" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="var(--amber)">Concrete I/O examples</text>
+          <text x="515" y="77" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">2-3 before/after pairs set the pattern</text>
 
-          <rect x="20" y="112" width="290" height="55" rx="8" fill="#EEF1E7" stroke="rgba(26,31,20,.25)"/>
-          <text x="165" y="135" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">Transformation is complex,</text>
-          <text x="165" y="149" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">too many edge cases for prose</text>
-          <path d="M310,139 L327,139" stroke="#1A6B54" stroke-width="1.5" marker-end="url(#rt2)"/>
-          <rect x="330" y="112" width="370" height="55" rx="8" fill="#D8EEE8" stroke="#1A6B54" stroke-width="1.5"/>
-          <text x="515" y="135" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="#1A6B54">Test-driven iteration</text>
-          <text x="515" y="152" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">share test failures, not more prose</text>
+          <rect x="20" y="112" width="290" height="55" rx="8" fill="var(--bg3)" stroke="rgba(var(--ink-rgb),.25)"/>
+          <text x="165" y="135" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">Transformation is complex,</text>
+          <text x="165" y="149" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">too many edge cases for prose</text>
+          <path d="M310,139 L327,139" stroke="var(--teal)" stroke-width="1.5" marker-end="url(#rt2)"/>
+          <rect x="330" y="112" width="370" height="55" rx="8" fill="var(--teal-bg)" stroke="var(--teal)" stroke-width="1.5"/>
+          <text x="515" y="135" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="var(--teal)">Test-driven iteration</text>
+          <text x="515" y="152" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">share test failures, not more prose</text>
 
-          <rect x="20" y="187" width="290" height="55" rx="8" fill="#EEF1E7" stroke="rgba(26,31,20,.25)"/>
-          <text x="165" y="210" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">Domain is unfamiliar,</text>
-          <text x="165" y="224" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">you might miss considerations</text>
-          <path d="M310,214 L327,214" stroke="#7A4A9A" stroke-width="1.5" marker-end="url(#rt3)"/>
-          <rect x="330" y="187" width="370" height="55" rx="8" fill="#EDE0F5" stroke="#7A4A9A" stroke-width="1.5"/>
-          <text x="515" y="210" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="#7A4A9A">Interview pattern</text>
-          <text x="515" y="227" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">Claude asks questions before implementing</text>
+          <rect x="20" y="187" width="290" height="55" rx="8" fill="var(--bg3)" stroke="rgba(var(--ink-rgb),.25)"/>
+          <text x="165" y="210" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">Domain is unfamiliar,</text>
+          <text x="165" y="224" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">you might miss considerations</text>
+          <path d="M310,214 L327,214" stroke="var(--purple)" stroke-width="1.5" marker-end="url(#rt3)"/>
+          <rect x="330" y="187" width="370" height="55" rx="8" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="1.5"/>
+          <text x="515" y="210" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="var(--purple)">Interview pattern</text>
+          <text x="515" y="227" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">Claude asks questions before implementing</text>
 
-          <rect x="100" y="257" width="540" height="30" rx="15" fill="#F5DDE5" stroke="#9A2A4A" stroke-width="1.3"/>
-          <text x="370" y="277" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700" fill="#9A2A4A">Examples vs. interview pattern - different problems, don't conflate them</text>
+          <rect x="100" y="257" width="540" height="30" rx="15" fill="var(--red-bg)" stroke="var(--red)" stroke-width="1.3"/>
+          <text x="370" y="277" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700" fill="var(--red)">Examples vs. interview pattern - different problems, don't conflate them</text>
 
-          <path d="M20,302 L720,302" stroke="#6B7060" stroke-width="1" stroke-dasharray="3 3"/>
-          <text x="370" y="322" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="#3D4235">Batch vs. sequential feedback</text>
+          <path d="M20,302 L720,302" stroke="var(--text-3)" stroke-width="1" stroke-dasharray="3 3"/>
+          <text x="370" y="322" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="var(--text-2)">Batch vs. sequential feedback</text>
 
-          <rect x="20" y="332" width="290" height="55" rx="8" fill="#EEF1E7" stroke="rgba(26,31,20,.25)"/>
-          <text x="165" y="355" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">Issues interact</text>
-          <text x="165" y="369" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">(fixing one affects another)</text>
-          <path d="M310,359 L327,359" stroke="#1A6B54" stroke-width="1.5" marker-end="url(#rt4)"/>
-          <rect x="330" y="332" width="370" height="55" rx="8" fill="#D8EEE8" stroke="#1A6B54" stroke-width="1.5"/>
-          <text x="515" y="355" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="#1A6B54">Batch feedback</text>
-          <text x="515" y="372" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">one message, all constraints together</text>
+          <rect x="20" y="332" width="290" height="55" rx="8" fill="var(--bg3)" stroke="rgba(var(--ink-rgb),.25)"/>
+          <text x="165" y="355" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">Issues interact</text>
+          <text x="165" y="369" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">(fixing one affects another)</text>
+          <path d="M310,359 L327,359" stroke="var(--teal)" stroke-width="1.5" marker-end="url(#rt4)"/>
+          <rect x="330" y="332" width="370" height="55" rx="8" fill="var(--teal-bg)" stroke="var(--teal)" stroke-width="1.5"/>
+          <text x="515" y="355" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="var(--teal)">Batch feedback</text>
+          <text x="515" y="372" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">one message, all constraints together</text>
 
-          <rect x="20" y="407" width="290" height="55" rx="8" fill="#EEF1E7" stroke="rgba(26,31,20,.25)"/>
-          <text x="165" y="430" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">Issues are independent</text>
-          <text x="165" y="444" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">(no effect on each other)</text>
-          <path d="M310,434 L327,434" stroke="#2A5C9A" stroke-width="1.5" marker-end="url(#rt5)"/>
-          <rect x="330" y="407" width="370" height="55" rx="8" fill="#DDE8F5" stroke="#2A5C9A" stroke-width="1.5"/>
-          <text x="515" y="430" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="#2A5C9A">Sequential feedback</text>
-          <text x="515" y="447" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">one fix at a time, wait for the result</text>
+          <rect x="20" y="407" width="290" height="55" rx="8" fill="var(--bg3)" stroke="rgba(var(--ink-rgb),.25)"/>
+          <text x="165" y="430" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">Issues are independent</text>
+          <text x="165" y="444" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">(no effect on each other)</text>
+          <path d="M310,434 L327,434" stroke="var(--blue)" stroke-width="1.5" marker-end="url(#rt5)"/>
+          <rect x="330" y="407" width="370" height="55" rx="8" fill="var(--blue-bg)" stroke="var(--blue)" stroke-width="1.5"/>
+          <text x="515" y="430" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="var(--blue)">Sequential feedback</text>
+          <text x="515" y="447" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">one fix at a time, wait for the result</text>
 
           <defs>
-            <marker id="rt1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9A6E1A"/></marker>
-            <marker id="rt2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1A6B54"/></marker>
-            <marker id="rt3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7A4A9A"/></marker>
-            <marker id="rt4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1A6B54"/></marker>
-            <marker id="rt5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2A5C9A"/></marker>
+            <marker id="rt1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--amber)"/></marker>
+            <marker id="rt2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--teal)"/></marker>
+            <marker id="rt3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--purple)"/></marker>
+            <marker id="rt4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--teal)"/></marker>
+            <marker id="rt5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--blue)"/></marker>
           </defs>
         </svg>
         <details class="explain-toggle">
@@ -926,41 +985,41 @@
       <h3 class="subhead" id="diagram-cicd-review-flow">Diagram: CI/CD Review Flow</h3>
       <div class="mindmap-wrap">
         <svg viewBox="0 0 760 210" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Flow diagram: a developer at a laptop opens a pull request, which triggers Claude Code with the print flag and JSON schema output, producing structured findings. Each finding gets a fingerprint. If the fingerprint already exists it is skipped, otherwise it is posted as a new PR comment, with critical findings also failing the build check.">
-          <use href="#icon-laptop" x="45" y="38" style="color:#3D4235"/>
-          <use href="#icon-stick" x="80" y="34" style="color:#3D4235"/>
-          <text x="63" y="65" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#6B7060">developer pushes</text>
+          <use href="#icon-laptop" x="45" y="38" style="color:var(--text-2)"/>
+          <use href="#icon-stick" x="80" y="34" style="color:var(--text-2)"/>
+          <text x="63" y="65" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--text-3)">developer pushes</text>
 
-          <rect x="10" y="100" width="110" height="46" rx="8" fill="#EEF1E7" stroke="rgba(26,31,20,.2)"/>
-          <text x="65" y="120" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="#3D4235">PR opened</text>
-          <text x="65" y="134" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#6B7060">or updated</text>
-          <path d="M120,123 L153,123" stroke="#6B7060" stroke-width="1.5" marker-end="url(#ci1)"/>
+          <rect x="10" y="100" width="110" height="46" rx="8" fill="var(--bg3)" stroke="rgba(var(--ink-rgb),.2)"/>
+          <text x="65" y="120" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="var(--text-2)">PR opened</text>
+          <text x="65" y="134" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-3)">or updated</text>
+          <path d="M120,123 L153,123" stroke="var(--text-3)" stroke-width="1.5" marker-end="url(#ci1)"/>
 
-          <use href="#icon-bot" x="230" y="80" style="color:#9A2A4A"/>
-          <rect x="155" y="100" width="150" height="46" rx="8" fill="#F5DDE5" stroke="#9A2A4A"/>
-          <text x="230" y="118" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#9A2A4A">claude -p --output-format json</text>
-          <text x="230" y="133" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">+ CLAUDE.md context, tests</text>
-          <path d="M305,123 L338,123" stroke="#6B7060" stroke-width="1.5" marker-end="url(#ci2)"/>
+          <use href="#icon-bot" x="230" y="80" style="color:var(--red)"/>
+          <rect x="155" y="100" width="150" height="46" rx="8" fill="var(--red-bg)" stroke="var(--red)"/>
+          <text x="230" y="118" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="var(--red)">claude -p --output-format json</text>
+          <text x="230" y="133" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">+ CLAUDE.md context, tests</text>
+          <path d="M305,123 L338,123" stroke="var(--text-3)" stroke-width="1.5" marker-end="url(#ci2)"/>
 
-          <rect x="340" y="100" width="130" height="46" rx="8" fill="#EEF1E7" stroke="rgba(26,31,20,.2)"/>
-          <text x="405" y="123" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="#3D4235">Fingerprint each finding</text>
+          <rect x="340" y="100" width="130" height="46" rx="8" fill="var(--bg3)" stroke="rgba(var(--ink-rgb),.2)"/>
+          <text x="405" y="123" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="var(--text-2)">Fingerprint each finding</text>
 
-          <path d="M405,100 C405,75 460,70 500,80" stroke="#1A7A3A" stroke-width="1.5" fill="none" marker-end="url(#ci3)"/>
-          <text x="452" y="64" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#1A7A3A">new</text>
-          <rect x="502" y="55" width="180" height="42" rx="8" fill="#D8F0E0" stroke="#1A7A3A"/>
-          <text x="592" y="73" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#1A7A3A">Post PR comment</text>
-          <text x="592" y="87" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">critical &rarr; also fail check</text>
+          <path d="M405,100 C405,75 460,70 500,80" stroke="var(--green)" stroke-width="1.5" fill="none" marker-end="url(#ci3)"/>
+          <text x="452" y="64" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--green)">new</text>
+          <rect x="502" y="55" width="180" height="42" rx="8" fill="var(--green-bg)" stroke="var(--green)"/>
+          <text x="592" y="73" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="var(--green)">Post PR comment</text>
+          <text x="592" y="87" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">critical &rarr; also fail check</text>
 
-          <path d="M405,146 C405,171 460,176 500,166" stroke="#6B7060" stroke-width="1.5" fill="none" marker-end="url(#ci4)"/>
-          <text x="452" y="185" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#6B7060">already posted</text>
-          <rect x="502" y="143" width="180" height="42" rx="8" fill="#EEF1E7" stroke="rgba(26,31,20,.2)"/>
-          <text x="592" y="161" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">Skip (no duplicate)</text>
-          <text x="592" y="175" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#6B7060">fingerprint already exists</text>
+          <path d="M405,146 C405,171 460,176 500,166" stroke="var(--text-3)" stroke-width="1.5" fill="none" marker-end="url(#ci4)"/>
+          <text x="452" y="185" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-3)">already posted</text>
+          <rect x="502" y="143" width="180" height="42" rx="8" fill="var(--bg3)" stroke="rgba(var(--ink-rgb),.2)"/>
+          <text x="592" y="161" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="var(--text-2)">Skip (no duplicate)</text>
+          <text x="592" y="175" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-3)">fingerprint already exists</text>
 
           <defs>
-            <marker id="ci1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
-            <marker id="ci2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
-            <marker id="ci3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1A7A3A"/></marker>
-            <marker id="ci4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+            <marker id="ci1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--text-3)"/></marker>
+            <marker id="ci2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--text-3)"/></marker>
+            <marker id="ci3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--green)"/></marker>
+            <marker id="ci4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--text-3)"/></marker>
             <g id="icon-stick">
               <circle cx="0" cy="-9" r="4" fill="none" stroke="currentColor" stroke-width="1.4"/>
               <line x1="0" y1="-5" x2="0" y2="6" stroke="currentColor" stroke-width="1.4"/>
@@ -1028,7 +1087,7 @@
   </details>
 
   <details class="topic">
-    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12,3.5 C8.5,3.5 6.8,5.8 7,8 C5.2,8.6 4.6,11 5.6,12.3 C4.6,13.7 5.2,16.1 7,16.7 C6.9,18.7 9,20.3 12,19.8 C15,20.3 17.1,18.7 17,16.7 C18.8,16.1 19.4,13.7 18.4,12.3 C19.4,11 18.8,8.6 17,8 C17.2,5.8 15.5,3.5 12,3.5 Z" stroke="#7A4A9A" stroke-width="1.4" fill="none" stroke-linejoin="round"/><path d="M12,4.5 L12,19.5" stroke="#7A4A9A" stroke-width="1.1"/><path d="M8.3,9 C9.3,9.6 8.3,11 9.3,11.6" stroke="#7A4A9A" stroke-width="1" fill="none" stroke-linecap="round"/><path d="M15.7,9 C14.7,9.6 15.7,11 14.7,11.6" stroke="#7A4A9A" stroke-width="1" fill="none" stroke-linecap="round"/></svg></span><span class="sec-num">3</span>Active Recall</h2></summary>
+    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12,3.5 C8.5,3.5 6.8,5.8 7,8 C5.2,8.6 4.6,11 5.6,12.3 C4.6,13.7 5.2,16.1 7,16.7 C6.9,18.7 9,20.3 12,19.8 C15,20.3 17.1,18.7 17,16.7 C18.8,16.1 19.4,13.7 18.4,12.3 C19.4,11 18.8,8.6 17,8 C17.2,5.8 15.5,3.5 12,3.5 Z" stroke="var(--purple)" stroke-width="1.4" fill="none" stroke-linejoin="round"/><path d="M12,4.5 L12,19.5" stroke="var(--purple)" stroke-width="1.1"/><path d="M8.3,9 C9.3,9.6 8.3,11 9.3,11.6" stroke="var(--purple)" stroke-width="1" fill="none" stroke-linecap="round"/><path d="M15.7,9 C14.7,9.6 15.7,11 14.7,11.6" stroke="var(--purple)" stroke-width="1" fill="none" stroke-linecap="round"/></svg></span><span class="sec-num">3</span>Active Recall</h2></summary>
     <div class="topic-body">
       <details class="recall-item"><summary>Why might a new team member not receive the team's Claude Code instructions even though the project has a CLAUDE.md?</summary><div class="recall-answer">The instructions may have been placed in <em>user-level</em> config (<code>~/.claude/CLAUDE.md</code>) instead of <em>project-level</em> (<code>.claude/CLAUDE.md</code>) - user-level settings apply only to the person who set them and are never shared via version control.</div></details>
 
@@ -1071,7 +1130,7 @@
   </details>
 
   <details class="topic">
-    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="2" width="14" height="20" rx="1.5" stroke="#6B7060" stroke-width="1.5"/><text x="12" y="14" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700" fill="#9A2A4A">?</text><circle cx="8" cy="18" r="1" fill="none" stroke="#6B7060" stroke-width="1"/><circle cx="12" cy="18" r="1" fill="none" stroke="#6B7060" stroke-width="1"/><circle cx="16" cy="18" r="1" fill="none" stroke="#6B7060" stroke-width="1"/></svg></span><span class="sec-num">4</span>Official Sample Questions (D3)</h2></summary>
+    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="2" width="14" height="20" rx="1.5" stroke="var(--text-3)" stroke-width="1.5"/><text x="12" y="14" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700" fill="var(--red)">?</text><circle cx="8" cy="18" r="1" fill="none" stroke="var(--text-3)" stroke-width="1"/><circle cx="12" cy="18" r="1" fill="none" stroke="var(--text-3)" stroke-width="1"/><circle cx="16" cy="18" r="1" fill="none" stroke="var(--text-3)" stroke-width="1"/></svg></span><span class="sec-num">4</span>Official Sample Questions (D3)</h2></summary>
     <div class="topic-body">
       <div class="mcq">
         <div class="mcq-q"><span class="qnum">Q4.</span> (Scenario 2, Code Generation) You want a custom <code>/review</code> slash command available to every developer when they clone or pull the repo. Where should the command file live?</div>
@@ -1131,7 +1190,7 @@
   </details>
 
   <details class="topic">
-    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="3" width="14" height="18" rx="1.3" stroke="#6B7060" stroke-width="1.5"/><line x1="8" y1="3" x2="8" y2="21" stroke="#6B7060" stroke-width="1.1"/><path d="M13,3 L16,3 L16,11 L14.5,9.3 L13,11 Z" fill="#9A2A4A"/></svg></span><span class="sec-num">5</span>Emergency Recap</h2></summary>
+    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="3" width="14" height="18" rx="1.3" stroke="var(--text-3)" stroke-width="1.5"/><line x1="8" y1="3" x2="8" y2="21" stroke="var(--text-3)" stroke-width="1.1"/><path d="M13,3 L16,3 L16,11 L14.5,9.3 L13,11 Z" fill="var(--red)"/></svg></span><span class="sec-num">5</span>Emergency Recap</h2></summary>
     <div class="topic-body">
       <div class="cornell">
         <div class="cornell-row">

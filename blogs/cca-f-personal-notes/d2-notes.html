@@ -4,9 +4,11 @@
 <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>D2 Notes: Tool Design &amp; MCP Integration | CCA-F Personal Notes</title>
 <meta name="robots" content="noindex, nofollow" />
+<link rel="stylesheet" href="assets/theme.css" />
+<script src="assets/theme.js"></script>
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  :root{--bg:#FAFCF5;--bg2:#F5F7F0;--bg3:#EEF1E7;--border:rgba(26,31,20,0.14);--text:#1A1F14;--text-2:#3D4235;--text-3:#6B7060;--green:#1A7A3A;--green-bg:#D8F0E0;--amber:#9A6E1A;--amber-bg:#F5EDD6;--purple:#7A4A9A;--purple-bg:#EDE0F5;--red:#9A2A4A;--red-bg:#F5DDE5;--teal:#1A6B54;--teal-bg:#D8EEE8;--blue:#2A5C9A;--blue-bg:#DDE8F5}
+  :root{--bg:#FAFCF5;--bg2:#F5F7F0;--bg3:#EEF1E7;--border:rgba(var(--ink-rgb),0.14);--text:#1A1F14;--text-2:#3D4235;--text-3:#6B7060;--green:#1A7A3A;--green-bg:#D8F0E0;--amber:#9A6E1A;--amber-bg:#F5EDD6;--purple:#7A4A9A;--purple-bg:#EDE0F5;--red:#9A2A4A;--red-bg:#F5DDE5;--teal:#1A6B54;--teal-bg:#D8EEE8;--blue:#2A5C9A;--blue-bg:#DDE8F5}
   body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:16px;line-height:1.65;padding:2rem 1.25rem 5rem}
   main{max-width:940px;margin:0 auto}
   a{color:var(--purple)}
@@ -57,24 +59,24 @@
   .cornell-note .lbl{font-weight:600;color:var(--text)}
   .cornell-note .hl{color:var(--amber);font-weight:600}
   .cornell-see{font-size:.78rem;margin-top:.6rem}
-  .cornell-see a{color:#1E3A6E;text-decoration:underline;font-weight:600}
+  .cornell-see a{color:var(--navy);text-decoration:underline;font-weight:600}
   .li-see{display:block;margin-top:.2rem;font-size:.78rem}
-  .li-see a{color:#1E3A6E;text-decoration:underline;font-weight:600}
+  .li-see a{color:var(--navy);text-decoration:underline;font-weight:600}
   @media(max-width:640px){.cornell-row{grid-template-columns:1fr}.cornell-cue{padding-bottom:.4rem}}
   .explain-toggle{margin-top:.9rem}
-  .explain-toggle summary{cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:.45rem;background:#E4E7F7;color:#1E3A6E;font-weight:600;font-size:.83rem;padding:.5rem 1.1rem;border-radius:999px;transition:background .15s,color .15s}
+  .explain-toggle summary{cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:.45rem;background:var(--navy-bg);color:var(--navy);font-weight:600;font-size:.83rem;padding:.5rem 1.1rem;border-radius:999px;transition:background .15s,color .15s}
   .explain-toggle summary::-webkit-details-marker{display:none}
   .explain-toggle summary svg{flex-shrink:0}
-  .explain-toggle summary:hover{background:#1E3A6E;color:var(--bg)}
+  .explain-toggle summary:hover{background:var(--navy);color:var(--bg)}
   .explain-toggle[open] summary{border-radius:10px 10px 0 0}
-  .explain-toggle .explain-body{padding:.9rem 1rem;background:#E4E7F7;border-radius:0 10px 10px 10px;font-size:.86rem;color:var(--text-2);line-height:1.65}
+  .explain-toggle .explain-body{padding:.9rem 1rem;background:var(--navy-bg);border-radius:0 10px 10px 10px;font-size:.86rem;color:var(--text-2);line-height:1.65}
   .explain-toggle .explain-body p{margin-top:0}
   .explain-toggle .explain-body p+p{margin-top:.7rem}
-  .explain-toggle .explain-body h4{margin:1rem 0 .4rem;font-size:.8rem;color:#1E3A6E;text-transform:uppercase;letter-spacing:.03em}
+  .explain-toggle .explain-body h4{margin:1rem 0 .4rem;font-size:.8rem;color:var(--navy);text-transform:uppercase;letter-spacing:.03em}
   .explain-toggle .explain-body h4:first-child{margin-top:0}
   .explain-toggle .explain-body ul{padding-left:1.1rem;margin:.3rem 0}
   .explain-toggle .explain-body li{margin-bottom:.25rem}
-  .explain-toggle .explain-body code{background:var(--bg3);padding:.1rem .35rem;border-radius:4px;font-size:.85em;color:#1E3A6E;font-family:monospace}
+  .explain-toggle .explain-body code{background:var(--bg3);padding:.1rem .35rem;border-radius:4px;font-size:.85em;color:var(--navy);font-family:monospace}
 
   .cornell-summary{background:var(--amber-bg);border-left:3px solid var(--amber);border-radius:0 8px 8px 0;padding:1rem 1.2rem;font-size:.86rem;color:var(--text-2);margin-bottom:.5rem}
   .cornell-summary strong{color:var(--text)}
@@ -119,11 +121,61 @@
   .page-nav .nav-next{text-align:right}
   @media(max-width:640px){.page-nav{flex-direction:column}.page-nav .nav-next{text-align:left}}
   .src-note{font-size:.78rem;color:var(--text-3);margin-bottom:2rem}
+
+  /* Dark-mode-only overrides: keep the light theme exactly as designed.
+     Per-subheading rainbow accents collapse to D2's single amber identity. */
+  [data-theme="dark"] .kw.g1{border-left-color:var(--amber-1)}
+  [data-theme="dark"] .kw.g2{border-left-color:var(--amber-2)}
+  [data-theme="dark"] .kw.g3{border-left-color:var(--amber-3)}
+  [data-theme="dark"] .kw.g4{border-left-color:var(--amber-4)}
+  [data-theme="dark"] .kw.g5{border-left-color:var(--amber-5)}
+  [data-theme="dark"] .cornell-cue.g1{background:var(--amber-bg);color:var(--amber-1)}
+  [data-theme="dark"] .cornell-cue.g2{background:var(--amber-bg);color:var(--amber-2)}
+  [data-theme="dark"] .cornell-cue.g3{background:var(--amber-bg);color:var(--amber-3)}
+  [data-theme="dark"] .cornell-cue.g4{background:var(--amber-bg);color:var(--amber-4)}
+  [data-theme="dark"] .cornell-cue.g5{background:var(--amber-bg);color:var(--amber-5)}
+  [data-theme="dark"] .cornell-note .hl{color:var(--green)}
+
+  /* Mind-map: every branch (2.1-2.5) recolors from its own hue to a
+     shade of D2's amber identity, using the same tier numbering as the
+     Cornell-cue gradient above. Amber keyword-highlight tspans (never
+     carry a bcolor-N class) are untouched. */
+  [data-theme="dark"] .d2-hub{fill:var(--amber)}
+  [data-theme="dark"] circle.d2-hub{fill:var(--amber-bg);stroke:var(--amber)}
+  [data-theme="dark"] path.bcolor-1{stroke:var(--amber-1)}
+  [data-theme="dark"] rect.bcolor-1{stroke:var(--amber-1)}
+  [data-theme="dark"] text.bcolor-1{fill:var(--amber-1)}
+  [data-theme="dark"] rect.bnode-1{fill:var(--amber-bg)}
+  [data-theme="dark"] path.bcolor-2{stroke:var(--amber-2)}
+  [data-theme="dark"] rect.bcolor-2{stroke:var(--amber-2)}
+  [data-theme="dark"] text.bcolor-2{fill:var(--amber-2)}
+  [data-theme="dark"] rect.bnode-2{fill:var(--amber-bg)}
+  [data-theme="dark"] path.bcolor-3{stroke:var(--amber-3)}
+  [data-theme="dark"] rect.bcolor-3{stroke:var(--amber-3)}
+  [data-theme="dark"] text.bcolor-3{fill:var(--amber-3)}
+  [data-theme="dark"] rect.bnode-3{fill:var(--amber-bg)}
+  [data-theme="dark"] path.bcolor-4{stroke:var(--amber-4)}
+  [data-theme="dark"] rect.bcolor-4{stroke:var(--amber-4)}
+  [data-theme="dark"] text.bcolor-4{fill:var(--amber-4)}
+  [data-theme="dark"] rect.bnode-4{fill:var(--amber-bg)}
+  [data-theme="dark"] path.bcolor-5{stroke:var(--amber-5)}
+  [data-theme="dark"] rect.bcolor-5{stroke:var(--amber-5)}
+  [data-theme="dark"] text.bcolor-5{fill:var(--amber-5)}
+  [data-theme="dark"] rect.bnode-5{fill:var(--amber-bg)}
 </style>
 </head>
 <body>
 <main>
-  <a class="back" href="index.html">&larr; CCA-F Personal Notes</a>
+  <div class="page-topbar">
+    <a class="back" href="index.html">&larr; CCA-F Personal Notes</a>
+    <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle dark mode" aria-pressed="false">
+      <span class="ttk-track" aria-hidden="true">
+        <span class="ttk-icon">&#9728;</span>
+        <span class="ttk-thumb"></span>
+        <span class="ttk-icon">&#9789;</span>
+      </span>
+    </button>
+  </div>
   <header>
     <span class="weight-tag">D2 &middot; 18% of exam</span>
     <h1>Tool Design &amp; MCP Integration</h1>
@@ -137,81 +189,81 @@
       <div class="mindmap-wrap">
         <svg viewBox="0 0 740 400" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Mind map of D2 with the root node Tool Design and MCP Integration centered: 2.1, 2.2, and 2.3 branch off to the left as square nodes with their leaves extending further left, while 2.4 and 2.5 branch off to the right as square nodes with their leaves extending further right.">
           <!-- root, centered -->
-          <circle cx="370" cy="190" r="50" fill="#F5EDD6" stroke="#9A6E1A" stroke-width="2"/>
-          <text x="370" y="183" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="14" font-weight="700" fill="#9A6E1A">D2</text>
-          <text x="370" y="198" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#3D4235">Tool Design &amp;</text>
-          <text x="370" y="210" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#3D4235">MCP Integration</text>
+          <circle class="d2-hub" cx="370" cy="190" r="50" fill="var(--amber-bg)" stroke="var(--amber)" stroke-width="2"/>
+          <text class="d2-hub" x="370" y="183" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="14" font-weight="700" fill="var(--amber)">D2</text>
+          <text x="370" y="198" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="var(--text-2)">Tool Design &amp;</text>
+          <text x="370" y="210" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="var(--text-2)">MCP Integration</text>
 
           <!-- root to branch lines, from the true circle boundary -->
-          <path d="M339.3,150.6 C300,110 280,75 265,55" fill="none" stroke="#7A4A9A" stroke-width="1.5"/>
-          <path d="M320,190 L265,190" fill="none" stroke="#9A2A4A" stroke-width="1.5"/>
-          <path d="M339.3,229.4 C300,270 280,305 265,325" fill="none" stroke="#1A6B54" stroke-width="1.5"/>
-          <path d="M408,157.5 C440,130 460,115 475,100" fill="none" stroke="#2A5C9A" stroke-width="1.5"/>
-          <path d="M408,222.5 C440,250 460,265 475,280" fill="none" stroke="#9A6E1A" stroke-width="1.5"/>
+          <path class="bcolor-1" d="M339.3,150.6 C300,110 280,75 265,55" fill="none" stroke="var(--purple)" stroke-width="1.5"/>
+          <path class="bcolor-2" d="M320,190 L265,190" fill="none" stroke="var(--red)" stroke-width="1.5"/>
+          <path class="bcolor-3" d="M339.3,229.4 C300,270 280,305 265,325" fill="none" stroke="var(--teal)" stroke-width="1.5"/>
+          <path class="bcolor-4" d="M408,157.5 C440,130 460,115 475,100" fill="none" stroke="var(--blue)" stroke-width="1.5"/>
+          <path class="bcolor-5" d="M408,222.5 C440,250 460,265 475,280" fill="none" stroke="var(--amber)" stroke-width="1.5"/>
 
           <!-- Branch 2.1, left, square node -->
-          <path d="M185,31 L165,31" fill="none" stroke="#7A4A9A" stroke-width="1"/>
-          <path d="M185,79 L165,79" fill="none" stroke="#7A4A9A" stroke-width="1"/>
-          <rect x="185" y="15" width="80" height="80" rx="14" fill="#EDE0F5" stroke="#7A4A9A" stroke-width="1.5"/>
-          <text x="225" y="51" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="#7A4A9A">2.1</text>
-          <text x="225" y="68" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#7A4A9A">Interface</text>
-          <rect x="0" y="15" width="165" height="32" rx="6" fill="#FAFCF5" stroke="#7A4A9A" stroke-opacity=".4"/>
-          <text x="82" y="35" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="#9A6E1A" font-weight="700">primary</tspan><tspan fill="#3D4235"> selection signal</tspan></text>
-          <rect x="0" y="63" width="165" height="32" rx="6" fill="#FAFCF5" stroke="#7A4A9A" stroke-opacity=".4"/>
-          <text x="82" y="83" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="#3D4235">overlap &rarr; </tspan><tspan fill="#9A6E1A" font-weight="700">misrouting</tspan></text>
+          <path class="bcolor-1" d="M185,31 L165,31" fill="none" stroke="var(--purple)" stroke-width="1"/>
+          <path class="bcolor-1" d="M185,79 L165,79" fill="none" stroke="var(--purple)" stroke-width="1"/>
+          <rect class="bcolor-1 bnode-1" x="185" y="15" width="80" height="80" rx="14" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="1.5"/>
+          <text class="bcolor-1" x="225" y="51" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="var(--purple)">2.1</text>
+          <text class="bcolor-1" x="225" y="68" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="var(--purple)">Interface</text>
+          <rect class="bcolor-1" x="0" y="15" width="165" height="32" rx="6" fill="var(--bg)" stroke="var(--purple)" stroke-opacity=".4"/>
+          <text x="82" y="35" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="var(--amber)" font-weight="700">primary</tspan><tspan fill="var(--text-2)"> selection signal</tspan></text>
+          <rect class="bcolor-1" x="0" y="63" width="165" height="32" rx="6" fill="var(--bg)" stroke="var(--purple)" stroke-opacity=".4"/>
+          <text x="82" y="83" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="var(--text-2)">overlap &rarr; </tspan><tspan fill="var(--amber)" font-weight="700">misrouting</tspan></text>
 
           <!-- Branch 2.2, left, square node -->
-          <path d="M185,166 L165,166" fill="none" stroke="#9A2A4A" stroke-width="1"/>
-          <path d="M185,214 L165,214" fill="none" stroke="#9A2A4A" stroke-width="1"/>
-          <rect x="185" y="150" width="80" height="80" rx="14" fill="#F5DDE5" stroke="#9A2A4A" stroke-width="1.5"/>
-          <text x="225" y="186" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="#9A2A4A">2.2</text>
-          <text x="225" y="201" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#9A2A4A">Structured</text>
-          <text x="225" y="212" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#9A2A4A">Errors</text>
-          <rect x="0" y="150" width="165" height="32" rx="6" fill="#FAFCF5" stroke="#9A2A4A" stroke-opacity=".4"/>
-          <text x="82" y="170" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="#1A7A3A">isRetryable: false</text>
-          <rect x="0" y="198" width="165" height="32" rx="6" fill="#FAFCF5" stroke="#9A2A4A" stroke-opacity=".4"/>
-          <text x="82" y="218" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="#3D4235">empty result &ne; </tspan><tspan fill="#9A6E1A" font-weight="700">error</tspan></text>
+          <path class="bcolor-2" d="M185,166 L165,166" fill="none" stroke="var(--red)" stroke-width="1"/>
+          <path class="bcolor-2" d="M185,214 L165,214" fill="none" stroke="var(--red)" stroke-width="1"/>
+          <rect class="bcolor-2 bnode-2" x="185" y="150" width="80" height="80" rx="14" fill="var(--red-bg)" stroke="var(--red)" stroke-width="1.5"/>
+          <text class="bcolor-2" x="225" y="186" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="var(--red)">2.2</text>
+          <text class="bcolor-2" x="225" y="201" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--red)">Structured</text>
+          <text class="bcolor-2" x="225" y="212" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--red)">Errors</text>
+          <rect class="bcolor-2" x="0" y="150" width="165" height="32" rx="6" fill="var(--bg)" stroke="var(--red)" stroke-opacity=".4"/>
+          <text class="bcolor-2" x="82" y="170" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="var(--green)">isRetryable: false</text>
+          <rect class="bcolor-2" x="0" y="198" width="165" height="32" rx="6" fill="var(--bg)" stroke="var(--red)" stroke-opacity=".4"/>
+          <text x="82" y="218" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="var(--text-2)">empty result &ne; </tspan><tspan fill="var(--amber)" font-weight="700">error</tspan></text>
 
           <!-- Branch 2.3, left, square node -->
-          <path d="M185,301 L165,301" fill="none" stroke="#1A6B54" stroke-width="1"/>
-          <path d="M185,349 L165,349" fill="none" stroke="#1A6B54" stroke-width="1"/>
-          <rect x="185" y="285" width="80" height="80" rx="14" fill="#D8EEE8" stroke="#1A6B54" stroke-width="1.5"/>
-          <text x="225" y="321" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="#1A6B54">2.3</text>
-          <text x="225" y="338" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#1A6B54">Distribution</text>
-          <rect x="0" y="285" width="165" height="32" rx="6" fill="#FAFCF5" stroke="#1A6B54" stroke-opacity=".4"/>
-          <text x="82" y="305" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="#3D4235">18 tools vs 4&ndash;5 = </tspan><tspan fill="#9A6E1A" font-weight="700">worse</tspan></text>
-          <rect x="0" y="333" width="165" height="32" rx="6" fill="#FAFCF5" stroke="#1A6B54" stroke-opacity=".4"/>
-          <text x="82" y="353" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="#1A7A3A">auto / any / forced</text>
+          <path class="bcolor-3" d="M185,301 L165,301" fill="none" stroke="var(--teal)" stroke-width="1"/>
+          <path class="bcolor-3" d="M185,349 L165,349" fill="none" stroke="var(--teal)" stroke-width="1"/>
+          <rect class="bcolor-3 bnode-3" x="185" y="285" width="80" height="80" rx="14" fill="var(--teal-bg)" stroke="var(--teal)" stroke-width="1.5"/>
+          <text class="bcolor-3" x="225" y="321" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="var(--teal)">2.3</text>
+          <text class="bcolor-3" x="225" y="338" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="var(--teal)">Distribution</text>
+          <rect class="bcolor-3" x="0" y="285" width="165" height="32" rx="6" fill="var(--bg)" stroke="var(--teal)" stroke-opacity=".4"/>
+          <text x="82" y="305" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="var(--text-2)">18 tools vs 4&ndash;5 = </tspan><tspan fill="var(--amber)" font-weight="700">worse</tspan></text>
+          <rect class="bcolor-3" x="0" y="333" width="165" height="32" rx="6" fill="var(--bg)" stroke="var(--teal)" stroke-opacity=".4"/>
+          <text class="bcolor-3" x="82" y="353" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="var(--green)">auto / any / forced</text>
 
           <!-- Branch 2.4, right, square node -->
-          <path d="M555,76 L575,76" fill="none" stroke="#2A5C9A" stroke-width="1"/>
-          <path d="M555,124 L575,124" fill="none" stroke="#2A5C9A" stroke-width="1"/>
-          <rect x="475" y="60" width="80" height="80" rx="14" fill="#DDE8F5" stroke="#2A5C9A" stroke-width="1.5"/>
-          <text x="515" y="96" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="#2A5C9A">2.4</text>
-          <text x="515" y="113" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#2A5C9A">MCP Servers</text>
-          <rect x="575" y="60" width="165" height="32" rx="6" fill="#FAFCF5" stroke="#2A5C9A" stroke-opacity=".4"/>
-          <text x="657" y="80" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="#3D4235">tools act, </tspan><tspan fill="#9A6E1A" font-weight="700">resources inform</tspan></text>
-          <rect x="575" y="108" width="165" height="32" rx="6" fill="#FAFCF5" stroke="#2A5C9A" stroke-opacity=".4"/>
-          <text x="657" y="128" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="#1A7A3A">.mcp.json vs ~/.claude.json</text>
+          <path class="bcolor-4" d="M555,76 L575,76" fill="none" stroke="var(--blue)" stroke-width="1"/>
+          <path class="bcolor-4" d="M555,124 L575,124" fill="none" stroke="var(--blue)" stroke-width="1"/>
+          <rect class="bcolor-4 bnode-4" x="475" y="60" width="80" height="80" rx="14" fill="var(--blue-bg)" stroke="var(--blue)" stroke-width="1.5"/>
+          <text class="bcolor-4" x="515" y="96" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="var(--blue)">2.4</text>
+          <text class="bcolor-4" x="515" y="113" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="var(--blue)">MCP Servers</text>
+          <rect class="bcolor-4" x="575" y="60" width="165" height="32" rx="6" fill="var(--bg)" stroke="var(--blue)" stroke-opacity=".4"/>
+          <text x="657" y="80" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="var(--text-2)">tools act, </tspan><tspan fill="var(--amber)" font-weight="700">resources inform</tspan></text>
+          <rect class="bcolor-4" x="575" y="108" width="165" height="32" rx="6" fill="var(--bg)" stroke="var(--blue)" stroke-opacity=".4"/>
+          <text class="bcolor-4" x="657" y="128" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="var(--green)">.mcp.json vs ~/.claude.json</text>
 
           <!-- Branch 2.5, right, square node -->
-          <path d="M555,256 L575,256" fill="none" stroke="#9A6E1A" stroke-width="1"/>
-          <path d="M555,304 L575,304" fill="none" stroke="#9A6E1A" stroke-width="1"/>
-          <rect x="475" y="240" width="80" height="80" rx="14" fill="#F5EDD6" stroke="#9A6E1A" stroke-width="1.5"/>
-          <text x="515" y="276" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="#9A6E1A">2.5</text>
-          <text x="515" y="291" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#9A6E1A">Built-in</text>
-          <text x="515" y="301" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="#9A6E1A">Tools</text>
-          <rect x="575" y="240" width="165" height="32" rx="6" fill="#FAFCF5" stroke="#9A6E1A" stroke-opacity=".4"/>
-          <text x="657" y="260" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="#1A7A3A">Grep=content, Glob=paths</text>
-          <rect x="575" y="288" width="165" height="32" rx="6" fill="#FAFCF5" stroke="#9A6E1A" stroke-opacity=".4"/>
-          <text x="657" y="308" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="#3D4235">Edit needs a </tspan><tspan fill="#9A6E1A" font-weight="700">unique match</tspan></text>
+          <path class="bcolor-5" d="M555,256 L575,256" fill="none" stroke="var(--amber)" stroke-width="1"/>
+          <path class="bcolor-5" d="M555,304 L575,304" fill="none" stroke="var(--amber)" stroke-width="1"/>
+          <rect class="bcolor-5 bnode-5" x="475" y="240" width="80" height="80" rx="14" fill="var(--amber-bg)" stroke="var(--amber)" stroke-width="1.5"/>
+          <text class="bcolor-5" x="515" y="276" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700" fill="var(--amber)">2.5</text>
+          <text class="bcolor-5" x="515" y="291" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--amber)">Built-in</text>
+          <text class="bcolor-5" x="515" y="301" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--amber)">Tools</text>
+          <rect class="bcolor-5" x="575" y="240" width="165" height="32" rx="6" fill="var(--bg)" stroke="var(--amber)" stroke-opacity=".4"/>
+          <text class="bcolor-5" x="657" y="260" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="var(--green)">Grep=content, Glob=paths</text>
+          <rect class="bcolor-5" x="575" y="288" width="165" height="32" rx="6" fill="var(--bg)" stroke="var(--amber)" stroke-opacity=".4"/>
+          <text x="657" y="308" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5"><tspan fill="var(--text-2)">Edit needs a </tspan><tspan fill="var(--amber)" font-weight="700">unique match</tspan></text>
         </svg>
       </div>
     </div>
   </details>
 
   <details class="topic">
-    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="2" width="14" height="20" rx="1.5" stroke="#6B7060" stroke-width="1.5"/><rect x="7.5" y="9.7" width="9" height="3" rx="0.6" fill="#F5EDD6"/><line x1="7.5" y1="6.5" x2="16.5" y2="6.5" stroke="#6B7060" stroke-width="1.3"/><line x1="7.5" y1="11.2" x2="16.5" y2="11.2" stroke="#9A6E1A" stroke-width="1.3"/><line x1="7.5" y1="15" x2="14" y2="15" stroke="#6B7060" stroke-width="1.3"/><line x1="7.5" y1="18" x2="15.5" y2="18" stroke="#6B7060" stroke-width="1.3"/></svg></span><span class="sec-num">1</span>Topic Keywords</h2></summary>
+    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="2" width="14" height="20" rx="1.5" stroke="var(--text-3)" stroke-width="1.5"/><rect x="7.5" y="9.7" width="9" height="3" rx="0.6" fill="var(--amber-bg)"/><line x1="7.5" y1="6.5" x2="16.5" y2="6.5" stroke="var(--text-3)" stroke-width="1.3"/><line x1="7.5" y1="11.2" x2="16.5" y2="11.2" stroke="var(--amber)" stroke-width="1.3"/><line x1="7.5" y1="15" x2="14" y2="15" stroke="var(--text-3)" stroke-width="1.3"/><line x1="7.5" y1="18" x2="15.5" y2="18" stroke="var(--text-3)" stroke-width="1.3"/></svg></span><span class="sec-num">1</span>Topic Keywords</h2></summary>
     <div class="topic-body">
       <h3 class="subhead">2.1 &middot; Interface Design</h3>
       <dl class="keyword-grid">
@@ -253,7 +305,7 @@
   </details>
 
   <details class="topic">
-    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3.5" y="3" width="12" height="17" rx="1.3" stroke="#6B7060" stroke-width="1.4"/><path d="M6,15 L9,10 L11,13 L13.5,7.5" stroke="#6B7060" stroke-width="1.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="13.5" y1="19" x2="20" y2="12.5" stroke="#7A4A9A" stroke-width="1.7" stroke-linecap="round"/><circle cx="20.5" cy="11.5" r="1.6" fill="#1A6B54"/></svg></span><span class="sec-num">2</span>Diagrams</h2></summary>
+    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3.5" y="3" width="12" height="17" rx="1.3" stroke="var(--text-3)" stroke-width="1.4"/><path d="M6,15 L9,10 L11,13 L13.5,7.5" stroke="var(--text-3)" stroke-width="1.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="13.5" y1="19" x2="20" y2="12.5" stroke="var(--purple)" stroke-width="1.7" stroke-linecap="round"/><circle cx="20.5" cy="11.5" r="1.6" fill="var(--teal)"/></svg></span><span class="sec-num">2</span>Diagrams</h2></summary>
     <div class="topic-body">
       <h3 class="subhead" id="diagram-error-categories">Decision Table: Error Categories</h3>
       <table class="decision-table">
@@ -281,30 +333,30 @@
       <h3 class="subhead" id="diagram-error-example">Diagram: A Real Error Response, Before and After</h3>
       <div class="mindmap-wrap">
         <svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Before: a generic error response with just isError true and the message Operation failed, giving the agent no category and no retry signal. After: a structured error response with errorCategory transient and isRetryable true highlighted, plus a specific message, so the agent can decide whether to retry.">
-          <text x="185" y="15" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700" fill="#9A2A4A">BEFORE: generic error</text>
-          <rect x="20" y="25" width="330" height="195" rx="10" fill="#EEF1E7" stroke="rgba(26,31,20,.25)"/>
-          <text x="40" y="50" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">{</text>
-          <text x="40" y="68" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">  "isError": true,</text>
-          <text x="40" y="86" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">  "message": "Operation failed"</text>
-          <text x="40" y="104" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">}</text>
-          <rect x="35" y="125" width="300" height="80" rx="8" fill="#F5DDE5" stroke="#9A2A4A"/>
-          <text x="50" y="148" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="#9A2A4A">No category, no retry signal</text>
-          <text x="50" y="164" font-family="Segoe UI, sans-serif" font-size="8" fill="#3D4235">the agent can't tell if retrying</text>
-          <text x="50" y="178" font-family="Segoe UI, sans-serif" font-size="8" fill="#3D4235">would even help</text>
+          <text x="185" y="15" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700" fill="var(--red)">BEFORE: generic error</text>
+          <rect x="20" y="25" width="330" height="195" rx="10" fill="var(--bg3)" stroke="rgba(var(--ink-rgb),.25)"/>
+          <text x="40" y="50" font-family="Consolas, monospace" font-size="8.5" fill="var(--text-2)">{</text>
+          <text x="40" y="68" font-family="Consolas, monospace" font-size="8.5" fill="var(--text-2)">  "isError": true,</text>
+          <text x="40" y="86" font-family="Consolas, monospace" font-size="8.5" fill="var(--text-2)">  "message": "Operation failed"</text>
+          <text x="40" y="104" font-family="Consolas, monospace" font-size="8.5" fill="var(--text-2)">}</text>
+          <rect x="35" y="125" width="300" height="80" rx="8" fill="var(--red-bg)" stroke="var(--red)"/>
+          <text x="50" y="148" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="var(--red)">No category, no retry signal</text>
+          <text x="50" y="164" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--text-2)">the agent can't tell if retrying</text>
+          <text x="50" y="178" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--text-2)">would even help</text>
 
-          <text x="555" y="15" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700" fill="#1A7A3A">AFTER: structured error</text>
-          <rect x="390" y="25" width="330" height="195" rx="10" fill="#EEF1E7" stroke="rgba(26,31,20,.25)"/>
-          <text x="410" y="50" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">{</text>
-          <text x="410" y="68" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">  "isError": true,</text>
-          <rect x="402" y="77" width="310" height="18" rx="4" fill="#D8EEE8" stroke="#1A6B54" stroke-opacity=".5"/>
-          <text x="410" y="90" font-family="Consolas, monospace" font-size="8.5" font-weight="700" fill="#1A6B54">  "errorCategory": "transient",</text>
-          <rect x="402" y="95" width="310" height="18" rx="4" fill="#D8F0E0" stroke="#1A7A3A" stroke-opacity=".5"/>
-          <text x="410" y="108" font-family="Consolas, monospace" font-size="8.5" font-weight="700" fill="#1A7A3A">  "isRetryable": true,</text>
-          <text x="410" y="126" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">  "message": "Upstream API</text>
-          <text x="410" y="144" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">    timeout after 3 attempts"</text>
-          <text x="410" y="162" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">}</text>
-          <text x="410" y="184" font-family="Segoe UI, sans-serif" font-size="8" fill="#1A6B54">"errorCategory" explains why it failed</text>
-          <text x="410" y="200" font-family="Segoe UI, sans-serif" font-size="8" fill="#1A7A3A">"isRetryable" says whether to retry</text>
+          <text x="555" y="15" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700" fill="var(--green)">AFTER: structured error</text>
+          <rect x="390" y="25" width="330" height="195" rx="10" fill="var(--bg3)" stroke="rgba(var(--ink-rgb),.25)"/>
+          <text x="410" y="50" font-family="Consolas, monospace" font-size="8.5" fill="var(--text-2)">{</text>
+          <text x="410" y="68" font-family="Consolas, monospace" font-size="8.5" fill="var(--text-2)">  "isError": true,</text>
+          <rect x="402" y="77" width="310" height="18" rx="4" fill="var(--teal-bg)" stroke="var(--teal)" stroke-opacity=".5"/>
+          <text x="410" y="90" font-family="Consolas, monospace" font-size="8.5" font-weight="700" fill="var(--teal)">  "errorCategory": "transient",</text>
+          <rect x="402" y="95" width="310" height="18" rx="4" fill="var(--green-bg)" stroke="var(--green)" stroke-opacity=".5"/>
+          <text x="410" y="108" font-family="Consolas, monospace" font-size="8.5" font-weight="700" fill="var(--green)">  "isRetryable": true,</text>
+          <text x="410" y="126" font-family="Consolas, monospace" font-size="8.5" fill="var(--text-2)">  "message": "Upstream API</text>
+          <text x="410" y="144" font-family="Consolas, monospace" font-size="8.5" fill="var(--text-2)">    timeout after 3 attempts"</text>
+          <text x="410" y="162" font-family="Consolas, monospace" font-size="8.5" fill="var(--text-2)">}</text>
+          <text x="410" y="184" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--teal)">"errorCategory" explains why it failed</text>
+          <text x="410" y="200" font-family="Segoe UI, sans-serif" font-size="8" fill="var(--green)">"isRetryable" says whether to retry</text>
         </svg>
         <details class="explain-toggle">
           <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
@@ -319,41 +371,41 @@
       <h3 class="subhead" id="diagram-error-flow">Diagram: Structured Error Flow</h3>
       <div class="mindmap-wrap">
         <svg viewBox="0 0 720 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Flow diagram: a tool call fails and returns isError true with an errorCategory. Transient errors are retried locally. Validation, business, and permission errors are not retried and instead return a structured explanation, with unresolved cases propagating to the coordinator with partial results and what was attempted.">
-          <rect x="10" y="80" width="120" height="46" rx="8" fill="#EEF1E7" stroke="rgba(26,31,20,.2)"/>
-          <text x="70" y="99" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#3D4235">Tool call</text>
-          <text x="70" y="114" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#9A2A4A">fails</text>
-          <path d="M130,103 L163,103" stroke="#6B7060" stroke-width="1.5" marker-end="url(#ef1)"/>
+          <rect x="10" y="80" width="120" height="46" rx="8" fill="var(--bg3)" stroke="rgba(var(--ink-rgb),.2)"/>
+          <text x="70" y="99" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" fill="var(--text-2)">Tool call</text>
+          <text x="70" y="114" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="var(--red)">fails</text>
+          <path d="M130,103 L163,103" stroke="var(--text-3)" stroke-width="1.5" marker-end="url(#ef1)"/>
 
-          <rect x="165" y="72" width="150" height="62" rx="8" fill="#F5DDE5" stroke="#9A2A4A"/>
-          <text x="240" y="93" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="#9A2A4A">isError: true</text>
-          <text x="240" y="108" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="#3D4235">errorCategory: "..."</text>
-          <text x="240" y="122" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">+ isRetryable, message</text>
+          <rect x="165" y="72" width="150" height="62" rx="8" fill="var(--red-bg)" stroke="var(--red)"/>
+          <text x="240" y="93" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="var(--red)">isError: true</text>
+          <text x="240" y="108" text-anchor="middle" font-family="Consolas, monospace" font-size="8.5" fill="var(--text-2)">errorCategory: "..."</text>
+          <text x="240" y="122" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">+ isRetryable, message</text>
 
-          <path d="M315,90 C345,60 365,55 390,60" stroke="#1A7A3A" stroke-width="1.5" fill="none" marker-end="url(#ef2)"/>
-          <text x="352" y="45" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#1A7A3A">transient</text>
-          <rect x="392" y="35" width="150" height="46" rx="8" fill="#D8F0E0" stroke="#1A7A3A"/>
-          <text x="467" y="55" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="#1A7A3A">Retry locally</text>
-          <text x="467" y="70" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">inside the subagent first</text>
-          <g transform="translate(467,19)" stroke="#1A7A3A" stroke-width="1.2">
+          <path d="M315,90 C345,60 365,55 390,60" stroke="var(--green)" stroke-width="1.5" fill="none" marker-end="url(#ef2)"/>
+          <text x="352" y="45" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="var(--green)">transient</text>
+          <rect x="392" y="35" width="150" height="46" rx="8" fill="var(--green-bg)" stroke="var(--green)"/>
+          <text x="467" y="55" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="var(--green)">Retry locally</text>
+          <text x="467" y="70" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">inside the subagent first</text>
+          <g transform="translate(467,19)" stroke="var(--green)" stroke-width="1.2">
             <rect x="-6" y="-5" width="12" height="9" rx="3" fill="none"/>
-            <circle cx="-2.2" cy="-0.5" r="0.9" fill="#1A7A3A" stroke="none"/>
-            <circle cx="2.2" cy="-0.5" r="0.9" fill="#1A7A3A" stroke="none"/>
+            <circle cx="-2.2" cy="-0.5" r="0.9" fill="var(--green)" stroke="none"/>
+            <circle cx="2.2" cy="-0.5" r="0.9" fill="var(--green)" stroke="none"/>
             <line x1="0" y1="-5" x2="0" y2="-7.5"/>
-            <circle cx="0" cy="-8.5" r="0.8" fill="#1A7A3A" stroke="none"/>
+            <circle cx="0" cy="-8.5" r="0.8" fill="var(--green)" stroke="none"/>
           </g>
 
-          <path d="M315,116 C345,146 365,151 390,146" stroke="#9A2A4A" stroke-width="1.5" fill="none" marker-end="url(#ef3)"/>
-          <text x="352" y="188" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#9A2A4A">validation / business / permission</text>
-          <rect x="392" y="123" width="150" height="46" rx="8" fill="#F5DDE5" stroke="#9A2A4A"/>
-          <text x="467" y="143" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="#9A2A4A">Do not retry</text>
-          <text x="467" y="158" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#3D4235">explain / escalate instead</text>
+          <path d="M315,116 C345,146 365,151 390,146" stroke="var(--red)" stroke-width="1.5" fill="none" marker-end="url(#ef3)"/>
+          <text x="352" y="188" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--red)">validation / business / permission</text>
+          <rect x="392" y="123" width="150" height="46" rx="8" fill="var(--red-bg)" stroke="var(--red)"/>
+          <text x="467" y="143" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" fill="var(--red)">Do not retry</text>
+          <text x="467" y="158" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8.5" fill="var(--text-2)">explain / escalate instead</text>
 
-          <path d="M542,58 C580,58 590,85 590,103" stroke="#6B7060" stroke-width="1.5" fill="none"/>
-          <path d="M542,146 C580,146 590,120 590,103" stroke="#6B7060" stroke-width="1.5" fill="none" marker-end="url(#ef4)"/>
-          <rect x="595" y="80" width="115" height="46" rx="8" fill="#EEF1E7" stroke="rgba(26,31,20,.2)"/>
-          <text x="652" y="99" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">Unresolved &rarr;</text>
-          <text x="652" y="113" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">coordinator</text>
-          <g transform="translate(652,143)" stroke="#6B7060" stroke-width="1.3" stroke-linecap="round">
+          <path d="M542,58 C580,58 590,85 590,103" stroke="var(--text-3)" stroke-width="1.5" fill="none"/>
+          <path d="M542,146 C580,146 590,120 590,103" stroke="var(--text-3)" stroke-width="1.5" fill="none" marker-end="url(#ef4)"/>
+          <rect x="595" y="80" width="115" height="46" rx="8" fill="var(--bg3)" stroke="rgba(var(--ink-rgb),.2)"/>
+          <text x="652" y="99" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="var(--text-2)">Unresolved &rarr;</text>
+          <text x="652" y="113" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="var(--text-2)">coordinator</text>
+          <g transform="translate(652,143)" stroke="var(--text-3)" stroke-width="1.3" stroke-linecap="round">
             <circle r="5" fill="none"/>
             <line x1="0" y1="5" x2="0" y2="16"/>
             <line x1="-7" y1="9" x2="7" y2="9"/>
@@ -362,10 +414,10 @@
           </g>
 
           <defs>
-            <marker id="ef1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
-            <marker id="ef2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1A7A3A"/></marker>
-            <marker id="ef3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9A2A4A"/></marker>
-            <marker id="ef4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7060"/></marker>
+            <marker id="ef1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--text-3)"/></marker>
+            <marker id="ef2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--green)"/></marker>
+            <marker id="ef3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--red)"/></marker>
+            <marker id="ef4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--text-3)"/></marker>
           </defs>
         </svg>
         <details class="explain-toggle">
@@ -384,24 +436,24 @@
       <h3 class="subhead" id="diagram-mcp-scoping">Diagram: MCP Scoping</h3>
       <div class="mindmap-wrap">
         <svg viewBox="0 0 720 210" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Diagram comparing project-scoped MCP configuration in dot mcp dot json, shared via version control with environment variable expansion, against user-scoped configuration in the home claude dot json file, personal and experimental only.">
-          <rect x="20" y="20" width="320" height="170" rx="8" fill="#DDE8F5" stroke="#2A5C9A" stroke-width="1.5"/>
-          <text x="180" y="45" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="12" font-weight="700" fill="#2A5C9A">PROJECT SCOPE</text>
-          <rect x="40" y="58" width="280" height="24" rx="4" fill="#FAFCF5" stroke="#2A5C9A" stroke-opacity=".4"/>
-          <text x="180" y="74" text-anchor="middle" font-family="Consolas, monospace" font-size="9.5" fill="#2A5C9A">.mcp.json</text>
-          <text x="180" y="100" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">shared, version-controlled,</text>
-          <text x="180" y="115" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">whole team gets it</text>
-          <rect x="40" y="128" width="280" height="24" rx="4" fill="#FAFCF5" stroke="#2A5C9A" stroke-opacity=".4"/>
-          <text x="180" y="144" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="#2A5C9A">"env": {"TOKEN":"${GITHUB_TOKEN}"}</text>
-          <text x="180" y="172" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="#6B7060">secret stays out of the committed file</text>
+          <rect x="20" y="20" width="320" height="170" rx="8" fill="var(--blue-bg)" stroke="var(--blue)" stroke-width="1.5"/>
+          <text x="180" y="45" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="12" font-weight="700" fill="var(--blue)">PROJECT SCOPE</text>
+          <rect x="40" y="58" width="280" height="24" rx="4" fill="var(--bg)" stroke="var(--blue)" stroke-opacity=".4"/>
+          <text x="180" y="74" text-anchor="middle" font-family="Consolas, monospace" font-size="9.5" fill="var(--blue)">.mcp.json</text>
+          <text x="180" y="100" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="var(--text-2)">shared, version-controlled,</text>
+          <text x="180" y="115" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="var(--text-2)">whole team gets it</text>
+          <rect x="40" y="128" width="280" height="24" rx="4" fill="var(--bg)" stroke="var(--blue)" stroke-opacity=".4"/>
+          <text x="180" y="144" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="var(--blue)">"env": {"TOKEN":"${GITHUB_TOKEN}"}</text>
+          <text x="180" y="172" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="var(--text-3)">secret stays out of the committed file</text>
 
-          <rect x="380" y="20" width="320" height="170" rx="8" fill="#EEF1E7" stroke="rgba(26,31,20,.25)" stroke-width="1.5"/>
-          <text x="540" y="45" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="12" font-weight="700" fill="#3D4235">USER SCOPE</text>
-          <rect x="400" y="58" width="280" height="24" rx="4" fill="#FAFCF5" stroke="rgba(26,31,20,.3)"/>
-          <text x="540" y="74" text-anchor="middle" font-family="Consolas, monospace" font-size="9.5" fill="#3D4235">~/.claude.json</text>
-          <text x="540" y="100" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">personal, not shared,</text>
-          <text x="540" y="115" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">not version-controlled</text>
-          <text x="540" y="145" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">for experimental / one-off</text>
-          <text x="540" y="160" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3D4235">servers you're trying out</text>
+          <rect x="380" y="20" width="320" height="170" rx="8" fill="var(--bg3)" stroke="rgba(var(--ink-rgb),.25)" stroke-width="1.5"/>
+          <text x="540" y="45" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="12" font-weight="700" fill="var(--text-2)">USER SCOPE</text>
+          <rect x="400" y="58" width="280" height="24" rx="4" fill="var(--bg)" stroke="rgba(var(--ink-rgb),.3)"/>
+          <text x="540" y="74" text-anchor="middle" font-family="Consolas, monospace" font-size="9.5" fill="var(--text-2)">~/.claude.json</text>
+          <text x="540" y="100" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="var(--text-2)">personal, not shared,</text>
+          <text x="540" y="115" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="var(--text-2)">not version-controlled</text>
+          <text x="540" y="145" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="var(--text-2)">for experimental / one-off</text>
+          <text x="540" y="160" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" fill="var(--text-2)">servers you're trying out</text>
         </svg>
         <details class="explain-toggle">
           <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
@@ -434,7 +486,7 @@
   </details>
 
   <details class="topic">
-    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12,3.5 C8.5,3.5 6.8,5.8 7,8 C5.2,8.6 4.6,11 5.6,12.3 C4.6,13.7 5.2,16.1 7,16.7 C6.9,18.7 9,20.3 12,19.8 C15,20.3 17.1,18.7 17,16.7 C18.8,16.1 19.4,13.7 18.4,12.3 C19.4,11 18.8,8.6 17,8 C17.2,5.8 15.5,3.5 12,3.5 Z" stroke="#7A4A9A" stroke-width="1.4" fill="none" stroke-linejoin="round"/><path d="M12,4.5 L12,19.5" stroke="#7A4A9A" stroke-width="1.1"/><path d="M8.3,9 C9.3,9.6 8.3,11 9.3,11.6" stroke="#7A4A9A" stroke-width="1" fill="none" stroke-linecap="round"/><path d="M15.7,9 C14.7,9.6 15.7,11 14.7,11.6" stroke="#7A4A9A" stroke-width="1" fill="none" stroke-linecap="round"/></svg></span><span class="sec-num">3</span>Active Recall</h2></summary>
+    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12,3.5 C8.5,3.5 6.8,5.8 7,8 C5.2,8.6 4.6,11 5.6,12.3 C4.6,13.7 5.2,16.1 7,16.7 C6.9,18.7 9,20.3 12,19.8 C15,20.3 17.1,18.7 17,16.7 C18.8,16.1 19.4,13.7 18.4,12.3 C19.4,11 18.8,8.6 17,8 C17.2,5.8 15.5,3.5 12,3.5 Z" stroke="var(--purple)" stroke-width="1.4" fill="none" stroke-linejoin="round"/><path d="M12,4.5 L12,19.5" stroke="var(--purple)" stroke-width="1.1"/><path d="M8.3,9 C9.3,9.6 8.3,11 9.3,11.6" stroke="var(--purple)" stroke-width="1" fill="none" stroke-linecap="round"/><path d="M15.7,9 C14.7,9.6 15.7,11 14.7,11.6" stroke="var(--purple)" stroke-width="1" fill="none" stroke-linecap="round"/></svg></span><span class="sec-num">3</span>Active Recall</h2></summary>
     <div class="topic-body">
       <details class="recall-item"><summary>What is the single biggest factor driving whether an LLM picks the right tool?</summary><div class="recall-answer">The tool's <strong>description</strong> - it's the primary mechanism the model uses for tool selection. Minimal descriptions cause unreliable selection among similar tools.</div></details>
 
@@ -463,7 +515,7 @@
   </details>
 
   <details class="topic">
-    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="2" width="14" height="20" rx="1.5" stroke="#6B7060" stroke-width="1.5"/><text x="12" y="14" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700" fill="#9A2A4A">?</text><circle cx="8" cy="18" r="1" fill="none" stroke="#6B7060" stroke-width="1"/><circle cx="12" cy="18" r="1" fill="none" stroke="#6B7060" stroke-width="1"/><circle cx="16" cy="18" r="1" fill="none" stroke="#6B7060" stroke-width="1"/></svg></span><span class="sec-num">4</span>Official Sample Question (D2)</h2></summary>
+    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="2" width="14" height="20" rx="1.5" stroke="var(--text-3)" stroke-width="1.5"/><text x="12" y="14" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700" fill="var(--red)">?</text><circle cx="8" cy="18" r="1" fill="none" stroke="var(--text-3)" stroke-width="1"/><circle cx="12" cy="18" r="1" fill="none" stroke="var(--text-3)" stroke-width="1"/><circle cx="16" cy="18" r="1" fill="none" stroke="var(--text-3)" stroke-width="1"/></svg></span><span class="sec-num">4</span>Official Sample Question (D2)</h2></summary>
     <div class="topic-body">
       <div class="mcq">
         <div class="mcq-q"><span class="qnum">Q2.</span> (Scenario 1, Customer Support) Logs show the agent frequently calls one tool when it should call another (e.g. asking about an order routes to the customer-lookup tool instead of the order-lookup tool). Both tools have minimal descriptions and accept similar identifier formats. Most effective <em>first</em> step?</div>
@@ -479,7 +531,7 @@
   </details>
 
   <details class="topic">
-    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="3" width="14" height="18" rx="1.3" stroke="#6B7060" stroke-width="1.5"/><line x1="8" y1="3" x2="8" y2="21" stroke="#6B7060" stroke-width="1.1"/><path d="M13,3 L16,3 L16,11 L14.5,9.3 L13,11 Z" fill="#9A2A4A"/></svg></span><span class="sec-num">5</span>Emergency Recap</h2></summary>
+    <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="3" width="14" height="18" rx="1.3" stroke="var(--text-3)" stroke-width="1.5"/><line x1="8" y1="3" x2="8" y2="21" stroke="var(--text-3)" stroke-width="1.1"/><path d="M13,3 L16,3 L16,11 L14.5,9.3 L13,11 Z" fill="var(--red)"/></svg></span><span class="sec-num">5</span>Emergency Recap</h2></summary>
     <div class="topic-body">
       <div class="cornell">
         <div class="cornell-row">

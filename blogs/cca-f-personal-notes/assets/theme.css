@@ -1,0 +1,125 @@
+/* Dark/light theme system for the CCA-F Personal Notes series.
+   Every page in this folder defines the same light-mode variable
+   names (--bg, --text, --green, --green-bg, ...) inline. This file
+   adds the few extra tokens some pages don't define yet, then
+   overrides all of them when <html data-theme="dark">. Because every
+   fill/stroke in this series was already built from that variable
+   set, flipping the tokens here re-themes text, cards, badges and
+   the inline SVG diagrams together. */
+
+:root{
+  --navy:#1E3A6E;
+  --navy-bg:#E4E7F7;
+  --olive:#6B7C3A;
+  --olive-bg:#E6EAD8;
+  --blue:#2A5C9A;
+  --blue-bg:#DDE8F5;
+  --ink-rgb:26,31,20;
+
+  /* D4 and D5 identity colors, custom-picked (not part of the shared
+     red/amber/purple/teal/blue/green/olive palette), same hue in both
+     themes - only lightness shifts between light and dark. */
+  --mauve:#8174A0;
+  --mauve-bg:#EBE8F2;
+  --steel:#5A9CB5;
+  --steel-bg:#E7F0F3;
+}
+
+:root[data-theme="dark"]{
+  --bg:#141414;
+  --bg2:#1C1C1C;
+  --bg3:#262626;
+  --border:rgba(255,255,255,.14);
+  --text:#F0F0F0;
+  --text-2:#D4D4D4;
+  --text-3:#A0A0A0;
+
+  --green:#4ADE80;
+  --green-bg:#16311F;
+  --amber:#FBBF24;
+  --amber-bg:#3A2E10;
+  --purple:#C89AF0;
+  --purple-bg:#2E2140;
+  --red:#FB90A8;
+  --red-bg:#3A1620;
+  --teal:#4DD8BE;
+  --teal-bg:#11312C;
+  --blue:#7DB0F5;
+  --blue-bg:#16283D;
+  --olive:#B9C97D;
+  --olive-bg:#2B3018;
+
+  --navy:#A9C6FA;
+  --navy-bg:#1C2C42;
+
+  --mauve:#AFA2CD;
+  --mauve-bg:#252032;
+  --steel:#89BFD2;
+  --steel-bg:#1D2F35;
+
+  --ink-rgb:220,220,220;
+
+  /* Per-domain subtopic gradients: each domain's own subheadings (Cornell
+     cues, keyword-card borders, mind-map branches) shade from light to
+     deep within that one hue, instead of each subtopic getting an
+     unrelated color. Red and green are deliberately excluded here - red
+     is reserved for alerts, green for highlighted/important text - so
+     neither is used as a domain identity. Every step is computed to
+     hold at least 4.5:1 contrast against --bg, since these shades are
+     used as small bold text/stroke, not just decoration. */
+  --blue-1:#C9DEF8;
+  --blue-2:#A4C8F4;
+  --blue-3:#84B5F0;
+  --blue-4:#69A4EC;
+  --blue-5:#5397EA;
+  --blue-6:#3C89E7;
+
+  --amber-1:#FBE4BB;
+  --amber-2:#F9D08B;
+  --amber-3:#F7BF5F;
+  --amber-4:#F5B13D;
+  --amber-5:#F3A620;
+  --amber-6:#ED9B0C;
+
+  --purple-1:#E1D5F6;
+  --purple-2:#CFBCF1;
+  --purple-3:#BDA2EB;
+  --purple-4:#AE8DE7;
+  --purple-5:#A27DE3;
+  --purple-6:#966CE0;
+
+  --mauve-1:#DDD7EA;
+  --mauve-2:#C6BDDB;
+  --mauve-3:#B2A5CF;
+  --mauve-4:#A192C4;
+  --mauve-5:#9281BB;
+  --mauve-6:#8774B4;
+
+  --steel-1:#D3E7EE;
+  --steel-2:#B5D7E3;
+  --steel-3:#9BC9D9;
+  --steel-4:#85BDD1;
+  --steel-5:#72B2CA;
+  --steel-6:#64AAC4;
+}
+
+/* The toggle is fixed to the browser's own top-right corner rather
+   than the right edge of the (narrower, centered) content column, so
+   it stays in the same physical spot regardless of page width and
+   theme, and stays reachable while scrolling. */
+.theme-toggle{position:fixed;top:1rem;right:1rem;z-index:40;-webkit-appearance:none;appearance:none;border:none;background:none;padding:0;cursor:pointer;filter:drop-shadow(0 2px 6px rgba(0,0,0,.18))}
+.theme-toggle .ttk-track{position:relative;display:flex;align-items:center;justify-content:space-between;box-sizing:border-box;width:52px;height:28px;background:var(--bg3);border:1px solid var(--border);border-radius:999px;padding:0 6px;transition:background .2s ease}
+.theme-toggle .ttk-icon{position:relative;z-index:1;font-size:12px;line-height:1;color:var(--text-3);user-select:none}
+.theme-toggle .ttk-thumb{position:absolute;z-index:0;top:2px;left:2px;width:22px;height:22px;border-radius:50%;background:var(--bg);border:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s ease}
+.theme-toggle[aria-pressed="true"] .ttk-thumb{transform:translateX(24px)}
+.theme-toggle:focus-visible{outline:2px solid var(--text-3);outline-offset:3px;border-radius:999px}
+
+@media (prefers-reduced-motion:reduce){
+  .theme-toggle .ttk-thumb,.theme-toggle .ttk-track{transition:none}
+}
+
+/* Every mind-map SVG bolds one keyword per leaf box in amber, independent
+   of that branch's own node color (which stays multi-colored by design).
+   Dark mode moves just that keyword emphasis to the same green used for
+   prose highlights, for one consistent "highlighted term" color. */
+[data-theme="dark"] svg tspan[fill="var(--amber)"]{fill:var(--green)}
