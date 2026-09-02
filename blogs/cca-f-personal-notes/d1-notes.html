@@ -20,16 +20,24 @@
 
   .topic{margin-top:1.6rem;border-top:1px solid var(--border);padding-top:1rem}
   .topic:first-of-type{border-top:none;padding-top:0;margin-top:0}
-  .topic>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+  .topic>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:.8rem}
   .topic>summary::-webkit-details-marker{display:none}
-  .topic>summary::after{content:"+";font-size:1.5rem;line-height:1;color:var(--text-3);flex-shrink:0}
-  .topic[open]>summary::after{content:"\2212"}
+  .topic>summary::before{content:"";display:inline-block;width:0;height:0;border-style:solid;border-width:8px 0 8px 10px;border-color:transparent transparent transparent var(--red);transition:transform .15s ease;flex-shrink:0}
+  .topic[open]>summary::before{transform:rotate(90deg)}
   .topic-body{margin-top:1.3rem}
-  h2{font-size:1.2rem}
+  h2{font-size:1.2rem;font-weight:700}
   h2 .sec-num{color:var(--purple);margin-right:.4rem}
   h2 .topic-icon{vertical-align:-5px;margin-right:.45rem;display:inline-block}
   h3.subhead{font-size:1.05rem;margin:2rem 0 .8rem;color:var(--text-3);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
   h3.subhead:first-of-type{margin-top:0}
+
+  .kw-subhead{margin-top:2rem}
+  .kw-subhead:first-of-type{margin-top:0}
+  .kw-subhead>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:.55rem;font-size:1.05rem;color:var(--text-3);font-weight:600;margin-bottom:.8rem}
+  .kw-subhead>summary::-webkit-details-marker{display:none}
+  .kw-subhead>summary::before{content:"";display:inline-block;width:0;height:0;border-style:solid;border-width:5px 0 5px 7px;border-color:transparent transparent transparent var(--text-3);transition:transform .15s ease;flex-shrink:0}
+  .kw-subhead[open]>summary::before{transform:rotate(90deg)}
+  .kw-subhead:not([open])>summary{margin-bottom:0}
 
   .keyword-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem 1.4rem}
   .kw{background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--border);border-radius:8px;padding:.6rem .8rem}
@@ -121,6 +129,7 @@
      single red identity. */
   [data-theme="dark"] h1{color:var(--blue)}
   [data-theme="dark"] .weight-tag{background:var(--blue-bg);color:var(--blue)}
+  [data-theme="dark"] .topic>summary::before{border-left-color:var(--blue)}
   [data-theme="dark"] .kw.g1{border-left-color:var(--blue-1)}
   [data-theme="dark"] .kw.g2{border-left-color:var(--blue-2)}
   [data-theme="dark"] .kw.g3{border-left-color:var(--blue-3)}
@@ -287,46 +296,54 @@
   <details class="topic">
     <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="2" width="14" height="20" rx="1.5" stroke="var(--text-3)" stroke-width="1.5"/><rect x="7.5" y="9.7" width="9" height="3" rx="0.6" fill="var(--amber-bg)"/><line x1="7.5" y1="6.5" x2="16.5" y2="6.5" stroke="var(--text-3)" stroke-width="1.3"/><line x1="7.5" y1="11.2" x2="16.5" y2="11.2" stroke="var(--amber)" stroke-width="1.3"/><line x1="7.5" y1="15" x2="14" y2="15" stroke="var(--text-3)" stroke-width="1.3"/><line x1="7.5" y1="18" x2="15.5" y2="18" stroke="var(--text-3)" stroke-width="1.3"/></svg></span><span class="sec-num">1</span>Topic Keywords</h2></summary>
     <div class="topic-body">
-      <h3 class="subhead">1.1 &middot; The Loop</h3>
-      <dl class="keyword-grid">
-        <div class="kw g1"><dt><code>stop_reason</code></dt><dd>Field on the API response that drives the loop: <code>"tool_use"</code> = continue, <code>"end_turn"</code> = done.</dd></div>
-        <div class="kw g1"><dt><code>tool_use_id</code></dt><dd>ID carried on a tool_use block and echoed back on its matching tool_result block - how the API connects a specific tool request to the right reply when more than one call is in flight.</dd></div>
-        <div class="kw g1"><dt>Agentic loop lifecycle</dt><dd>Send request &rarr; inspect <code>stop_reason</code> &rarr; execute requested tools &rarr; append results to conversation history &rarr; repeat.</dd></div>
-        <div class="kw g1"><dt>Model-driven decision-making vs. predefined programmatic decision-making</dt><dd>Claude reasons about which tool to call next from context, as opposed to a pre-configured decision tree or fixed tool sequence.</dd></div>
-        <div class="kw g1"><dt>Loop anti-patterns</dt><dd>Parsing natural-language signals to detect termination; an arbitrary iteration cap as the primary stop mechanism; checking for assistant text content as a "done" signal.</dd></div>
-      </dl>
+      <details class="kw-subhead" open>
+        <summary>1.1 &middot; The Loop</summary>
+        <dl class="keyword-grid">
+          <div class="kw g1"><dt><code>stop_reason</code></dt><dd>Field on the API response that drives the loop: <code>"tool_use"</code> = continue, <code>"end_turn"</code> = done.</dd></div>
+          <div class="kw g1"><dt><code>tool_use_id</code></dt><dd>ID carried on a tool_use block and echoed back on its matching tool_result block - how the API connects a specific tool request to the right reply when more than one call is in flight.</dd></div>
+          <div class="kw g1"><dt>Agentic loop lifecycle</dt><dd>Send request &rarr; inspect <code>stop_reason</code> &rarr; execute requested tools &rarr; append results to conversation history &rarr; repeat.</dd></div>
+          <div class="kw g1"><dt>Model-driven decision-making vs. predefined programmatic decision-making</dt><dd>Claude reasons about which tool to call next from context, as opposed to a pre-configured decision tree or fixed tool sequence.</dd></div>
+          <div class="kw g1"><dt>Loop anti-patterns</dt><dd>Parsing natural-language signals to detect termination; an arbitrary iteration cap as the primary stop mechanism; checking for assistant text content as a "done" signal.</dd></div>
+        </dl>
+      </details>
 
-      <h3 class="subhead">1.2 / 1.3 &middot; Coordination</h3>
-      <dl class="keyword-grid">
-        <div class="kw g2"><dt>Hub-and-spoke</dt><dd>Coordinator (hub) manages all inter-subagent communication, error handling, and routing; subagents (spokes) never talk to each other directly.</dd></div>
-        <div class="kw g2"><dt>Isolated context</dt><dd>Subagents do not automatically inherit the coordinator's conversation history - nothing carries over unless explicitly passed in the prompt.</dd></div>
-        <div class="kw g2"><dt>Overly narrow decomposition</dt><dd>Risk named explicitly in the guide: a coordinator that splits a broad topic too narrowly leaves real coverage gaps (see Q7 below).</dd></div>
-        <div class="kw g2"><dt>Task tool</dt><dd>The mechanism for spawning subagents. <code>allowedTools</code> must include <code>"Task"</code> for a coordinator to invoke them.</dd></div>
-        <div class="kw g2"><dt><code>AgentDefinition</code></dt><dd>Per-subagent configuration: description, system prompt, and tool restrictions.</dd></div>
-        <div class="kw g2"><dt>Parallel vs. sequential spawning</dt><dd><strong>Parallel:</strong> multiple <code>Task</code> calls emitted within a <em>single</em> coordinator response - default choice, use when subagents are independent (e.g. web search + document analysis on unrelated sources). <strong>Sequential:</strong> one <code>Task</code> call per coordinator turn, waiting for each result - use only when a real dependency exists (subagent B needs subagent A's output before it can start). Sequential otherwise just adds latency for nothing.</dd></div>
-      </dl>
+      <details class="kw-subhead" open>
+        <summary>1.2 / 1.3 &middot; Coordination</summary>
+        <dl class="keyword-grid">
+          <div class="kw g2"><dt>Hub-and-spoke</dt><dd>Coordinator (hub) manages all inter-subagent communication, error handling, and routing; subagents (spokes) never talk to each other directly.</dd></div>
+          <div class="kw g2"><dt>Isolated context</dt><dd>Subagents do not automatically inherit the coordinator's conversation history - nothing carries over unless explicitly passed in the prompt.</dd></div>
+          <div class="kw g2"><dt>Overly narrow decomposition</dt><dd>Risk named explicitly in the guide: a coordinator that splits a broad topic too narrowly leaves real coverage gaps (see Q7 below).</dd></div>
+          <div class="kw g2"><dt>Task tool</dt><dd>The mechanism for spawning subagents. <code>allowedTools</code> must include <code>"Task"</code> for a coordinator to invoke them.</dd></div>
+          <div class="kw g2"><dt><code>AgentDefinition</code></dt><dd>Per-subagent configuration: description, system prompt, and tool restrictions.</dd></div>
+          <div class="kw g2"><dt>Parallel vs. sequential spawning</dt><dd><strong>Parallel:</strong> multiple <code>Task</code> calls emitted within a <em>single</em> coordinator response - default choice, use when subagents are independent (e.g. web search + document analysis on unrelated sources). <strong>Sequential:</strong> one <code>Task</code> call per coordinator turn, waiting for each result - use only when a real dependency exists (subagent B needs subagent A's output before it can start). Sequential otherwise just adds latency for nothing.</dd></div>
+        </dl>
+      </details>
 
-      <h3 class="subhead">1.4 / 1.5 &middot; Enforcement</h3>
-      <dl class="keyword-grid">
-        <div class="kw g3"><dt>Workflow enforcement types</dt><dd><strong>Programmatic enforcement</strong> (hooks, prerequisite gates) - guaranteed. Contrast with <strong>prompt-based guidance</strong>, which has a non-zero failure rate even when the rule is stated clearly.</dd></div>
-        <div class="kw g3"><dt>Structured handoff protocol</dt><dd>What a human escalation needs: customer details, a conversation summary, root cause analysis, recommended action - compiled for someone with no access to the conversation transcript.</dd></div>
-        <div class="kw g3"><dt>PostToolUse hook</dt><dd>Intercepts a tool's result to transform/normalize it before the model ever sees it.</dd></div>
-        <div class="kw g3"><dt>PreToolUse</dt><dd>Intercepts an <em>outgoing</em> tool call to enforce a compliance rule (e.g. block a refund over a threshold) before it executes.</dd></div>
-        <div class="kw g3"><dt><code>SubagentStart</code></dt><dd>Fires when a subagent spawns via the Task/Agent tool. Observational only - logs the spawn or injects context, but can't block or modify the invocation. To gate spawning itself, use a <code>PreToolUse</code> hook on the Agent tool instead.</dd></div>
-        <div class="kw g3"><dt><code>SubagentStop</code></dt><dd>Fires when a subagent finishes and returns results. Can return <code>decision: "block"</code> to send it back to keep working, but can't transform the output - that's a <code>PostToolUse</code> job on the Agent tool call. A subagent's own <code>Stop</code> hooks (in its frontmatter) auto-convert to <code>SubagentStop</code> events at runtime.</dd></div>
-        <div class="kw g3"><dt>Subagent-scoped hooks</dt><dd>A subagent's own <code>AgentDefinition</code> frontmatter can define <code>PreToolUse</code>/<code>PostToolUse</code> hooks that only intercept <em>that subagent's</em> tool calls - not the coordinator's or other subagents'. Enables per-subagent policy (e.g. a billing subagent blocks large refunds; a support subagent doesn't).</dd></div>
-        <div class="kw g3"><dt>Hooks live in <code>settings.json</code></dt><dd>Declared in <code>settings.json</code> (or a subagent's own frontmatter), matched to an event name. Other events beyond Pre/PostToolUse: <code>UserPromptSubmit</code>, <code>Notification</code>, <code>Stop</code> - fire on prompt submission, a permission/idle notification, and main-agent completion.</dd></div>
-      </dl>
+      <details class="kw-subhead" open>
+        <summary>1.4 / 1.5 &middot; Enforcement</summary>
+        <dl class="keyword-grid">
+          <div class="kw g3"><dt>Workflow enforcement types</dt><dd><strong>Programmatic enforcement</strong> (hooks, prerequisite gates) - guaranteed. Contrast with <strong>prompt-based guidance</strong>, which has a non-zero failure rate even when the rule is stated clearly.</dd></div>
+          <div class="kw g3"><dt>Structured handoff protocol</dt><dd>What a human escalation needs: customer details, a conversation summary, root cause analysis, recommended action - compiled for someone with no access to the conversation transcript.</dd></div>
+          <div class="kw g3"><dt>PostToolUse hook</dt><dd>Intercepts a tool's result to transform/normalize it before the model ever sees it.</dd></div>
+          <div class="kw g3"><dt>PreToolUse</dt><dd>Intercepts an <em>outgoing</em> tool call to enforce a compliance rule (e.g. block a refund over a threshold) before it executes.</dd></div>
+          <div class="kw g3"><dt><code>SubagentStart</code></dt><dd>Fires when a subagent spawns via the Task/Agent tool. Observational only - logs the spawn or injects context, but can't block or modify the invocation. To gate spawning itself, use a <code>PreToolUse</code> hook on the Agent tool instead.</dd></div>
+          <div class="kw g3"><dt><code>SubagentStop</code></dt><dd>Fires when a subagent finishes and returns results. Can return <code>decision: "block"</code> to send it back to keep working, but can't transform the output - that's a <code>PostToolUse</code> job on the Agent tool call. A subagent's own <code>Stop</code> hooks (in its frontmatter) auto-convert to <code>SubagentStop</code> events at runtime.</dd></div>
+          <div class="kw g3"><dt>Subagent-scoped hooks</dt><dd>A subagent's own <code>AgentDefinition</code> frontmatter can define <code>PreToolUse</code>/<code>PostToolUse</code> hooks that only intercept <em>that subagent's</em> tool calls - not the coordinator's or other subagents'. Enables per-subagent policy (e.g. a billing subagent blocks large refunds; a support subagent doesn't).</dd></div>
+          <div class="kw g3"><dt>Hooks live in <code>settings.json</code></dt><dd>Declared in <code>settings.json</code> (or a subagent's own frontmatter), matched to an event name. Other events beyond Pre/PostToolUse: <code>UserPromptSubmit</code>, <code>Notification</code>, <code>Stop</code> - fire on prompt submission, a permission/idle notification, and main-agent completion.</dd></div>
+        </dl>
+      </details>
 
-      <h3 class="subhead">1.6 / 1.7 &middot; Decomposition &amp; State</h3>
-      <dl class="keyword-grid">
-        <div class="kw g4"><dt>Prompt chaining</dt><dd>A fixed sequence of separate prompts run in order, each step decided in advance: e.g. reviewing a 5-file pull request, one call per file first, then a final call checking whether a change in one file breaks an assumption another file was relying on.</dd></div>
-        <div class="kw g4"><dt>Dynamic decomposition</dt><dd>Adaptive: subtasks are generated based on what's discovered at each step, not fixed up front.</dd></div>
-        <div class="kw g4"><dt>Attention dilution</dt><dd>Too many items in a single pass spreads attention thin - early items get disproportionate depth, later ones get skimmed (e.g. flagging a pattern in file 3 but approving identical code in file 11). Architectural, not a model-capability problem: a bigger model or larger context window doesn't fix it. Fix: per-item passes + a separate cross-item integration pass.</dd></div>
-        <div class="kw g4"><dt><code>--resume &lt;session-name&gt;</code></dt><dd>Continues a specific named prior conversation. Only resumes an <em>existing</em> session - name one at start with <code>--name</code>/<code>-n</code> (or <code>/rename</code> mid-session). <code>-c</code>/<code>--continue</code> resumes the most recent session in the directory with no name needed.</dd></div>
-        <div class="kw g4"><dt><code>fork_session</code></dt><dd>Branches <em>one session</em> into two independent copies from the same baseline, to explore a divergent approach without touching the original. Not the same thing as a coordinator spawning several subagents at once: that's parallel work on one session, this is a duplicated session. Doesn't fix stale context - a fork inherits the same stale tool results as its baseline.</dd></div>
-        <div class="kw g4"><dt>Stale tool results</dt><dd>Why a fresh session with a structured summary can beat resuming: reasoning from stale results is worse than reasoning from none.</dd></div>
-      </dl>
+      <details class="kw-subhead" open>
+        <summary>1.6 / 1.7 &middot; Decomposition &amp; State</summary>
+        <dl class="keyword-grid">
+          <div class="kw g4"><dt>Prompt chaining</dt><dd>A fixed sequence of separate prompts run in order, each step decided in advance: e.g. reviewing a 5-file pull request, one call per file first, then a final call checking whether a change in one file breaks an assumption another file was relying on.</dd></div>
+          <div class="kw g4"><dt>Dynamic decomposition</dt><dd>Adaptive: subtasks are generated based on what's discovered at each step, not fixed up front.</dd></div>
+          <div class="kw g4"><dt>Attention dilution</dt><dd>Too many items in a single pass spreads attention thin - early items get disproportionate depth, later ones get skimmed (e.g. flagging a pattern in file 3 but approving identical code in file 11). Architectural, not a model-capability problem: a bigger model or larger context window doesn't fix it. Fix: per-item passes + a separate cross-item integration pass.</dd></div>
+          <div class="kw g4"><dt><code>--resume &lt;session-name&gt;</code></dt><dd>Continues a specific named prior conversation. Only resumes an <em>existing</em> session - name one at start with <code>--name</code>/<code>-n</code> (or <code>/rename</code> mid-session). <code>-c</code>/<code>--continue</code> resumes the most recent session in the directory with no name needed.</dd></div>
+          <div class="kw g4"><dt><code>fork_session</code></dt><dd>Branches <em>one session</em> into two independent copies from the same baseline, to explore a divergent approach without touching the original. Not the same thing as a coordinator spawning several subagents at once: that's parallel work on one session, this is a duplicated session. Doesn't fix stale context - a fork inherits the same stale tool results as its baseline.</dd></div>
+          <div class="kw g4"><dt>Stale tool results</dt><dd>Why a fresh session with a structured summary can beat resuming: reasoning from stale results is worse than reasoning from none.</dd></div>
+        </dl>
+      </details>
     </div>
   </details>
 

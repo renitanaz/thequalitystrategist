@@ -20,16 +20,24 @@
 
   .topic{margin-top:1.6rem;border-top:1px solid var(--border);padding-top:1rem}
   .topic:first-of-type{border-top:none;padding-top:0;margin-top:0}
-  .topic>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+  .topic>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:.8rem}
   .topic>summary::-webkit-details-marker{display:none}
-  .topic>summary::after{content:"+";font-size:1.5rem;line-height:1;color:var(--text-3);flex-shrink:0}
-  .topic[open]>summary::after{content:"\2212"}
+  .topic>summary::before{content:"";display:inline-block;width:0;height:0;border-style:solid;border-width:8px 0 8px 10px;border-color:transparent transparent transparent var(--steel);transition:transform .15s ease;flex-shrink:0}
+  .topic[open]>summary::before{transform:rotate(90deg)}
   .topic-body{margin-top:1.3rem}
-  h2{font-size:1.2rem}
+  h2{font-size:1.2rem;font-weight:700}
   h2 .sec-num{color:var(--purple);margin-right:.4rem}
   h2 .topic-icon{vertical-align:-5px;margin-right:.45rem;display:inline-block}
   h3.subhead{font-size:1.05rem;margin:2rem 0 .8rem;color:var(--text-3);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
   h3.subhead:first-of-type{margin-top:0}
+
+  .kw-subhead{margin-top:2rem}
+  .kw-subhead:first-of-type{margin-top:0}
+  .kw-subhead>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:.55rem;font-size:1.05rem;color:var(--text-3);font-weight:600;margin-bottom:.8rem}
+  .kw-subhead>summary::-webkit-details-marker{display:none}
+  .kw-subhead>summary::before{content:"";display:inline-block;width:0;height:0;border-style:solid;border-width:5px 0 5px 7px;border-color:transparent transparent transparent var(--text-3);transition:transform .15s ease;flex-shrink:0}
+  .kw-subhead[open]>summary::before{transform:rotate(90deg)}
+  .kw-subhead:not([open])>summary{margin-bottom:0}
 
   .keyword-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem 1.4rem}
   .kw{background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--border);border-radius:8px;padding:.6rem .8rem}
@@ -309,7 +317,8 @@
   <details class="topic">
     <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="2" width="14" height="20" rx="1.5" stroke="var(--text-3)" stroke-width="1.5"/><rect x="7.5" y="9.7" width="9" height="3" rx="0.6" fill="var(--amber-bg)"/><line x1="7.5" y1="6.5" x2="16.5" y2="6.5" stroke="var(--text-3)" stroke-width="1.3"/><line x1="7.5" y1="11.2" x2="16.5" y2="11.2" stroke="var(--amber)" stroke-width="1.3"/><line x1="7.5" y1="15" x2="14" y2="15" stroke="var(--text-3)" stroke-width="1.3"/><line x1="7.5" y1="18" x2="15.5" y2="18" stroke="var(--text-3)" stroke-width="1.3"/></svg></span><span class="sec-num">1</span>Topic Keywords</h2></summary>
     <div class="topic-body">
-      <h3 class="subhead">5.1 &middot; Context Management</h3>
+      <details class="kw-subhead" open>
+      <summary>5.1 &middot; Context Management</summary>
       <dl class="keyword-grid">
         <div class="kw g1"><dt>Persistent Case facts block</dt><dd><ul>
           <li><strong>Issue</strong> - condensing turns into a summary silently drops numeric values, dates, and stated expectations; multi-issue conversations risk cross-contaminating each other's facts.</li>
@@ -328,24 +337,30 @@
           <li><strong>Fix</strong> - mark it with a <code>cache_control</code> breakpoint - static first, volatile after - reused cheaply for ~5 minutes.</li>
         </ul></dd></div>
       </dl>
+      </details>
 
-      <h3 class="subhead">5.2 &middot; Escalation</h3>
+      <details class="kw-subhead" open>
+      <summary>5.2 &middot; Escalation</summary>
       <dl class="keyword-grid">
         <div class="kw g2"><dt>Explicit escalation triggers</dt><dd>Customer requests a human, policy exception/gap (not just complexity alone), or inability to make meaningful progress.</dd></div>
         <div class="kw g2"><dt>Unreliable escalation proxies</dt><dd>Sentiment and self-reported confidence scores are both unreliable proxies for actual case complexity.</dd></div>
         <div class="kw g2"><dt>Multiple matches</dt><dd>When a lookup returns more than one candidate record, ask for an additional identifier - never pick by heuristic.</dd></div>
         <div class="kw g2"><dt>Explicit Escalation Criteria in System Prompts</dt><dd>Add escalation criteria with few-shot examples to the system prompt - when to escalate, when to resolve autonomously, and the exact handoff format. The proportionate first fix, before reaching for a classifier model or sentiment analysis.</dd></div>
       </dl>
+      </details>
 
-      <h3 class="subhead">5.3 &middot; Error Propagation</h3>
+      <details class="kw-subhead" open>
+      <summary>5.3 &middot; Error Propagation</summary>
       <dl class="keyword-grid">
         <div class="kw g3"><dt>Structured error context</dt><dd>Failure type, attempted query, partial results, alternative approaches - what actually enables intelligent coordinator recovery.</dd></div>
         <div class="kw g3"><dt>Access failure vs. valid empty result</dt><dd>The same core distinction as D2's error categories, now at the coordinator/subagent level.</dd></div>
         <div class="kw g3"><dt>Suppression anti-pattern</dt><dd>Silently returning empty results as "success," or terminating the whole workflow on one failure - both named anti-patterns.</dd></div>
         <div class="kw g3"><dt>Coverage annotations</dt><dd>Flag which findings are well-supported vs. where a source was unavailable, instead of silently omitting the gap - the synthesis-layer counterpart to never suppressing errors.</dd></div>
       </dl>
+      </details>
 
-      <h3 class="subhead">5.4 &middot; Codebase Context</h3>
+      <details class="kw-subhead" open>
+      <summary>5.4 &middot; Codebase Context</summary>
       <dl class="keyword-grid">
         <div class="kw g4"><dt>Context degradation and Scratchpad file</dt><dd><ul>
           <li><strong>Issue</strong> - in extended sessions, the model starts giving inconsistent answers or citing "typical patterns" instead of the specific things it found earlier; not a token-limit problem, but verbose discovery output burying earlier precise findings under newer text.</li>
@@ -368,22 +383,27 @@
           <li><strong>Mitigation strategy</strong> - run it proactively during extended sessions, not only once the limit is hit - protects quality, not just quantity.</li>
         </ul></dd></div>
       </dl>
+      </details>
 
-      <h3 class="subhead">5.5 &middot; Human Review</h3>
+      <details class="kw-subhead" open>
+      <summary>5.5 &middot; Human Review</summary>
       <dl class="keyword-grid">
         <div class="kw g5"><dt>Aggregate-accuracy masking</dt><dd>A single overall accuracy number (e.g. 97%) can hide much weaker performance on one document type or field.</dd></div>
         <div class="kw g5"><dt>Stratified random sampling</dt><dd>Sampling across confidence bands (high/medium/low), not just low, to catch systematic errors hidden inside "confident" outputs.</dd></div>
         <div class="kw g5"><dt>Field-level confidence</dt><dd>Confidence scored per field, calibrated against a labeled validation set - a model can be confidently wrong.</dd></div>
         <div class="kw g5"><dt>Reviewer capacity prioritization</dt><dd>Route the highest-uncertainty items to reviewers first - never spread capacity evenly across all extractions.</dd></div>
       </dl>
+      </details>
 
-      <h3 class="subhead">5.6 &middot; Provenance</h3>
+      <details class="kw-subhead" open>
+      <summary>5.6 &middot; Provenance</summary>
       <dl class="keyword-grid">
         <div class="kw g6"><dt>Claim-source mapping</dt><dd>Structured link between a claim and its source (URL, document, excerpt) that must survive summarization/synthesis intact.</dd></div>
         <div class="kw g6"><dt>Conflicting sources</dt><dd>Annotate the conflict with attribution for both values - never arbitrarily pick one.</dd></div>
         <div class="kw g6"><dt>Temporal context</dt><dd>Requiring publication/collection dates prevents a newer source superseding an older one from being misread as a contradiction.</dd></div>
         <div class="kw g6"><dt>Attribution through the pipeline</dt><dd>Research &rarr; analysis &rarr; synthesis &rarr; report - attribution must survive every step; synthesis is where it's most often lost.</dd></div>
       </dl>
+      </details>
     </div>
   </details>
 

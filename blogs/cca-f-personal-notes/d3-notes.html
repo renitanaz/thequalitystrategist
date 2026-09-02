@@ -20,16 +20,24 @@
 
   .topic{margin-top:1.6rem;border-top:1px solid var(--border);padding-top:1rem}
   .topic:first-of-type{border-top:none;padding-top:0;margin-top:0}
-  .topic>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+  .topic>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:.8rem}
   .topic>summary::-webkit-details-marker{display:none}
-  .topic>summary::after{content:"+";font-size:1.5rem;line-height:1;color:var(--text-3);flex-shrink:0}
-  .topic[open]>summary::after{content:"\2212"}
+  .topic>summary::before{content:"";display:inline-block;width:0;height:0;border-style:solid;border-width:8px 0 8px 10px;border-color:transparent transparent transparent var(--purple);transition:transform .15s ease;flex-shrink:0}
+  .topic[open]>summary::before{transform:rotate(90deg)}
   .topic-body{margin-top:1.3rem}
-  h2{font-size:1.2rem}
+  h2{font-size:1.2rem;font-weight:700}
   h2 .sec-num{color:var(--purple);margin-right:.4rem}
   h2 .topic-icon{vertical-align:-5px;margin-right:.45rem;display:inline-block}
   h3.subhead{font-size:.85rem;margin:2rem 0 .8rem;color:var(--text-3);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
   h3.subhead:first-of-type{margin-top:0}
+
+  .kw-subhead{margin-top:2rem}
+  .kw-subhead:first-of-type{margin-top:0}
+  .kw-subhead>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:.55rem;font-size:.85rem;color:var(--text-3);font-weight:600;margin-bottom:.8rem}
+  .kw-subhead>summary::-webkit-details-marker{display:none}
+  .kw-subhead>summary::before{content:"";display:inline-block;width:0;height:0;border-style:solid;border-width:5px 0 5px 7px;border-color:transparent transparent transparent var(--text-3);transition:transform .15s ease;flex-shrink:0}
+  .kw-subhead[open]>summary::before{transform:rotate(90deg)}
+  .kw-subhead:not([open])>summary{margin-bottom:0}
 
   .keyword-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem 1.4rem}
   .kw{background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--border);border-radius:8px;padding:.6rem .8rem}
@@ -293,7 +301,8 @@
   <details class="topic">
     <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="2" width="14" height="20" rx="1.5" stroke="var(--text-3)" stroke-width="1.5"/><rect x="7.5" y="9.7" width="9" height="3" rx="0.6" fill="var(--amber-bg)"/><line x1="7.5" y1="6.5" x2="16.5" y2="6.5" stroke="var(--text-3)" stroke-width="1.3"/><line x1="7.5" y1="11.2" x2="16.5" y2="11.2" stroke="var(--amber)" stroke-width="1.3"/><line x1="7.5" y1="15" x2="14" y2="15" stroke="var(--text-3)" stroke-width="1.3"/><line x1="7.5" y1="18" x2="15.5" y2="18" stroke="var(--text-3)" stroke-width="1.3"/></svg></span><span class="sec-num">1</span>Topic Keywords</h2></summary>
     <div class="topic-body">
-      <h3 class="subhead">3.1 &middot; CLAUDE.md Hierarchy</h3>
+      <details class="kw-subhead" open>
+      <summary>3.1 &middot; CLAUDE.md Hierarchy</summary>
       <dl class="keyword-grid">
         <div class="kw g1"><dt>CLAUDE.md hierarchy</dt><dd>
           <ul>
@@ -310,8 +319,10 @@
         <div class="kw g1"><dt><code>/memory</code> vs. <code>/context</code></dt><dd>Current Claude Code splits diagnosis across two commands: <code>/memory</code> lists CLAUDE.md/CLAUDE.local.md/auto-memory locations; <code>/context</code> shows what actually loaded this session. Neither one loads anything.</dd></div>
         <div class="kw g1"><dt>Surviving <code>/compact</code></dt><dd>Root CLAUDE.md comes back intact (re-read from disk). Nested subdirectory CLAUDE.md and path-scoped <code>.claude/rules/</code> files don't - they reload on demand, next time a matching file is touched.</dd></div>
       </dl>
+      </details>
 
-      <h3 class="subhead">3.2 &middot; Commands &amp; Skills</h3>
+      <details class="kw-subhead" open>
+      <summary>3.2 &middot; Commands &amp; Skills</summary>
       <dl class="keyword-grid">
         <div class="kw g2"><dt>Unified Skills system</dt><dd>Commands and skills merged into one system: <code>.claude/commands/&lt;name&gt;.md</code> (flat file) and <code>.claude/skills/&lt;name&gt;/SKILL.md</code> (directory) both create the same <code>/name</code>. A flat file dropped directly inside <code>.claude/skills/</code> does not create a command.</dd></div>
         <div class="kw g2"><dt><code>.claude/skills/</code> is canonical</dt><dd>Adds a supporting-files directory, automatic discovery, and wins over a same-named command. <code>.claude/commands/</code> still works, for backward compatibility.</dd></div>
@@ -323,16 +334,20 @@
         <div class="kw g2"><dt>Skills vs. CLAUDE.md</dt><dd>Skills = on-demand, task-specific workflows. CLAUDE.md = always-loaded universal standards.</dd></div>
         <div class="kw g2"><dt>Skill source precedence</dt><dd>When the same skill name exists in more than one source, precedence runs <strong>Enterprise &gt; Personal &gt; Project &gt; Plugins</strong> - an enterprise-managed skill always wins over a personal, project, or plugin-provided one with the same name.</dd></div>
       </dl>
+      </details>
 
-      <h3 class="subhead">3.3 &middot; Path-Specific Rules</h3>
+      <details class="kw-subhead" open>
+      <summary>3.3 &middot; Path-Specific Rules</summary>
       <dl class="keyword-grid">
         <div class="kw g3"><dt>YAML frontmatter <code>paths</code></dt><dd>Glob patterns in a <code>.claude/rules/</code> file that conditionally activate the rule only for matching files.</dd></div>
         <div class="kw g3"><dt>Path-scoped rules vs. directory CLAUDE.md</dt><dd>Path rules win when matching files are spread across many directories (e.g. test files next to the code they test).</dd></div>
         <div class="kw g3"><dt>Path rules vs. root CLAUDE.md</dt><dd>Root CLAUDE.md loads for every session regardless of what's being edited. Path-scoped rules load only for matching files - more token-efficient, especially with many convention categories.</dd></div>
         <div class="kw g3"><dt>Rules vs. skills, both <code>paths</code>-aware</dt><dd>Both can auto-activate on a matching file path, but rules stay in context as always-on background guidance; skills load on-demand as a task-style workflow. "Automatic, always-on convention loading" &rarr; rules, not skills.</dd></div>
       </dl>
+      </details>
 
-      <h3 class="subhead">3.4 &middot; Plan Mode</h3>
+      <details class="kw-subhead" open>
+      <summary>3.4 &middot; Plan Mode</summary>
       <dl class="keyword-grid">
         <div class="kw g4"><dt>Plan mode</dt><dd>For complex tasks: large-scale changes, multiple valid approaches, architectural decisions, multi-file modifications.</dd></div>
         <div class="kw g4"><dt>Direct execution</dt><dd>For simple, well-scoped changes with a clear, single-file fix.</dd></div>
@@ -340,8 +355,10 @@
         <div class="kw g4"><dt>Hybrid: plan then execute</dt><dd>Plan mode to investigate and choose an approach, then direct execution to implement it - a common, testable pattern. Plan <em>then</em> direct, not plan <em>or</em> direct.</dd></div>
         <div class="kw g4"><dt>Explore subagent</dt><dd>Isolates verbose discovery output, returning a summary to preserve main conversation context.</dd></div>
       </dl>
+      </details>
 
-      <h3 class="subhead">3.5 &middot; Refinement</h3>
+      <details class="kw-subhead" open>
+      <summary>3.5 &middot; Refinement</summary>
       <dl class="keyword-grid">
         <div class="kw g5"><dt>Concrete I/O examples</dt><dd>The most effective way to communicate an expected transformation when prose descriptions get interpreted inconsistently.</dd></div>
         <div class="kw g5"><dt>Test-driven iteration</dt><dd>Write the test suite first (happy path, edge cases, performance), then iterate by sharing test failures - most effective for complex transformations with many edge cases.</dd></div>
@@ -349,8 +366,10 @@
         <div class="kw g5"><dt>Interview pattern vs. examples</dt><dd>Different problems, don't conflate them. Interview pattern: you don't know the domain well enough to spot every consideration. Concrete examples: you know the exact transformation, but Claude keeps interpreting your prose inconsistently.</dd></div>
         <div class="kw g5"><dt>Interacting vs. independent issues</dt><dd>Interacting problems &rarr; report together in one message. Independent problems &rarr; fix sequentially.</dd></div>
       </dl>
+      </details>
 
-      <h3 class="subhead">3.6 &middot; CI/CD</h3>
+      <details class="kw-subhead" open>
+      <summary>3.6 &middot; CI/CD</summary>
       <dl class="keyword-grid">
         <div class="kw g6"><dt><code>-p</code> / <code>--print</code></dt><dd>Runs Claude Code in non-interactive mode - required in CI so the job doesn't hang waiting for input.</dd></div>
         <div class="kw g6"><dt><code>--output-format json</code></dt><dd>Combined with <code>--json-schema</code> to enforce machine-parseable structured output in CI. Schema-validated data lands in the envelope's <code>structured_output</code> field, not the top level.</dd></div>
@@ -361,6 +380,7 @@
         <div class="kw g6"><dt>Incremental review context</dt><dd>Include prior findings in the prompt and instruct Claude to report only new or still-unaddressed issues. A context-free re-scan can't tell a deliberately-ignored issue from a new one, so it re-flags everything every push - eroding developer trust in the comments.</dd></div>
         <div class="kw g6"><dt><code>--tools</code> vs. <code>--allowedTools</code></dt><dd><code>--tools</code> restricts which built-in tools exist in the session at all. <code>--allowedTools</code> / <code>--disallowedTools</code> are permission rules on top of that - they decide whether an existing tool needs approval, not whether it's available.</dd></div>
       </dl>
+      </details>
     </div>
   </details>
 

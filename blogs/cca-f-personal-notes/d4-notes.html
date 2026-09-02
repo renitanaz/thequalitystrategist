@@ -20,16 +20,24 @@
 
   .topic{margin-top:1.6rem;border-top:1px solid var(--border);padding-top:1rem}
   .topic:first-of-type{border-top:none;padding-top:0;margin-top:0}
-  .topic>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+  .topic>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:.8rem}
   .topic>summary::-webkit-details-marker{display:none}
-  .topic>summary::after{content:"+";font-size:1.5rem;line-height:1;color:var(--text-3);flex-shrink:0}
-  .topic[open]>summary::after{content:"\2212"}
+  .topic>summary::before{content:"";display:inline-block;width:0;height:0;border-style:solid;border-width:8px 0 8px 10px;border-color:transparent transparent transparent var(--mauve);transition:transform .15s ease;flex-shrink:0}
+  .topic[open]>summary::before{transform:rotate(90deg)}
   .topic-body{margin-top:1.3rem}
-  h2{font-size:1.2rem}
+  h2{font-size:1.2rem;font-weight:700}
   h2 .sec-num{color:var(--purple);margin-right:.4rem}
   h2 .topic-icon{vertical-align:-5px;margin-right:.45rem;display:inline-block}
   h3.subhead{font-size:.85rem;margin:2rem 0 .8rem;color:var(--text-3);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
   h3.subhead:first-of-type{margin-top:0}
+
+  .kw-subhead{margin-top:2rem}
+  .kw-subhead:first-of-type{margin-top:0}
+  .kw-subhead>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:.55rem;font-size:.85rem;color:var(--text-3);font-weight:600;margin-bottom:.8rem}
+  .kw-subhead>summary::-webkit-details-marker{display:none}
+  .kw-subhead>summary::before{content:"";display:inline-block;width:0;height:0;border-style:solid;border-width:5px 0 5px 7px;border-color:transparent transparent transparent var(--text-3);transition:transform .15s ease;flex-shrink:0}
+  .kw-subhead[open]>summary::before{transform:rotate(90deg)}
+  .kw-subhead:not([open])>summary{margin-bottom:0}
 
   .keyword-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem 1.4rem}
   .kw{background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--border);border-radius:8px;padding:.6rem .8rem}
@@ -299,21 +307,26 @@
   <details class="topic">
     <summary><h2><span class="topic-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="2" width="14" height="20" rx="1.5" stroke="var(--text-3)" stroke-width="1.5"/><rect x="7.5" y="9.7" width="9" height="3" rx="0.6" fill="var(--amber-bg)"/><line x1="7.5" y1="6.5" x2="16.5" y2="6.5" stroke="var(--text-3)" stroke-width="1.3"/><line x1="7.5" y1="11.2" x2="16.5" y2="11.2" stroke="var(--amber)" stroke-width="1.3"/><line x1="7.5" y1="15" x2="14" y2="15" stroke="var(--text-3)" stroke-width="1.3"/><line x1="7.5" y1="18" x2="15.5" y2="18" stroke="var(--text-3)" stroke-width="1.3"/></svg></span><span class="sec-num">1</span>Topic Keywords</h2></summary>
     <div class="topic-body">
-      <h3 class="subhead">4.1 &middot; Explicit Criteria</h3>
+      <details class="kw-subhead" open>
+      <summary>4.1 &middot; Explicit Criteria</summary>
       <dl class="keyword-grid">
         <div class="kw g1"><dt>Explicit criteria</dt><dd>Precise, categorical rules beat vague instructions like "be conservative" - the latter doesn't actually improve precision.</dd></div>
         <div class="kw g1"><dt>Severity criteria</dt><dd>Explicit per-level criteria with concrete code examples, for consistent classification.</dd></div>
         <div class="kw g1"><dt>False-positive trust cost</dt><dd>A high false-positive category undermines developer trust even in the categories that are accurate. The fix: temporarily disable it, iterate on its prompt with concrete code examples, then re-enable only once precision improves - not leave it running while you fix it.</dd></div>
         <div class="kw g1"><dt>Why confidence filtering fails</dt><dd>LLM self-reported confidence is poorly calibrated - the model is often sure about wrong findings and hesitant about right ones. Explicit criteria come first; confidence-based routing is a second-stage refinement on top, not a substitute for criteria (see 4.6).</dd></div>
       </dl>
+      </details>
 
-      <h3 class="subhead">4.2 &middot; Few-Shot</h3>
+      <details class="kw-subhead" open>
+      <summary>4.2 &middot; Few-Shot</summary>
       <dl class="keyword-grid">
         <div class="kw g2"><dt>Few-shot prompting</dt><dd>The most effective technique for consistently formatted, actionable output when instructions alone produce inconsistency - the guide's own number is 2&ndash;4 targeted examples per ambiguous scenario, each showing the reasoning for the chosen action.</dd></div>
         <div class="kw g2"><dt>Ambiguous-case examples</dt><dd>Few-shot examples that demonstrate handling of edge cases, so the model generalizes judgment instead of matching only pre-specified cases.</dd></div>
       </dl>
+      </details>
 
-      <h3 class="subhead">4.3 &middot; Structured Output</h3>
+      <details class="kw-subhead" open>
+      <summary>4.3 &middot; Structured Output</summary>
       <dl class="keyword-grid">
         <div class="kw g3"><dt><code>tool_use</code> for structure</dt><dd>The most reliable approach for guaranteed schema-compliant output - eliminates JSON syntax errors (not semantic ones).</dd></div>
         <div class="kw g3"><dt><code>tool_choice</code> modes</dt><dd><code>"auto"</code> may skip the tool, <code>"any"</code> forces some tool, forced selection names one exact tool.</dd></div>
@@ -324,8 +337,10 @@
         </ul></dd></div>
         <div class="kw g3"><dt>Format normalization rules</dt><dd>Formatting conventions (e.g. ISO 8601 dates, decimal currency without symbols) belong in the prompt alongside the schema - the schema enforces structure, the prompt enforces formatting consistency.</dd></div>
       </dl>
+      </details>
 
-      <h3 class="subhead">4.4 &middot; Validation &amp; Retry</h3>
+      <details class="kw-subhead" open>
+      <summary>4.4 &middot; Validation &amp; Retry</summary>
       <dl class="keyword-grid">
         <div class="kw g4"><dt>Retry-with-error-feedback</dt><dd>Append the specific validation error to the prompt on retry, along with the original doc and the failed extraction.</dd></div>
         <div class="kw g4"><dt>What retry can (and can't) fix</dt><dd><ul>
@@ -339,16 +354,20 @@
         </ul></dd></div>
         <div class="kw g4"><dt>Pydantic as validation layer</dt><dd>A Pydantic model does two jobs at once: parsing enforces structure (types, required fields), validators enforce semantics (cross-field rules a JSON schema can't express, like sums matching). Both surface through one <code>ValidationError</code> with per-field messages - exactly the specific error the retry loop needs.</dd></div>
       </dl>
+      </details>
 
-      <h3 class="subhead">4.5 &middot; Batch Processing</h3>
+      <details class="kw-subhead" open>
+      <summary>4.5 &middot; Batch Processing</summary>
       <dl class="keyword-grid">
         <div class="kw g5"><dt>Message Batches API</dt><dd>~50% cost savings, up to a 24-hour processing window, no guaranteed latency SLA.</dd></div>
         <div class="kw g5"><dt>Blocking vs. non-blocking</dt><dd>Batch fits non-blocking, latency-tolerant work (overnight reports); wrong for blocking workflows (pre-merge checks).</dd></div>
         <div class="kw g5"><dt>No mid-batch tool calling</dt><dd>The batch API cannot execute a tool mid-request and return results within that same request.</dd></div>
         <div class="kw g5"><dt><code>custom_id</code></dt><dd>Correlates each batch response back to its original request; also used to resubmit only failed documents.</dd></div>
       </dl>
+      </details>
 
-      <h3 class="subhead">4.6 &middot; Multi-Pass Review</h3>
+      <details class="kw-subhead" open>
+      <summary>4.6 &middot; Multi-Pass Review</summary>
       <dl class="keyword-grid">
         <div class="kw g6"><dt>Self-review limitation</dt><dd>A model retains its own generation reasoning, making it less likely to question its own decisions in the same session.</dd></div>
         <div class="kw g6"><dt>Independent review instance</dt><dd>A separate Claude call without the generator's reasoning context catches subtler issues than self-review.</dd></div>
@@ -358,6 +377,7 @@
         <div class="kw g6"><dt>Calibrated confidence</dt><dd>Raw self-reported confidence is unreliable for automated routing. Calibrate thresholds by running labelled validation sets (known answers) through the system and checking how reported confidence tracks actual accuracy.</dd></div>
         <div class="kw g6"><dt>Production Review Architecture</dt><dd>Combines all three concepts into one pipeline: <strong>generation</strong> &rarr; <strong>per-file review</strong> &rarr; <strong>integration review</strong> &rarr; <strong>confidence routing</strong> &rarr; <strong>calibration loop</strong>. More expensive than single-pass review; worth it wherever missed issues have downstream consequences (CI/CD pipelines, financial extraction, compliance analysis).</dd></div>
       </dl>
+      </details>
     </div>
   </details>
 
