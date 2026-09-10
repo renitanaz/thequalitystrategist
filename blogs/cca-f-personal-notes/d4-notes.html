@@ -100,7 +100,12 @@
   .ro-line::before{content:"\2192";position:absolute;left:0;color:var(--text-3);font-weight:700}
   .ro-line code{background:var(--bg3);padding:.1rem .35rem;border-radius:4px;font-size:.85em;color:var(--teal);font-family:monospace}
   .recap-toggle-row{display:flex;justify-content:flex-end;margin-top:.7rem}
-  .recap-toggle>summary{cursor:pointer;list-style:none;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--purple);padding:.3rem .7rem;border:1px solid var(--purple);border-radius:99px;white-space:nowrap}
+  .recap-toggle>summary{cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:.3rem;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--purple);padding:.3rem .7rem;border:1px solid var(--purple);border-radius:99px;white-space:nowrap}
+  .recap-toggle>summary::after{content:"\25BE"}
+  .recap-toggle[open]>summary::after{content:"\25B4"}
+  .recap-toggle .recap-hide{display:none}
+  .recap-toggle[open] .recap-show{display:none}
+  .recap-toggle[open] .recap-hide{display:inline}
   .recap-toggle>summary::-webkit-details-marker{display:none}
   .recap-toggle[open]>summary{background:var(--purple);color:var(--bg)}
   .recap-toggle .cornell-note{margin-top:.7rem;padding:1rem 1.1rem;background:var(--bg);border:1px solid var(--border);border-radius:8px}
@@ -1055,7 +1060,7 @@
             <div class="ro-line">Why doesn't "be conservative" or "only report high-confidence findings" actually improve precision?</div>
             <div class="ro-line">What's the disable &rarr; rework &rarr; re-enable cycle for a high-false-positive category?</div>
             <div class="recap-toggle-row"><details class="recap-toggle">
-              <summary>Recap</summary>
+              <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
               <div class="cornell-note">
                 <ul>
                   <li><span class="hl">Explicit, categorical criteria</span> beat vague instructions like "be conservative" - write specific rules for what to report vs. skip, not confidence-based filtering.<span class="li-see">&rarr; <a href="#diagram-explicit-criteria">See: Diagram, Vague vs. Explicit Criteria</a></span></li>
@@ -1070,7 +1075,7 @@
             <summary class="ro-head g2">&#9313; 4.2 &middot; Few-shot prompting</summary>
             <div class="ro-line">How many few-shot examples does the guide suggest per ambiguous scenario, and what should each one show?</div>
             <div class="recap-toggle-row"><details class="recap-toggle">
-              <summary>Recap</summary>
+              <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
               <div class="cornell-note">
                 <ul>
                   <li>Few-shot examples (2&ndash;4, targeted) are the most effective fix for inconsistent output - each showing the reasoning for why one action was chosen over plausible alternatives.</li>
@@ -1088,7 +1093,7 @@
             <div class="ro-line">Why use a nullable field instead of a required-with-no-null field for something the customer might not provide?</div>
             <div class="ro-line">What are the three <code>tool_choice</code> modes here?</div>
             <div class="recap-toggle-row"><details class="recap-toggle">
-              <summary>Recap</summary>
+              <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
               <div class="cornell-note">
                 <ul>
                   <li><code>tool_use</code> + JSON schema is the most reliable route to <span class="hl">guaranteed schema-compliant output</span>, eliminating syntax errors, but not semantic ones (e.g. line items that don't sum to the total).<span class="li-see">&rarr; <a href="#diagram-structured-extraction">See: Diagram, Structured Extraction with tool_use</a></span></li>
@@ -1105,7 +1110,7 @@
             <div class="ro-line">What's the <code>detected_pattern</code> field for?</div>
             <div class="ro-line">What does Pydantic do that a plain JSON Schema can't?</div>
             <div class="recap-toggle-row"><details class="recap-toggle">
-              <summary>Recap</summary>
+              <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
               <div class="cornell-note">
                 <ul>
                   <li>Retry-with-error-feedback: append the specific validation error, plus the original document and failed extraction, to guide correction.<span class="li-see">&rarr; <a href="#diagram-catch-fix-semantic">See: Diagram, Catching and Fixing Semantic Errors</a></span></li>
@@ -1123,7 +1128,7 @@
             <div class="ro-line">Can a single batch request call a tool mid-request and use the result to continue reasoning?</div>
             <div class="ro-line">A batch of 500 documents comes back with 12 failures - what's the correct recovery?</div>
             <div class="recap-toggle-row"><details class="recap-toggle">
-              <summary>Recap</summary>
+              <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
               <div class="cornell-note">
                 <ul>
                   <li>Message Batches API: ~50% cost savings, up to 24-hour window, <span class="hl">no guaranteed latency SLA</span> - synchronous for blocking pre-merge checks, batch for overnight/weekly, non-blocking work.<span class="li-see">&rarr; <a href="#diagram-sync-batch">See: Diagram, Sync vs. Batch Decision</a></span></li>
@@ -1142,7 +1147,7 @@
             <div class="ro-line">Why doesn't a bigger context window fix attention dilution?</div>
             <div class="ro-line">What's Confidence-Based Routing, and why must it be calibrated first?</div>
             <div class="recap-toggle-row"><details class="recap-toggle">
-              <summary>Recap</summary>
+              <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
               <div class="cornell-note">
                 <ul>
                   <li>Self-review is limited: the model retains its own generation reasoning, making it less likely to question its own decisions.</li>

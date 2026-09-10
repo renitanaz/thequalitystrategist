@@ -79,8 +79,13 @@
   .recall-outline{display:flex;flex-direction:column;gap:1.5rem}
   .ro-head{font-weight:700;font-size:.95rem;margin-bottom:.55rem}
   .recap-toggle-row{display:flex;justify-content:flex-end;margin-top:.7rem}
-  .recap-toggle>summary{cursor:pointer;list-style:none;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--purple);padding:.3rem .7rem;border:1px solid var(--purple);border-radius:99px;white-space:nowrap}
+  .recap-toggle>summary{cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:.3rem;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--purple);padding:.3rem .7rem;border:1px solid var(--purple);border-radius:99px;white-space:nowrap}
   .recap-toggle>summary::-webkit-details-marker{display:none}
+  .recap-toggle>summary::after{content:"\25BE"}
+  .recap-toggle[open]>summary::after{content:"\25B4"}
+  .recap-toggle .recap-hide{display:none}
+  .recap-toggle[open] .recap-show{display:none}
+  .recap-toggle[open] .recap-hide{display:inline}
   .recap-toggle[open]>summary{background:var(--purple);color:var(--bg)}
   .recap-toggle .cornell-note{margin-top:.7rem;padding:1rem 1.1rem;background:var(--bg);border:1px solid var(--border);border-radius:8px}
   .ro-head.g1{color:var(--red)}
@@ -1120,7 +1125,7 @@
             <div class="ro-line">3 loop anti-patterns: NL-signal parsing, iteration cap, text-content check?</div>
             <div class="ro-line">Model-driven decision-making vs. pre-configured decision trees - which does Claude use to pick the next tool?</div>
             <div class="recap-toggle-row"><details class="recap-toggle">
-              <summary>Recap</summary>
+              <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
               <div class="cornell-note">
                 <ul>
                   <li>The loop: send request &rarr; check <code>stop_reason</code> &rarr; run tool &rarr; append result to history &rarr; repeat.<span class="li-see">&rarr; <a href="#diagram-stop-reason">See: Diagram, stop_reason and Its Two Outputs</a></span></li>
@@ -1140,7 +1145,7 @@
             <div class="ro-line">Named risk: overly narrow decomposition &rarr; coverage gaps (sample Q7)?</div>
             <div class="ro-line">Iterative refinement loop: evaluate synthesis &rarr; re-delegate &rarr; re-synthesize?</div>
             <div class="recap-toggle-row"><details class="recap-toggle">
-              <summary>Recap</summary>
+              <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
               <div class="cornell-note">
                 <ul>
                   <li><span class="hl">Hub-and-spoke</span>: coordinator owns all inter-subagent communication, error handling, and routing.<span class="li-see">&rarr; <a href="#diagram-coordinator">See: Diagram, Coordinator, Subagents, and the Task Tool</a></span></li>
@@ -1164,7 +1169,7 @@
             <div class="ro-line">Context Passing Rules: complete prior findings + structured attribution?</div>
             <div class="ro-line">What does <code>AgentDefinition</code> hold for each subagent?</div>
             <div class="recap-toggle-row"><details class="recap-toggle">
-              <summary>Recap</summary>
+              <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
               <div class="cornell-note">
                 <ul>
                   <li>The <code>Task</code> tool spawns subagents; coordinator's <code>allowedTools</code> must include <code>"Task"</code>.<span class="li-see">&rarr; <a href="#diagram-coordinator">See: Diagram, Coordinator, Subagents, and the Task Tool</a></span></li>
@@ -1187,7 +1192,7 @@
             <div class="ro-line">Prompt instructions alone aren't enough for deterministic compliance?</div>
             <div class="ro-line">Structured handoff needs: customer ID, root cause, amount, recommended action?</div>
             <div class="recap-toggle-row"><details class="recap-toggle">
-              <summary>Recap</summary>
+              <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
               <div class="cornell-note">
                 <ul>
                   <li><span class="hl">Programmatic enforcement</span> (hooks, prerequisite gates) vs. prompt-based guidance for ordering.</li>
@@ -1205,7 +1210,7 @@
             <div class="ro-line">PostToolUse - transforms/normalizes a tool's result before the model sees it?</div>
             <div class="ro-line">Interception hook (PreToolUse) - blocks an outgoing call before it executes?</div>
             <div class="recap-toggle-row"><details class="recap-toggle">
-              <summary>Recap</summary>
+              <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
               <div class="cornell-note">
                 <ul>
                   <li><code>PostToolUse</code> hooks intercept tool <em>results</em> for transformation before the model processes them.</li>
@@ -1228,7 +1233,7 @@
             <div class="ro-line">Dynamic decomposition - adaptive, subtasks generated from what's found?</div>
             <div class="ro-line">Per-file passes + one integration pass avoids attention dilution?</div>
             <div class="recap-toggle-row"><details class="recap-toggle">
-              <summary>Recap</summary>
+              <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
               <div class="cornell-note">
                 <ul>
                   <li><span class="hl">Fixed sequential pipelines</span> (prompt chaining) vs. <span class="hl">dynamic adaptive decomposition</span> based on intermediate findings.<span class="li-see">&rarr; <a href="#diagram-pipeline">See: Diagram, Fixed Pipeline vs. Dynamic Decomposition</a></span></li>
@@ -1250,7 +1255,7 @@
             <div class="ro-line"><code>--resume &lt;name&gt;</code> - continues one specific existing session, no branching?</div>
             <div class="ro-line">New session + structured summary beats resuming once tool results go stale?</div>
             <div class="recap-toggle-row"><details class="recap-toggle">
-              <summary>Recap</summary>
+              <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
               <div class="cornell-note">
                 <ul>
                   <li><code>--resume &lt;session-name&gt;</code> continues a specific named prior conversation.</li>
