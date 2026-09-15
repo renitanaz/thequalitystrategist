@@ -72,28 +72,38 @@
   <nav class="breadcrumb" aria-label="Breadcrumb">
     <a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a>
     <span aria-hidden="true">›</span><span>Shift-Left Accessibility</span>
-    <span aria-hidden="true">›</span><span aria-current="page">31 of 38</span>
+    <span aria-hidden="true">›</span><span aria-current="page">31 of 39</span>
   </nav>
   <div class="blog-tags"><span class="tag" style="background:rgba(167,139,250,0.08);color:#a78bfa;border-color:rgba(167,139,250,0.3)">CI/CD</span><span class="tag" style="">axe-core</span><span class="tag" style="">Playwright</span><span class="tag" style="">Cypress</span></div>
   <h1>31 Axe-Core in Cypress and Playwright: <em>Accessibility Testing Built Into Every Test Run</em></h1>
   <p class="blog-subtitle">Axe-core does not need a separate testing pass. It runs inside your existing Playwright and Cypress suites on every build.</p>
   <div class="blog-meta">
     <span class="series">Series: Shift-Left Accessibility</span>
-    <span aria-hidden="true">·</span><span>Blog 31 of 38</span>
+    <span aria-hidden="true">·</span><span>Blog 31 of 39</span>
     <span aria-hidden="true">·</span><span>9 min read</span>
   </div>
 </header>
 <main class="blog-body" id="main-content">
   <nav class="toc" aria-label="Table of contents">
     <div class="toc-title">In this blog</div>
-    <ol>      <li><a href="#why">Why axe-core in the pipeline</a></li>
+    <ol>      <li><a href="#ci-cd-basics">Before you start: what a CI/CD pipeline is</a></li>
+      <li><a href="#why">Why axe-core in the pipeline</a></li>
       <li><a href="#playwright">axe-core with Playwright</a></li>
       <li><a href="#cypress">axe-core with Cypress</a></li>
       <li><a href="#scoping">Scoping scans: page, component, interaction state</a></li>
       <li><a href="#config">Configuration: wcag2aa, impact filtering, exclusions</a></li>
       <li><a href="#fail-build">Failing builds on violations</a></li>
+      <li><a href="#workflow">The GitHub Actions workflow file</a></li>
       <li><a href="#what-catches">What pipeline axe-core catches and misses</a></li></ol>
   </nav>
+
+  <h2 id="ci-cd-basics">Before You Start: What a CI/CD Pipeline Actually Is</h2>
+  <p>If you have not set one up before, read this section first. Everything after it assumes you already know these terms.</p>
+  <p><strong>CI/CD</strong> stands for Continuous Integration and Continuous Delivery (or Deployment). For a QA tester, in practice it means one thing: a set of automated steps that run every time someone pushes code, without a person triggering them by hand.</p>
+  <p>A <strong>pipeline</strong> is that set of steps. On GitHub, a pipeline is called a <strong>workflow</strong>, and it is defined in a YAML file that lives in a specific folder in the repository: <code>.github/workflows/</code>. GitHub watches that folder. Any <code>.yml</code> file there, once its trigger conditions are met, runs automatically on GitHub's own servers: not on your laptop.</p>
+  <p>A <strong>build</strong> is one run of that workflow, from start to finish. "The build failed" means one of its steps exited with a non-zero status code: in this blog, that step is the axe-core test finding a violation it was told to fail on.</p>
+  <p>"Failing the build" is not a metaphor. On GitHub it shows as a red cross next to the commit or pull request, and, if the check is marked required, it can block that pull request from being merged until it is fixed. That is the mechanism that turns "we should check accessibility" into something no one can skip.</p>
+  <p>The rest of this blog assumes you can already write and run a Playwright or Cypress test locally. If you cannot yet, do that first: everything here adds an accessibility check on top of a test suite that already runs.</p>
 
   <h2 id="why">1. Why axe-Core in the Pipeline</h2>
   <p>Browser-based scanning with <span class="tool">axe DevTools</span> finds violations in the browser. Pipeline automation with <span class="tool">axe-core</span> finds the same violations on every commit, on every branch, before any human sees the code. The difference is not capability: it is timing. Catching a missing form label in CI is cheaper than catching it in a QA session, and far cheaper than catching it in production.</p>
@@ -103,18 +113,18 @@
   <h2 id="playwright">2. axe-Core with Playwright</h2>
   <p>The <code>@axe-core/playwright</code> package provides the <code>checkA11y</code> helper that runs an axe scan on the current page state.</p>
   <pre>npm install --save-dev @axe-core/playwright</pre>
-  <pre>import {{ test, expect }} from '@playwright/test';
+  <pre>import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
-test('homepage has no critical accessibility violations', async ({{ page }}) => {{
+test('homepage has no critical accessibility violations', async ({ page }) => {
   await page.goto('/');
-  const results = await new AxeBuilder({{ page }})
+  const results = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa'])
     .analyze();
   expect(results.violations.filter(v =>
     ['critical','serious'].includes(v.impact)
   )).toHaveLength(0);
-}});</pre>
+});</pre>
   <ul>
     <li><strong>withTags:</strong> Scope to WCAG 2.1 AA rules only. Avoids best-practice rules that produce noise in CI.</li>
     <li><strong>filter by impact:</strong> Fail only on critical and serious. Moderate and minor go in the backlog.</li>
@@ -128,16 +138,16 @@ test('homepage has no critical accessibility violations', async ({{ page }}) => 
 import 'cypress-axe';
 
 // cypress/e2e/accessibility.cy.js
-describe('Accessibility', () => {{
-  it('homepage passes axe wcag2aa', () => {{
+describe('Accessibility', () => {
+  it('homepage passes axe wcag2aa', () => {
     cy.visit('/');
     cy.injectAxe();
-    cy.checkA11y(null, {{
-      runOnly: {{ type: 'tag', values: ['wcag2a', 'wcag2aa'] }},
+    cy.checkA11y(null, {
+      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa'] },
       includedImpacts: ['critical', 'serious']
-    }});
-  }});
-}});</pre>
+    });
+  });
+});</pre>
   <ul>
     <li><strong>cy.injectAxe():</strong> Injects axe-core into the page. Must be called after page load, before cy.checkA11y().</li>
     <li><strong>First argument null:</strong> Scans the full page. Pass a CSS selector to scope to a component.</li>
@@ -172,6 +182,57 @@ describe('Accessibility', () => {{
     <li><strong>Playwright:</strong> Use <code>expect(violations).toHaveLength(0)</code> or <code>expect(critical).toHaveLength(0)</code>. Test fails, build fails.</li>
     <li><strong>Cypress:</strong> <code>cy.checkA11y()</code> throws on violations by default. The test fails, the build fails.</li>
     <li><strong>Report output:</strong> Log the full violations array to a JSON file and attach it to the CI artifact. Developers need the rule ID, WCAG criterion, and DOM selector to fix the issue without running the suite locally.</li>
+  </ul>
+
+  <h2 id="workflow">7. The GitHub Actions Workflow File</h2>
+  <p>Everything above runs the test locally. To run it automatically on every push, it needs to live inside a GitHub Actions workflow file: not just the test command by itself. This is the piece that is usually missing for anyone setting this up for the first time.</p>
+  <p>Create the file at <code>.github/workflows/accessibility.yml</code>. GitHub only picks up workflows from that exact folder at the root of the repository.</p>
+  <pre># .github/workflows/accessibility.yml
+name: Accessibility Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  a11y:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run accessibility tests
+        run: npx playwright test
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/</pre>
+  <ul>
+    <li><strong>name:</strong> The label shown for this workflow in the repository's Actions tab. Purely cosmetic, but useful once you have more than one workflow.</li>
+    <li><strong>on: push / pull_request, branches main:</strong> Decides when the workflow runs. This runs it on every push to main and on every pull request targeting main, so a violation is caught before it merges, not after.</li>
+    <li><strong>runs-on: ubuntu-latest:</strong> GitHub gives you a fresh, empty Linux virtual machine for each run. Nothing from your local machine exists on it, which is why every following step has to set that machine up from scratch.</li>
+    <li><strong>actions/checkout@v4:</strong> Without this step, the runner has no copy of your code at all. This step pulls your repository onto the runner so later steps have something to test.</li>
+    <li><strong>actions/setup-node@v4:</strong> Installs Node.js on the runner so <code>npm</code> and <code>npx</code> commands work. <code>node-version: 20</code> pins the version so a future Node release cannot silently change CI behaviour.</li>
+    <li><strong>npm ci:</strong> Installs dependencies from <code>package-lock.json</code> exactly as locked, rather than <code>npm install</code>, which can resolve to slightly different versions. CI should be reproducible.</li>
+    <li><strong>npx playwright install --with-deps chromium:</strong> The runner does not have a browser installed. This downloads Chromium and the OS-level libraries Playwright needs to run it headlessly.</li>
+    <li><strong>npx playwright test:</strong> Runs the actual test suite, including the axe-core assertion from Section 2. If a critical or serious violation is found, this step exits with a non-zero code and fails the job.</li>
+    <li><strong>Upload test report, if: always():</strong> By default, a failed step skips the steps after it. <code>if: always()</code> overrides that so the HTML report still gets uploaded even when the tests fail, since that is exactly when you need to look at it. It is downloadable from the run's summary page in the Actions tab.</li>
   </ul>
 
   <h2 id="how-to-test">How to Test: Tiers and Platform Coverage</h2>
@@ -219,19 +280,13 @@ describe('Accessibility', () => {{
     </ul>
   </div>
 
-  <h2 id="mobile-testing">Mobile: What Pipeline Tools Cannot Test</h2>
-  <p>Pipeline automation tools run on desktop CI servers and scan web pages. They cannot test native mobile apps and cannot replicate screen reader experience on a phone. The failures they catch still need to be verified on physical devices. These apps provide real broken implementations to test against:</p>
-  <div class="table-wrap"><table>
-    <caption style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Apps for mobile accessibility testing</caption>
-    <thead><tr><th scope="col">App</th><th scope="col">Platform</th><th scope="col">What to test</th></tr></thead>
-    <tbody>
-      <tr><td><a href="https://dequeuniversity.com/demo/mars/" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Deque University Mars Demo</a></td><td>iOS + Android (web)</td><td>Real accessibility failures matching what pipeline tools flag on desktop: verify the same issues on mobile Safari and Chrome</td></tr>
-      <tr><td><a href="https://apps.apple.com/us/app/appt-app-accessibility/id1527923025" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Appt App</a></td><td>iOS</td><td>Native iOS correct and incorrect implementations: verify VoiceOver behaviour on the same patterns pipeline tools catch</td></tr>
-      <tr><td><a href="https://play.google.com/store/apps/details?id=nl.appt" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Appt App</a></td><td>Android</td><td>Android version: verify TalkBack announcements on native accessibility failures</td></tr>
-      <tr><td><a href="https://play.google.com/store/apps/details?id=com.google.android.apps.accessibility.auditor" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Accessibility Scanner</a></td><td>Android</td><td>Automated scan of native Android screens: closest mobile equivalent to running axe-core on a page</td></tr>
-    </tbody>
-  </table></div>
-
+  <div style="background:var(--amber-bg);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
+    <div style="font-size:1.1rem;line-height:1;padding-top:2px;" aria-hidden="true">&#127919;</div>
+    <div>
+      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--amber);font-weight:500;margin-bottom:4px;">Testing this on mobile</div>
+      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">For native iOS and Android apps to practise the same checks on, see <a href="39-Mobile-Accessibility-Testing-Practice-Apps.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Blog 39: Mobile Accessibility Testing Practice Apps</a>.</div>
+    </div>
+  </div>
   <div class="series-nav">
     <span class="label">Navigate the series</span>
     <div class="nav-pair">

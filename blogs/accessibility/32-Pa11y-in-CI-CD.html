@@ -22,14 +22,14 @@
   <nav class="breadcrumb" aria-label="Breadcrumb">
     <a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a>
     <span aria-hidden="true">›</span><span>Shift-Left Accessibility</span>
-    <span aria-hidden="true">›</span><span aria-current="page">32 of 38</span>
+    <span aria-hidden="true">›</span><span aria-current="page">32 of 39</span>
   </nav>
   <div class="blog-tags"><span class="tag" style="background:rgba(45,212,191,0.08);color:#2dd4bf;border-color:rgba(45,212,191,0.3)">CI/CD</span><span class="tag" style="">Pa11y</span><span class="tag" style="">Command Line</span></div>
   <h1>32 Pa11y in CI/CD: <em class="accent-em">Command-Line Accessibility Testing for Pipelines</em></h1>
   <p class="blog-subtitle">Pa11y runs from the command line, outputs JSON, and integrates into any CI pipeline without a browser extension or GUI. It is the fastest way to add accessibility gates to a build.</p>
   <div class="blog-meta">
     <span class="series">Series: Shift-Left Accessibility</span>
-    <span aria-hidden="true">·</span><span>Blog 32 of 38</span>
+    <span aria-hidden="true">·</span><span>Blog 32 of 39</span>
     <span aria-hidden="true">·</span><span>9 min read</span>
   </div>
 </header>
@@ -64,7 +64,7 @@ pa11y --reporter json https://example.com > results.json</pre>
   <h2 id="config">3. Configuration and WCAG 2.1 AA Targeting</h2>
   <p>Pa11y accepts a configuration file (<code>.pa11yrc</code>) or inline options. For WCAG 2.1 AA compliance testing:</p>
   <pre># .pa11yrc
-{{
+{
   "standard": "WCAG2AA",
   "reporters": ["json"],
   "threshold": 0,
@@ -72,10 +72,10 @@ pa11y --reporter json https://example.com > results.json</pre>
     "notice",
     "warning"
   ],
-  "chromeLaunchConfig": {{
+  "chromeLaunchConfig": {
     "args": ["--no-sandbox"]
-  }}
-}}</pre>
+  }
+}</pre>
   <ul>
     <li><strong>standard WCAG2AA:</strong> Targets WCAG 2.1 AA rules specifically</li>
     <li><strong>threshold 0:</strong> Fails if any errors are found. Increase to allow a known number of violations during remediation.</li>
@@ -85,32 +85,66 @@ pa11y --reporter json https://example.com > results.json</pre>
 
   <h2 id="ci">4. Integrating Pa11y in CI</h2>
   <p>Pa11y exits with code 2 when violations are found: CI tools treat a non-zero exit code as a build failure. No additional configuration needed to fail the build.</p>
-  <pre># GitHub Actions example
-- name: Run Pa11y accessibility check
-  run: |
-    npm install -g pa11y
-    pa11y --standard WCAG2AA --reporter json       https://staging.example.com > pa11y-results.json
-    
-- name: Upload Pa11y results
-  uses: actions/upload-artifact@v3
-  with:
-    name: pa11y-results
-    path: pa11y-results.json</pre>
+  <p>That exit code only fails a build if Pa11y is actually inside a build: a full GitHub Actions workflow file, not just the one CI step that runs Pa11y. Create this at <code>.github/workflows/accessibility.yml</code>: GitHub only reads workflows from that exact folder at the root of the repository.</p>
+  <pre># .github/workflows/accessibility.yml
+name: Accessibility Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  pa11y:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Pa11y
+        run: npm install -g pa11y
+
+      - name: Run Pa11y accessibility check
+        run: pa11y --standard WCAG2AA --reporter json https://staging.example.com > pa11y-results.json
+
+      - name: Upload Pa11y results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pa11y-results
+          path: pa11y-results.json</pre>
+  <ul>
+    <li><strong>name:</strong> The label for this workflow in the repository's Actions tab.</li>
+    <li><strong>on: push / pull_request, branches main:</strong> Runs the check on every push to main and every pull request targeting main, so a violation is caught before it merges.</li>
+    <li><strong>runs-on: ubuntu-latest:</strong> Each run starts on a fresh, empty Linux machine. It has none of your code or tools until the steps below put them there.</li>
+    <li><strong>actions/checkout@v4:</strong> Copies your repository onto the runner. Without it, later steps have nothing to check.</li>
+    <li><strong>actions/setup-node@v4:</strong> Installs Node.js so <code>npm</code> is available. <code>node-version: 20</code> pins the version so CI does not change behaviour when Node updates.</li>
+    <li><strong>npm install -g pa11y:</strong> Installs Pa11y globally on the runner, since it is not part of your project's own dependencies.</li>
+    <li><strong>Run Pa11y accessibility check:</strong> Scans the target URL and writes the results to <code>pa11y-results.json</code>. This is the step that fails the build (Pa11y's exit code 2) when violations exist.</li>
+    <li><strong>Upload Pa11y results, if: always():</strong> A failed step normally skips everything after it. <code>if: always()</code> makes sure the results file still uploads even when Pa11y fails, since that is the run you actually need to inspect. Download it from the run's summary page in the Actions tab.</li>
+  </ul>
+  <div class="callout amber" role="note">This example scans a fixed URL, so it only works once that page is deployed somewhere reachable, such as a staging environment. It cannot scan a page that only exists on your own machine.</div>
   <p>For multiple pages, use <code>pa11y-ci</code> which accepts a list of URLs and runs Pa11y against each:</p>
   <pre>npm install -g pa11y-ci
 
 # pa11y-ci.json
-{{
+{
   "urls": [
     "https://staging.example.com/",
     "https://staging.example.com/about",
     "https://staging.example.com/contact"
   ],
-  "defaults": {{
+  "defaults": {
     "standard": "WCAG2AA",
     "ignore": ["notice", "warning"]
-  }}
-}}
+  }
+}
 
 pa11y-ci --config pa11y-ci.json</pre>
 
@@ -178,19 +212,13 @@ pa11y-ci --config pa11y-ci.json</pre>
     </ul>
   </div>
 
-  <h2 id="mobile-testing">Mobile: What Pipeline Tools Cannot Test</h2>
-  <p>Pipeline automation tools run on desktop CI servers and scan web pages. They cannot test native mobile apps and cannot replicate screen reader experience on a phone. The failures they catch still need to be verified on physical devices. These apps provide real broken implementations to test against:</p>
-  <div class="table-wrap"><table>
-    <caption style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Apps for mobile accessibility testing</caption>
-    <thead><tr><th scope="col">App</th><th scope="col">Platform</th><th scope="col">What to test</th></tr></thead>
-    <tbody>
-      <tr><td><a href="https://dequeuniversity.com/demo/mars/" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Deque University Mars Demo</a></td><td>iOS + Android (web)</td><td>Real accessibility failures matching what pipeline tools flag on desktop: verify the same issues on mobile Safari and Chrome</td></tr>
-      <tr><td><a href="https://apps.apple.com/us/app/appt-app-accessibility/id1527923025" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Appt App</a></td><td>iOS</td><td>Native iOS correct and incorrect implementations: verify VoiceOver behaviour on the same patterns pipeline tools catch</td></tr>
-      <tr><td><a href="https://play.google.com/store/apps/details?id=nl.appt" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Appt App</a></td><td>Android</td><td>Android version: verify TalkBack announcements on native accessibility failures</td></tr>
-      <tr><td><a href="https://play.google.com/store/apps/details?id=com.google.android.apps.accessibility.auditor" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Accessibility Scanner</a></td><td>Android</td><td>Automated scan of native Android screens: closest mobile equivalent to running axe-core on a page</td></tr>
-    </tbody>
-  </table></div>
-
+  <div style="background:var(--amber-bg);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
+    <div style="font-size:1.1rem;line-height:1;padding-top:2px;" aria-hidden="true">&#127919;</div>
+    <div>
+      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--amber);font-weight:500;margin-bottom:4px;">Testing this on mobile</div>
+      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">For native iOS and Android apps to practise the same checks on, see <a href="39-Mobile-Accessibility-Testing-Practice-Apps.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Blog 39: Mobile Accessibility Testing Practice Apps</a>.</div>
+    </div>
+  </div>
   <div class="series-nav">
     <span class="label">Navigate the series</span>
     <div class="nav-pair">

@@ -22,14 +22,14 @@
   <nav class="breadcrumb" aria-label="Breadcrumb">
     <a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a>
     <span aria-hidden="true">›</span><span>Shift-Left Accessibility</span>
-    <span aria-hidden="true">›</span><span aria-current="page">33 of 38</span>
+    <span aria-hidden="true">›</span><span aria-current="page">33 of 39</span>
   </nav>
   <div class="blog-tags"><span class="tag" style="background:rgba(248,113,113,0.08);color:#f87171;border-color:rgba(248,113,113,0.3)">CI/CD</span><span class="tag" style="">Manual Testing</span><span class="tag" style="">Strategy</span></div>
   <h1>33 Automated Tools Only Catch 30 to 50 Percent: <em class="accent-em">Why Automation Is the Floor, Not the Ceiling</em></h1>
   <p class="blog-subtitle">axe gets a score of zero violations. WAVE shows no errors. Lighthouse hits 100. The page still fails WCAG. Here is why: and what to do about it.</p>
   <div class="blog-meta">
     <span class="series">Series: Shift-Left Accessibility</span>
-    <span aria-hidden="true">·</span><span>Blog 33 of 38</span>
+    <span aria-hidden="true">·</span><span>Blog 33 of 39</span>
     <span aria-hidden="true">·</span><span>9 min read</span>
   </div>
 </header>
@@ -78,6 +78,29 @@
       <tr><td>Custom widget behaviour</td><td>4.1.2</td><td>ARIA attributes present does not mean the widget behaves as its role implies</td></tr>
     </tbody>
   </table></div>
+
+  <h3>What's Changing: AI-Assisted Review of Judgement Calls</h3>
+  <p>The 30 to 50 percent figure predates a real shift: an LLM reading rendered page text or an accessibility tree can now do a first pass on some of the judgement calls in the table above, not just the DOM-structure checks a rules engine like axe-core evaluates. This does not move the 30 to 50 percent number. No study has re-measured it against LLM-assisted review, and treating it as re-quantified would be exactly the kind of unqualified score this blog warns against in Section 6. What it changes is which items in the table above can get a useful automated first pass before a human confirms it.</p>
+  <div class="callout amber" role="note">This is a triage aid, not a fourth testing tier. It narrows the gap between automation and manual review. It does not close it, and it does not replace Tier 3.</div>
+  <div class="table-wrap"><table>
+    <caption style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Where AI-assisted review helps and where it still cannot</caption>
+    <thead><tr><th scope="col">Issue (from the table above)</th><th scope="col">What an LLM pass can flag</th><th scope="col">What still requires a human</th></tr></thead>
+    <tbody>
+      <tr><td>Alt text quality (1.1.1)</td><td>Given the image and the surrounding text, whether the alt text is generic ("image", a filename) or plausibly describes what matters in context</td><td>Whether the description is accurate to the actual image content, and whether it matches what the page is trying to communicate</td></tr>
+      <tr><td>Error identification and suggestion (3.3.1 / 3.3.3)</td><td>Whether error copy reads as vague ("Invalid input") vs actionable, from the text alone</td><td>Whether the error is actually announced correctly at the right time: that is a screen reader test, not a text review</td></tr>
+      <tr><td>Cognitive accessibility (3.1.5 / 3.3.2)</td><td>A first pass on reading level, jargon, and inconsistent labelling across a page</td><td>Whether the content is genuinely clear to the range of users this criterion protects: not a text-quality judgement alone</td></tr>
+      <tr><td>Consistent navigation (3.2.3)</td><td>Diffing navigation structure and labels across a crawled set of pages to flag inconsistencies for review</td><td>Confirming the inconsistency is a real defect and not an intentional section-specific variation</td></tr>
+    </tbody>
+  </table></div>
+  <p>Notice what is not on that list. Keyboard navigation logic, focus indicator visibility, live region timing, and custom widget runtime behaviour are not text-review problems: they require driving an interface and observing what actually happens, with a keyboard or a screen reader running. No amount of text or accessibility-tree reading substitutes for that. This is a structural limit, not a current-generation-model limit: it is the same reason Section 3's table separates "requires human judgement" from "requires runtime interaction."</p>
+  <div class="takeaway" role="note">
+    <div class="label">How to use this today</div>
+    <ul>
+      <li>Treat an AI pass as a way to prioritise what a human reviews first, not as a pass/fail verdict on its own.</li>
+      <li>Log what the AI flagged separately from what a human confirmed. Conflating the two erodes trust in both.</li>
+      <li>Nothing here changes the Tier 1/2/3 stack in Section 5. It is a way to work faster inside Tier 3, not a new tier.</li>
+    </ul>
+  </div>
 
   <h2 id="the-gap">4. The Gap Between Score and Conformance</h2>
   <p>The gap is not a failure of the tools: it is a fundamental limitation of what can be evaluated programmatically. No tool will close this gap because the missing checks require human perception, context, and interaction. The tools are doing everything they can do. The rest is ours to do.</p>
@@ -145,19 +168,13 @@
     </ul>
   </div>
 
-  <h2 id="mobile-testing">Mobile: The Biggest Gap in Automated Testing</h2>
-  <p>Automated tools run on desktop CI servers. They produce zero coverage of native mobile accessibility. Every native iOS and Android app needs its own testing pass: there is no pipeline equivalent. These apps contain real broken implementations to practise on:</p>
-  <div class="table-wrap"><table>
-    <caption style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Apps for mobile accessibility testing</caption>
-    <thead><tr><th scope="col">App</th><th scope="col">Platform</th><th scope="col">What the gap looks like</th></tr></thead>
-    <tbody>
-      <tr><td><a href="https://dequeuniversity.com/demo/mars/" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Deque University Mars Demo</a></td><td>iOS + Android (web)</td><td>Open in mobile Safari or Chrome. Run VoiceOver/TalkBack. Notice issues axe-core would catch on desktop that still exist: and ones it would miss entirely</td></tr>
-      <tr><td><a href="https://apps.apple.com/us/app/appt-app-accessibility/id1527923025" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Appt App</a></td><td>iOS</td><td>Native iOS correct/incorrect pairs: the manual testing that automation cannot replace</td></tr>
-      <tr><td><a href="https://play.google.com/store/apps/details?id=nl.appt" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Appt App</a></td><td>Android</td><td>Android equivalent: observe what TalkBack catches that Accessibility Scanner misses</td></tr>
-      <tr><td><a href="https://play.google.com/store/apps/details?id=com.google.android.apps.accessibility.auditor" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">Accessibility Scanner</a></td><td>Android</td><td>The closest mobile equivalent to axe-core: observe its limitations vs TalkBack manual testing</td></tr>
-    </tbody>
-  </table></div>
-
+  <div style="background:var(--amber-bg);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
+    <div style="font-size:1.1rem;line-height:1;padding-top:2px;" aria-hidden="true">&#127919;</div>
+    <div>
+      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--amber);font-weight:500;margin-bottom:4px;">Testing this on mobile</div>
+      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">For native iOS and Android apps to practise the same checks on, see <a href="39-Mobile-Accessibility-Testing-Practice-Apps.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Blog 39: Mobile Accessibility Testing Practice Apps</a>.</div>
+    </div>
+  </div>
   <div class="series-nav"><span class="label">Navigate the series</span>
     <div class="nav-pair">
       <a href="32-Pa11y-in-CI-CD.html" class="nav-blog"><span class="nav-blog-arrow" aria-hidden="true">←</span><div><div class="nav-blog-title">Blog 32: Pa11y in CI/CD</div><div class="nav-blog-sub">Command-line accessibility testing for pipelines</div></div></a>
