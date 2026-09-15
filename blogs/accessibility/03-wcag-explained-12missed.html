@@ -236,6 +236,33 @@
     /* REQ INTRO */
     .req-intro { font-size: 0.88rem; color: var(--text-2); margin-bottom: 0.85rem; font-weight: 300; }
 
+    /* REQUIREMENT DETAILS/COLLAPSE */
+    .req-block {
+      border: 1px solid var(--border); border-radius: 10px;
+      margin-bottom: 1rem; overflow: hidden;
+    }
+    .req-summary {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 1.25rem; padding: 1.1rem 1.25rem; cursor: pointer;
+      list-style: none;
+    }
+    .req-summary::-webkit-details-marker { display: none; }
+    .req-summary::marker { content: ""; }
+    .req-summary:hover { background: var(--bg2); }
+    .req-summary:focus-visible { outline: 2px solid var(--green); outline-offset: -2px; }
+    .req-summary-text h3 { margin: 0 0 0.4rem; }
+    .req-summary-text .req-intro { margin: 0; }
+    .req-toggle {
+      flex-shrink: 0; display: flex; align-items: center; gap: 4px;
+      font-size: 0.8rem; font-weight: 500; color: var(--amber);
+      white-space: nowrap; padding-top: 0.2rem;
+    }
+    .req-toggle-icon { font-size: 0.7rem; transition: transform 0.15s; }
+    .req-toggle-close { display: none; }
+    .req-block[open] .req-toggle-open { display: none; }
+    .req-block[open] .req-toggle-close { display: inline-flex; align-items: center; gap: 4px; }
+    .req-body { padding: 0 1.25rem 1.25rem; }
+
     /* VISUAL EXAMPLE */
     .visual-example { margin: 1rem 0 0.75rem; }
 
@@ -380,10 +407,10 @@
 <nav class="site-nav" aria-label="Site navigation">
   <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
   <ul class="nav-links" role="list">
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#series">Series</a></li>
     <li><a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a></li>
-    <li><a href="https://renitanaz.github.io/thequalitystrategist/#playlist">Playlist</a></li>
-    <li><a href="https://renitanaz.github.io/thequalitystrategist/#justlikereal">JustLikeReal</a></li>
-    <li><a href="https://renitanaz.github.io/thequalitystrategist/#meetme">Meet Me</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#judgement">Judgement &amp; Strategy</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/the-other-side.html">The Other Side</a></li>
   </ul>
 </nav>
 
@@ -391,7 +418,7 @@
   <nav class="breadcrumb" aria-label="Breadcrumb">
     <a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a>
     <span aria-hidden="true">›</span>
-    <span>Shift-Left Accessibility</span>
+    <a href="00-Shift-Left-Accessibility-Series-Introduction.html">Shift-Left Accessibility</a>
     <span aria-hidden="true">›</span>
     <span aria-current="page">03 of 39</span>
   </nav>
@@ -467,15 +494,6 @@
       <li><a href="#how-to-test">How to test: tiers, platforms and practice</a></li>
     </ol>
   </nav>
-
-  <!-- 1 -->
-  <h2 id="how-to-test">Testing the 12 Most Commonly Missed WCAG Criteria</h2>
-  <h3>Tier 1: Pipeline automation</h3>
-  <p>Automation covers a subset of the 12 criteria: 1.1.1 (alt text present), 1.3.1 (info and relationships), 1.4.3 (contrast), 2.4.2 (page title), 3.1.1 (language), 4.1.1 (parsing), 4.1.2 (name/role/value). Run <span class="tool">axe-core</span> with <code>withTags(['wcag2a','wcag2aa'])</code>. Use the <a href="A11y-Test-Playground/27 A11y Test Playground - Axe DevTools.html" style="color:var(--blue);">Axe DevTools Playground</a> to see these flagged in a real scan.</p>
-  <h3>Tier 2: Semi-automated tools</h3>
-  <p><span class="tool">Accessibility Insights Assessment</span> provides a guided walkthrough of every WCAG 2.1 AA criterion including the ones automation misses. It records pass/fail per criterion and exports an HTML report. Use it for the non-automatable criteria in this blog.</p>
-  <h3>Tier 3: Manual</h3>
-  <p>The 12 missed criteria that require manual verification: 1.3.3 (sensory characteristics), 1.4.1 (use of colour), 2.1.1 (keyboard), 2.4.3 (focus order), 2.4.4 (link purpose), 2.4.7 (focus visible), 3.2.1 (on focus), 3.3.1 (error identification), 3.3.2 (labels or instructions). Test with keyboard, NVDA + Firefox (Windows), VoiceOver + Safari (Mac and iOS), TalkBack on Android.</p>
 
   <h2 id="what-is-wcag">1. What WCAG 2.1 Actually Is</h2>
 
@@ -683,9 +701,18 @@
   <p>Each example below shows three things: what it looks like visually, what the HTML looks like, and which tool to use to catch it. Start with the visual: if you can spot it without touching the code, you already have the instinct. The HTML and tool confirm the defect.</p>
 
   <!-- REQ 01: HEADINGS -->
-  <h3>Requirement 01: Headings</h3>
-  <p class="req-intro">Open any page and check the heading structure. A page that uses H1 twice, or jumps from H1 to H3, breaks screen reader navigation.</p>
-
+    <details class="req-block" open>
+    <summary class="req-summary">
+      <div class="req-summary-text">
+        <h3>Requirement 01: Headings</h3>
+        <p class="req-intro">Open any page and check the heading structure. A page that uses H1 twice, or jumps from H1 to H3, breaks screen reader navigation.</p>
+      </div>
+      <span class="req-toggle">
+        <span class="req-toggle-open"><span class="req-toggle-icon">&#9656;</span> Details</span>
+        <span class="req-toggle-close"><span class="req-toggle-icon">&#9662;</span> Collapse</span>
+      </span>
+    </summary>
+    <div class="req-body">
   <div class="visual-example">
     <svg viewBox="0 0 660 180" width="100%" style="display:block;border-radius:8px;background:#161616;border:1px solid #2e2e2e;" aria-hidden="true">
       <!-- FAIL side -->
@@ -744,9 +771,20 @@
 
 
   <!-- REQ 02: SKIP LINK -->
-  <h3>Requirement 02: Skip link</h3>
-  <p class="req-intro">Keyboard users must be able to skip past repeated navigation on every page. The skip link must be the first focusable element and must be visible when focused. Tab once on any page and see if it appears.</p>
-
+    </div>
+  </details>
+  <details class="req-block">
+    <summary class="req-summary">
+      <div class="req-summary-text">
+        <h3>Requirement 02: Skip link</h3>
+        <p class="req-intro">Keyboard users must be able to skip past repeated navigation on every page. The skip link must be the first focusable element and must be visible when focused. Tab once on any page and see if it appears.</p>
+      </div>
+      <span class="req-toggle">
+        <span class="req-toggle-open"><span class="req-toggle-icon">&#9656;</span> Details</span>
+        <span class="req-toggle-close"><span class="req-toggle-icon">&#9662;</span> Collapse</span>
+      </span>
+    </summary>
+    <div class="req-body">
   <div class="visual-example">
     <svg viewBox="0 0 660 130" width="100%" style="display:block;border-radius:8px;background:#161616;border:1px solid #2e2e2e;" aria-hidden="true">
       <text x="14" y="22" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" letter-spacing="1">FAIL: no skip link</text>
@@ -795,9 +833,20 @@
   </div>
 
   <!-- REQ 03: LANDMARKS -->
-  <h3>Requirement 03: Landmarks</h3>
-  <p class="req-intro">Screen reader users navigate by landmarks the same way sighted users scan layout. A page without landmarks forces a screen reader user to read every word from the top to find the main content.</p>
-
+    </div>
+  </details>
+  <details class="req-block">
+    <summary class="req-summary">
+      <div class="req-summary-text">
+        <h3>Requirement 03: Landmarks</h3>
+        <p class="req-intro">Screen reader users navigate by landmarks the same way sighted users scan layout. A page without landmarks forces a screen reader user to read every word from the top to find the main content.</p>
+      </div>
+      <span class="req-toggle">
+        <span class="req-toggle-open"><span class="req-toggle-icon">&#9656;</span> Details</span>
+        <span class="req-toggle-close"><span class="req-toggle-icon">&#9662;</span> Collapse</span>
+      </span>
+    </summary>
+    <div class="req-body">
   <div class="visual-example">
     <svg viewBox="0 0 660 160" width="100%" style="display:block;border-radius:8px;background:#161616;border:1px solid #2e2e2e;" aria-hidden="true">
       <text x="14" y="22" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" letter-spacing="1">FAIL: no landmark structure</text>
@@ -842,9 +891,20 @@
   </div>
 
   <!-- REQ 04: KEYBOARD -->
-  <h3>Requirement 04: Keyboard: fully operable, no traps</h3>
-  <p class="req-intro">Disconnect your mouse. Every action available to mouse users must be achievable by keyboard alone. If you Tab into a component and cannot Tab out, that is a Critical defect called a keyboard trap.</p>
-
+    </div>
+  </details>
+  <details class="req-block">
+    <summary class="req-summary">
+      <div class="req-summary-text">
+        <h3>Requirement 04: Keyboard: fully operable, no traps</h3>
+        <p class="req-intro">Disconnect your mouse. Every action available to mouse users must be achievable by keyboard alone. If you Tab into a component and cannot Tab out, that is a Critical defect called a keyboard trap.</p>
+      </div>
+      <span class="req-toggle">
+        <span class="req-toggle-open"><span class="req-toggle-icon">&#9656;</span> Details</span>
+        <span class="req-toggle-close"><span class="req-toggle-icon">&#9662;</span> Collapse</span>
+      </span>
+    </summary>
+    <div class="req-body">
   <div class="visual-example">
     <svg viewBox="0 0 660 170" width="100%" style="display:block;border-radius:8px;background:#161616;border:1px solid #2e2e2e;" aria-hidden="true">
       <text x="14" y="22" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" letter-spacing="1">FAIL: keyboard trap in modal</text>
@@ -894,9 +954,20 @@
   </div>
 
   <!-- REQ 05: FOCUS INDICATOR -->
-  <h3>Requirement 05: Focus indicator</h3>
-  <p class="req-intro">Press Tab through the page. Every focusable element must show a visible outline or highlight when focused. If focus disappears, that is a defect.</p>
-
+    </div>
+  </details>
+  <details class="req-block">
+    <summary class="req-summary">
+      <div class="req-summary-text">
+        <h3>Requirement 05: Focus indicator</h3>
+        <p class="req-intro">Press Tab through the page. Every focusable element must show a visible outline or highlight when focused. If focus disappears, that is a defect.</p>
+      </div>
+      <span class="req-toggle">
+        <span class="req-toggle-open"><span class="req-toggle-icon">&#9656;</span> Details</span>
+        <span class="req-toggle-close"><span class="req-toggle-icon">&#9662;</span> Collapse</span>
+      </span>
+    </summary>
+    <div class="req-body">
   <div class="visual-example">
     <svg viewBox="0 0 660 130" width="100%" style="display:block;border-radius:8px;background:#161616;border:1px solid #2e2e2e;" aria-hidden="true">
       <!-- FAIL -->
@@ -941,9 +1012,20 @@
   </div>
 
   <!-- REQ 06: ALT TEXT -->
-  <h3>Requirement 06: Alt text</h3>
-  <p class="req-intro">Images that convey information need descriptive alt text. Decorative images need an empty alt attribute. A missing alt attribute means the screen reader reads the filename aloud.</p>
-
+    </div>
+  </details>
+  <details class="req-block">
+    <summary class="req-summary">
+      <div class="req-summary-text">
+        <h3>Requirement 06: Alt text</h3>
+        <p class="req-intro">Images that convey information need descriptive alt text. Decorative images need an empty alt attribute. A missing alt attribute means the screen reader reads the filename aloud.</p>
+      </div>
+      <span class="req-toggle">
+        <span class="req-toggle-open"><span class="req-toggle-icon">&#9656;</span> Details</span>
+        <span class="req-toggle-close"><span class="req-toggle-icon">&#9662;</span> Collapse</span>
+      </span>
+    </summary>
+    <div class="req-body">
   <div class="visual-example">
     <svg viewBox="0 0 660 150" width="100%" style="display:block;border-radius:8px;background:#161616;border:1px solid #2e2e2e;" aria-hidden="true">
       <!-- FAIL -->
@@ -989,9 +1071,20 @@
   </div>
 
   <!-- REQ 07: LINK TEXT -->
-  <h3>Requirement 07: Link text</h3>
-  <p class="req-intro">Screen reader users navigate by links. When a list of links contains "Click here" five times, there is no way to distinguish them. Every link must describe its destination.</p>
-
+    </div>
+  </details>
+  <details class="req-block">
+    <summary class="req-summary">
+      <div class="req-summary-text">
+        <h3>Requirement 07: Link text</h3>
+        <p class="req-intro">Screen reader users navigate by links. When a list of links contains "Click here" five times, there is no way to distinguish them. Every link must describe its destination.</p>
+      </div>
+      <span class="req-toggle">
+        <span class="req-toggle-open"><span class="req-toggle-icon">&#9656;</span> Details</span>
+        <span class="req-toggle-close"><span class="req-toggle-icon">&#9662;</span> Collapse</span>
+      </span>
+    </summary>
+    <div class="req-body">
   <div class="visual-example">
     <svg viewBox="0 0 660 140" width="100%" style="display:block;border-radius:8px;background:#161616;border:1px solid #2e2e2e;" aria-hidden="true">
       <!-- FAIL: links list -->
@@ -1033,9 +1126,20 @@
   </div>
 
   <!-- REQ 08: FORM LABELS -->
-  <h3>Requirement 08: Form labels</h3>
-  <p class="req-intro">Placeholder text disappears when you type. If the only label is the placeholder, the user loses all context mid-form. Every input needs a visible, persistent label above or beside it.</p>
-
+    </div>
+  </details>
+  <details class="req-block">
+    <summary class="req-summary">
+      <div class="req-summary-text">
+        <h3>Requirement 08: Form labels</h3>
+        <p class="req-intro">Placeholder text disappears when you type. If the only label is the placeholder, the user loses all context mid-form. Every input needs a visible, persistent label above or beside it.</p>
+      </div>
+      <span class="req-toggle">
+        <span class="req-toggle-open"><span class="req-toggle-icon">&#9656;</span> Details</span>
+        <span class="req-toggle-close"><span class="req-toggle-icon">&#9662;</span> Collapse</span>
+      </span>
+    </summary>
+    <div class="req-body">
   <div class="visual-example">
     <svg viewBox="0 0 660 150" width="100%" style="display:block;border-radius:8px;background:#161616;border:1px solid #2e2e2e;" aria-hidden="true">
       <!-- FAIL: placeholder only -->
@@ -1078,9 +1182,20 @@
 
 
   <!-- REQ 09: DYNAMIC MESSAGES -->
-  <h3>Requirement 09: Dynamic messages</h3>
-  <p class="req-intro">When content updates dynamically: form submissions, error messages, loading states, AJAX results: screen readers are not automatically notified. Without ARIA live regions, the update is silent for screen reader users.</p>
-
+    </div>
+  </details>
+  <details class="req-block">
+    <summary class="req-summary">
+      <div class="req-summary-text">
+        <h3>Requirement 09: Dynamic messages</h3>
+        <p class="req-intro">When content updates dynamically: form submissions, error messages, loading states, AJAX results: screen readers are not automatically notified. Without ARIA live regions, the update is silent for screen reader users.</p>
+      </div>
+      <span class="req-toggle">
+        <span class="req-toggle-open"><span class="req-toggle-icon">&#9656;</span> Details</span>
+        <span class="req-toggle-close"><span class="req-toggle-icon">&#9662;</span> Collapse</span>
+      </span>
+    </summary>
+    <div class="req-body">
   <div class="visual-example">
     <svg viewBox="0 0 660 150" width="100%" style="display:block;border-radius:8px;background:#161616;border:1px solid #2e2e2e;" aria-hidden="true">
       <text x="14" y="22" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" letter-spacing="1">FAIL: message appears visually, SR hears nothing</text>
@@ -1127,9 +1242,20 @@
   </div>
 
   <!-- REQ 10: MEDIA -->
-  <h3>Requirement 10: Media: captions, transcripts, no autoplay</h3>
-  <p class="req-intro">Video must have synchronised captions: not auto-generated ones, which are frequently inaccurate. Audio-only content needs a full transcript. Any media that starts playing automatically must have a visible pause or stop control.</p>
-
+    </div>
+  </details>
+  <details class="req-block">
+    <summary class="req-summary">
+      <div class="req-summary-text">
+        <h3>Requirement 10: Media: captions, transcripts, no autoplay</h3>
+        <p class="req-intro">Video must have synchronised captions: not auto-generated ones, which are frequently inaccurate. Audio-only content needs a full transcript. Any media that starts playing automatically must have a visible pause or stop control.</p>
+      </div>
+      <span class="req-toggle">
+        <span class="req-toggle-open"><span class="req-toggle-icon">&#9656;</span> Details</span>
+        <span class="req-toggle-close"><span class="req-toggle-icon">&#9662;</span> Collapse</span>
+      </span>
+    </summary>
+    <div class="req-body">
   <div class="visual-example">
     <svg viewBox="0 0 660 175" width="100%" style="display:block;border-radius:8px;background:#161616;border:1px solid #2e2e2e;" aria-hidden="true">
       <text x="14" y="22" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" letter-spacing="1">FAIL: no captions, autoplays</text>
@@ -1176,9 +1302,20 @@
   </div>
 
   <!-- REQ 11: PAGE LANGUAGE -->
-  <h3>Requirement 11: Page language</h3>
-  <p class="req-intro">The lang attribute on the &lt;html&gt; element tells the screen reader which language engine to use. Without it, pronunciation is wrong for every user relying on speech output.</p>
-
+    </div>
+  </details>
+  <details class="req-block">
+    <summary class="req-summary">
+      <div class="req-summary-text">
+        <h3>Requirement 11: Page language</h3>
+        <p class="req-intro">The lang attribute on the &lt;html&gt; element tells the screen reader which language engine to use. Without it, pronunciation is wrong for every user relying on speech output.</p>
+      </div>
+      <span class="req-toggle">
+        <span class="req-toggle-open"><span class="req-toggle-icon">&#9656;</span> Details</span>
+        <span class="req-toggle-close"><span class="req-toggle-icon">&#9662;</span> Collapse</span>
+      </span>
+    </summary>
+    <div class="req-body">
   <div class="visual-example">
     <svg viewBox="0 0 660 130" width="100%" style="display:block;border-radius:8px;background:#161616;border:1px solid #2e2e2e;" aria-hidden="true">
       <!-- FAIL -->
@@ -1218,9 +1355,20 @@
   </div>
 
   <!-- REQ 12: IFRAMES -->
-  <h3>Requirement 12: Embeds: iframe titles required</h3>
-  <p class="req-intro">Every iframe on a page must have a meaningful title attribute. Without it, a screen reader user hears "frame" with no indication of what is inside: a YouTube video, a map, a form, or a payment widget.</p>
-
+    </div>
+  </details>
+  <details class="req-block">
+    <summary class="req-summary">
+      <div class="req-summary-text">
+        <h3>Requirement 12: Embeds: iframe titles required</h3>
+        <p class="req-intro">Every iframe on a page must have a meaningful title attribute. Without it, a screen reader user hears "frame" with no indication of what is inside: a YouTube video, a map, a form, or a payment widget.</p>
+      </div>
+      <span class="req-toggle">
+        <span class="req-toggle-open"><span class="req-toggle-icon">&#9656;</span> Details</span>
+        <span class="req-toggle-close"><span class="req-toggle-icon">&#9662;</span> Collapse</span>
+      </span>
+    </summary>
+    <div class="req-body">
   <div class="visual-example">
     <svg viewBox="0 0 660 150" width="100%" style="display:block;border-radius:8px;background:#161616;border:1px solid #2e2e2e;" aria-hidden="true">
       <text x="14" y="22" font-family="DM Sans,sans-serif" font-size="9" fill="#f87171" letter-spacing="1">FAIL: no title on iframe</text>
@@ -1264,7 +1412,9 @@
   </div>
 
   <!-- 6 -->
-  <h2 id="full-checklist">6. Beyond the 12: The Full Checklist</h2>
+    </div>
+  </details>
+<h2 id="full-checklist">6. Beyond the 12: The Full Checklist</h2>
 
   <p>The 12 requirements above are the highest-frequency defects. WCAG 2.1 AA has 50 Level A and AA criteria in total. The full checklist is essential for:</p>
 
@@ -1284,11 +1434,22 @@
 
   <!-- SERIES NAV -->
 
-  <div style="background:var(--amber-bg);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
-    <div style="font-size:1.1rem;line-height:1;padding-top:2px;" aria-hidden="true">&#127919;</div>
+<!-- 1 -->
+  <h2 id="how-to-test">Testing the 12 Most Commonly Missed WCAG Criteria</h2>
+  <h3>Tier 1: Pipeline automation</h3>
+  <p>Automation covers a subset of the 12 criteria: 1.1.1 (alt text present), 1.3.1 (info and relationships), 1.4.3 (contrast), 2.4.2 (page title), 3.1.1 (language), 4.1.1 (parsing), 4.1.2 (name/role/value). Run <span class="tool">axe-core</span> with <code>withTags(['wcag2a','wcag2aa'])</code>. Use the <a href="A11y-Test-Playground/27 A11y Test Playground - Axe DevTools.html" style="color:var(--blue);">Axe DevTools Playground</a> to see these flagged in a real scan.</p>
+  <h3>Tier 2: Semi-automated tools</h3>
+  <p><span class="tool">Accessibility Insights Assessment</span> provides a guided walkthrough of every WCAG 2.1 AA criterion including the ones automation misses. It records pass/fail per criterion and exports an HTML report. Use it for the non-automatable criteria in this blog.</p>
+  <h3>Tier 3: Manual</h3>
+  <p>The 12 missed criteria that require manual verification: 1.3.3 (sensory characteristics), 1.4.1 (use of colour), 2.1.1 (keyboard), 2.4.3 (focus order), 2.4.4 (link purpose), 2.4.7 (focus visible), 3.2.1 (on focus), 3.3.1 (error identification), 3.3.2 (labels or instructions). Test with keyboard, NVDA + Firefox (Windows), VoiceOver + Safari (Mac and iOS), TalkBack on Android.</p>
+
+  
+
+  <div style="background:var(--blue-bg);border:1px solid rgba(96,165,250,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
+    <div style="font-size:1.1rem;line-height:1;padding-top:2px;" aria-hidden="true">&#128241;</div>
     <div>
-      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--amber);font-weight:500;margin-bottom:4px;">Testing this on mobile</div>
-      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">For native iOS and Android apps to practise the same checks on, see <a href="39-Mobile-Accessibility-Testing-Practice-Apps.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Blog 39: Mobile Accessibility Testing Practice Apps</a>.</div>
+      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--blue);font-weight:500;margin-bottom:4px;">Testing this on mobile</div>
+      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">For native iOS and Android apps to practise the same checks on, see <a href="39-Mobile-Accessibility-Testing-Practice-Apps.html" style="color:var(--blue);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Blog 39: Mobile Accessibility Testing Practice Apps</a>.</div>
     </div>
   </div>
   <div class="series-nav">

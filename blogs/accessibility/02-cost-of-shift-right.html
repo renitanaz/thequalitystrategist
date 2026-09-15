@@ -400,10 +400,10 @@
 <nav class="site-nav" aria-label="Site navigation">
   <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
   <ul class="nav-links" role="list">
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#series">Series</a></li>
     <li><a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a></li>
-    <li><a href="https://renitanaz.github.io/thequalitystrategist/#playlist">Playlist</a></li>
-    <li><a href="https://renitanaz.github.io/thequalitystrategist/#justlikereal">JustLikeReal</a></li>
-    <li><a href="https://renitanaz.github.io/thequalitystrategist/#meetme">Meet Me</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#judgement">Judgement &amp; Strategy</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/the-other-side.html">The Other Side</a></li>
   </ul>
 </nav>
 
@@ -411,7 +411,7 @@
   <nav class="breadcrumb" aria-label="Breadcrumb">
     <a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a>
     <span aria-hidden="true">›</span>
-    <span>Shift-Left Accessibility</span>
+    <a href="00-Shift-Left-Accessibility-Series-Introduction.html">Shift-Left Accessibility</a>
     <span aria-hidden="true">›</span>
     <span aria-current="page">02 of 39</span>
   </nav>
@@ -485,24 +485,12 @@
       <li><a href="#the-problem">The problem with shift-right</a></li>
       <li><a href="#multiplier">The phase-by-phase cost multiplier</a></li>
       <li><a href="#learnings">Learnings from experience</a></li>
-      <li><a href="#what-happens">What actually happens at each phase</a></li>
-      <li><a href="#real-example">A real defect traced through every phase</a></li>
       <li><a href="#hidden-costs">The hidden costs nobody talks about</a></li>
       <li><a href="#argument">How to make the case to your team</a></li>
       <li><a href="#prevention">What prevention looks like in practice</a></li>
       <li><a href="#how-to-test">How to test: tiers, platforms and practice</a></li>
     </ol>
   </nav>
-
-  <!-- 1 -->
-  <h2 id="how-to-test">Using Defect Data to Measure Shift-<span style="color:var(--red);">Right</span></h2>
-  <h3>Tier 1: Pipeline automation</h3>
-  <p>Pipeline violation counts per phase are the most direct measure of shift-right. If axe-core CI starts catching Critical violations only at the release gate rather than at commit, that timing gap is the cost this blog describes. Track violation counts by phase: not just by sprint.</p>
-  <h3>Tier 2: Semi-automated tools</h3>
-  <p>Run <span class="tool">axe DevTools</span> at the end of each sprint on every new feature. Violations found here that were not caught during development indicate active shift-right. The browser tool scan is the earliest manual checkpoint after the pipeline.</p>
-  <h3>Tier 3: Manual</h3>
-  <p><strong>Platform coverage:</strong> Test on Windows (Chrome + Firefox), Mac (Safari + Chrome), iOS (Safari on physical iPhone), and Android (Chrome on physical device). Platform differences in keyboard handling and screen reader behaviour mean a bug on one platform does not guarantee the same behaviour on another.</p>
-  <p>Retrospective question: how many accessibility defects were raised in the last release, and at which phase? Critical defects found in UAT cost 6 to 10 times more than the same defect found in development. The Sprint-Ready Checklist (Blog 37) gives the per-story gate that shifts that ratio left.</p>
 
   <h2 id="the-problem">
     1. The Problem With Shift-<span style="color:var(--red);">Right</span>
@@ -576,6 +564,61 @@
     <p>Every phase gate you hold saves multiples of the cost at the next phase. Catching something in design instead of development is a 2–5× saving. Catching it in development instead of QA is a 2–3× saving. Catching it before production is anywhere from a 2–7× saving, plus legal risk avoided.</p>
   </div>
 
+  <p>Here is what that multiplier actually looks like in practice, phase by phase, using one real example: a missing alt text on an image that is a call-to-action button.</p>
+
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">What the fix involves at each phase, with a missing alt text defect as a worked example</caption>
+      <thead>
+        <tr>
+          <th scope="col">Phase</th>
+          <th scope="col">Cost</th>
+          <th scope="col">What the fix generally involves</th>
+          <th scope="col">The alt text example</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Discovery</td>
+          <td style="color:#4ade80">1×</td>
+          <td>Update acceptance criteria. Add a WCAG reference. Takes minutes. No code touched.</td>
+          <td>Caught in acceptance criteria review: add "all image CTAs must have descriptive alt text" to the AC.</td>
+        </tr>
+        <tr>
+          <td>Design</td>
+          <td style="color:#a3e635">3–5×</td>
+          <td>Update Figma file, re-run contrast check, re-annotate tab order, re-review with stakeholder. Handoff delayed.</td>
+          <td>Caught in Figma annotation review: add an alt text annotation to the component, re-handoff.</td>
+        </tr>
+        <tr>
+          <td>CMS Modelling</td>
+          <td style="color:#fbbf24">4–6×</td>
+          <td>Add missing field (alt text, label), migrate existing content, re-validate all authored entries, re-train authors.</td>
+          <td>Caught in a field audit: add an alt text field to the image component, migrate existing entries.</td>
+        </tr>
+        <tr>
+          <td>Development</td>
+          <td style="color:#fb923c">10–15×</td>
+          <td>Refactor component, add ARIA, fix keyboard support, re-run linting, PR review, re-deploy to staging.</td>
+          <td>Caught by axe-core linting or PR review: add the alt attribute, PR, re-deploy.</td>
+        </tr>
+        <tr>
+          <td>QA</td>
+          <td style="color:#f87171">20–30×</td>
+          <td>Log defect, dev picks up, fixes, deploys to staging, QA retests, re-run screen reader, re-run axe, sign off again.</td>
+          <td>Caught by an axe DevTools scan plus an NVDA test: log the defect, dev fix, retest, screen reader retest, sign off.</td>
+        </tr>
+        <tr>
+          <td>Production</td>
+          <td style="color:#f43f5e">30–100×</td>
+          <td>All of QA costs, plus user complaint, legal review, VPAT update, public audit, emergency sprint, and reputational exposure.</td>
+          <td>Caught by a user complaint or external audit: all of the QA costs, plus legal review, an emergency sprint, VPAT update.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>The defect is identical at every phase. The work surrounding the fix is what multiplies. The fix itself (writing the alt text) takes 30 seconds. The process that wraps it at production can take days.</p>
 
   <!-- LEARNINGS -->
   <h2 id="learnings">3. Learnings From Experience</h2>
@@ -700,122 +743,8 @@
   </div>
 
   <!-- 4 -->
-  <h2 id="what-happens">
-    4. What Actually Happens at Each Phase
-  </h2>
-
-  <p>The multiplier isn't arbitrary. Each phase adds layers of work around the fix itself. Here's what the cost actually comprises at each stage:</p>
-
-  <div class="what-happens" role="list" aria-label="What fixing a defect involves at each phase">
-
-    <div class="wh-card" role="listitem">
-      <div class="wh-card-phase">Phase 0: Discovery</div>
-      <div class="wh-card-title">Change a spec or user story</div>
-      <div class="wh-card-detail">Update acceptance criteria. Add a WCAG reference. Takes minutes. No code touched.</div>
-      <div class="wh-card-cost" style="color:#4ade80">1×</div>
-    </div>
-
-    <div class="wh-card" role="listitem">
-      <div class="wh-card-phase">Phase 1: Design</div>
-      <div class="wh-card-title">Redesign a component or flow</div>
-      <div class="wh-card-detail">Update Figma file, re-run contrast check, re-annotate tab order, re-review with stakeholder. Handoff delayed.</div>
-      <div class="wh-card-cost" style="color:#a3e635">3–5×</div>
-    </div>
-
-    <div class="wh-card" role="listitem">
-      <div class="wh-card-phase">Phase 2: CMS</div>
-      <div class="wh-card-title">Restructure content model</div>
-      <div class="wh-card-detail">Add missing field (alt text, label), migrate existing content, re-validate all authored entries, re-train authors.</div>
-      <div class="wh-card-cost" style="color:#fbbf24">4–6×</div>
-    </div>
-
-    <div class="wh-card" role="listitem">
-      <div class="wh-card-phase">Phase 3: Development</div>
-      <div class="wh-card-title">Rework HTML, ARIA, CSS</div>
-      <div class="wh-card-detail">Refactor component, add ARIA, fix keyboard support, re-run linting, PR review, re-deploy to staging.</div>
-      <div class="wh-card-cost" style="color:#fb923c">10–15×</div>
-    </div>
-
-    <div class="wh-card" role="listitem">
-      <div class="wh-card-phase">Phase 4: QA</div>
-      <div class="wh-card-title">Code change, retest, redeploy</div>
-      <div class="wh-card-detail">Log defect, dev picks up, fixes, deploys to staging, QA retests, re-run screen reader, re-run axe, sign off again.</div>
-      <div class="wh-card-cost" style="color:#f87171">20–30×</div>
-    </div>
-
-    <div class="wh-card" role="listitem">
-      <div class="wh-card-phase">Phase 5: Production</div>
-      <div class="wh-card-title">Emergency patch + legal risk</div>
-      <div class="wh-card-detail">All of Phase 4 costs, plus user complaint, legal review, VPAT update, public audit, emergency sprint, and reputational exposure.</div>
-      <div class="wh-card-cost" style="color:#f43f5e">30–100×</div>
-    </div>
-
-  </div>
-
-  <!-- 4 -->
-  <h2 id="real-example">
-    5. A Real Defect Traced Through Every Phase
-  </h2>
-
-  <p>Take a missing alt text on an image that is a call-to-action button. Here is exactly what it costs at each phase:</p>
-
-  <div class="table-wrap">
-    <table>
-      <caption class="visually-hidden">Cost of a missing alt text defect traced through every delivery phase</caption>
-      <thead>
-        <tr>
-          <th scope="col">Phase</th>
-          <th scope="col">How it's caught</th>
-          <th scope="col">What the fix requires</th>
-          <th scope="col">Cost</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Discovery</td>
-          <td>Acceptance criteria review</td>
-          <td>Add "All image CTAs must have descriptive alt text" to AC</td>
-          <td style="color:#4ade80">1×</td>
-        </tr>
-        <tr>
-          <td>Design</td>
-          <td>Figma annotation review</td>
-          <td>Add alt text annotation to component in Figma, re-handoff</td>
-          <td style="color:#a3e635">3–5×</td>
-        </tr>
-        <tr>
-          <td>CMS Modelling</td>
-          <td>Field audit</td>
-          <td>Add alt text field to image component, migrate existing entries</td>
-          <td style="color:#fbbf24">4–6×</td>
-        </tr>
-        <tr>
-          <td>Development</td>
-          <td>axe-core linting or PR review</td>
-          <td>Add alt attribute, fix aria-label, PR, re-deploy</td>
-          <td style="color:#fb923c">10–15×</td>
-        </tr>
-        <tr>
-          <td>QA</td>
-          <td>axe DevTools scan + NVDA test</td>
-          <td>Log defect, dev fix, retest, screen reader retest, sign off</td>
-          <td style="color:#f87171">20–30×</td>
-        </tr>
-        <tr>
-          <td>Production</td>
-          <td>User complaint / external audit</td>
-          <td>All of QA costs + legal review, emergency sprint, VPAT update</td>
-          <td style="color:#f43f5e">30–100×</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <p>The defect is identical at every phase. The work surrounding the fix is what multiplies. The fix itself (writing the alt text) takes 30 seconds. The process that wraps it at production can take days.</p>
-
-  <!-- 5 -->
   <h2 id="hidden-costs">
-    6. The Hidden Costs Nobody Talks About
+    4. The Hidden Costs Nobody Talks About
   </h2>
 
   <p>The multiplier table covers the direct cost of fixing a defect. It does not cover the indirect costs that accumulate when accessibility is treated as an afterthought:</p>
@@ -829,9 +758,9 @@
     <li><strong>Audit cost:</strong> a third-party accessibility audit commissioned after a complaint costs far more than the internal testing that would have caught the same issues.</li>
   </ul>
 
-  <!-- 6 -->
+  <!-- 5 -->
   <h2 id="argument">
-    7. How to Make the Case to Your Team
+    5. How to Make the Case to Your Team
   </h2>
 
   <p>The cost multiplier is your most powerful tool for getting accessibility taken seriously upstream. Here's how to use it with different audiences:</p>
@@ -872,9 +801,9 @@
 
   </div>
 
-  <!-- 7 -->
+  <!-- 6 -->
   <h2 id="prevention">
-    8. What Prevention Looks Like in Practice
+    6. What Prevention Looks Like in Practice
   </h2>
 
   <p>Shift-left accessibility is not a single action. It is a set of gates (one per phase) that together make sure defects never compound:</p>
@@ -939,11 +868,23 @@
       <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;margin-top:0.6rem;">The playground page only covers running the test locally. For the actual CI/CD setup, a full GitHub Actions workflow file with every line explained, see <a href="31-Axe-Core-Cypress-Playwright.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Blog 31</a> for Playwright and Cypress, or <a href="32-Pa11y-in-CI-CD.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Blog 32</a> for Pa11y.</div>
     </div>
   </div>
-  <div style="background:var(--amber-bg);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
-    <div style="font-size:1.1rem;line-height:1;padding-top:2px;" aria-hidden="true">&#127919;</div>
+<!-- 1 -->
+  <h2 id="how-to-test">Using Defect Data to Measure Shift-<span style="color:var(--red);">Right</span></h2>
+  <h3>Tier 1: Pipeline automation</h3>
+  <p>Pipeline violation counts per phase are the most direct measure of shift-right. If axe-core CI starts catching Critical violations only at the release gate rather than at commit, that timing gap is the cost this blog describes. Track violation counts by phase: not just by sprint.</p>
+  <h3>Tier 2: Semi-automated tools</h3>
+  <p>Run <span class="tool">axe DevTools</span> at the end of each sprint on every new feature. Violations found here that were not caught during development indicate active shift-right. The browser tool scan is the earliest manual checkpoint after the pipeline.</p>
+  <h3>Tier 3: Manual</h3>
+  <p><strong>Platform coverage:</strong> Test on Windows (Chrome + Firefox), Mac (Safari + Chrome), iOS (Safari on physical iPhone), and Android (Chrome on physical device). Platform differences in keyboard handling and screen reader behaviour mean a bug on one platform does not guarantee the same behaviour on another.</p>
+  <p>Retrospective question: how many accessibility defects were raised in the last release, and at which phase? Critical defects found in UAT cost 6 to 10 times more than the same defect found in development. The Sprint-Ready Checklist (Blog 37) gives the per-story gate that shifts that ratio left.</p>
+
+  
+
+  <div style="background:var(--blue-bg);border:1px solid rgba(96,165,250,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
+    <div style="font-size:1.1rem;line-height:1;padding-top:2px;" aria-hidden="true">&#128241;</div>
     <div>
-      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--amber);font-weight:500;margin-bottom:4px;">Testing this on mobile</div>
-      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">For native iOS and Android apps to practise the same checks on, see <a href="39-Mobile-Accessibility-Testing-Practice-Apps.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Blog 39: Mobile Accessibility Testing Practice Apps</a>.</div>
+      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--blue);font-weight:500;margin-bottom:4px;">Testing this on mobile</div>
+      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">For native iOS and Android apps to practise the same checks on, see <a href="39-Mobile-Accessibility-Testing-Practice-Apps.html" style="color:var(--blue);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Blog 39: Mobile Accessibility Testing Practice Apps</a>.</div>
     </div>
   </div>
   <div class="series-nav">

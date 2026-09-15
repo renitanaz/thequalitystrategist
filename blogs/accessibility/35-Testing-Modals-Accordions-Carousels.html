@@ -12,16 +12,16 @@
 <nav class="site-nav" aria-label="Site navigation">
   <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
   <ul class="nav-links" role="list">
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#series">Series</a></li>
     <li><a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a></li>
-    <li><a href="https://renitanaz.github.io/thequalitystrategist/#playlist">Playlist</a></li>
-    <li><a href="https://renitanaz.github.io/thequalitystrategist/#justlikereal">JustLikeReal</a></li>
-    <li><a href="https://renitanaz.github.io/thequalitystrategist/#meetme">Meet Me</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#judgement">Judgement &amp; Strategy</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/the-other-side.html">The Other Side</a></li>
   </ul>
 </nav>
 <header class="blog-header">
   <nav class="breadcrumb" aria-label="Breadcrumb">
     <a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a>
-    <span aria-hidden="true">›</span><span>Shift-Left Accessibility</span>
+    <span aria-hidden="true">›</span><a href="00-Shift-Left-Accessibility-Series-Introduction.html">Shift-Left Accessibility</a>
     <span aria-hidden="true">›</span><span aria-current="page">35 of 39</span>
   </nav>
   <div class="blog-tags"><span class="tag" style="background:rgba(167,139,250,0.08);color:#a78bfa;border-color:rgba(167,139,250,0.3)">Applied QA</span><span class="tag" style="">Components</span><span class="tag" style="">ARIA</span><span class="tag" style="">Manual Testing</span></div>
@@ -168,6 +168,33 @@
     <li>Pause button: visible and keyboard operable, with <code>aria-label="Pause slideshow"</code></li>
   </ul>
 
+  <h2 id="common-failures">4. Common Failure Patterns Across All Three</h2>
+  <div class="table-wrap"><table>
+    <caption style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Common component failures</caption>
+    <thead><tr><th scope="col">Component</th><th scope="col">Most common failure</th><th scope="col">WCAG</th></tr></thead>
+    <tbody>
+      <tr><td>Modal</td><td>Focus does not move into modal on open</td><td>2.4.3</td></tr>
+      <tr><td>Modal</td><td>Focus escapes modal on Tab</td><td>2.1.2</td></tr>
+      <tr><td>Modal</td><td>Focus does not return to trigger on close</td><td>2.4.3</td></tr>
+      <tr><td>Modal</td><td>Close button has no accessible name</td><td>4.1.2</td></tr>
+      <tr><td>Accordion</td><td>Trigger not a button: div or span with onclick</td><td>4.1.2</td></tr>
+      <tr><td>Accordion</td><td>aria-expanded missing: state not announced</td><td>4.1.2</td></tr>
+      <tr><td>Accordion</td><td>Panel hidden with visibility:hidden: still in Tab order</td><td>2.1.1</td></tr>
+      <tr><td>Carousel</td><td>Auto-advancing with no pause button</td><td>2.2.2</td></tr>
+      <tr><td>Carousel</td><td>Prev/Next buttons are icon-only with no accessible name</td><td>4.1.2</td></tr>
+      <tr><td>Carousel</td><td>Slide change not announced</td><td>4.1.3</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="takeaway" role="note">
+    <div class="label">The 3-step component test</div>
+    <ul>
+      <li>Keyboard only: can you open, navigate, and close the component using only Tab, Enter, Space, and Escape?</li>
+      <li>NVDA: does it announce the role, state, and content correctly at each interaction point?</li>
+      <li>Screen reader off: can you operate the component fully with keyboard without hearing anything?</li>
+    </ul>
+  </div>
+
   <h2 id="how-to-test">How to Test: Tiers and Platform Coverage</h2>
 
   <h3>Tier 1: Pipeline automation</h3>
@@ -202,38 +229,11 @@ expect(results.violations.filter(v => ['critical','serious'].includes(v.impact))
     </div>
   </div>
 
-  <h2 id="common-failures">4. Common Failure Patterns Across All Three</h2>
-  <div class="table-wrap"><table>
-    <caption style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Common component failures</caption>
-    <thead><tr><th scope="col">Component</th><th scope="col">Most common failure</th><th scope="col">WCAG</th></tr></thead>
-    <tbody>
-      <tr><td>Modal</td><td>Focus does not move into modal on open</td><td>2.4.3</td></tr>
-      <tr><td>Modal</td><td>Focus escapes modal on Tab</td><td>2.1.2</td></tr>
-      <tr><td>Modal</td><td>Focus does not return to trigger on close</td><td>2.4.3</td></tr>
-      <tr><td>Modal</td><td>Close button has no accessible name</td><td>4.1.2</td></tr>
-      <tr><td>Accordion</td><td>Trigger not a button: div or span with onclick</td><td>4.1.2</td></tr>
-      <tr><td>Accordion</td><td>aria-expanded missing: state not announced</td><td>4.1.2</td></tr>
-      <tr><td>Accordion</td><td>Panel hidden with visibility:hidden: still in Tab order</td><td>2.1.1</td></tr>
-      <tr><td>Carousel</td><td>Auto-advancing with no pause button</td><td>2.2.2</td></tr>
-      <tr><td>Carousel</td><td>Prev/Next buttons are icon-only with no accessible name</td><td>4.1.2</td></tr>
-      <tr><td>Carousel</td><td>Slide change not announced</td><td>4.1.3</td></tr>
-    </tbody>
-  </table></div>
-
-  <div class="takeaway" role="note">
-    <div class="label">The 3-step component test</div>
-    <ul>
-      <li>Keyboard only: can you open, navigate, and close the component using only Tab, Enter, Space, and Escape?</li>
-      <li>NVDA: does it announce the role, state, and content correctly at each interaction point?</li>
-      <li>Screen reader off: can you operate the component fully with keyboard without hearing anything?</li>
-    </ul>
-  </div>
-
-  <div style="background:var(--amber-bg);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
-    <div style="font-size:1.1rem;line-height:1;padding-top:2px;" aria-hidden="true">&#127919;</div>
+  <div style="background:var(--blue-bg);border:1px solid rgba(96,165,250,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
+    <div style="font-size:1.1rem;line-height:1;padding-top:2px;" aria-hidden="true">&#128241;</div>
     <div>
-      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--amber);font-weight:500;margin-bottom:4px;">Testing this on mobile</div>
-      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">For native iOS and Android apps to practise the same checks on, see <a href="39-Mobile-Accessibility-Testing-Practice-Apps.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Blog 39: Mobile Accessibility Testing Practice Apps</a>.</div>
+      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--blue);font-weight:500;margin-bottom:4px;">Testing this on mobile</div>
+      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">For native iOS and Android apps to practise the same checks on, see <a href="39-Mobile-Accessibility-Testing-Practice-Apps.html" style="color:var(--blue);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Blog 39: Mobile Accessibility Testing Practice Apps</a>.</div>
     </div>
   </div>
   <div class="series-nav"><span class="label">Navigate the series</span>

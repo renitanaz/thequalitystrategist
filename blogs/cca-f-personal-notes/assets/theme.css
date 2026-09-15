@@ -103,11 +103,31 @@
   --steel-6:#64AAC4;
 }
 
-/* The toggle is fixed to the browser's own top-right corner rather
-   than the right edge of the (narrower, centered) content column, so
-   it stays in the same physical spot regardless of page width and
-   theme, and stays reachable while scrolling. */
-.theme-toggle{position:fixed;top:1rem;right:1rem;z-index:40;-webkit-appearance:none;appearance:none;border:none;background:none;padding:0;cursor:pointer;filter:drop-shadow(0 2px 6px rgba(0,0,0,.18))}
+/* Site header: full-width sticky bar (logo left, links + theme toggle
+   right), matching the Shift-Left Accessibility series. Lives at the
+   top of <body>, outside the centered <main> column, so it spans the
+   full browser width like the accessibility series' nav does. */
+.site-nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:56px}
+.nav-logo{font-weight:700;font-size:1rem;color:var(--text);text-decoration:none}
+.nav-logo:focus-visible{outline:2px solid var(--olive);outline-offset:4px;border-radius:3px}
+.nav-right{display:flex;align-items:center;gap:1.5rem}
+.nav-links{display:flex;gap:1.5rem;list-style:none}
+.nav-links a{color:var(--text-3);text-decoration:none;font-size:.85rem;transition:color .2s}
+.nav-links a:hover{color:var(--text)}
+.nav-links a:focus-visible{outline:2px solid var(--olive);outline-offset:4px;border-radius:3px}
+@media (max-width:620px){.nav-links{display:none}}
+
+/* Breadcrumb, directly under the site nav, inside the centered column. */
+.breadcrumb{font-size:.78rem;color:var(--text-3);margin:1.5rem 0 1rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.breadcrumb a{color:var(--text-3);text-decoration:none;transition:color .2s}
+.breadcrumb a:hover{color:var(--olive)}
+.breadcrumb a:focus-visible{outline:2px solid var(--olive);outline-offset:2px;border-radius:2px}
+.breadcrumb [aria-current="page"]{color:var(--text-2)}
+
+/* The toggle now lives inline in .site-nav rather than fixed to the
+   viewport corner, since the sticky nav itself keeps it reachable
+   while scrolling. */
+.theme-toggle{-webkit-appearance:none;appearance:none;border:none;background:none;padding:0;cursor:pointer}
 .theme-toggle .ttk-track{position:relative;display:flex;align-items:center;justify-content:space-between;box-sizing:border-box;width:52px;height:28px;background:var(--bg3);border:1px solid var(--border);border-radius:999px;padding:0 6px;transition:background .2s ease}
 .theme-toggle .ttk-icon{position:relative;z-index:1;font-size:12px;line-height:1;color:var(--text-3);user-select:none}
 .theme-toggle .ttk-thumb{position:absolute;z-index:0;top:2px;left:2px;width:22px;height:22px;border-radius:50%;background:var(--bg);border:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s ease}

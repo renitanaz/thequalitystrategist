@@ -590,10 +590,10 @@
 <nav class="site-nav" aria-label="Site navigation">
   <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
   <ul class="nav-links" role="list">
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#series">Series</a></li>
     <li><a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a></li>
-    <li><a href="https://renitanaz.github.io/thequalitystrategist/#playlist">Playlist</a></li>
-    <li><a href="https://renitanaz.github.io/thequalitystrategist/#justlikereal">JustLikeReal</a></li>
-    <li><a href="https://renitanaz.github.io/thequalitystrategist/#meetme">Meet Me</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/#judgement">Judgement &amp; Strategy</a></li>
+    <li><a href="https://renitanaz.github.io/thequalitystrategist/the-other-side.html">The Other Side</a></li>
   </ul>
 </nav>
 
@@ -602,7 +602,7 @@
   <nav class="breadcrumb" aria-label="Breadcrumb">
     <a href="https://renitanaz.github.io/thequalitystrategist/#blogs">Blogs</a>
     <span aria-hidden="true">›</span>
-    <span>Shift-Left Accessibility</span>
+    <a href="00-Shift-Left-Accessibility-Series-Introduction.html">Shift-Left Accessibility</a>
     <span aria-hidden="true">›</span>
     <span aria-current="page">01 of 39</span>
   </nav>
@@ -697,14 +697,6 @@
     </ol>
   </nav>
 
-  <!-- 1 -->
-  <h2 id="how-to-test">How This Blog Connects to Testing</h2>
-  <h3>Tier 1: Pipeline automation</h3>
-  <p>Automated tools cannot verify whether a team treats accessibility as a quality concern. But a missing pipeline gate is itself evidence of the problem. Add <span class="tool">axe-core</span> to CI as the minimum signal that accessibility is a build criterion: not a post-release check.</p>
-  <h3>Tier 2: Semi-automated tools</h3>
-  <p>Run <span class="tool">axe DevTools</span> or <span class="tool">WAVE</span> on any page before a sprint review. If violations exist and nobody flagged them, the gap is not tooling: it is ownership and priority. These tools make that gap visible in seconds.</p>
-  <h3>Tier 3: Manual</h3>
-  <p><strong>Platform coverage:</strong> Test on Windows (Chrome + Firefox), Mac (Safari + Chrome), iOS (Safari on physical iPhone), and Android (Chrome on physical device). Platform differences in keyboard handling and screen reader behaviour mean a bug on one platform does not guarantee the same behaviour on another.</p>
   <h2 id="what-is-accessibility">
     <span class="h2-icon icon-green" aria-hidden="true">🎯</span>
     1. What Accessibility Actually Means
@@ -1009,11 +1001,56 @@
       <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">See what a pipeline accessibility gate catches in practice: <a href="A11y-Test-Playground/27 A11y Test Playground - Axe DevTools.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Axe DevTools Playground</a>.</div>
     </div>
   </div>
-  <div style="background:var(--amber-bg);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
-    <div style="font-size:1.1rem;line-height:1;padding-top:2px;" aria-hidden="true">&#127919;</div>
+<!-- 1 -->
+  <h2 id="how-to-test">How This Blog Connects to Testing</h2>
+  <p>Every blog in this series ends with the same three tiers, so it is worth defining them once, here, at the start, rather than assuming they are already familiar. They are not three alternatives to pick from: they run at different points in delivery and catch different kinds of failure, and a testing setup that only uses one of them has a gap the other two exist to close.</p>
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">What each testing tier is, when it runs, and what it does and does not catch</caption>
+      <thead>
+        <tr>
+          <th scope="col">Tier</th>
+          <th scope="col">Runs</th>
+          <th scope="col">Catches</th>
+          <th scope="col">Cannot catch</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Tier 1: Pipeline automation</td>
+          <td>Automatically, on every commit, before a human sees the code</td>
+          <td>Rule-based structural failures: missing labels, contrast ratios, invalid ARIA, missing alt attributes</td>
+          <td>Whether the experience makes sense: it checks the DOM, not the reasoning behind it</td>
+        </tr>
+        <tr>
+          <td>Tier 2: Semi-automated tools</td>
+          <td>When someone chooses to run it: a browser extension check before a sprint review</td>
+          <td>The same class of rule-based failures as Tier 1, but interactively, so you can see and reproduce exactly what was flagged</td>
+          <td>Anything Tier 1 misses, plus it depends on a person remembering to run it</td>
+        </tr>
+        <tr>
+          <td>Tier 3: Manual</td>
+          <td>A person actually operating the page: keyboard only, with a screen reader, or on a real device</td>
+          <td>Everything a rules engine cannot judge: reading order, focus logic, whether an announcement actually communicates what is happening</td>
+          <td>Nothing structurally, but it is the slowest and most expensive tier, which is why it cannot be the only gate this early in the process</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Used together, each tier catches what the one before it structurally cannot. That is the whole argument for keeping all three, not a preference for one over the others.</p>
+  <h3>Tier 1: Pipeline automation</h3>
+  <p>Automated tools cannot verify whether a team treats accessibility as a quality concern. But a missing pipeline gate is itself evidence of the problem. Add <span class="tool">axe-core</span> to CI as the minimum signal that accessibility is a build criterion: not a post-release check.</p>
+  <h3>Tier 2: Semi-automated tools</h3>
+  <p>Run <span class="tool">axe DevTools</span> or <span class="tool">WAVE</span> on any page before a sprint review. If violations exist and nobody flagged them, the gap is not tooling: it is ownership and priority. These tools make that gap visible in seconds.</p>
+  <h3>Tier 3: Manual</h3>
+  <p><strong>Platform coverage:</strong> Test on Windows (Chrome + Firefox), Mac (Safari + Chrome), iOS (Safari on physical iPhone), and Android (Chrome on physical device). Platform differences in keyboard handling and screen reader behaviour mean a bug on one platform does not guarantee the same behaviour on another.</p>
+  
+
+  <div style="background:var(--blue-bg);border:1px solid rgba(96,165,250,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
+    <div style="font-size:1.1rem;line-height:1;padding-top:2px;" aria-hidden="true">&#128241;</div>
     <div>
-      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--amber);font-weight:500;margin-bottom:4px;">Testing this on mobile</div>
-      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">For native iOS and Android apps to practise the same checks on, see <a href="39-Mobile-Accessibility-Testing-Practice-Apps.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Blog 39: Mobile Accessibility Testing Practice Apps</a>.</div>
+      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--blue);font-weight:500;margin-bottom:4px;">Testing this on mobile</div>
+      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">For native iOS and Android apps to practise the same checks on, see <a href="39-Mobile-Accessibility-Testing-Practice-Apps.html" style="color:var(--blue);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Blog 39: Mobile Accessibility Testing Practice Apps</a>.</div>
     </div>
   </div>
   <div class="series-nav">
