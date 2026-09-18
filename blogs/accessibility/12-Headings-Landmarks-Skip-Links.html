@@ -429,19 +429,6 @@
     Mobile testing requires a physical device. Xcode Simulator and Android Emulator do not accurately simulate VoiceOver or TalkBack behaviour. A broken heading structure found on desktop produces an equally broken experience on mobile: the gestures just feel different.
   </div>
 
-  <h2 id="how-to-test-tiers">How to Test: Tiers and Platform Coverage</h2>
-  <h3>Tier 1: Pipeline automation</h3>
-  <p>axe-core catches: missing landmark regions, skipped heading levels, missing skip links, and empty headings. Run with <code>withTags(['wcag2a','wcag2aa'])</code> in CI. These structural violations are among the most reliable automated checks: the DOM either has the correct structure or it does not.</p>
-  <h3>Tier 2: Semi-automated tools</h3>
-  <p><span class="tool">WAVE</span> Structure tab gives the fastest visual overview of heading hierarchy and landmark regions. <span class="tool">ANDI</span> Structure module lists all headings in document order: faster than tabbing through headings with a screen reader for a first structural check. <span class="tool">Accessibility Insights</span> FastPass catches landmark and heading violations with WCAG criterion references.</p>
-  <h3>Tier 3: Manual: platform coverage</h3>
-  <ul>
-    <li><strong>NVDA + Firefox (Windows):</strong> Press H to walk headings. Press D for landmarks. Press 1–6 for heading levels. Verify structure matches the visual hierarchy.</li>
-    <li><strong>VoiceOver + Safari (Mac):</strong> Open rotor (VO+U). Check Headings and Landmarks lists. Verify all landmark regions are named where multiple exist.</li>
-    <li><strong>VoiceOver on iOS (physical iPhone):</strong> Set rotor to Headings. Swipe up/down to navigate. Verify heading structure in mobile view.</li>
-    <li><strong>TalkBack on Android (physical device):</strong> Set reading controls to Headings. Swipe up to navigate. Verify structure.</li>
-  </ul>
-
   <h2 id="how-to-test">6. How to Test: Tools and Manual Checks</h2>
 
   <div style="background:var(--amber-bg);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:0 0 1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
@@ -453,7 +440,7 @@
   </div>
 
   <h3>What automation catches</h3>
-  <p><span class="tool">axe-core</span> (in <span class="tool">Playwright</span>, <span class="tool">Cypress</span>, or <span class="tool">axe DevTools</span>) and <span class="tool">Pa11y</span> will flag these automatically:</p>
+  <p><a href="31-Axe-Core-Cypress-Playwright.html" style="color:var(--blue);"><span class="tool">axe-core</span></a> (in <a href="https://playwright.dev/" target="_blank" rel="noopener noreferrer" style="color:var(--blue);"><span class="tool">Playwright</span></a>, <a href="https://www.cypress.io/" target="_blank" rel="noopener noreferrer" style="color:var(--blue);"><span class="tool">Cypress</span></a>, or <a href="27-Axe-DevTools.html" style="color:var(--blue);"><span class="tool">axe DevTools</span></a>) and <a href="32-Pa11y-in-CI-CD.html" style="color:var(--blue);"><span class="tool">Pa11y</span></a> will flag these automatically:</p>
   <ul>
     <li>Missing <code>&lt;main&gt;</code> landmark</li>
     <li>Multiple elements with the same landmark role and no distinguishing label (e.g. two unlabelled <code>&lt;nav&gt;</code> elements)</li>
@@ -461,12 +448,12 @@
     <li>Page with no headings at all</li>
     <li>Incorrect ARIA roles on landmark elements</li>
   </ul>
-  <p>Run <span class="tool">axe-core</span> in your CI/CD pipeline to catch these on every pull request. They are structural issues: deterministic, no interpretation needed.</p>
+  <p>Run <a href="31-Axe-Core-Cypress-Playwright.html" style="color:var(--blue);"><span class="tool">axe-core</span></a> in your CI/CD pipeline to catch these on every pull request. They are structural issues: deterministic, no interpretation needed.</p>
 
   <h3>What automation misses: manual check required</h3>
   <p>Automation cannot evaluate meaning or logic. These require human judgement:</p>
   <ul>
-    <li><strong>Skipped heading levels</strong>: axe-core flags some skipped levels but not all. A page with H1 then H3 sometimes passes automated checks. Always verify with <span class="tool">WAVE</span> Structure tab or <span class="tool">NVDA</span> Insert+F6.</li>
+    <li><strong>Skipped heading levels</strong>: axe-core flags some skipped levels but not all. A page with H1 then H3 sometimes passes automated checks. Always verify with <a href="26-WAVE.html" style="color:var(--blue);"><span class="tool">WAVE</span></a> Structure tab or <a href="20-NVDA-on-Windows.html" style="color:var(--blue);"><span class="tool">NVDA</span></a> Insert+F6.</li>
     <li><strong>Visual headings not marked up as headings</strong>: automation sees a <code>&lt;div&gt;</code> styled to look like a heading. It has no way to know it should be a heading. Only a human reviewing the page visually against the DOM can catch this.</li>
     <li><strong>Heading hierarchy that matches the DOM but not the visual layout</strong>: automation checks the code order, not whether the heading order makes logical sense to a reader.</li>
     <li><strong>Skip link href pointing to a non-existent ID</strong>: some automated tools flag this; many do not. Always test manually: press Tab once, then Enter.</li>
@@ -474,13 +461,16 @@
   </ul>
 
   <h3>WAVE Structure tab</h3>
-  <p>The fastest way to inspect heading hierarchy on a live page. Open <span class="tool">WAVE</span>, click the Structure tab. The heading tree is displayed with levels, text, and any skipped levels flagged in yellow. Landmark regions are also shown with their roles. Takes under 60 seconds per page. Catches what axe-core misses on heading structure.</p>
+  <p>The fastest way to inspect heading hierarchy on a live page. Open <a href="26-WAVE.html" style="color:var(--blue);"><span class="tool">WAVE</span></a>, click the Structure tab. The heading tree is displayed with levels, text, and any skipped levels flagged in yellow. Landmark regions are also shown with their roles. Takes under 60 seconds per page. Catches what axe-core misses on heading structure.</p>
+
+  <h3>ANDI Structure module</h3>
+  <p><a href="30-ANDI-and-IBM-Equal-Access.html" style="color:var(--blue);"><span class="tool">ANDI</span></a> Structure module lists every heading on the page in document order, often faster than tabbing through with a screen reader for a first structural pass.</p>
 
   <h3>NVDA heading navigation</h3>
-  <p>With <span class="tool">NVDA</span> running, press <span class="key">H</span> to move to the next heading, <span class="key">Shift</span>+<span class="key">H</span> to move back. Press <span class="key">Insert</span>+<span class="key">F6</span> to open the headings list: all headings on the page displayed with their levels. This is the ground truth: it shows exactly what a screen reader user experiences, not just what the DOM contains.</p>
+  <p>With <a href="20-NVDA-on-Windows.html" style="color:var(--blue);"><span class="tool">NVDA</span></a> running, walk headings and landmarks using the shortcuts in Section 5 above. This is the ground truth: it shows exactly what a screen reader user experiences, not just what the DOM contains.</p>
 
   <h3>Accessibility Insights</h3>
-  <p><span class="tool">Accessibility Insights</span> FastPass runs automated axe-core checks and a tab stops visualisation. Assessment mode provides guided checks for landmark structure. Useful for combining automated and manual verification in one workflow.</p>
+  <p><a href="28-Accessibility-Insights.html" style="color:var(--blue);"><span class="tool">Accessibility Insights</span></a> FastPass runs automated axe-core checks and a tab stops visualisation. Assessment mode provides guided checks for landmark structure. Useful for combining automated and manual verification in one workflow.</p>
 
   <h3>Chrome DevTools accessibility tree</h3>
   <p>In <span class="tool">Chrome DevTools</span>, enable the full page accessibility tree from the Accessibility panel. Every heading, landmark, and ARIA role is visible in a tree view. Useful for checking whether a heading is marked up correctly or just visually styled: particularly helpful when WAVE flags something you cannot immediately locate in the DOM.</p>
@@ -488,7 +478,7 @@
   <h3>Manual check: the three questions</h3>
   <ul>
     <li><strong>Skip link:</strong> Press Tab once on page load. Does it appear? Press Enter. Does focus move to main content?</li>
-    <li><strong>Headings:</strong> Does the page have exactly one H1? Do heading levels progress sequentially with no skips? Are all major sections reachable via <span class="tool">NVDA</span> heading navigation?</li>
+    <li><strong>Headings:</strong> Does the page have exactly one H1? Do heading levels progress sequentially with no skips? Are all major sections reachable via <a href="20-NVDA-on-Windows.html" style="color:var(--blue);"><span class="tool">NVDA</span></a> heading navigation?</li>
     <li><strong>Landmarks:</strong> Is there a <code>&lt;main&gt;</code>? Are multiple <code>&lt;nav&gt;</code> elements labelled distinctly? Test on VoiceOver (Mac/iOS) and TalkBack (Android) to confirm mobile landmark navigation works: automation does not cover this.</li>
   </ul>
 
@@ -555,7 +545,7 @@
 
   <div class="takeaway" role="note">
     <div class="label">The fast check</div>
-    <p>Open <span class="tool">WAVE</span>, click Structure, look for red and yellow flags. This catches 80% of heading and landmark defects in under a minute. Manual verification with <span class="tool">NVDA</span> confirms the rest.</p>
+    <p>Open <a href="26-WAVE.html" style="color:var(--blue);"><span class="tool">WAVE</span></a>, click Structure, look for red and yellow flags. This catches 80% of heading and landmark defects in under a minute. Manual verification with <a href="20-NVDA-on-Windows.html" style="color:var(--blue);"><span class="tool">NVDA</span></a> confirms the rest.</p>
   </div>
 
 

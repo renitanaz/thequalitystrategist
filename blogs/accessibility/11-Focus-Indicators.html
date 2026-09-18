@@ -419,19 +419,6 @@ button:focus {
   </div>
 
   <!-- 6 -->
-  <h2 id="how-to-test-tiers">How to Test: Tiers and Platform Coverage</h2>
-  <h3>Tier 1: Pipeline automation</h3>
-  <p>axe-core does not check focus indicator visibility: CSS :focus styles cannot be evaluated programmatically. The pipeline cannot catch this. The only automated signal is if an element has <code>outline: none</code> without a replacement: some linting rules flag this but it is not reliable. Focus indicator testing is Tier 3.</p>
-  <h3>Tier 2: Semi-automated tools</h3>
-  <p><span class="tool">Accessibility Insights</span> Tab Stops draws the focus path. It does not evaluate whether the indicator is visible enough: but it shows you where focus goes so you can check each stop visually. Combine Tab Stops with manual visual inspection of each focused element.</p>
-  <h3>Tier 3: Manual: platform coverage</h3>
-  <ul>
-    <li><strong>Windows Chrome/Firefox:</strong> Tab through every interactive element. Every focus state must be visible. Check against the 3:1 contrast minimum for focus indicators (WCAG 1.4.11).</li>
-    <li><strong>Mac Safari:</strong> Enable full keyboard access. Same walkthrough. Safari has different default focus styles to Chrome.</li>
-    <li><strong>iOS Safari:</strong> External keyboard connected to iPhone. Tab through interactive elements. Verify focus indicator visible on each.</li>
-    <li><strong>Android Chrome:</strong> External keyboard. Same check.</li>
-  </ul>
-
   <h2 id="how-to-test">6. How to Test Focus Indicators</h2>
 
   <div style="background:var(--amber-bg);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:0 0 1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
@@ -443,7 +430,7 @@ button:focus {
   </div>
 
   <h3>What automation catches</h3>
-  <p><span class="tool">axe-core</span> (in <span class="tool">Playwright</span>, <span class="tool">Cypress</span>, or <span class="tool">axe DevTools</span>) and <span class="tool">Pa11y</span> will flag these automatically:</p>
+  <p><a href="31-Axe-Core-Cypress-Playwright.html" style="color:var(--blue);"><span class="tool">axe-core</span></a> (in <a href="https://playwright.dev/" target="_blank" rel="noopener noreferrer" style="color:var(--blue);"><span class="tool">Playwright</span></a>, <a href="https://www.cypress.io/" target="_blank" rel="noopener noreferrer" style="color:var(--blue);"><span class="tool">Cypress</span></a>, or <a href="27-Axe-DevTools.html" style="color:var(--blue);"><span class="tool">axe DevTools</span></a>) and <a href="32-Pa11y-in-CI-CD.html" style="color:var(--blue);"><span class="tool">Pa11y</span></a> will flag these automatically:</p>
   <ul>
     <li>Elements with <code>outline: none</code> and no replacement focus style (WCAG 2.4.7)</li>
     <li>Interactive elements with no accessible focus style in the stylesheet</li>
@@ -458,11 +445,14 @@ button:focus {
     <li><strong>Ring present but too small to see</strong>: technically passes WCAG 2.4.7 (ring exists) but fails in practice. Only a human can judge practical visibility.</li>
   </ul>
 
+  <h3>Accessibility Insights: Tab Stops</h3>
+  <p><a href="28-Accessibility-Insights.html" style="color:var(--blue);"><span class="tool">Accessibility Insights</span></a> Tab Stops draws the focus path directly on the page as you tab through it. It does not judge whether the indicator is visible enough, but it shows you exactly where focus goes, which is useful for confirming focus order before checking each stop's visibility by eye.</p>
+
   <h3>Desktop browsers</h3>
   <p>Tab through the page. For every focusable element ask: is the ring visible, does it have 3:1 contrast, is it obscured. Test in at least Chrome and Safari: default focus styles differ significantly between them.</p>
 
   <h3>Windows: NVDA</h3>
-  <p>With <span class="tool">NVDA</span> running, Tab through the page. NVDA announces each element as focus moves, confirming focus is moving even when the ring is invisible. If NVDA announces an element but no ring is visible, that is a failure. Use <span class="key">Insert</span>+<span class="key">F7</span> to open the elements list and navigate directly to interactive elements.</p>
+  <p>With <a href="20-NVDA-on-Windows.html" style="color:var(--blue);"><span class="tool">NVDA</span></a> running, Tab through the page. NVDA announces each element as focus moves, confirming focus is moving even when the ring is invisible. If NVDA announces an element but no ring is visible, that is a failure. Use <span class="key">Insert</span>+<span class="key">F7</span> to open the elements list and navigate directly to interactive elements.</p>
 
   <h3>Mac: VoiceOver</h3>
   <p>Enable VoiceOver with <span class="key">Cmd</span>+<span class="key">F5</span>. Use Safari. VoiceOver draws a black focus rectangle around the currently focused element: this is separate from the CSS focus ring. Use <span class="key">VO</span>+<span class="key">→</span> to move forward. Check both that VoiceOver highlights the element AND that the CSS ring is visible. A missing CSS ring next to VoiceOver's black rect is still a WCAG failure.</p>

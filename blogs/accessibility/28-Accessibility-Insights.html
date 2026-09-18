@@ -193,15 +193,37 @@
   <h2 id="assessment">4. Assessment: Guided Manual WCAG Testing</h2>
   <p>Assessment is a structured walkthrough of all WCAG 2.1 AA criteria that require human judgement. For each criterion, it provides: what to test, how to test it, examples of pass and fail, and a pass/fail/not applicable recording field.</p>
   <p>Assessment generates a downloadable HTML report with all results: useful for audit documentation, accessibility statements, and handover to development teams.</p>
-  <p>Key areas covered by Assessment that no automated tool can check:</p>
-  <ul>
-    <li><strong>Audio and video:</strong> captions present and accurate, audio descriptions, transcripts</li>
-    <li><strong>Pointer gestures:</strong> all multi-point gestures have a single-pointer alternative</li>
-    <li><strong>Consistent navigation:</strong> navigation order consistent across pages</li>
-    <li><strong>Error prevention:</strong> legal and financial submissions are reversible or confirmable</li>
-    <li><strong>Cognitive and timing:</strong> timeouts, moving content, pause mechanisms</li>
-    <li><strong>Reading order:</strong> the visual order matches the DOM order</li>
-  </ul>
+  <p>Assessment covers all 24 categories below. Some overlap with what FastPass already catches automatically (Assessment folds those results in rather than asking you to check them twice); the rest require human judgement that no automated tool can reach.</p>
+  <div class="table-wrap"><table>
+    <caption style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Accessibility Insights Assessment categories</caption>
+    <thead><tr><th scope="col">Category</th><th scope="col">What it checks</th></tr></thead>
+    <tbody>
+      <tr><td>Automated checks</td><td>Runs the same automated rules as FastPass and folds the results into the walkthrough, confirming what is already caught before manual testing starts</td></tr>
+      <tr><td>Keyboard</td><td>Every interactive element is operable by keyboard alone with no keyboard traps, plus input handling, keystroke timing, and character-key shortcuts</td></tr>
+      <tr><td>Focus</td><td>Focus is visible on every focusable element and the sequential focus order preserves meaning, since custom styling can hide or scramble the browser's default focus indicator</td></tr>
+      <tr><td>Landmarks</td><td>ARIA landmark roles are used correctly, a main landmark exists, and landmarks are not added where they just add noise</td></tr>
+      <tr><td>Headings</td><td>Headings label sections of content rather than being used as a styling shortcut, and heading level is coded, not just styled, so it is announced</td></tr>
+      <tr><td>Repetitive content</td><td>Keyboard users can skip repeated blocks such as nav and headers to reach main content, and repeated content is presented consistently across pages</td></tr>
+      <tr><td>Links</td><td>Links are used only for navigation, not repurposed as buttons without the correct widget role, and link purpose is clear</td></tr>
+      <tr><td>Native widgets</td><td>Simple native controls such as button, input, select, and textarea keep their built-in keyboard and screen reader behaviour when restyled or repurposed</td></tr>
+      <tr><td>Custom widgets</td><td>Custom interactive components follow the matching ARIA design pattern: role, expected input, state changes, cues, and keyboard interaction</td></tr>
+      <tr><td>Timed events</td><td>Users get enough time for timed actions, can pause moving or auto-updating content, and can control audio that plays automatically</td></tr>
+      <tr><td>Errors and status</td><td>The design prevents errors before they happen, not just on financial or legal actions, and when an error occurs it can be found and corrected</td></tr>
+      <tr><td>Page navigation</td><td>Pages and frames have accurate, meaningful titles, and navigation patterns help users find the page they want</td></tr>
+      <tr><td>Images</td><td>Every image has alt text conveying its meaning, since screen readers cannot interpret image content directly</td></tr>
+      <tr><td>Language</td><td>Page language is coded correctly so screen readers use correct pronunciation rules</td></tr>
+      <tr><td>Sensory</td><td>Information conveyed only through colour, shape, location, or sound is also available as text</td></tr>
+      <tr><td>Adaptable content</td><td>Text and spacing scale and reflow for users with low vision, dyslexia, or presbyopia, and high-contrast modes do not break layout</td></tr>
+      <tr><td>Audio and video</td><td>Prerecorded audio-only or video-only content has an equivalent: a transcript or an audio track</td></tr>
+      <tr><td>Multimedia</td><td>Prerecorded video with sound has both captions and audio description, so it is usable with sound off or picture unseen</td></tr>
+      <tr><td>Live multimedia</td><td>Live video includes captions that convey dialogue, speaker identity, and relevant sound effects</td></tr>
+      <tr><td>Sequence</td><td>When CSS changes the visual order, the DOM order still produces a reading order that preserves meaning</td></tr>
+      <tr><td>Semantics</td><td>Markup uses semantic elements, not just visual styling like bold or italic tags, so meaning implied visually is also available to non-sighted users</td></tr>
+      <tr><td>Pointer and motion</td><td>Gestures have a single-pointer alternative, pointer actions are cancellable, motion-activated functions have an alternative, and targets are large enough</td></tr>
+      <tr><td>Contrast</td><td>Contrast ratios meet WCAG thresholds across UI components, state changes, and meaningful graphics, not just body text</td></tr>
+      <tr><td>Cognitive</td><td>Interfaces do not force unnecessary cognitive load, such as requiring users to recall or transcribe information just to log in</td></tr>
+    </tbody>
+  </table></div>
   <figure class="blog-illustration" aria-label="Tab Stops mode draws numbered arrows on a page showing focus jumping unexpectedly to the footer">
     <svg viewBox="0 0 680 250" width="100%" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#0d0d0d;">
       <title>Tab Stops mode in Accessibility Insights draws arrows showing focus order. One red arrow jumps straight past the main content to the footer.</title>
@@ -275,7 +297,7 @@
       <tr><td>Consistent navigation across pages</td><td>Assessment (guided)</td><td>3.2.3</td></tr>
       <tr><td>Error prevention on financial/legal submissions</td><td>Assessment (guided)</td><td>3.3.4</td></tr>
       <tr><td>Reading order and meaningful sequence</td><td>Assessment (guided)</td><td>1.3.2</td></tr>
-      <tr><td>Pointer and motion gesture alternatives</td><td>Assessment (guided)</td><td>2.5.1 / 2.5.3</td></tr>
+      <tr><td>Pointer and motion gesture alternatives</td><td>Assessment (guided)</td><td>2.5.1 / 2.5.4</td></tr>
     </tbody>
   </table></div>
 
@@ -288,7 +310,7 @@
       <tr><td>Guided manual testing</td><td>Yes: Assessment mode with step-by-step WCAG walkthrough</td><td>No: violations only</td></tr>
       <tr><td>Keyboard visualisation</td><td>Yes: Tab Stops draws focus path on screen</td><td>No</td></tr>
       <tr><td>Report export</td><td>HTML report with pass/fail for every criterion</td><td>JSON / HTML violation export</td></tr>
-      <tr><td>CI/CD integration</td><td>Not available</td><td>Yes: via axe-core npm package</td></tr>
+      <tr><td>CI/CD integration</td><td>Yes: via the separate accessibility-insights-action GitHub Action or Azure DevOps extension, not the browser extension itself</td><td>Yes: via axe-core npm package</td></tr>
       <tr><td>Best for</td><td>Full WCAG audits, audit documentation, structured manual reviews</td><td>Developer workflow, CI integration, rapid scanning</td></tr>
       <tr><td>Cost</td><td>Free</td><td>Free (Pro version available)</td></tr>
     </tbody>
@@ -309,7 +331,7 @@
   <h2 id="how-to-test">How to Test With Accessibility Insights</h2>
 
   <h3>Tier 1: Pipeline automation</h3>
-  <p>Accessibility Insights does not integrate into CI/CD pipelines directly. For pipeline automation, use <span class="tool">axe-core</span> in <span class="tool">Playwright</span> or <span class="tool">Cypress</span>: it uses the same rule engine as Accessibility Insights FastPass. See Blog 31 for CI setup.</p>
+  <p>The Accessibility Insights browser extension itself does not run in CI/CD; Microsoft ships a separate accessibility-insights-action GitHub Action and an Azure DevOps extension for that, both using the same axe-core engine as FastPass. For pipeline automation without adding another tool, use <a href="31-Axe-Core-Cypress-Playwright.html" style="color:var(--blue);"><span class="tool">axe-core</span></a> in <a href="https://playwright.dev/" target="_blank" rel="noopener noreferrer" style="color:var(--blue);"><span class="tool">Playwright</span></a> or <a href="https://www.cypress.io/" target="_blank" rel="noopener noreferrer" style="color:var(--blue);"><span class="tool">Cypress</span></a>: it uses the same rule engine as Accessibility Insights FastPass. See Blog 31 for CI setup.</p>
 
   <h3>Tier 2: Semi-automated: Accessibility Insights in the browser</h3>
   <ul>

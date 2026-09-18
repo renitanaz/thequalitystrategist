@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>A11y Test Playground - Design Phase (Figma Import) | The Quality Strategist</title>
+<meta name="description" content="Six deliberate design-phase accessibility failures, paired with the fix, built for import into Figma via html.to.design for hands-on practice." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #fafcf5;
+    color: #1a1f14;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    padding: 48px 24px 96px;
+  }
+  main { max-width: 900px; margin: 0 auto; }
+  .page-title { font-family: 'DM Serif Display', serif; font-size: 32px; margin-bottom: 8px; }
+  .page-sub { color: #3d4235; font-size: 15px; margin-bottom: 48px; max-width: 640px; }
+
+  .scenario { margin-bottom: 56px; }
+  .scenario-title { font-family: 'DM Serif Display', serif; font-size: 22px; margin-bottom: 20px; }
+
+  .pair { display: flex; gap: 20px; }
+  .card {
+    flex: 1;
+    border-radius: 10px;
+    padding: 24px;
+    border-width: 2px;
+    border-style: solid;
+  }
+  .card.fail { background: #fff0f0; border-color: #f87171; }
+  .card.pass { background: #d8f0e0; border-color: #1a7a3a; }
+  .card-label {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 99px;
+    margin-bottom: 16px;
+  }
+  .card.fail .card-label { background: #f87171; color: #ffffff; }
+  .card.pass .card-label { background: #1a7a3a; color: #ffffff; }
+
+  /* 1: Colour contrast */
+  .btn-contrast-fail { background: #6c5ce7; color: #a29bfe; border: none; border-radius: 8px; padding: 14px 28px; font-size: 15px; font-weight: 600; }
+  .btn-contrast-pass { background: #6c5ce7; color: #ffffff; border: none; border-radius: 8px; padding: 14px 28px; font-size: 15px; font-weight: 600; }
+  .contrast-note { margin-top: 16px; font-size: 13px; color: #3d4235; }
+
+  /* 2: Focus indicator */
+  .btn-focus-fail { background: #ffffff; color: #1a1f14; border: 2px solid #c8c4b8; border-radius: 8px; padding: 14px 28px; font-size: 15px; font-weight: 600; }
+  .btn-focus-pass { background: #ffffff; color: #1a1f14; border: 2px solid #c8c4b8; border-radius: 8px; padding: 14px 28px; font-size: 15px; font-weight: 600; box-shadow: 0 0 0 3px #ffffff, 0 0 0 6px #2a5c9a; }
+
+  /* 3: Tab order */
+  .form-row { display: flex; gap: 12px; margin-bottom: 12px; }
+  .field { flex: 1; }
+  .field-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  .field-input { width: 100%; border: 1px solid #c8c4b8; border-radius: 6px; padding: 10px 12px; font-size: 14px; background: #ffffff; position: relative; }
+  .tab-badge { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: #fbbf24; color: #1a1f14; font-size: 11px; font-weight: 700; margin-right: 6px; }
+
+  /* 4: Touch target */
+  .icon-row { display: flex; gap: 4px; align-items: center; }
+  .icon-btn-fail { width: 16px; height: 16px; background: #3d4235; border-radius: 3px; }
+  .icon-btn-pass { width: 24px; height: 24px; background: #3d4235; border-radius: 5px; display: flex; align-items: center; justify-content: center; }
+  .icon-btn-pass-inner { width: 14px; height: 14px; background: #ffffff; border-radius: 2px; }
+  .icon-gap-fail { display: flex; gap: 2px; }
+  .icon-gap-pass { display: flex; gap: 12px; }
+
+  /* 5: Colour-only communication */
+  .status-fail { color: #c0392b; font-size: 14px; font-weight: 600; }
+  .status-pass { color: #1a7a3a; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+  .status-icon { width: 16px; height: 16px; border-radius: 50%; background: #1a7a3a; color: #ffffff; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; }
+  .field-input-fail { border-color: #c0392b; }
+  .field-input-pass { border-color: #1a7a3a; }
+
+  /* 6: Error copy */
+  .error-text { font-size: 13px; margin-top: 6px; }
+  .error-text.fail { color: #c0392b; }
+  .error-text.pass { color: #c0392b; }
+</style>
+</head>
+<body>
+<main>
+  <h1 class="page-title">Design Phase Practice File</h1>
+  <p class="page-sub">Six deliberate accessibility failures, each paired with its fix, matching the Blog 05 design-phase checklist. Import this file into Figma with the html.to.design plugin, then practise finding and correcting each issue with Stark, Adee, Color Blind, and the A11y Focus Orderer.</p>
+
+  <div class="scenario">
+    <h2 class="scenario-title">1. Colour Contrast</h2>
+    <div class="pair">
+      <div class="card fail">
+        <span class="card-label">Fail</span>
+        <button class="btn-contrast-fail">Sign up</button>
+        <p class="contrast-note">Lavender text on brand purple. Ratio 2.0:1. Required 4.5:1.</p>
+      </div>
+      <div class="card pass">
+        <span class="card-label">Pass</span>
+        <button class="btn-contrast-pass">Sign up</button>
+        <p class="contrast-note">White text on the same brand purple. Ratio 4.9:1.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="scenario">
+    <h2 class="scenario-title">2. Focus Indicator</h2>
+    <div class="pair">
+      <div class="card fail">
+        <span class="card-label">Fail</span>
+        <button class="btn-focus-fail">Continue</button>
+        <p class="contrast-note">No focus state specified. Keyboard users cannot see where they are.</p>
+      </div>
+      <div class="card pass">
+        <span class="card-label">Pass</span>
+        <button class="btn-focus-pass">Continue</button>
+        <p class="contrast-note">Explicit focus ring, 3:1 contrast against the background, offset from the button.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="scenario">
+    <h2 class="scenario-title">3. Tab Order Annotation</h2>
+    <div class="pair">
+      <div class="card fail">
+        <span class="card-label">Fail</span>
+        <div class="form-row">
+          <div class="field"><span class="field-label">First name</span><div class="field-input">&nbsp;</div></div>
+          <div class="field"><span class="field-label">Last name</span><div class="field-input">&nbsp;</div></div>
+        </div>
+        <div class="field"><span class="field-label">Email address</span><div class="field-input">&nbsp;</div></div>
+        <p class="contrast-note">No annotation. Developer guesses the sequence from layer order.</p>
+      </div>
+      <div class="card pass">
+        <span class="card-label">Pass</span>
+        <div class="form-row">
+          <div class="field"><span class="field-label"><span class="tab-badge">1</span>First name</span><div class="field-input">&nbsp;</div></div>
+          <div class="field"><span class="field-label"><span class="tab-badge">2</span>Last name</span><div class="field-input">&nbsp;</div></div>
+        </div>
+        <div class="field"><span class="field-label"><span class="tab-badge">3</span>Email address</span><div class="field-input">&nbsp;</div></div>
+        <p class="contrast-note">Every field numbered in reading order before handoff.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="scenario">
+    <h2 class="scenario-title">4. Touch Target Size</h2>
+    <div class="pair">
+      <div class="card fail">
+        <span class="card-label">Fail</span>
+        <div class="icon-gap-fail">
+          <div class="icon-btn-fail"></div>
+          <div class="icon-btn-fail"></div>
+          <div class="icon-btn-fail"></div>
+        </div>
+        <p class="contrast-note">Icons sized 16x16px, matching the visible asset instead of the tappable area.</p>
+      </div>
+      <div class="card pass">
+        <span class="card-label">Pass</span>
+        <div class="icon-gap-pass">
+          <div class="icon-btn-pass"><div class="icon-btn-pass-inner"></div></div>
+          <div class="icon-btn-pass"><div class="icon-btn-pass-inner"></div></div>
+          <div class="icon-btn-pass"><div class="icon-btn-pass-inner"></div></div>
+        </div>
+        <p class="contrast-note">24x24px minimum target with spacing, even though the icon glyph itself is smaller.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="scenario">
+    <h2 class="scenario-title">5. Colour-Only Communication</h2>
+    <div class="pair">
+      <div class="card fail">
+        <span class="card-label">Fail</span>
+        <span class="field-label">Email address</span>
+        <div class="field-input field-input-fail">notanemail</div>
+        <p class="status-fail">Red border only.</p>
+      </div>
+      <div class="card pass">
+        <span class="card-label">Pass</span>
+        <span class="field-label">Email address</span>
+        <div class="field-input field-input-pass">you@example.com</div>
+        <p class="status-pass"><span class="status-icon">&#10003;</span> Red border, plus an icon and text label.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="scenario">
+    <h2 class="scenario-title">6. Error Message Copy</h2>
+    <div class="pair">
+      <div class="card fail">
+        <span class="card-label">Fail</span>
+        <span class="field-label">Email address</span>
+        <div class="field-input field-input-fail">notanemail</div>
+        <p class="error-text fail">Invalid input</p>
+      </div>
+      <div class="card pass">
+        <span class="card-label">Pass</span>
+        <span class="field-label">Email address</span>
+        <div class="field-input field-input-fail">notanemail</div>
+        <p class="error-text pass">Enter a valid email address, for example: you@domain.com</p>
+      </div>
+    </div>
+  </div>
+
+</main>
+</body>
+</html>

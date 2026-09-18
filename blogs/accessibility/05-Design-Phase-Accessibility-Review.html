@@ -107,6 +107,11 @@
     tbody td:first-child { color:var(--text); font-weight:500; }
     tbody tr:hover td { background:var(--bg2); }
 
+    /* COMPACT TABLE: same data, tighter to fit most rows on one line */
+    .compact-table table { font-size:0.76rem; }
+    .compact-table thead th { padding:8px 10px; }
+    .compact-table tbody td { padding:6px 10px; line-height:1.35; }
+
     /* ILLUSTRATION */
     .blog-illustration { margin:1.75rem 0; border:none; padding:0; }
 
@@ -312,7 +317,7 @@
 
   <p>Tab order is the sequence in which keyboard users move through a page. It should follow the visual reading order and must be logical and predictable.</p>
 
-  <p>The problem: tab order is invisible in Figma unless someone annotates it. Without annotation, developers implement whatever feels natural to them: which is usually the DOM order of elements as they were stacked in the design, which is often not the visual reading order, which is frequently wrong.</p>
+  <p>The problem: tab order is invisible in Figma unless someone annotates it. Without annotation, tab order defaults to the DOM order of elements as they were stacked in the design, which often does not match the visual reading order.</p>
 
   <figure class="blog-illustration" aria-label="Figma frame comparison: without tab order numbers vs with numbered annotations">
     <svg viewBox="0 0 680 200" width="100%" style="display:block;border-radius:10px;border:1px solid #2e2e2e;background:#161616;">
@@ -416,12 +421,14 @@
     <li>Dynamic content that appears after an action: where focus lands</li>
   </ul>
 
+  <p>Annotating this by hand on every frame does not scale. <span class="tool">A11y Focus Orderer</span> and <span class="tool">Able</span> are Figma plugins built for exactly this: they let you bulk add, reorder, and update tab order annotations directly on the frames, instead of placing numbered circles one at a time.</p>
+
   <!-- 6 -->
   <h2 id="headings">6. Heading Hierarchy: Defined in Templates, Not Left to Content</h2>
 
   <p>Heading structure is how screen reader users navigate a page. Without a logical hierarchy, they are navigating blind: pressing H to jump between headings and landing on content out of order or out of context.</p>
 
-  <p>The rules are straightforward. One H1 per page, no skipped levels, heading levels reflecting content hierarchy. <strong>Defining this structure in Figma is the designer's responsibility</strong>, not a gap for QA to find later. The problem is not that designers do not know the rules: it is that heading structure is frequently not annotated in the design file at all. It appears as visual styling (big bold text) with no semantic label attached, and that label is the designer's to add.</p>
+  <p>The rules are straightforward. One H1 per page, no skipped levels, heading levels reflecting content hierarchy. <strong>Defining this structure in Figma is the designer's responsibility</strong>. The problem is not that designers do not know the rules: it is that heading structure is frequently not annotated in the design file at all. It appears as visual styling (big bold text) with no semantic label attached, and that label is the designer's to add.</p>
 
   <p>What must be in the design file before handoff:</p>
   <ul>
@@ -430,7 +437,7 @@
     <li>Heading levels consistent across all instances of a component (a card title that is H2 on one page must be H2 everywhere)</li>
   </ul>
 
-  <p>The consequences of skipping this are significant. <a href="04-Who-Owns-Accessibility.html" class="blog-ref">Blog 04 covers the CMS example in detail</a>: heading restrictions not set at modelling stage led to hundreds of pages requiring individual correction post-migration. The same applies to coded templates: a missing heading annotation means the developer picks a level, and it is rarely consistent.</p>
+  <p>The consequences of skipping this are significant. <a href="04-Who-Owns-Accessibility.html" class="blog-ref">Blog 04 covers the CMS example in detail</a>: heading restrictions not set at modelling stage led to hundreds of pages requiring individual correction post-migration. The same applies to coded templates: a missing heading annotation means the developer picks a level, and it may not be consistent.</p>
 
   <!-- 7 -->
   <h2 id="error-copy">7. Error Message Copy: Written at Design, Not Invented by Devs</h2>
@@ -471,18 +478,24 @@
 
   <p>This must be specified in Figma. Post-development, adding padding to hit areas is straightforward, but only if the developer knows it is required. Without a design annotation specifying minimum target size, it will not happen.</p>
 
+  <p>The <span class="tool">Adee</span> Figma plugin checks touch target sizes directly against the frame, alongside contrast and colour blindness simulation: useful for catching an icon sized to the visual asset rather than the tappable area before handoff.</p>
+
   <h2 id="how-to-test">Testing in the Design Phase</h2>
   <h3>Tier 1: Pipeline automation</h3>
   <p>Automation does not exist at the design phase: the pipeline enters at development.</p>
   <h3>Tier 2: Semi-automated tools</h3>
-  <p>Colour contrast in design files can be checked with the Stark or A11y Annotation Kit Figma plugin before any code is written. Export a clickable prototype to HTML and run <span class="tool">axe DevTools</span> against it: structural violations appear even at the prototype stage.</p>
+  <p>All of these run directly on the Figma file, before any code is written: <span class="tool">Stark</span> or <span class="tool">Zimmer</span> for colour contrast, <span class="tool">A11y Focus Orderer</span> or <span class="tool">Able</span> for tab order annotation, and <span class="tool">Adee</span> or <span class="tool">Color Blind</span> for touch target sizing and colour blindness simulation.</p>
   <h3>Tier 3: Manual</h3>
-  <p><strong>Platform coverage:</strong> Test on Windows (Chrome + Firefox), Mac (Safari + Chrome), iOS (Safari on physical iPhone), and Android (Chrome on physical device). Platform differences in keyboard handling and screen reader behaviour mean a bug on one platform does not guarantee the same behaviour on another.</p>
   <p>Design review is manual. Walk through the checklist in this blog against every design file before sign-off. Check: colour contrast ratios, touch target sizes (44x44px minimum), focus order in the prototype, heading structure, form label placement, and error state designs. On mobile: verify designs account for iOS Dynamic Type and Android font scaling up to 200%.</p>
 
   <h3>Design phase checklist: what to catch and with what tool</h3>
-  <div class="table-wrap">
+  <div class="table-wrap compact-table">
     <table>
+      <colgroup>
+        <col style="width:19%">
+        <col style="width:42%">
+        <col style="width:39%">
+      </colgroup>
       <thead>
         <tr>
           <th>Category</th>
@@ -646,7 +659,7 @@
       <div class="check-num">08</div>
       <div>
         <div class="check-title">No colour-only communication in any component</div>
-        <div class="check-detail">Every use of colour to convey meaning (error states, status indicators, links) is paired with a text label, icon, or other visual cue. Colour blindness simulation passed.</div>
+        <div class="check-detail">Every use of colour to convey meaning (error states, status indicators, links) is paired with a text label, icon, or other visual cue. Colour blindness simulation passed using the <span class="tool">Color Blind</span> or <span class="tool">Adee</span> Figma plugin.</div>
       </div>
       <div class="check-wcag">1.4.1</div>
     </div>
@@ -672,15 +685,8 @@
   <div style="background:var(--amber-bg);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
     <div style="font-size:1.1rem;line-height:1;padding-top:2px;" aria-hidden="true">&#127919;</div>
     <div>
-      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--amber);font-weight:500;margin-bottom:4px;">Practice on real examples</div>
-      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">Practise identifying contrast failures before they reach development: <a href="A11y-Test-Playground/13 A11y Test Playground - Colour Contrast.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Colour Contrast Playground</a>.</div>
-    </div>
-  </div>
-  <div style="background:var(--blue-bg);border:1px solid rgba(96,165,250,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
-    <div style="font-size:1.1rem;line-height:1;padding-top:2px;" aria-hidden="true">&#128241;</div>
-    <div>
-      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--blue);font-weight:500;margin-bottom:4px;">Testing this on mobile</div>
-      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">For native iOS and Android apps to practise the same checks on, see <a href="39-Mobile-Accessibility-Testing-Practice-Apps.html" style="color:var(--blue);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Blog 39: Mobile Accessibility Testing Practice Apps</a>.</div>
+      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--amber);font-weight:500;margin-bottom:4px;">Practice this checklist in Figma</div>
+      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">Duplicate this <a href="https://www.figma.com/community/file/1681916483010140545" target="_blank" rel="noopener noreferrer" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Accessibility Check in Figma</a> file and run Stark, Adee, the A11y Focus Orderer, and the other plugins from this blog on it yourself.</div>
     </div>
   </div>
   <div class="series-nav">
