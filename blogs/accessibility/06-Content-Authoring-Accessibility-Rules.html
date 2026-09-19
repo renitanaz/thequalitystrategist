@@ -19,7 +19,7 @@
       --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.07);
       --red:#f87171; --red-bg:rgba(248,113,113,0.07);
     }
-    html { scroll-behavior:smooth; }
+    @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
     body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
     .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
     .skip-link:focus { top:0; }
@@ -158,7 +158,7 @@
     <span aria-hidden="true">›</span>
     <span aria-current="page">06 of 39</span>
   </nav>
-  <div class="blog-tags" aria-label="Blog categories">
+  <div class="blog-tags" aria-label="Blog categories" role="group">
     <span class="tag accent">Content</span>
     <span class="tag">Authoring</span>
     <span class="tag">CMS</span>
@@ -189,7 +189,7 @@
       <li><a href="#colour">Colour is not enough on its own</a></li>
       <li><a href="#cms-rules">CMS rules that prevent authoring defects</a></li>
       <li><a href="#non-cms">Non-CMS projects: where the content layer lives</a></li>
-      <li><a href="#qa-angle">How QA catches content defects</a></li>
+      <li><a href="#qa-angle">How to catch content defects</a></li>
       <li><a href="#how-to-test">How to test: tiers, platforms and practice</a></li>
     </ol>
   </nav>
@@ -607,18 +607,26 @@
   <p>The key difference from a CMS project: in a non-CMS project there is no authoring UI to add field-level validation. Enforcement happens through component design, required props, and build-time linting. <a href="04-Who-Owns-Accessibility.html" class="blog-ref">Blog 04 covers who owns each lane in detail</a>.</p>
 
   <!-- 10 -->
-  <h2 id="qa-angle">10. How QA Catches Content Defects</h2>
+  <h2 id="qa-angle">10. How to Catch Content Defects</h2>
 
   <p>Content defects look different from code defects, but the testing approach is the same. QA looks for the failure, identifies the root cause phase, and assigns the defect to the right owner.</p>
 
-  <h3>What to check manually</h3>
+  <h3 id="before-ui">Before the UI exists: reviewing the draft</h3>
+  <p>Some of this does not need a rendered page: it needs a reader. Alt text, error copy, and link text are just words in a CMS field or a Figma annotation at this point, and their quality can be judged directly.</p>
   <ul>
-    <li><a href="26-WAVE.html" style="color:var(--blue);"><span class="tool">WAVE</span></a>: red icons flag missing alt text instantly</li>
-    <li>Open the <a href="26-WAVE.html" style="color:var(--blue);"><span class="tool">WAVE</span></a> Structure tab: broken heading hierarchy is immediately visible (<a href="28-Accessibility-Insights.html" style="color:var(--blue);"><span class="tool">Accessibility Insights</span></a> Assessment also has a dedicated Headings check, but it is part of the full guided WCAG walkthrough, not a quick scan)</li>
-    <li>Use <a href="20-NVDA-on-Windows.html" style="color:var(--blue);"><span class="tool">NVDA</span></a> Insert+F7 to open the links list: "click here" and "read more" appear in isolation</li>
-    <li>Tab to every form field: listen for what the screen reader announces as the label</li>
-    <li>Play every video: check for captions and confirm they are human-reviewed</li>
-    <li>Check every use of colour as a signal: look for a paired text or icon indicator</li>
+    <li><strong>Alt text, error copy, and link text quality:</strong> read each one as entered in the CMS or annotated in Figma. Apply the same judgment you would on a live page: does this alt text describe the image, does this error tell the user what to fix, does this link text make sense out of context. No tool required.</li>
+    <li><strong>CMS enforcement configured correctly:</strong> confirm the rules from Section 8 actually exist in the CMS: the alt text field is required and separate from the description field, H1 is removed from the rich text editor, the link-text validation warning is active. This is a configuration review, not a page scan.</li>
+  </ul>
+
+  <h3 id="after-ui">After the UI exists: verifying what shipped</h3>
+  <p>These checks need a rendered page: in a build, staging environment, or PR preview, not on the CMS entry screen or in the Figma file. They are the safety net for anything the draft review above did not catch, or anything that broke between draft and build.</p>
+  <ul>
+    <li><strong>Missing alt text:</strong> <a href="26-WAVE.html" style="color:var(--blue);"><span class="tool">WAVE</span></a> flags it with a red error icon placed directly on the image, visible on the page without opening a separate panel.</li>
+    <li><strong>Broken heading hierarchy:</strong> open the <a href="26-WAVE.html" style="color:var(--blue);"><span class="tool">WAVE</span></a> Structure tab. It lists every heading on the page in order, so a skipped level or a second H1 is immediately visible (<a href="28-Accessibility-Insights.html" style="color:var(--blue);"><span class="tool">Accessibility Insights</span></a> Assessment also has a dedicated Headings check, but it is part of the full guided WCAG walkthrough, not a quick scan).</li>
+    <li><strong>Generic link text ("click here", "read more"):</strong> use <a href="20-NVDA-on-Windows.html" style="color:var(--blue);"><span class="tool">NVDA</span></a> Insert+F7 to open the links list. Every link's text is read out with no surrounding sentence for context, so a generic label stands out immediately.</li>
+    <li><strong>Unlabelled form fields:</strong> tab to every field with a screen reader running and listen for what gets announced as the label. Silence, or the wrong label, is the defect.</li>
+    <li><strong>Missing or auto-generated-only captions:</strong> play every video and confirm captions are present and human-reviewed, not machine-generated only.</li>
+    <li><strong>Colour-only signals:</strong> check every use of colour to convey meaning and confirm it is paired with a text label or icon, not colour alone.</li>
   </ul>
 
   <h3>How to write the defect</h3>
@@ -633,12 +641,13 @@
 
 <!-- 1 -->
   <h2 id="how-to-test">Testing Content for Accessibility</h2>
+  <p>Like Section 10 above, every tier here runs against live content: in a build, staging environment, or PR preview, not on the CMS entry screen or in the Figma file.</p>
   <h3>Tier 1: Pipeline automation</h3>
-  <p>axe-core catches some content failures: missing image alt text, empty links, colour contrast on text. It does not catch plain language quality, reading level, vague link text, or logical heading structure. Content accessibility is predominantly a manual concern.</p>
+  <p>axe-core runs against a rendered build in CI, not the CMS draft or the Figma file. It catches some content failures: missing image alt text, empty links, colour contrast on text. It does not catch plain language quality, reading level, vague link text, or logical heading structure. Content accessibility is predominantly a manual concern.</p>
   <h3>Tier 2: Semi-automated tools</h3>
-  <p><a href="26-WAVE.html" style="color:var(--blue);"><span class="tool">WAVE</span></a> Structure tab gives the fastest visual overview of heading hierarchy. Its Links panel lists all link text for review. Use the <a href="A11y-Test-Playground/14 A11y Test Playground - Alt Text.html" style="color:var(--blue);">Alt Text Playground</a> and <a href="A11y-Test-Playground/12 A11y Test Playground - Headings and Landmarks.html" style="color:var(--blue);">Headings Playground</a> to practise identifying failures.</p>
+  <p><a href="26-WAVE.html" style="color:var(--blue);"><span class="tool">WAVE</span></a> runs on the live page once the UI is ready, not the CMS draft or the Figma file. Its Structure tab gives the fastest visual overview of heading hierarchy. Its Links panel lists all link text for review. Use the <a href="A11y-Test-Playground/14 A11y Test Playground - Alt Text.html" style="color:var(--blue);">Alt Text Playground</a> and <a href="A11y-Test-Playground/12 A11y Test Playground - Headings and Landmarks.html" style="color:var(--blue);">Headings Playground</a> to practise identifying failures.</p>
   <h3>Tier 3: Manual</h3>
-  <p><strong>Platform coverage:</strong> Test on Windows (Chrome + Firefox), Mac (Safari + Chrome), iOS (Safari on physical iPhone), and Android (Chrome on physical device). Platform differences in keyboard handling and screen reader behaviour mean a bug on one platform does not guarantee the same behaviour on another.</p>
+  <p>These checks also need the live page, once the UI is ready: not the CMS draft or the Figma file. <strong>Platform coverage:</strong> Test on Windows (Chrome + Firefox), Mac (Safari + Chrome), iOS (Safari on physical iPhone), and Android (Chrome on physical device). Platform differences in keyboard handling and screen reader behaviour mean a bug on one platform does not guarantee the same behaviour on another.</p>
   <p>Read every alt text aloud: if it sounds meaningless, it fails. Tab through all links and read only the link text: if the destination is unclear, it fails. Read headings in sequence: if the structure is illogical without surrounding content, it fails. On mobile: verify content scales correctly with iOS Dynamic Type enabled and Android font size at Large.</p>
 
   
