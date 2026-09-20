@@ -113,7 +113,9 @@
   <h2 id="playwright">2. axe-Core with Playwright</h2>
   <p>The <code>@axe-core/playwright</code> package provides the <code>checkA11y</code> helper that runs an axe scan on the current page state.</p>
   <pre>npm install --save-dev @axe-core/playwright</pre>
-  <pre>import { test, expect } from '@playwright/test';
+  <details style="margin:1.25rem 0;">
+    <summary style="cursor:pointer;color:var(--text-3);font-size:0.78rem;margin-bottom:4px;">Playwright test file — show code</summary>
+    <pre style="margin-top:0;">import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
 test('homepage has no critical accessibility violations', async ({ page }) => {
@@ -125,6 +127,7 @@ test('homepage has no critical accessibility violations', async ({ page }) => {
     ['critical','serious'].includes(v.impact)
   )).toHaveLength(0);
 });</pre>
+  </details>
   <ul>
     <li><strong>withTags:</strong> Scope to WCAG 2.1 AA rules only. Avoids best-practice rules that produce noise in CI.</li>
     <li><strong>filter by impact:</strong> Fail only on critical and serious. Moderate and minor go in the backlog.</li>
@@ -134,7 +137,9 @@ test('homepage has no critical accessibility violations', async ({ page }) => {
   <h2 id="cypress">3. axe-Core with Cypress</h2>
   <p>The <code>cypress-axe</code> package adds <code>cy.checkA11y()</code> as a Cypress command.</p>
   <pre>npm install --save-dev cypress-axe axe-core</pre>
-  <pre>// cypress/support/commands.js
+  <details style="margin:1.25rem 0;">
+    <summary style="cursor:pointer;color:var(--text-3);font-size:0.78rem;margin-bottom:4px;">Cypress commands and test file — show code</summary>
+    <pre style="margin-top:0;">// cypress/support/commands.js
 import 'cypress-axe';
 
 // cypress/e2e/accessibility.cy.js
@@ -148,6 +153,7 @@ describe('Accessibility', () => {
     });
   });
 });</pre>
+  </details>
   <ul>
     <li><strong>cy.injectAxe():</strong> Injects axe-core into the page. Must be called after page load, before cy.checkA11y().</li>
     <li><strong>First argument null:</strong> Scans the full page. Pass a CSS selector to scope to a component.</li>
@@ -187,7 +193,9 @@ describe('Accessibility', () => {
   <h2 id="workflow">7. The GitHub Actions Workflow File</h2>
   <p>Everything above runs the test locally. To run it automatically on every push, it needs to live inside a GitHub Actions workflow file: not just the test command by itself. This is the piece that is usually missing for anyone setting this up for the first time.</p>
   <p>Create the file at <code>.github/workflows/accessibility.yml</code>. GitHub only picks up workflows from that exact folder at the root of the repository.</p>
-  <pre># .github/workflows/accessibility.yml
+  <details style="margin:1.25rem 0;">
+    <summary style="cursor:pointer;color:var(--text-3);font-size:0.78rem;margin-bottom:4px;">.github/workflows/accessibility.yml — show code</summary>
+    <pre style="margin-top:0;"># .github/workflows/accessibility.yml
 name: Accessibility Tests
 
 on:
@@ -223,6 +231,7 @@ jobs:
         with:
           name: playwright-report
           path: playwright-report/</pre>
+  </details>
   <ul>
     <li><strong>name:</strong> The label shown for this workflow in the repository's Actions tab. Purely cosmetic, but useful once you have more than one workflow.</li>
     <li><strong>on: push / pull_request, branches main:</strong> Decides when the workflow runs. This runs it on every push to main and on every pull request targeting main, so a violation is caught before it merges, not after.</li>

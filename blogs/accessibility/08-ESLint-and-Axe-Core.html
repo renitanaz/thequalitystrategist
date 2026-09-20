@@ -68,6 +68,14 @@
     .code-block-wrap { background:var(--bg2); border:1px solid var(--border); border-radius:10px; margin:1.75rem 0; overflow:hidden; }
     .code-block-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-3); font-weight:500; padding:8px 14px; border-bottom:1px solid var(--border); background:var(--bg3); }
     .code-block { font-family:monospace; font-size:0.85rem; color:var(--text-2); line-height:1.7; padding:1rem 1.25rem; overflow-x:auto; white-space:pre; }
+    .code-block-summary { list-style:none; cursor:pointer; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-3); font-weight:500; padding:8px 14px; border-bottom:1px solid var(--border); background:var(--bg3); display:flex; align-items:center; justify-content:space-between; }
+    .code-block-summary::-webkit-details-marker { display:none; }
+    .code-block-summary::marker { content:""; }
+    .code-block-summary:hover { background:var(--bg2); }
+    .code-block-toggle { font-size:0.68rem; color:var(--text-3); }
+    details.code-block-wrap[open] > .code-block-summary .code-block-toggle-open { display:none; }
+    details.code-block-wrap:not([open]) > .code-block-summary .code-block-toggle-close { display:none; }
+    details.code-block-wrap:not([open]) { padding-bottom:0; }
     .code-pair { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:1.75rem 0; }
     .code-box { border-radius:8px; padding:1rem 1.1rem; }
     .code-fail { background:var(--red-bg); border:1px solid rgba(248,113,113,0.2); }
@@ -486,8 +494,11 @@
     <div class="code-block">npm install --save-dev jest-axe</div>
   </div>
 
-  <div class="code-block-wrap">
-    <div class="code-block-label">Button.test.jsx</div>
+  <details class="code-block-wrap">
+    <summary class="code-block-summary">
+      <span>Button.test.jsx</span>
+      <span class="code-block-toggle"><span class="code-block-toggle-open">&#9656; Show code</span><span class="code-block-toggle-close">&#9662; Hide code</span></span>
+    </summary>
     <div class="code-block">import { render } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import Button from './Button';
@@ -501,7 +512,7 @@ test('Button has no accessibility violations', async () => {
   const results = await axe(container);
   expect(results).toHaveNoViolations();
 });</div>
-  </div>
+  </details>
 
   <p>This test renders the component and runs the full axe-core ruleset against it. If the button has no accessible name, no keyboard support, or invalid ARIA, the test fails. The developer sees the failure before the PR is raised.</p>
 
@@ -522,8 +533,11 @@ test('Button has no accessibility violations', async () => {
     <div class="code-block">import 'cypress-axe';</div>
   </div>
 
-  <div class="code-block-wrap">
-    <div class="code-block-label">login.cy.js</div>
+  <details class="code-block-wrap">
+    <summary class="code-block-summary">
+      <span>login.cy.js</span>
+      <span class="code-block-toggle"><span class="code-block-toggle-open">&#9656; Show code</span><span class="code-block-toggle-close">&#9662; Hide code</span></span>
+    </summary>
     <div class="code-block">describe('Login page accessibility', () => {
   it('has no Critical or Serious violations', () => {
     cy.visit('/login');
@@ -540,7 +554,7 @@ test('Button has no accessibility violations', async () => {
     cy.checkA11y();  // check error state too
   });
 });</div>
-  </div>
+  </details>
 
   <h3>Playwright with axe-playwright</h3>
 
@@ -549,8 +563,11 @@ test('Button has no accessibility violations', async () => {
     <div class="code-block">npm install --save-dev @axe-core/playwright</div>
   </div>
 
-  <div class="code-block-wrap">
-    <div class="code-block-label">login.spec.ts</div>
+  <details class="code-block-wrap">
+    <summary class="code-block-summary">
+      <span>login.spec.ts</span>
+      <span class="code-block-toggle"><span class="code-block-toggle-open">&#9656; Show code</span><span class="code-block-toggle-close">&#9662; Hide code</span></span>
+    </summary>
     <div class="code-block">import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
@@ -562,7 +579,7 @@ test('login page has no Critical violations', async ({ page }) => {
   expect(results.violations
     .filter(v => v.impact === 'critical')).toHaveLength(0);
 });</div>
-  </div>
+  </details>
 
   <div class="takeaway" role="note">
     <div class="label">Test the error state too</div>
@@ -574,8 +591,11 @@ test('login page has no Critical violations', async ({ page }) => {
 
   <p>The accessibility gate runs on every pull request and fails the build if Critical or Serious violations are present. Here is a minimal GitHub Actions setup using <a href="32-Pa11y-in-CI-CD.html" style="color:var(--blue);"><span class="tool">Pa11y</span></a>:</p>
 
-  <div class="code-block-wrap">
-    <div class="code-block-label">.github/workflows/accessibility.yml</div>
+  <details class="code-block-wrap">
+    <summary class="code-block-summary">
+      <span>.github/workflows/accessibility.yml</span>
+      <span class="code-block-toggle"><span class="code-block-toggle-open">&#9656; Show code</span><span class="code-block-toggle-close">&#9662; Hide code</span></span>
+    </summary>
     <div class="code-block">name: Accessibility check
 
 on: [pull_request]
@@ -597,7 +617,7 @@ jobs:
             --standard WCAG2AA \
             --reporter cli \
             http://localhost:3000</div>
-  </div>
+  </details>
 
   <p>For Cypress-based pipelines, the <code>cy.checkA11y()</code> call in the test suite is the gate. The Cypress run in CI fails if any violations above the threshold are found.</p>
 
@@ -705,7 +725,7 @@ jobs:
 
   <p>Quality does not own the eslint or axe-core setup: that is a developer and DevOps responsibility. But quality has a direct interest in whether these tools are in place and working, for one reason: when they are not, the volume of structural and ARIA defects reaching testing increases significantly.</p>
 
-  <h3>What Quality should verify at Phase 3 exit</h3>
+  <h3>What should one verify at Phase 3 exit</h3>
   <ul>
     <li><a href="https://github.com/jsx-eslint/eslint-plugin-jsx-a11y" target="_blank" rel="noopener noreferrer" style="color:var(--blue);"><span class="tool">eslint-plugin-jsx-a11y</span></a> is installed and configured in the project</li>
     <li>No open Critical or Serious violations in the axe-core test suite</li>

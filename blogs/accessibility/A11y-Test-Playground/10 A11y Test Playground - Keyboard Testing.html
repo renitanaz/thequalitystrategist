@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>A11y Test Playground - Keyboard Testing | The Quality Strategist</title>
+<meta name="description" content="Practice the keyboard testing 6-step sequence. Five scenarios covering tab reach, tab order, activation, component interaction, and keyboard traps: all testable with keyboard only." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+    --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+    --green:#4ade80; --green-bg:rgba(74,222,128,0.07);
+    --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07);
+    --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07);
+    --red:#f87171; --red-bg:rgba(248,113,113,0.07);
+    --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.07);
+  }
+  html { scroll-behavior: smooth; }
+  body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+
+  .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
+  .skip-link:focus { top:0; }
+
+  nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
+  .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
+  .nav-logo:focus-visible { outline:3px solid var(--green); outline-offset:3px; border-radius:3px; }
+  .nav-back { font-size:0.82rem; color:var(--text-3); text-decoration:none; display:flex; align-items:center; gap:6px; transition:color 0.2s; }
+  .nav-back:hover { color:var(--text-2); }
+  .nav-back:focus-visible { outline:3px solid var(--green); outline-offset:3px; border-radius:3px; }
+
+  .page-header { max-width:860px; margin:0 auto; padding:3.5rem 2rem 2rem; border-bottom:1px solid var(--border); }
+  .pg-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--green); font-weight:500; margin-bottom:0.75rem; }
+  .page-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.6rem,3.5vw,2.2rem); color:var(--text); margin-bottom:0.75rem; }
+  .page-header p { color:var(--text-2); font-weight:300; max-width:620px; }
+  .how-to { display:inline-flex; align-items:center; gap:8px; background:var(--amber-bg); border:1px solid rgba(251,191,36,0.2); border-radius:8px; padding:0.7rem 1rem; margin-top:1.25rem; font-size:0.85rem; color:var(--amber); font-weight:500; }
+  .see-also { display:inline-flex; align-items:center; gap:8px; background:var(--blue-bg); border:1px solid rgba(96,165,250,0.2); border-radius:8px; padding:0.7rem 1rem; margin-top:0.75rem; font-size:0.85rem; color:var(--blue); font-weight:500; }
+  .see-also a { color:var(--blue); }
+
+  main { max-width:860px; margin:0 auto; padding:2.5rem 2rem 5rem; }
+
+  .scenario { margin-bottom:3rem; }
+  .scenario-header { display:flex; align-items:center; gap:12px; margin-bottom:1rem; }
+  .scenario-num { width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-family:'DM Serif Display',serif; font-size:1rem; font-weight:700; flex-shrink:0; }
+  .num-fail { background:var(--red-bg); color:var(--red); border:1px solid rgba(248,113,113,0.2); }
+  .scenario-title { font-size:1rem; font-weight:500; color:var(--text); }
+  .scenario-meta { font-size:0.75rem; color:var(--text-3); margin-top:2px; }
+  .scenario-instruction { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:0.85rem 1.1rem; margin-bottom:1rem; font-size:0.85rem; color:var(--text-2); }
+  .scenario-instruction strong { color:var(--text); }
+  .scenario-instruction .wcag-tag { display:inline-block; font-size:0.7rem; background:var(--bg3); border:1px solid var(--border); border-radius:99px; padding:1px 8px; color:var(--text-3); margin-left:8px; font-weight:500; }
+
+  .demo { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.5rem; position:relative; overflow:hidden; }
+  .demo-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-3); font-weight:500; margin-bottom:1rem; }
+
+  /* SCENARIO 1: tab reach */
+  .p1-fake-btn { display:inline-block; background:#2a5c9a; color:#fff; padding:10px 24px; border-radius:6px; font-size:0.9rem; cursor:pointer; margin-right:12px; margin-bottom:8px; }
+  .p1-real-btn { background:var(--bg3); border:1px solid var(--border); color:var(--text); padding:10px 24px; border-radius:6px; font-size:0.9rem; font-family:'DM Sans',sans-serif; cursor:pointer; }
+  .p1-real-btn:focus-visible { outline:3px solid var(--blue); outline-offset:2px; }
+  .p1-status { font-size:0.8rem; color:var(--text-3); margin-top:10px; }
+
+  /* SCENARIO 2: tab order */
+  .p2-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; max-width:480px; }
+  .p2-field { display:flex; flex-direction:column; gap:4px; }
+  .p2-field label { font-size:0.8rem; color:var(--text-2); }
+  .p2-field input { background:var(--bg3); border:1px solid var(--border); border-radius:6px; padding:9px 12px; font-size:0.88rem; color:var(--text); font-family:'DM Sans',sans-serif; }
+  .p2-field input:focus-visible { outline:3px solid var(--blue); outline-offset:2px; }
+  .p2-stop { font-size:0.7rem; color:var(--amber); font-weight:600; }
+
+  /* SCENARIO 3: activation */
+  .p3-checkbox-row { display:flex; align-items:center; gap:10px; }
+  .p3-checkbox { width:22px; height:22px; border:2px solid var(--text-3); border-radius:4px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:14px; color:var(--green); }
+  .p3-checkbox:focus-visible { outline:3px solid var(--blue); outline-offset:2px; }
+  .p3-checkbox.checked { border-color:var(--green); background:var(--green-bg); }
+  .p3-label { font-size:0.88rem; color:var(--text-2); }
+
+  /* SCENARIO 4: accordion */
+  .p4-trigger { display:flex; align-items:center; justify-content:space-between; width:100%; background:var(--bg3); border:1px solid var(--border); border-radius:6px; padding:10px 16px; font-size:0.88rem; color:var(--text); font-family:'DM Sans',sans-serif; cursor:pointer; }
+  .p4-trigger:focus-visible { outline:3px solid var(--blue); outline-offset:2px; }
+  .p4-panel { display:none; padding:12px 16px; font-size:0.85rem; color:var(--text-2); border:1px solid var(--border); border-top:none; border-radius:0 0 6px 6px; }
+  .p4-panel.open { display:block; }
+  .p4-arrow { transition:transform 0.15s; }
+  .p4-arrow.open { transform:rotate(180deg); }
+
+  /* SCENARIO 5: keyboard trap */
+  .p5-trigger { background:#7a4a9a; color:#fff; border:none; padding:10px 24px; border-radius:6px; font-size:0.9rem; font-family:'DM Sans',sans-serif; cursor:pointer; }
+  .p5-trigger:focus-visible { outline:3px solid var(--blue); outline-offset:2px; }
+  .p5-modal { display:none; margin-top:1rem; background:var(--bg3); border:2px solid var(--red); border-radius:10px; padding:1.25rem; max-width:360px; }
+  .p5-modal.open { display:block; }
+  .p5-modal p { font-size:0.85rem; color:var(--text-2); margin-bottom:12px; }
+  .p5-modal a, .p5-modal input { display:block; margin-bottom:10px; }
+  .p5-modal a { color:var(--blue); font-size:0.88rem; }
+  .p5-modal a:focus-visible, .p5-modal input:focus-visible { outline:3px solid var(--blue); outline-offset:2px; }
+  .p5-modal input { background:var(--bg2); border:1px solid var(--border); border-radius:6px; padding:8px 12px; font-size:0.85rem; color:var(--text); font-family:'DM Sans',sans-serif; width:100%; }
+  .p5-reset { font-size:0.78rem; color:var(--text-3); margin-top:10px; display:inline-block; }
+  .p5-reset:hover { color:var(--text-2); }
+
+  .result-row { display:flex; gap:10px; margin-top:1rem; flex-wrap:wrap; }
+  .badge { font-size:0.72rem; padding:3px 10px; border-radius:99px; font-weight:600; letter-spacing:0.04em; }
+  .badge-fail { background:var(--red-bg); color:var(--red); border:1px solid rgba(248,113,113,0.25); }
+  .badge-wcag { background:var(--bg3); color:var(--text-3); border:1px solid var(--border); }
+
+  .section-divider { border:none; border-top:1px solid var(--border); margin:2.5rem 0; }
+
+  footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
+  footer a { color:var(--text-3); text-decoration:none; }
+  footer a:hover { color:var(--text-2); }
+
+  @media (max-width:620px) {
+    nav.site-nav { padding:0 1.25rem; }
+    .page-header, main { padding-left:1.25rem; padding-right:1.25rem; }
+    .p2-grid { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <a href="../10-Keyboard-Testing.html" class="nav-back">← Back to Blog 10</a>
+</nav>
+
+<header class="page-header">
+  <div class="pg-label">A11y Test Playground</div>
+  <h1>A11y Test Playground: Keyboard Testing</h1>
+  <p>Five scenarios covering steps 1, 2, 4, 5, and 6 of the 6-step keyboard test sequence: tab reach, tab order, activation, component interaction, and keyboard traps. All intentionally broken.</p>
+  <div class="how-to" role="note">
+    <span>🎯</span>
+    <span>How to use: unplug your mouse. Press <strong>Tab</strong>, <strong>Enter</strong>, <strong>Space</strong>, and <strong>Escape</strong>. Find what does not work.</span>
+  </div>
+  <div class="see-also" role="note">
+    <span>👁️</span>
+    <span>Step 3, focus visibility, has its own dedicated set of scenarios: see the <a href="11 A11y Test Playground - Focus Indicators.html">Focus Indicators Playground</a>.</span>
+  </div>
+</header>
+
+<main id="main-content">
+
+  <!-- SCENARIO 1: tab reach -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail" aria-hidden="true">1</div>
+      <div>
+        <div class="scenario-title">Step 1: Tab reach verification</div>
+        <div class="scenario-meta">Clickable with a mouse. Invisible to Tab.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Tab through this section from the top.
+      <span class="wcag-tag">WCAG 2.1.1</span><br>
+      <strong>What to look for:</strong> "Add to cart" is a styled <code>&lt;div&gt;</code> with a click handler and no <code>tabindex</code>. Tab skips straight past it to the real button beside it.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 1: div with onclick, no tabindex</div>
+      <span class="p1-fake-btn" onclick="document.getElementById('p1-status').textContent='Clicked with a mouse. A keyboard user cannot reach this at all.'">Add to cart</span>
+      <button class="p1-real-btn" onclick="document.getElementById('p1-status').textContent='Real button: reachable and activated by keyboard.'">Add to cart (real button)</button>
+      <div class="p1-status" id="p1-status">Try clicking each one, then try reaching each one with Tab only.</div>
+      <div class="result-row">
+        <span class="badge badge-fail">Fail</span>
+        <span class="badge badge-wcag">WCAG 2.1.1</span>
+        <span class="badge badge-wcag">No tabindex, no keyboard handler</span>
+      </div>
+    </div>
+  </div>
+
+  <hr class="section-divider" />
+
+  <!-- SCENARIO 2: tab order -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail" aria-hidden="true">2</div>
+      <div>
+        <div class="scenario-title">Step 2: Tab order validation</div>
+        <div class="scenario-meta">Visually first. Reached third.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Tab through the four fields below and watch the "Tab stop" number light up in each one.
+      <span class="wcag-tag">WCAG 2.4.3</span><br>
+      <strong>What to look for:</strong> The visual reading order is First name, Last name, Email, Phone. The actual tab order (explicit <code>tabindex</code> values) is Email, First name, Phone, Last name.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 2: tabindex does not match visual order</div>
+      <div class="p2-grid">
+        <div class="p2-field">
+          <label for="p2-first">First name <span class="p2-stop">(Tab stop 2)</span></label>
+          <input id="p2-first" type="text" tabindex="2" />
+        </div>
+        <div class="p2-field">
+          <label for="p2-last">Last name <span class="p2-stop">(Tab stop 4)</span></label>
+          <input id="p2-last" type="text" tabindex="4" />
+        </div>
+        <div class="p2-field">
+          <label for="p2-email">Email <span class="p2-stop">(Tab stop 1)</span></label>
+          <input id="p2-email" type="email" tabindex="1" />
+        </div>
+        <div class="p2-field">
+          <label for="p2-phone">Phone <span class="p2-stop">(Tab stop 3)</span></label>
+          <input id="p2-phone" type="tel" tabindex="3" />
+        </div>
+      </div>
+      <div class="result-row">
+        <span class="badge badge-fail">Fail</span>
+        <span class="badge badge-wcag">WCAG 2.4.3</span>
+        <span class="badge badge-wcag">tabindex order ≠ reading order</span>
+      </div>
+    </div>
+  </div>
+
+  <hr class="section-divider" />
+
+  <!-- SCENARIO 3: activation -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail" aria-hidden="true">3</div>
+      <div>
+        <div class="scenario-title">Step 4: Activation testing</div>
+        <div class="scenario-meta">Reachable by Tab. Space does nothing.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Tab to the checkbox below. Press <strong>Space</strong>.
+      <span class="wcag-tag">WCAG 2.1.1</span><br>
+      <strong>What to look for:</strong> This is a <code>&lt;div role="checkbox"&gt;</code> with a click handler and a working <code>tabindex</code>, so it is reachable. But nothing was wired up to respond to a keydown, so Space and Enter do nothing. It only toggles on mouse click.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 3: role="checkbox" with a click handler only</div>
+      <div class="p3-checkbox-row">
+        <div class="p3-checkbox" id="p3-check" role="checkbox" aria-checked="false" tabindex="0" onclick="document.getElementById('p3-check').classList.toggle('checked'); document.getElementById('p3-check').textContent = document.getElementById('p3-check').classList.contains('checked') ? '✓' : ''; document.getElementById('p3-status').textContent='Toggled with a mouse click.';"></div>
+        <span class="p3-label">Email me updates</span>
+      </div>
+      <div class="p1-status" id="p3-status">Try Space or Enter on the checkbox after tabbing to it, then try clicking it.</div>
+      <div class="result-row">
+        <span class="badge badge-fail">Fail</span>
+        <span class="badge badge-wcag">WCAG 2.1.1</span>
+        <span class="badge badge-wcag">onclick only, no keydown handler</span>
+      </div>
+    </div>
+  </div>
+
+  <hr class="section-divider" />
+
+  <!-- SCENARIO 4: component interaction -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail" aria-hidden="true">4</div>
+      <div>
+        <div class="scenario-title">Step 5: Component interaction testing</div>
+        <div class="scenario-meta">Expands visually. Silent to screen readers.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Tab to the accordion trigger below. Press Enter to expand it.
+      <span class="wcag-tag">WCAG 4.1.2</span><br>
+      <strong>What to look for:</strong> The panel visually opens, but <code>aria-expanded</code> on the trigger never changes from <code>"false"</code>. A screen reader user hears no confirmation that anything happened.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 4: aria-expanded never updates</div>
+      <button class="p4-trigger" id="p4-trigger" aria-expanded="false" aria-controls="p4-panel" onclick="document.getElementById('p4-panel').classList.toggle('open'); document.getElementById('p4-arrow').classList.toggle('open');">
+        <span>Shipping details</span>
+        <span class="p4-arrow" id="p4-arrow" aria-hidden="true">▾</span>
+      </button>
+      <div class="p4-panel" id="p4-panel">Orders ship within two business days. International shipping available at checkout.</div>
+      <div class="result-row">
+        <span class="badge badge-fail">Fail</span>
+        <span class="badge badge-wcag">WCAG 4.1.2</span>
+        <span class="badge badge-wcag">aria-expanded hardcoded to false</span>
+      </div>
+    </div>
+  </div>
+
+  <hr class="section-divider" />
+
+  <!-- SCENARIO 5: keyboard trap -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail" aria-hidden="true">5</div>
+      <div>
+        <div class="scenario-title">Step 6: Keyboard trap verification</div>
+        <div class="scenario-meta">No Escape key. No way back.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Tab to "Open dialog" and press Enter. Once inside, try Tab, Shift+Tab, and Escape to leave.
+      <span class="wcag-tag">WCAG 2.1.2</span><br>
+      <strong>What to look for:</strong> Focus cycles endlessly between the two elements inside. Escape does nothing. There is no close button reachable by keyboard. This is a Critical defect: log it with the component name, WCAG 2.1.2, and these reproduction steps.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 5: Tab trapped, no Escape handler, no close button</div>
+      <button class="p5-trigger" id="p5-open">Open dialog</button>
+      <div class="p5-modal" id="p5-modal" role="dialog" aria-modal="true" aria-label="Newsletter signup">
+        <p>Subscribe to our newsletter. (There is no way to close this dialog using only the keyboard.)</p>
+        <input type="email" id="p5-email" placeholder="Email address" aria-label="Email address" />
+        <a href="#" id="p5-link" onclick="return false">Privacy policy</a>
+      </div>
+      <div>
+        <a href="#" class="p5-reset" id="p5-reset-link" onclick="document.getElementById('p5-modal').classList.remove('open'); document.getElementById('p5-open').focus(); return false;">Reset this scenario (mouse only, not part of the demo)</a>
+      </div>
+      <div class="result-row">
+        <span class="badge badge-fail">Fail</span>
+        <span class="badge badge-wcag">WCAG 2.1.2</span>
+        <span class="badge badge-wcag">Tab cycle locked, no Escape binding</span>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; Part of the <a href="../10-Keyboard-Testing.html">Keyboard Testing</a> series blog &nbsp;·&nbsp; © 2026
+  </p>
+</footer>
+
+<script>
+  // Scenario 5: genuine Tab trap between the two focusable elements, no Escape handler
+  const p5open = document.getElementById('p5-open');
+  const p5modal = document.getElementById('p5-modal');
+  const p5email = document.getElementById('p5-email');
+  const p5link = document.getElementById('p5-link');
+
+  p5open.addEventListener('click', function() {
+    p5modal.classList.add('open');
+    p5email.focus();
+  });
+
+  p5modal.addEventListener('keydown', function(e) {
+    if (e.key !== 'Tab') return;
+    e.preventDefault();
+    if (document.activeElement === p5email) {
+      p5link.focus();
+    } else {
+      p5email.focus();
+    }
+  });
+</script>
+
+</body>
+</html>
