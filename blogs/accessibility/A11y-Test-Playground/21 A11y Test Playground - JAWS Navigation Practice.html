@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>21 A11y Test Playground - JAWS Navigation Practice | The Quality Strategist</title>
+  <meta name="description" content="Practice JAWS navigation gestures on one realistic, fully accessible sample page: page title, landmarks, headings, interactive elements, a form, a table, images, links, and a live region." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+      --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+      --green:#4ade80; --green-bg:rgba(74,222,128,0.07);
+      --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07);
+      --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07);
+      --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.07);
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+    .skip-link { position:absolute; top:-100%; left:1rem; background:var(--green); color:#000; padding:0.5rem 1rem; border-radius:0 0 6px 6px; font-size:0.85rem; font-weight:500; text-decoration:none; z-index:999; }
+    .skip-link:focus { top:0; }
+    nav.site-nav { position:sticky; top:0; z-index:100; background:rgba(13,13,13,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--text); text-decoration:none; }
+    .nav-back { font-size:0.82rem; color:var(--text-3); text-decoration:none; }
+    .nav-back:hover { color:var(--text-2); }
+    .page-header { max-width:860px; margin:0 auto; padding:3.5rem 2rem 2rem; border-bottom:1px solid var(--border); }
+    .pg-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--blue); font-weight:500; margin-bottom:0.75rem; }
+    .page-header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.6rem,3.5vw,2.2rem); color:var(--text); margin-bottom:0.75rem; }
+    .page-header p { color:var(--text-2); font-weight:300; max-width:640px; }
+    .how-to { display:flex; align-items:flex-start; gap:8px; background:var(--amber-bg); border:1px solid rgba(251,191,36,0.2); border-radius:8px; padding:0.7rem 1rem; margin-top:1.25rem; font-size:0.85rem; color:var(--amber); }
+    .steps-panel { max-width:860px; margin:2rem auto 0; padding:0 2rem; }
+    .steps-panel-inner { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.25rem 1.5rem; }
+    .steps-panel-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--text-3); font-weight:500; margin-bottom:0.9rem; }
+    .steps-panel ol { padding-left:1.25rem; display:flex; flex-direction:column; gap:8px; }
+    .steps-panel li { font-size:0.88rem; color:var(--text-2); line-height:1.6; }
+    .steps-panel li strong { color:var(--text); }
+    .key { display:inline-flex; align-items:center; justify-content:center; background:var(--bg3); border:1px solid #444; border-bottom:3px solid #444; border-radius:5px; padding:2px 8px; font-family:monospace; font-size:0.82em; color:var(--text); min-width:28px; white-space:nowrap; }
+      .blog-jump { display:flex; align-items:center; gap:6px; margin-bottom:1.5rem; flex-wrap:wrap; }
+    .blog-jump label { font-size:0.72rem; color:var(--text-3); }
+    .blog-jump select { background:var(--bg2); color:var(--text-2); border:1px solid var(--border); border-radius:6px; padding:4px 8px; font-size:0.78rem; font-family:'DM Sans',sans-serif; max-width:220px; }
+    .blog-jump select:focus-visible { outline:2px solid var(--green); outline-offset:2px; }
+
+    /* ---- Sample site mockup ---- */
+    .sample-site { max-width:860px; margin:2.5rem auto 5rem; padding:0 2rem; }
+    .sample-nav { background:var(--bg2); border:1px solid var(--border); border-radius:10px 10px 0 0; padding:0.9rem 1.5rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; }
+    .sample-nav a { color:var(--text-2); text-decoration:none; font-size:0.88rem; }
+    .sample-nav a:hover, .sample-nav a:focus-visible { color:var(--green); }
+    .sample-nav ul { display:flex; gap:1.5rem; list-style:none; flex-wrap:wrap; }
+    .sample-breadcrumb { background:var(--bg2); border-left:1px solid var(--border); border-right:1px solid var(--border); padding:0.6rem 1.5rem; font-size:0.8rem; color:var(--text-3); }
+    .sample-breadcrumb a { color:var(--text-3); text-decoration:none; }
+    .sample-breadcrumb a:hover { color:var(--text-2); }
+    .sample-main { background:var(--bg2); border:1px solid var(--border); border-top:none; padding:2rem 1.5rem; }
+    .sample-main h2 { font-family:'DM Serif Display',serif; font-size:1.9rem; color:var(--text); margin-bottom:0.75rem; }
+    .sample-main h3 { font-family:'DM Serif Display',serif; font-size:1.35rem; color:var(--text); margin:2.5rem 0 0.9rem; }
+    .sample-main h4 { font-size:1rem; font-weight:500; color:var(--text); margin:1.5rem 0 0.5rem; }
+    .sample-main p { color:var(--text-2); font-weight:300; margin-bottom:1rem; }
+    .sample-main a { color:var(--blue); }
+    .service-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:1rem; }
+    .service-card { background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:1rem 1.25rem; }
+    .toggle-btn { background:var(--bg3); border:1px solid var(--border); border-radius:6px; padding:8px 18px; font-size:0.88rem; color:var(--text-2); cursor:pointer; font-family:'DM Sans',sans-serif; margin-top:0.5rem; }
+    .toggle-btn:focus-visible { outline:3px solid var(--blue); outline-offset:2px; }
+    .toggle-panel { margin-top:0.75rem; padding:0.85rem 1rem; background:var(--bg3); border-radius:6px; font-size:0.88rem; color:var(--text-2); }
+    .sample-table-wrap { overflow-x:auto; border-radius:8px; border:1px solid var(--border); margin:1rem 0; }
+    .sample-table-wrap table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+    .sample-table-wrap th { background:var(--bg3); padding:9px 14px; text-align:left; color:var(--text-3); font-weight:500; border-bottom:1px solid var(--border); white-space:nowrap; }
+    .sample-table-wrap td { padding:9px 14px; border-bottom:1px solid var(--border); color:var(--text-2); }
+    .sample-table-wrap tr:last-child td { border-bottom:none; }
+    .img-row { display:flex; gap:0.75rem; flex-wrap:wrap; margin:1rem 0; }
+    .img-row img { border-radius:8px; display:block; }
+    .sample-form { display:flex; flex-direction:column; gap:1rem; max-width:400px; margin-top:1rem; }
+    .sample-form label { display:block; font-size:0.85rem; color:var(--text-2); margin-bottom:4px; }
+    .sample-form input, .sample-form textarea { width:100%; background:var(--bg3); border:1px solid var(--border); border-radius:6px; padding:9px 12px; font-size:0.88rem; color:var(--text); font-family:'DM Sans',sans-serif; }
+    .sample-form input:focus-visible, .sample-form textarea:focus-visible, .toggle-btn:focus-visible, .sample-submit:focus-visible { outline:3px solid var(--blue); outline-offset:2px; }
+    .checkbox-row { display:flex; align-items:center; gap:8px; }
+    .checkbox-row input { width:auto; }
+    .checkbox-row label { margin-bottom:0; }
+    .sample-submit { background:var(--green); color:#000; border:none; border-radius:6px; padding:10px 22px; font-size:0.88rem; font-weight:500; cursor:pointer; font-family:'DM Sans',sans-serif; align-self:flex-start; }
+    .sample-status { font-size:0.85rem; color:var(--green); margin-top:0.5rem; min-height:1.2em; }
+    .sample-aside { background:var(--bg3); border:1px solid var(--border); padding:1.5rem; }
+    .sample-aside h3 { font-family:'DM Serif Display',serif; font-size:1.2rem; color:var(--text); margin-bottom:1rem; }
+    .testimonial { border-left:3px solid var(--purple); padding-left:1rem; margin-bottom:1.25rem; font-size:0.88rem; color:var(--text-2); font-style:italic; }
+    .testimonial cite { display:block; margin-top:0.4rem; font-style:normal; font-size:0.8rem; color:var(--text-3); }
+    .sample-footer { background:var(--bg2); border:1px solid var(--border); border-top:none; border-radius:0 0 10px 10px; padding:1.5rem; text-align:center; font-size:0.8rem; color:var(--text-3); }
+    footer.site-footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
+    footer.site-footer a { color:var(--text-3); text-decoration:none; }
+    @media(max-width:620px) {
+      nav.site-nav, .page-header, .steps-panel, .sample-site { padding-left:1.25rem; padding-right:1.25rem; }
+      .service-grid { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+<nav class="site-nav" aria-label="Site navigation">
+  <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
+  <a href="../21-JAWS-on-Windows.html" class="nav-back">← Back to Blog 21</a>
+</nav>
+
+  <div class="blog-jump">
+    <label for="blog-jump-select">Jump to a blog:</label>
+    <select id="blog-jump-select" onchange="if(this.value) window.location.href=this.value;">
+      <option value="" selected disabled>Jump to a blog…</option>
+      <option value="../00-Shift-Left-Accessibility-Series-Introduction.html">00 Series Introduction</option>
+      <option value="../01-Accessibility-Is-Not-Just-a-Disability-Issue.html">01 Not Just a Disability Issue</option>
+      <option value="../02-cost-of-shift-right.html">02 Cost of Accessibility Debt</option>
+      <option value="../03-wcag-explained-12missed.html">03 WCAG: 12 Missed Requirements</option>
+      <option value="../04-Who-Owns-Accessibility.html">04 Who Owns Accessibility?</option>
+      <option value="../05-Design-Phase-Accessibility-Review.html">05 Design Phase Review</option>
+      <option value="../06-Content-Authoring-Accessibility-Rules.html">06 Content Authoring Rules</option>
+      <option value="../07-Semantic-HTML-and-ARIA.html">07 Semantic HTML and ARIA</option>
+      <option value="../08-ESLint-and-Axe-Core.html">08 ESLint and Axe-Core</option>
+      <option value="../09-Phase-Exit-Criteria.html">09 Phase Exit Criteria</option>
+      <option value="../10-Keyboard-Testing.html">10 Keyboard-Only Testing</option>
+      <option value="../11-Focus-Indicators.html">11 Focus Indicators</option>
+      <option value="../12-Headings-Landmarks-Skip-Links.html">12 Headings and Landmarks</option>
+      <option value="../13-Colour-Contrast-Testing.html">13 Colour Contrast Testing</option>
+      <option value="../14-Alt-Text-Testing.html">14 Alt Text Testing</option>
+      <option value="../15-Forms-Labels-Errors.html">15 Forms, Labels and Errors</option>
+      <option value="../16-Dynamic-Content-ARIA-Live-Regions.html">16 Dynamic Content and ARIA Live</option>
+      <option value="../17-Zoom-Reflow-Reduced-Motion.html">17 Zoom, Reflow, Reduced Motion</option>
+      <option value="../18-Enable-Accessibility-Features.html">18 Enable Accessibility Features</option>
+      <option value="../19-Screen-Reader-Gestures-Cheat-Sheet.html">19 Screen Reader Cheat Sheet</option>
+      <option value="../20-NVDA-on-Windows.html">20 NVDA on Windows</option>
+      <option value="../21-JAWS-on-Windows.html">21 JAWS on Windows</option>
+      <option value="../22-VoiceOver-on-Mac.html">22 VoiceOver on Mac</option>
+      <option value="../23-VoiceOver-on-iOS.html">23 VoiceOver on iOS</option>
+      <option value="../24-TalkBack-on-Android.html">24 TalkBack on Android</option>
+      <option value="../25-What-to-Check-With-a-Screen-Reader.html">25 Screen Reader Checklist</option>
+      <option value="../26-WAVE.html">26 WAVE</option>
+      <option value="../27-Axe-DevTools.html">27 Axe DevTools</option>
+      <option value="../28-Accessibility-Insights.html">28 Accessibility Insights</option>
+      <option value="../29-Lighthouse.html">29 Lighthouse</option>
+      <option value="../30-ANDI-and-IBM-Equal-Access.html">30 ANDI and IBM Equal Access</option>
+      <option value="../31-Axe-Core-Cypress-Playwright.html">31 Axe-Core: Cypress &amp; Playwright</option>
+      <option value="../32-Pa11y-in-CI-CD.html">32 Pa11y in CI/CD</option>
+      <option value="../33-Automated-Tools-Only-Catch-30-50-Percent.html">33 Automated Tools: 30-50%</option>
+      <option value="../34-How-to-Write-an-Accessibility-Defect.html">34 Writing an A11y Defect</option>
+      <option value="../35-Testing-Modals-Accordions-Carousels.html">35 Modals, Accordions, Carousels</option>
+      <option value="../36-Testing-Video-and-Audio.html">36 Testing Video and Audio</option>
+      <option value="../37-Sprint-Ready-Accessibility-Checklist.html">37 Sprint-Ready Checklist</option>
+      <option value="../38-Live-Audit-Full-Page-From-Scratch.html">38 Live Audit From Scratch</option>
+      <option value="../39-Mobile-Accessibility-Testing-Practice-Apps.html">39 Mobile Testing: Practice Apps</option>
+    </select>
+  </div>
+
+<header class="page-header">
+  <div class="pg-label">A11y Test Playground</div>
+  <h1>Navigation Practice: JAWS Gestures, on One Clean Page</h1>
+  <p>This page has no bugs to find. It exists to build muscle memory for the JAWS keys themselves: one realistic, fully accessible sample page with a title, several landmarks, a logical heading structure, interactive elements, a form, a table, images (including one decorative), links, and a live region.</p>
+  <div class="how-to" role="note">
+    <span aria-hidden="true">&#127919;</span>
+    <span><strong>Coming from NVDA?</strong> JAWS uses <span class="key">U</span> for links (NVDA uses K) and <span class="key">R</span> for landmarks (NVDA uses D). Check <a href="../19-Screen-Reader-Gestures-Cheat-Sheet.html" style="color:var(--amber);">Blog 19's cheat sheet</a> if you switch between them often.</span>
+  </div>
+</header>
+
+<div class="steps-panel">
+  <div class="steps-panel-inner">
+    <div class="steps-panel-title">Work through Blog 21's key JAWS commands, in order</div>
+    <ol>
+      <li><strong>Page title check:</strong> Reload this page and listen to the title announcement. It should identify the page meaningfully.</li>
+      <li><strong>Landmark navigation:</strong> Press <span class="key">R</span> repeatedly. Count how many distinct, labelled landmarks you pass through below.</li>
+      <li><strong>Heading structure:</strong> Press <span class="key">H</span> repeatedly. Confirm the levels step down logically with no skips.</li>
+      <li><strong>Interactive elements:</strong> Tab to the "Show details" button and the newsletter checkbox. Listen for label, role, and state on each.</li>
+      <li><strong>Forms:</strong> Tab through the contact form. Listen for label, type, and required state on each field.</li>
+      <li><strong>Tables:</strong> Press <span class="key">T</span> to find the results table, then <span class="key">Ctrl</span>+<span class="key">Alt</span>+arrow keys to move cell by cell.</li>
+      <li><strong>Images:</strong> Press <span class="key">G</span> repeatedly. Three images should announce meaningful alt text; the divider graphic should be silently skipped.</li>
+      <li><strong>Links:</strong> Press <span class="key">U</span> repeatedly (unvisited links). Every link should describe its destination on its own.</li>
+      <li><strong>Live regions:</strong> Focus a heading, then submit the contact form. Listen for the confirmation without moving focus.</li>
+      <li><strong>Lists:</strong> JAWS uses separate lists rather than one combined elements list: <span class="key">Insert</span>+<span class="key">F6</span> for headings, <span class="key">Insert</span>+<span class="key">F7</span> for links, <span class="key">Insert</span>+<span class="key">F5</span> for form fields.</li>
+    </ol>
+  </div>
+</div>
+
+<main id="main-content">
+  <div class="sample-site">
+
+    <nav class="sample-nav" aria-label="Main menu">
+      <a href="#" onclick="return false">Acme QA Consulting</a>
+      <ul>
+        <li><a href="#sample-services" onclick="return false">Services</a></li>
+        <li><a href="#sample-results" onclick="return false">Results</a></li>
+        <li><a href="#sample-contact" onclick="return false">Contact</a></li>
+      </ul>
+    </nav>
+
+    <nav class="sample-breadcrumb" aria-label="Breadcrumb">
+      <a href="#" onclick="return false">Home</a> <span aria-hidden="true">›</span> Services
+    </nav>
+
+    <div class="sample-main">
+      <h2>Quality Engineering Services</h2>
+      <p>We help product teams build testing strategy, automation, and accessibility auditing into every release, from design through production.</p>
+
+      <div class="img-row">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='90'%3E%3Crect width='140' height='90' fill='%231e1e1e' rx='6'/%3E%3Ccircle cx='70' cy='36' r='18' fill='%2360a5fa' opacity='.8'/%3E%3Crect x='36' y='58' width='68' height='24' rx='10' fill='%2360a5fa' opacity='.5'/%3E%3C/svg%3E" width="140" height="90" alt="Six-person consulting team standing together in the Acme QA office" />
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='90'%3E%3Crect width='140' height='90' fill='%231e1e1e' rx='6'/%3E%3Crect x='16' y='55' width='16' height='25' fill='%234ade80' opacity='.6'/%3E%3Crect x='42' y='42' width='16' height='38' fill='%234ade80' opacity='.75'/%3E%3Crect x='68' y='28' width='16' height='52' fill='%234ade80'/%3E%3Crect x='94' y='18' width='16' height='62' fill='%234ade80'/%3E%3C/svg%3E" width="140" height="90" alt="Bar chart: client defect counts falling every quarter for four consecutive quarters" />
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='90'%3E%3Crect width='140' height='90' fill='%231e1e1e' rx='6'/%3E%3Ccircle cx='70' cy='45' r='28' fill='none' stroke='%23fbbf24' stroke-width='4'/%3E%3Ctext x='70' y='51' text-anchor='middle' font-family='sans-serif' font-size='14' fill='%23fbbf24'%3EISO%3C/text%3E%3C/svg%3E" width="140" height="90" alt="ISO 27001 certification badge" />
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='90'%3E%3Crect width='140' height='90' fill='%231e1e1e' rx='6'/%3E%3Cline x1='10' y1='45' x2='130' y2='45' stroke='%232e2e2e' stroke-width='2'/%3E%3Ccircle cx='70' cy='45' r='5' fill='%232e2e2e'/%3E%3C/svg%3E" width="140" height="90" alt="" />
+      </div>
+
+      <h3 id="sample-services">Our Services</h3>
+      <div class="service-grid">
+        <div class="service-card">
+          <h4>Test Strategy</h4>
+          <p>Risk-based planning that decides what to automate, what to test manually, and what to skip.</p>
+        </div>
+        <div class="service-card">
+          <h4>Automation Engineering</h4>
+          <p>Resilient test suites built into your CI pipeline, not bolted on afterwards.</p>
+        </div>
+      </div>
+      <h4>Accessibility Auditing</h4>
+      <p id="a11y-desc">Manual and automated WCAG 2.1 AA review across web and native platforms.</p>
+      <button class="toggle-btn" id="details-toggle" aria-expanded="false" aria-controls="details-panel" onclick="var b=this;var open=b.getAttribute('aria-expanded')==='true';b.setAttribute('aria-expanded',String(!open));document.getElementById('details-panel').style.display=open?'none':'block';">Show details</button>
+      <div class="toggle-panel" id="details-panel" style="display:none;">Includes a full WCAG 2.1 AA audit, defect logging with reproduction steps, and a retest pass once fixes ship.</div>
+
+      <h3 id="sample-results">Recent Project Results</h3>
+      <div class="sample-table-wrap">
+        <table>
+          <caption style="text-align:left;color:var(--text-3);padding:0 0 8px;font-weight:400;font-size:0.8rem;">Recent project results by client</caption>
+          <thead>
+            <tr>
+              <th scope="col">Client</th>
+              <th scope="col">Outcome</th>
+              <th scope="col">Timeframe</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Northwind Retail</td><td>Defects down 62%</td><td>3 months</td></tr>
+            <tr><td>Bluepeak Finance</td><td>WCAG 2.1 AA achieved</td><td>5 months</td></tr>
+            <tr><td>Harborlight Health</td><td>Release cycle halved</td><td>4 months</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Read our <a href="#" onclick="return false">full accessibility audit methodology</a> or browse <a href="#" onclick="return false">case studies from the last twelve months</a>.</p>
+
+      <h3 id="sample-contact">Get in Touch</h3>
+      <form class="sample-form" onsubmit="return false;">
+        <div>
+          <label for="np-name">Full name <span aria-hidden="true" style="color:var(--amber);">*</span><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">required</span></label>
+          <input type="text" id="np-name" name="name" required aria-required="true" />
+        </div>
+        <div>
+          <label for="np-email">Email address <span aria-hidden="true" style="color:var(--amber);">*</span><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">required</span></label>
+          <input type="email" id="np-email" name="email" required aria-required="true" />
+        </div>
+        <div>
+          <label for="np-message">Message</label>
+          <textarea id="np-message" name="message" rows="3"></textarea>
+        </div>
+        <div class="checkbox-row">
+          <input type="checkbox" id="np-updates" name="updates" />
+          <label for="np-updates">Send me occasional updates</label>
+        </div>
+        <button type="submit" class="sample-submit" onclick="document.getElementById('np-status').textContent='Thanks — we will be in touch shortly.';">Send message</button>
+        <div id="np-status" class="sample-status" role="status" aria-live="polite" aria-atomic="true"></div>
+      </form>
+    </div>
+
+    <aside class="sample-aside" aria-label="Client testimonials">
+      <h3>What Clients Say</h3>
+      <blockquote class="testimonial">
+        "They found issues our own team had missed for two years."
+        <cite>— Priya N., Northwind Retail</cite>
+      </blockquote>
+      <blockquote class="testimonial">
+        "The audit reports were the clearest we've ever received."
+        <cite>— Tom R., Bluepeak Finance</cite>
+      </blockquote>
+    </aside>
+
+    <div class="sample-footer">
+      Acme QA Consulting: a practice sample for The Quality Strategist, not a real company.
+    </div>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <p>
+    <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
+    &nbsp;·&nbsp; <a href="../21-JAWS-on-Windows.html">Back to Blog 21</a>
+    &nbsp;·&nbsp; <a href="../21-JAWS-on-Windows.html#what-to-test">Next: read What to Test and What to Listen For →</a>
+  </p>
+</footer>
+
+</body>
+</html>

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>28 A11y Test Playground - Accessibility Insights | The Quality Strategist</title>
-  <meta name="description" content="Practice using Accessibility Insights FastPass and Tab Stops. Six scenarios covering automated violations and keyboard focus order failures." />
+  <meta name="description" content="Practice using Accessibility Insights FastPass and Tab Stops. Seven scenarios covering automated violations and keyboard focus order failures, plus a passing Tab Stops example." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
   <style>
@@ -132,8 +132,8 @@
       Open Accessibility Insights, click FastPass, run the scan. Find each violation listed below.
     </div>
     <div class="tool-item">
-      <strong>Tab Stops scenarios (5–6)</strong>
-      Click Tab Stops mode in Accessibility Insights. Press Tab through the page and watch where the arrows appear: and where they jump unexpectedly.
+      <strong>Tab Stops scenarios (5–7)</strong>
+      Click Tab Stops mode in Accessibility Insights. Press Tab through the page and watch where the arrows appear: and where they jump unexpectedly. Scenario 7 shows what a clean path looks like.
     </div>
   </div>
 </header>
@@ -301,6 +301,53 @@
         </div>
         <div class="expected"><strong>Tab Stops shows:</strong> Arrows loop within the widget. No arrow escapes to the next element on the page. WCAG 2.1.2 failure.</div>
         <div class="result-row"><span class="badge badge-tabstops">Tab Stops</span><span class="badge badge-wcag">WCAG 2.1.2</span></div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S7: correct, Tab Stops shows a clean linear path -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-pass">7</div>
+      <div>
+        <div class="scenario-title">Correct: Tab Stops shows a clean, linear path</div>
+        <div class="scenario-meta">WCAG 2.4.3 / 2.1.2</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to verify:</strong> Enable Tab Stops mode and tab through both examples below. No skipped elements, no loops: the arrows should draw a single straight line all the way through.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 7: fixes for scenarios 5 and 6</div>
+      <div class="demo-inner" style="display:flex;flex-direction:column;gap:1.5rem;">
+
+        <div>
+          <p style="font-size:0.82rem;color:var(--text-3);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.06em;font-weight:500;">Fixes Scenario 5: no tabindex overrides, nothing skipped</p>
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+            <button style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 18px;font-size:0.88rem;color:var(--text-2);cursor:pointer;">First</button>
+            <button style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 18px;font-size:0.88rem;color:var(--text-2);cursor:pointer;">Second</button>
+            <button style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 18px;font-size:0.88rem;color:var(--text-2);cursor:pointer;">Third</button>
+          </div>
+          <div class="expected pass"><strong>Tab Stops shows:</strong> Arrow moves First → Second → Third in document order. Nothing is skipped ✓</div>
+        </div>
+
+        <div>
+          <p style="font-size:0.82rem;color:var(--text-3);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.06em;font-weight:500;">Fixes Scenario 6: widget does not trap focus</p>
+          <div style="border:2px solid var(--green);border-radius:8px;padding:1.25rem;max-width:400px;">
+            <p style="font-size:0.88rem;color:var(--text-2);margin-bottom:1rem;">Widget: Tab moves through Option A, B, C, then continues past the widget to "Next section" below.</p>
+            <div style="display:flex;gap:10px;">
+              <button style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 16px;font-size:0.85rem;color:var(--text-2);cursor:pointer;">Option A</button>
+              <button style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 16px;font-size:0.85rem;color:var(--text-2);cursor:pointer;">Option B</button>
+              <button style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 16px;font-size:0.85rem;color:var(--text-2);cursor:pointer;">Option C</button>
+            </div>
+          </div>
+          <button style="margin-top:10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 16px;font-size:0.85rem;color:var(--text-2);cursor:pointer;">Next section</button>
+          <div class="expected pass"><strong>Tab Stops shows:</strong> Arrow exits the widget after Option C and lands on "Next section". No loop ✓</div>
+        </div>
+
+        <div class="result-row"><span class="badge badge-pass">Pass</span><span class="badge badge-wcag">WCAG 2.4.3</span><span class="badge badge-wcag">WCAG 2.1.2</span></div>
       </div>
     </div>
   </div>

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>17 A11y Test Playground - Zoom and Reflow | The Quality Strategist</title>
-  <meta name="description" content="Practice testing zoom, reflow and reduced motion failures. Eight interactive scenarios covering 320px reflow, 400% zoom breaks, motion, and pinch-to-zoom." />
+  <meta name="description" content="Practice testing zoom, reflow and reduced motion failures. Twelve interactive scenarios covering 320px reflow, 400% zoom breaks, motion, and pinch-to-zoom." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
   <style>
@@ -128,7 +128,7 @@
 <header class="page-header">
   <div class="pg-label">A11y Test Playground</div>
   <h1>Zoom and Reflow Playground</h1>
-  <p>Eight scenarios covering reflow at 320px, zoom failures at 200% and 400%, and reduced motion. Use <strong>Chrome DevTools</strong> responsive mode (320px) and browser zoom controls (<strong>Ctrl/Cmd +</strong>) to test each scenario.</p>
+  <p>Twelve scenarios covering reflow at 320px, zoom failures at 200% and 400%, and reduced motion. Use <strong>Chrome DevTools</strong> responsive mode (320px) and browser zoom controls (<strong>Ctrl/Cmd +</strong>) to test each scenario.</p>
   <div class="how-to" role="note">
     <span aria-hidden="true">&#127919;</span>
     <span>Open DevTools first. Set responsive mode to <strong>320px</strong> for reflow scenarios. Switch to <strong>400% browser zoom</strong> for zoom scenarios.</span>
@@ -397,10 +397,147 @@
 
   <hr class="divider" />
 
-  <!-- S8: PASS -->
+  <!-- S9: form fields don't stack -->
   <div class="scenario">
     <div class="scenario-header">
-      <div class="scenario-num num-pass">8</div>
+      <div class="scenario-num num-fail">8</div>
+      <div>
+        <div class="scenario-title">Side-by-side form fields don't stack at 320px</div>
+        <div class="scenario-meta">Fixed-width fields sit side by side no matter how narrow the viewport gets.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Set DevTools to 320px. Look at the form below.
+      <span class="wcag-tag">WCAG 1.4.10</span><span class="tool-tag">Chrome DevTools</span><br><br>
+      <strong>What to look for:</strong> Both fields are fixed at 200px wide with no wrap. At 320px they force horizontal overflow instead of stacking into a single column.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 8: fixed-width fields, no flex-wrap</div>
+      <div class="demo-inner" style="overflow:hidden;">
+        <div style="display:flex;gap:12px;">
+          <div style="width:200px;flex-shrink:0;">
+            <label style="display:block;font-size:0.82rem;color:var(--text-3);margin-bottom:4px;">First name</label>
+            <input style="width:200px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:0.88rem;color:var(--text);font-family:'DM Sans',sans-serif;" />
+          </div>
+          <div style="width:200px;flex-shrink:0;">
+            <label style="display:block;font-size:0.82rem;color:var(--text-3);margin-bottom:4px;">Last name</label>
+            <input style="width:200px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:0.88rem;color:var(--text);font-family:'DM Sans',sans-serif;" />
+          </div>
+        </div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 1.4.10</span>
+          <span class="badge badge-wcag">Two 200px fields + gap = 412px on a 320px viewport</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S10: card grid doesn't collapse -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">9</div>
+      <div>
+        <div class="scenario-title">Card grid doesn't collapse to a single column</div>
+        <div class="scenario-meta">Fixed three-column grid at any viewport width.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Set DevTools to 320px. Look at the card grid below.
+      <span class="wcag-tag">WCAG 1.4.10</span><span class="tool-tag">Chrome DevTools</span><br><br>
+      <strong>What to look for:</strong> <code>grid-template-columns</code> is hardcoded to three fixed 160px columns. At 320px, this needs roughly 500px, forcing horizontal overflow instead of collapsing to one column.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 9: fixed three-column grid</div>
+      <div class="demo-inner" style="overflow:hidden;">
+        <div style="display:grid;grid-template-columns:160px 160px 160px;gap:12px;">
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:0.82rem;color:var(--text-2);">Card 1</div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:0.82rem;color:var(--text-2);">Card 2</div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:0.82rem;color:var(--text-2);">Card 3</div>
+        </div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 1.4.10</span>
+          <span class="badge badge-wcag">3 × 160px fixed columns = 504px on a 320px viewport</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S11: image extends beyond viewport -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">10</div>
+      <div>
+        <div class="scenario-title">Image extends beyond the viewport width</div>
+        <div class="scenario-meta">Fixed pixel width, no max-width constraint.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Set DevTools to 320px. Look at the image below.
+      <span class="wcag-tag">WCAG 1.4.10</span><span class="tool-tag">Chrome DevTools</span><br><br>
+      <strong>What to look for:</strong> The image is hardcoded to <code>width:500px</code> with no <code>max-width:100%</code>. At 320px it forces the whole page to scroll horizontally.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 10: fixed-width image, no max-width</div>
+      <div class="demo-inner" style="overflow:hidden;">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='120'%3E%3Crect width='500' height='120' fill='%231e1e1e' rx='6'/%3E%3Crect x='24' y='70' width='30' height='30' fill='%23f87171' opacity='.7'/%3E%3Crect x='64' y='55' width='30' height='45' fill='%23f87171' opacity='.8'/%3E%3Crect x='104' y='35' width='30' height='65' fill='%23f87171'/%3E%3Ctext x='250' y='64' text-anchor='middle' font-family='DM Sans,sans-serif' font-size='13' fill='%238a8a8a'%3E500px wide, fixed%3C/text%3E%3C/svg%3E" width="500" height="120" style="width:500px;height:120px;display:block;border-radius:6px;" />
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 1.4.10</span>
+          <span class="badge badge-wcag">width:500px with no max-width:100%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S12: sticky header eats too much viewport height -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">11</div>
+      <div>
+        <div class="scenario-title">Sticky header consumes too much viewport height</div>
+        <div class="scenario-meta">A tall sticky header leaves barely any room to read content underneath.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Imagine the box below is a phone screen. Scroll inside it.
+      <span class="wcag-tag">WCAG 1.4.10</span><br><br>
+      <strong>What to look for:</strong> The sticky header is 90px tall inside a 220px-tall viewport mock: 41% of the visible height, well over the 30% guideline. On a real narrow-height phone this pins most of the screen to branding, not content.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 11: sticky header at 41% of viewport height</div>
+      <div class="demo-inner">
+        <div style="position:relative;height:220px;overflow-y:auto;border-radius:8px;border:1px solid var(--border);">
+          <div style="position:sticky;top:0;height:90px;background:#1e1e1e;border-bottom:1px solid var(--red);display:flex;align-items:center;justify-content:center;font-size:0.82rem;color:var(--red);z-index:10;">Sticky header: 90px of 220px (41%)</div>
+          <div style="padding:12px 16px;font-size:0.85rem;color:var(--text-2);">
+            <p style="margin-bottom:10px;">Only a sliver of this content is visible below the header. Scroll to see the rest, but the header keeps eating the same fixed 90px on every screen.</p>
+            <p style="margin-bottom:10px;">Line two of body content.</p>
+            <p style="margin-bottom:10px;">Line three of body content.</p>
+            <p>Line four of body content.</p>
+          </div>
+        </div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 1.4.10</span>
+          <span class="badge badge-wcag">Fixed 90px header on a short viewport exceeds 30%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S13: PASS -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-pass">12</div>
       <div>
         <div class="scenario-title">Correct implementations: passing examples</div>
         <div class="scenario-meta">Reflow-safe layout. Reduced-motion respected. Carousel with pause.</div>
@@ -411,7 +548,7 @@
       <span class="wcag-tag">WCAG 1.4.4 · 1.4.10 · 2.2.2 · 2.3.3</span><span class="tool-tag">Chrome DevTools</span>
     </div>
     <div class="demo">
-      <div class="demo-label">Scenario 8: correct implementations</div>
+      <div class="demo-label">Scenario 12: correct implementations</div>
       <div class="demo-inner" style="display:flex;flex-direction:column;gap:1.5rem;">
 
         <!-- Fluid layout -->
@@ -453,9 +590,101 @@
           </div>
         </div>
 
+        <!-- Nav collapses to a menu (fixes S2) -->
+        <div>
+          <p style="font-size:0.82rem;color:var(--text-3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em;font-weight:500;">Fixes Scenario 2: nav collapses to a menu instead of overflowing</p>
+          <nav style="background:#1e1e1e;padding:0 1rem;display:flex;align-items:center;height:44px;border-radius:8px;" aria-label="Passing nav example">
+            <details>
+              <summary style="cursor:pointer;color:var(--text-2);font-size:0.88rem;list-style:none;">☰ Menu</summary>
+              <ul style="list-style:none;background:#1e1e1e;border:1px solid var(--border);border-radius:8px;padding:6px 0;margin-top:6px;min-width:160px;">
+                <li><a href="#" onclick="return false" style="display:block;padding:8px 16px;color:var(--text-2);text-decoration:none;font-size:0.88rem;">Home</a></li>
+                <li><a href="#" onclick="return false" style="display:block;padding:8px 16px;color:var(--text-2);text-decoration:none;font-size:0.88rem;">Products</a></li>
+                <li><a href="#" onclick="return false" style="display:block;padding:8px 16px;color:var(--text-2);text-decoration:none;font-size:0.88rem;">About</a></li>
+                <li><a href="#" onclick="return false" style="display:block;padding:8px 16px;color:var(--text-2);text-decoration:none;font-size:0.88rem;">Services</a></li>
+                <li><a href="#" onclick="return false" style="display:block;padding:8px 16px;color:var(--text-2);text-decoration:none;font-size:0.88rem;">Blog</a></li>
+                <li><a href="#" onclick="return false" style="display:block;padding:8px 16px;color:var(--text-2);text-decoration:none;font-size:0.88rem;">Contact</a></li>
+                <li><a href="#" onclick="return false" style="display:block;padding:8px 16px;color:var(--blue);text-decoration:none;font-size:0.88rem;font-weight:500;">Sign in</a></li>
+              </ul>
+            </details>
+          </nav>
+          <p style="font-size:0.8rem;color:var(--text-3);margin-top:4px;">Every link is reachable through the native &lt;details&gt;/&lt;summary&gt; toggle at any viewport width: nothing is cut off ✓</p>
+        </div>
+
+        <!-- min-height instead of height (fixes S3) -->
+        <div>
+          <p style="font-size:0.82rem;color:var(--text-3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em;font-weight:500;">Fixes Scenario 3: min-height instead of height</p>
+          <div style="min-height:80px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 16px;">
+            <p style="font-size:0.9rem;color:var(--text-2);margin-bottom:8px;">This card uses min-height:80px instead of height:80px. At 200% zoom the card simply grows taller: nothing is clipped and the button stays visible.</p>
+            <button style="background:var(--green);color:#000;border:none;border-radius:5px;padding:6px 16px;font-size:0.85rem;cursor:pointer;">Learn more</button>
+          </div>
+        </div>
+
+        <!-- Carousel with pause control (fixes S6) -->
+        <div>
+          <p style="font-size:0.82rem;color:var(--text-3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em;font-weight:500;">Fixes Scenario 6: carousel with a working pause control</p>
+          <div style="position:relative;overflow:hidden;border-radius:8px;background:var(--bg3);height:80px;">
+            <div id="s8-slides" style="display:flex;transition:transform 0.5s ease;height:100%;">
+              <div style="min-width:100%;display:flex;align-items:center;justify-content:center;font-size:0.9rem;color:var(--text-2);">Slide 1: Feature announcement</div>
+              <div style="min-width:100%;display:flex;align-items:center;justify-content:center;font-size:0.9rem;color:var(--text-2);">Slide 2: New product launch</div>
+              <div style="min-width:100%;display:flex;align-items:center;justify-content:center;font-size:0.9rem;color:var(--text-2);">Slide 3: Upcoming event</div>
+            </div>
+          </div>
+          <button id="s8-carousel-toggle" aria-pressed="false" style="background:var(--bg3);color:var(--text-2);border:1px solid var(--border);border-radius:6px;padding:6px 16px;font-size:0.85rem;cursor:pointer;margin-top:8px;">Pause</button>
+          <p style="font-size:0.8rem;color:var(--text-3);margin-top:4px;">Pause stops the auto-advance and keeps it stopped until you press Play again ✓</p>
+        </div>
+
+        <!-- Form fields wrap (fixes S9) -->
+        <div>
+          <p style="font-size:0.82rem;color:var(--text-3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em;font-weight:500;">Fixes Scenario 8: flex-wrap with a flexible basis</p>
+          <div style="display:flex;flex-wrap:wrap;gap:12px;">
+            <div style="flex:1 1 140px;">
+              <label style="display:block;font-size:0.82rem;color:var(--text-3);margin-bottom:4px;">First name</label>
+              <input style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:0.88rem;color:var(--text);font-family:'DM Sans',sans-serif;" />
+            </div>
+            <div style="flex:1 1 140px;">
+              <label style="display:block;font-size:0.82rem;color:var(--text-3);margin-bottom:4px;">Last name</label>
+              <input style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:0.88rem;color:var(--text);font-family:'DM Sans',sans-serif;" />
+            </div>
+          </div>
+          <p style="font-size:0.8rem;color:var(--text-3);margin-top:4px;">flex-wrap:wrap and a flexible basis let the fields stack into a single column once the container is too narrow for both ✓</p>
+        </div>
+
+        <!-- Card grid collapses (fixes S10) -->
+        <div>
+          <p style="font-size:0.82rem;color:var(--text-3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em;font-weight:500;">Fixes Scenario 9: auto-fit grid with a minmax column</p>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:12px;">
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:0.82rem;color:var(--text-2);">Card 1</div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:0.82rem;color:var(--text-2);">Card 2</div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:0.82rem;color:var(--text-2);">Card 3</div>
+          </div>
+          <p style="font-size:0.8rem;color:var(--text-3);margin-top:4px;">grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)) collapses to a single column once 320px can't fit two 180px cards ✓</p>
+        </div>
+
+        <!-- Image scales down (fixes S11) -->
+        <div>
+          <p style="font-size:0.82rem;color:var(--text-3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em;font-weight:500;">Fixes Scenario 10: max-width:100% instead of a fixed width</p>
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='120'%3E%3Crect width='500' height='120' fill='%231e1e1e' rx='6'/%3E%3Crect x='24' y='70' width='30' height='30' fill='%234ade80' opacity='.7'/%3E%3Crect x='64' y='55' width='30' height='45' fill='%234ade80' opacity='.8'/%3E%3Crect x='104' y='35' width='30' height='65' fill='%234ade80'/%3E%3Ctext x='250' y='64' text-anchor='middle' font-family='DM Sans,sans-serif' font-size='13' fill='%238a8a8a'%3Escales to fit%3C/text%3E%3C/svg%3E" width="500" height="120" style="max-width:100%;height:auto;display:block;border-radius:6px;" />
+          <p style="font-size:0.8rem;color:var(--text-3);margin-top:4px;">max-width:100% and height:auto let the image shrink to fit any container, never forcing overflow ✓</p>
+        </div>
+
+        <!-- Sticky header capped (fixes S12) -->
+        <div>
+          <p style="font-size:0.82rem;color:var(--text-3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em;font-weight:500;">Fixes Scenario 11: header capped well under 30% of the viewport</p>
+          <div style="position:relative;height:220px;overflow-y:auto;border-radius:8px;border:1px solid var(--border);">
+            <div style="position:sticky;top:0;height:44px;background:#1e1e1e;border-bottom:1px solid var(--green);display:flex;align-items:center;justify-content:center;font-size:0.82rem;color:var(--green);z-index:10;">Sticky header: 44px of 220px (20%)</div>
+            <div style="padding:12px 16px;font-size:0.85rem;color:var(--text-2);">
+              <p style="margin-bottom:10px;">Most of the viewport is now content, not header. Scrolling still shows the header, but it never crowds out what the reader came for.</p>
+              <p style="margin-bottom:10px;">Line two of body content.</p>
+              <p style="margin-bottom:10px;">Line three of body content.</p>
+              <p>Line four of body content.</p>
+            </div>
+          </div>
+          <p style="font-size:0.8rem;color:var(--text-3);margin-top:4px;">44px on a 220px viewport is 20%, comfortably under the 30% guideline ✓</p>
+        </div>
+
         <div class="result-row">
           <span class="badge badge-pass">Pass</span>
-          <span class="badge badge-wcag">WCAG 1.4.4 · 1.4.10 · 2.3.3</span>
+          <span class="badge badge-wcag">WCAG 1.4.4 · 1.4.10 · 2.2.2 · 2.3.3</span>
         </div>
       </div>
     </div>
@@ -479,6 +708,34 @@
       s6current = (s6current + 1) % 3;
       s6slides.style.transform = 'translateX(-' + (s6current * 100) + '%)';
     }, 3000);
+  }
+
+  var s8current = 0;
+  var s8slides = document.getElementById('s8-slides');
+  var s8toggle = document.getElementById('s8-carousel-toggle');
+  var s8timer = null;
+
+  function s8start() {
+    s8timer = setInterval(function() {
+      s8current = (s8current + 1) % 3;
+      s8slides.style.transform = 'translateX(-' + (s8current * 100) + '%)';
+    }, 3000);
+  }
+
+  if (s8slides && s8toggle) {
+    s8start();
+    s8toggle.addEventListener('click', function() {
+      var paused = s8toggle.getAttribute('aria-pressed') === 'true';
+      if (paused) {
+        s8start();
+        s8toggle.textContent = 'Pause';
+        s8toggle.setAttribute('aria-pressed', 'false');
+      } else {
+        clearInterval(s8timer);
+        s8toggle.textContent = 'Play';
+        s8toggle.setAttribute('aria-pressed', 'true');
+      }
+    });
   }
 </script>
 </body>

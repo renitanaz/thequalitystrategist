@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>16 A11y Test Playground - Dynamic Content | The Quality Strategist</title>
-  <meta name="description" content="Practice testing ARIA live region failures. Eight interactive scenarios covering toast notifications, filter results, loading states, form errors and more." />
+  <meta name="description" content="Practice testing ARIA live region failures. Eleven interactive scenarios covering toast notifications, filter results, loading states, form errors, chat feeds, auto-complete suggestions and more." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
   <style>
@@ -126,7 +126,7 @@
 <header class="page-header">
   <div class="pg-label">A11y Test Playground</div>
   <h1>Dynamic Content Playground</h1>
-  <p>Eight interactive scenarios. Enable NVDA, VoiceOver or TalkBack, move focus away from each demo area, then trigger the update. Listen for what gets announced: and what doesn't.</p>
+  <p>Eleven interactive scenarios. Enable NVDA, VoiceOver or TalkBack, move focus away from each demo area, then trigger the update. Listen for what gets announced: and what doesn't.</p>
   <div class="how-to" role="note">
     <span aria-hidden="true">&#127919;</span>
     <span><strong>Key rule:</strong> always move focus to a heading or paragraph BEFORE triggering each scenario. Live regions only prove themselves when focus is elsewhere.</span>
@@ -402,72 +402,261 @@
 
   <hr class="divider" />
 
-  <!-- S8: PASS, correct implementations -->
+  <!-- S8: form error summary not announced -->
   <div class="scenario">
     <div class="scenario-header">
-      <div class="scenario-num num-pass">8</div>
+      <div class="scenario-num num-fail">8</div>
+      <div>
+        <div class="scenario-title">Form error summary not announced on submit</div>
+        <div class="scenario-meta">Errors appear above the form. Focus stays on the submit button. Nothing announced.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Focus on the Submit button. Click it without filling in the fields. Listen to NVDA.
+      <span class="wcag-tag">WCAG 4.1.3</span><span class="wcag-tag">WCAG 3.3.1</span><span class="tool-tag">NVDA</span><br><br>
+      <strong>What to look for:</strong> The error summary appears visually at the top of the form, but focus never moves to it and it has no <code>role="alert"</code>. NVDA keeps reading whatever it was on: nothing tells it a form error just occurred.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 8: form error summary with no live region</div>
+      <div class="demo-inner">
+        <!-- NO role="alert", NO focus management -->
+        <div id="s8-error-summary" style="display:none;margin-bottom:1rem;background:var(--red-bg);border:1px solid rgba(248,113,113,0.25);border-radius:6px;padding:10px 14px;font-size:0.85rem;color:var(--red);">
+          Please fix 2 errors: Name is required. Email is not valid.
+        </div>
+        <label for="s8-name" style="display:block;font-size:0.82rem;color:var(--text-3);margin-bottom:4px;">Name</label>
+        <input id="s8-name" type="text" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:0.88rem;color:var(--text);margin-bottom:0.75rem;" />
+        <label for="s8-email" style="display:block;font-size:0.82rem;color:var(--text-3);margin-bottom:4px;">Email</label>
+        <input id="s8-email" type="text" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:0.88rem;color:var(--text);margin-bottom:1rem;" />
+        <button class="d-btn secondary" onclick="
+          document.getElementById('s8-error-summary').style.display='block';
+          return false;">Submit</button>
+        <div class="announced"><strong>NVDA announces:</strong> nothing: the summary is not in a live region and focus was never moved to it.</div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 4.1.3</span>
+          <span class="badge badge-wcag">Add role="alert" to the summary, and move focus to it on submit</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S9: chat feed new message not announced -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">9</div>
+      <div>
+        <div class="scenario-title">New chat message not announced</div>
+        <div class="scenario-meta">A message lands in the feed. Screen reader hears nothing unless the user navigates back to it.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Focus on the paragraph below. Click "Simulate incoming message." Listen to NVDA.
+      <span class="wcag-tag">WCAG 4.1.3</span><span class="tool-tag">NVDA</span><br><br>
+      <strong>What to look for:</strong> The message bubble appears in the feed visually. NVDA says nothing because the feed container has no <code>aria-live</code>.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 9: chat feed with no live region</div>
+      <div class="demo-inner">
+        <p tabindex="-1" style="font-size:0.88rem;color:var(--text-2);margin-bottom:1rem;">Focus here first, then click the button.</p>
+        <!-- NO aria-live on feed container -->
+        <div id="s9-feed" style="background:var(--bg3);border-radius:6px;padding:10px 14px;margin-bottom:0.75rem;min-height:40px;font-size:0.85rem;color:var(--text-2);">
+          <div>Priya: Can someone review the PR?</div>
+        </div>
+        <button class="d-btn secondary" onclick="
+          var f = document.getElementById('s9-feed');
+          var m = document.createElement('div');
+          m.textContent = 'Dev: On it, reviewing now.';
+          f.appendChild(m);
+          return false;">Simulate incoming message</button>
+        <div class="announced"><strong>NVDA announces:</strong> nothing when the new message arrives: no aria-live on the feed container.</div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 4.1.3</span>
+          <span class="badge badge-wcag">Add aria-live="polite" to the feed container</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S10: auto-complete suggestion count not announced -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">10</div>
+      <div>
+        <div class="scenario-title">Auto-complete suggestion count never announced</div>
+        <div class="scenario-meta">Suggestions appear as you type. NVDA never says how many.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Enable NVDA. Type "de" in the field below.
+      <span class="wcag-tag">WCAG 4.1.3</span><span class="tool-tag">NVDA</span><br><br>
+      <strong>What to look for:</strong> A suggestions list appears visually below the field. NVDA never announces how many suggestions matched, because the suggestions container has no <code>aria-live</code>.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 10: auto-complete with no live region</div>
+      <div class="demo-inner">
+        <label for="s10-input" style="display:block;font-size:0.82rem;color:var(--text-3);margin-bottom:4px;">Search categories</label>
+        <input id="s10-input" type="text" placeholder="Type to search..." style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:0.88rem;color:var(--text);margin-bottom:0.5rem;" oninput="autocompleteSearch(this.value)" />
+        <!-- NO aria-live on suggestions container -->
+        <div id="s10-suggestions" style="font-size:0.85rem;color:var(--text-2);"></div>
+        <div class="announced"><strong>NVDA announces:</strong> nothing about the suggestion count: no live region on the results container.</div>
+        <div class="result-row">
+          <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-wcag">WCAG 4.1.3</span>
+          <span class="badge badge-wcag">Add a visually-hidden aria-live region announcing "N suggestions available"</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S11: PASS, correct implementations -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-pass">11</div>
       <div>
         <div class="scenario-title">Correct live regions: passing examples</div>
-        <div class="scenario-meta">Toast with role="status". Alert for errors. Atomic cart counter. Debounced character count.</div>
+        <div class="scenario-meta">Nine corrected implementations, one for every failure pattern above.</div>
       </div>
     </div>
     <div class="scenario-instruction">
       <strong>What to do:</strong> Focus on the heading above, then trigger each action. Listen to NVDA for each announcement.
       <span class="wcag-tag">WCAG 4.1.3</span><span class="tool-tag">NVDA</span><br><br>
-      <strong>What to look for:</strong> Each update announces correctly: status waits politely, alert fires immediately, cart announces full context, character count only announces on pause.
+      <strong>What to look for:</strong> Each update announces correctly: status waits politely, alert fires immediately, cart and filter results announce full context, character count only announces on pause, and focus moves to the form error summary.
     </div>
     <div class="demo">
-      <div class="demo-label">Scenario 8: correct live region implementations</div>
+      <div class="demo-label">Scenario 11: correct live region implementations</div>
       <div class="demo-inner" style="display:flex;flex-direction:column;gap:1.5rem;position:relative;">
 
-        <!-- Pre-existing live region containers -->
-        <div id="s8-toast-region" role="status" aria-live="polite" aria-atomic="true" class="visually-hidden"></div>
-        <div id="s8-alert-region" role="alert" aria-live="assertive" aria-atomic="true" class="visually-hidden"></div>
+        <!-- Pre-existing live region containers (fixes S2) -->
+        <div id="s11-toast-region" role="status" aria-live="polite" aria-atomic="true" class="visually-hidden"></div>
+        <div id="s11-alert-region" role="alert" aria-live="assertive" aria-atomic="true" class="visually-hidden"></div>
 
-        <!-- Toast -->
+        <!-- Toast (fixes S1 + S2) -->
         <div>
-          <p style="font-size:0.82rem;color:var(--text-3);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.06em;font-weight:500;">Success toast (role="status")</p>
+          <p style="font-size:0.82rem;color:var(--text-3);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.06em;font-weight:500;">Success toast (role="status", pre-existing container)</p>
           <button class="d-btn secondary" onclick="
-            var r = document.getElementById('s8-toast-region');
+            var r = document.getElementById('s11-toast-region');
             r.textContent = 'Item added to cart';
-            var t = document.getElementById('s8-toast-visual');
+            var t = document.getElementById('s11-toast-visual');
             t.style.display='flex';
             setTimeout(function(){ t.style.display='none'; r.textContent=''; }, 3000);
             return false;">Add to cart</button>
-          <div id="s8-toast-visual" style="display:none;margin-top:8px;background:#0d2a0d;border:1px solid #4ade80;border-radius:6px;padding:8px 14px;font-size:0.85rem;color:#4ade80;">✓ Item added to cart</div>
+          <div id="s11-toast-visual" style="display:none;margin-top:8px;background:#0d2a0d;border:1px solid #4ade80;border-radius:6px;padding:8px 14px;font-size:0.85rem;color:#4ade80;">✓ Item added to cart</div>
           <div class="announced"><strong>NVDA announces:</strong> "Item added to cart": politely, without interrupting ✓</div>
+        </div>
+
+        <!-- Filter results (fixes S3) -->
+        <div>
+          <p style="font-size:0.82rem;color:var(--text-3);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.06em;font-weight:500;">Filter results (aria-live="polite" on results wrapper)</p>
+          <div style="display:flex;gap:8px;margin-bottom:0.75rem;flex-wrap:wrap;">
+            <button class="d-btn secondary" onclick="filterResultsPass('all')">All</button>
+            <button class="d-btn secondary" onclick="filterResultsPass('design')">Design</button>
+            <button class="d-btn secondary" onclick="filterResultsPass('dev')">Development</button>
+          </div>
+          <div id="s11-filter-results">
+            <div data-cat="design" style="padding:6px 10px;background:var(--bg3);border-radius:5px;margin-bottom:6px;font-size:0.85rem;color:var(--text-2);">Design system review</div>
+            <div data-cat="dev" style="padding:6px 10px;background:var(--bg3);border-radius:5px;margin-bottom:6px;font-size:0.85rem;color:var(--text-2);">API integration testing</div>
+            <div data-cat="design" style="padding:6px 10px;background:var(--bg3);border-radius:5px;margin-bottom:6px;font-size:0.85rem;color:var(--text-2);">Colour contrast audit</div>
+            <div data-cat="dev" style="padding:6px 10px;background:var(--bg3);border-radius:5px;margin-bottom:6px;font-size:0.85rem;color:var(--text-2);">CI/CD pipeline setup</div>
+          </div>
+          <div aria-live="polite" aria-atomic="true" id="s11-filter-count" style="font-size:0.82rem;color:var(--text-3);margin-top:4px;">4 results</div>
+          <div class="announced"><strong>NVDA announces:</strong> "2 results" (or however many match): the count is in a live region ✓</div>
+        </div>
+
+        <!-- Loading with completion (fixes S4) -->
+        <div>
+          <p style="font-size:0.82rem;color:var(--text-3);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.06em;font-weight:500;">Loading with completion announcement</p>
+          <button class="d-btn secondary" id="s11-load-btn" onclick="startLoadingPass()">Load content</button>
+          <div id="s11-load-status" aria-live="polite" aria-atomic="true" style="margin-top:0.75rem;color:var(--text-3);font-size:0.88rem;"></div>
+          <div id="s11-load-content" style="display:none;margin-top:0.75rem;background:var(--bg3);border-radius:6px;padding:1rem;font-size:0.85rem;color:var(--text-2);">Content loaded successfully. Here are your results.</div>
+          <div class="announced"><strong>NVDA announces:</strong> "Loading...", then "Content loaded" when it finishes ✓</div>
         </div>
 
         <!-- Error alert -->
         <div>
           <p style="font-size:0.82rem;color:var(--text-3);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.06em;font-weight:500;">Error alert (role="alert")</p>
           <button class="d-btn secondary" onclick="
-            var r = document.getElementById('s8-alert-region');
+            var r = document.getElementById('s11-alert-region');
             r.textContent = 'Session expired. Please log in again.';
-            document.getElementById('s8-alert-visual').style.display='block';
+            document.getElementById('s11-alert-visual').style.display='block';
             return false;">Trigger session error</button>
-          <div id="s8-alert-visual" style="display:none;margin-top:8px;background:var(--red-bg);border:1px solid rgba(248,113,113,0.3);border-radius:6px;padding:8px 14px;font-size:0.85rem;color:var(--red);">Session expired. Please log in again.</div>
+          <div id="s11-alert-visual" style="display:none;margin-top:8px;background:var(--red-bg);border:1px solid rgba(248,113,113,0.3);border-radius:6px;padding:8px 14px;font-size:0.85rem;color:var(--red);">Session expired. Please log in again.</div>
           <div class="announced"><strong>NVDA announces:</strong> "Session expired. Please log in again.": immediately, interrupts if needed ✓</div>
         </div>
 
         <!-- Atomic cart counter -->
         <div>
           <p style="font-size:0.82rem;color:var(--text-3);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.06em;font-weight:500;">Cart counter with aria-atomic="true"</p>
-          <div aria-live="polite" aria-atomic="true" id="s8-cart" style="display:inline-flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 14px;margin-bottom:8px;font-size:0.88rem;color:var(--text-2);">
-            Cart: <strong id="s8-count" style="color:var(--text);">0</strong> items
+          <div aria-live="polite" aria-atomic="true" id="s11-cart" style="display:inline-flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 14px;margin-bottom:8px;font-size:0.88rem;color:var(--text-2);">
+            Cart: <strong id="s11-count" style="color:var(--text);">0</strong> items
           </div>
           <br>
           <button class="d-btn secondary" onclick="
-            var c = document.getElementById('s8-count');
+            var c = document.getElementById('s11-count');
             c.textContent = parseInt(c.textContent) + 1;
             return false;">Add item</button>
           <div class="announced"><strong>NVDA announces:</strong> "Cart: 1 items": full context, not just the number ✓</div>
         </div>
 
+        <!-- Debounced character counter -->
+        <div>
+          <p style="font-size:0.82rem;color:var(--text-3);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.06em;font-weight:500;">Debounced character counter</p>
+          <textarea id="s11-textarea" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:0.88rem;color:var(--text);font-family:'DM Sans',sans-serif;resize:vertical;min-height:80px;" placeholder="Type here..." maxlength="200" oninput="debouncedCount(this.value)"></textarea>
+          <div id="s11-counter" aria-live="polite" style="font-size:0.82rem;color:var(--text-3);margin-top:6px;">0 / 200 characters</div>
+          <div class="announced"><strong>NVDA announces:</strong> the count only after you pause typing for a moment, not on every keystroke ✓</div>
+        </div>
+
+        <!-- Form error summary (fixes S8) -->
+        <div>
+          <p style="font-size:0.82rem;color:var(--text-3);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.06em;font-weight:500;">Form error summary (role="alert", focus moved on submit)</p>
+          <div id="s11-error-summary" role="alert" tabindex="-1" style="display:none;margin-bottom:1rem;background:var(--red-bg);border:1px solid rgba(248,113,113,0.25);border-radius:6px;padding:10px 14px;font-size:0.85rem;color:var(--red);">Please fix 2 errors: Name is required. Email is not valid.</div>
+          <label for="s11-name" style="display:block;font-size:0.82rem;color:var(--text-3);margin-bottom:4px;">Name</label>
+          <input id="s11-name" type="text" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:0.88rem;color:var(--text);margin-bottom:0.75rem;" />
+          <label for="s11-email" style="display:block;font-size:0.82rem;color:var(--text-3);margin-bottom:4px;">Email</label>
+          <input id="s11-email" type="text" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:0.88rem;color:var(--text);margin-bottom:1rem;" />
+          <button class="d-btn secondary" onclick="
+            var s = document.getElementById('s11-error-summary');
+            s.style.display='block';
+            s.focus();
+            return false;">Submit</button>
+          <div class="announced"><strong>NVDA announces:</strong> "Please fix 2 errors: Name is required. Email is not valid.": role="alert" fires it, and moving focus to the summary reinforces it ✓</div>
+        </div>
+
+        <!-- Chat feed (fixes S9) -->
+        <div>
+          <p style="font-size:0.82rem;color:var(--text-3);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.06em;font-weight:500;">Chat feed (aria-live="polite" on feed container)</p>
+          <div id="s11-feed" aria-live="polite" style="background:var(--bg3);border-radius:6px;padding:10px 14px;margin-bottom:0.75rem;min-height:40px;font-size:0.85rem;color:var(--text-2);">
+            <div>Priya: Can someone review the PR?</div>
+          </div>
+          <button class="d-btn secondary" onclick="
+            var f = document.getElementById('s11-feed');
+            var m = document.createElement('div');
+            m.textContent = 'Dev: On it, reviewing now.';
+            f.appendChild(m);
+            return false;">Simulate incoming message</button>
+          <div class="announced"><strong>NVDA announces:</strong> "Dev: On it, reviewing now." as it arrives ✓</div>
+        </div>
+
+        <!-- Auto-complete (fixes S10) -->
+        <div>
+          <p style="font-size:0.82rem;color:var(--text-3);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.06em;font-weight:500;">Auto-complete (visually-hidden live region announces the count)</p>
+          <label for="s11-ac-input" style="display:block;font-size:0.82rem;color:var(--text-3);margin-bottom:4px;">Search categories</label>
+          <input id="s11-ac-input" type="text" placeholder="Type to search..." style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:0.88rem;color:var(--text);margin-bottom:0.5rem;" oninput="autocompleteSearchPass(this.value)" />
+          <div id="s11-ac-suggestions" style="font-size:0.85rem;color:var(--text-2);"></div>
+          <div id="s11-ac-count" aria-live="polite" class="visually-hidden"></div>
+          <div class="announced"><strong>NVDA announces:</strong> "3 suggestions available" as you type, from the hidden live region ✓</div>
+        </div>
+
         <div class="result-row">
           <span class="badge badge-pass">Pass</span>
           <span class="badge badge-wcag">WCAG 4.1.3</span>
-          <span class="badge badge-wcag">Pre-existing containers · Correct roles · aria-atomic</span>
+          <span class="badge badge-wcag">Pre-existing containers · Correct roles · aria-atomic · Focus management</span>
         </div>
       </div>
     </div>
@@ -492,6 +681,31 @@ function filterResults(cat) {
   // No live region update: this is the failure
 }
 
+var AUTOCOMPLETE_OPTIONS = ['Design', 'Development', 'Deployment', 'Documentation', 'Debugging'];
+function autocompleteSearch(value) {
+  var box = document.getElementById('s10-suggestions');
+  box.innerHTML = '';
+  if (!value) return;
+  var matches = AUTOCOMPLETE_OPTIONS.filter(function(opt) {
+    return opt.toLowerCase().indexOf(value.toLowerCase()) === 0;
+  });
+  matches.forEach(function(m) {
+    var row = document.createElement('div');
+    row.style.cssText = 'padding:6px 10px;background:var(--bg3);border-radius:5px;margin-bottom:4px;';
+    row.textContent = m;
+    box.appendChild(row);
+  });
+  // No live region update with the match count: this is the failure
+}
+
+var s11DebounceTimer = null;
+function debouncedCount(value) {
+  clearTimeout(s11DebounceTimer);
+  s11DebounceTimer = setTimeout(function() {
+    document.getElementById('s11-counter').textContent = value.length + ' / 200 characters';
+  }, 800);
+}
+
 function startLoading() {
   var btn = document.getElementById('s4-btn');
   var spinner = document.getElementById('s4-spinner');
@@ -505,6 +719,48 @@ function startLoading() {
     btn.disabled = false;
     // No live region update on completion: this is the failure
   }, 3000);
+}
+
+function filterResultsPass(cat) {
+  var items = document.querySelectorAll('#s11-filter-results [data-cat]');
+  var visible = 0;
+  items.forEach(function(item) {
+    var show = (cat === 'all' || item.dataset.cat === cat);
+    item.style.display = show ? 'block' : 'none';
+    if (show) visible++;
+  });
+  document.getElementById('s11-filter-count').textContent = visible + ' results';
+}
+
+function startLoadingPass() {
+  var btn = document.getElementById('s11-load-btn');
+  var status = document.getElementById('s11-load-status');
+  var content = document.getElementById('s11-load-content');
+  btn.disabled = true;
+  status.textContent = 'Loading...';
+  content.style.display = 'none';
+  setTimeout(function() {
+    status.textContent = 'Content loaded';
+    content.style.display = 'block';
+    btn.disabled = false;
+  }, 3000);
+}
+
+function autocompleteSearchPass(value) {
+  var box = document.getElementById('s11-ac-suggestions');
+  var count = document.getElementById('s11-ac-count');
+  box.innerHTML = '';
+  if (!value) { count.textContent = ''; return; }
+  var matches = AUTOCOMPLETE_OPTIONS.filter(function(opt) {
+    return opt.toLowerCase().indexOf(value.toLowerCase()) === 0;
+  });
+  matches.forEach(function(m) {
+    var row = document.createElement('div');
+    row.style.cssText = 'padding:6px 10px;background:var(--bg3);border-radius:5px;margin-bottom:4px;';
+    row.textContent = m;
+    box.appendChild(row);
+  });
+  count.textContent = matches.length + ' suggestion' + (matches.length === 1 ? '' : 's') + ' available';
 }
 </script>
 

@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>A11y Test Playground - Keyboard Testing | The Quality Strategist</title>
-<meta name="description" content="Practice the keyboard testing 6-step sequence. Five scenarios covering tab reach, tab order, activation, component interaction, and keyboard traps: all testable with keyboard only." />
+<meta name="description" content="Practice the keyboard testing 6-step sequence. Five broken scenarios covering tab reach, tab order, activation, component interaction, and keyboard traps, plus a sixth scenario showing each one fixed." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
@@ -46,6 +46,7 @@
   .scenario-header { display:flex; align-items:center; gap:12px; margin-bottom:1rem; }
   .scenario-num { width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-family:'DM Serif Display',serif; font-size:1rem; font-weight:700; flex-shrink:0; }
   .num-fail { background:var(--red-bg); color:var(--red); border:1px solid rgba(248,113,113,0.2); }
+  .num-pass { background:var(--green-bg); color:var(--green); border:1px solid rgba(74,222,128,0.2); }
   .scenario-title { font-size:1rem; font-weight:500; color:var(--text); }
   .scenario-meta { font-size:0.75rem; color:var(--text-3); margin-top:2px; }
   .scenario-instruction { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:0.85rem 1.1rem; margin-bottom:1rem; font-size:0.85rem; color:var(--text-2); }
@@ -100,7 +101,11 @@
   .result-row { display:flex; gap:10px; margin-top:1rem; flex-wrap:wrap; }
   .badge { font-size:0.72rem; padding:3px 10px; border-radius:99px; font-weight:600; letter-spacing:0.04em; }
   .badge-fail { background:var(--red-bg); color:var(--red); border:1px solid rgba(248,113,113,0.25); }
+  .badge-pass { background:var(--green-bg); color:var(--green); border:1px solid rgba(74,222,128,0.25); }
   .badge-wcag { background:var(--bg3); color:var(--text-3); border:1px solid var(--border); }
+  .p6-label { font-size:0.82rem; color:var(--text-3); margin-bottom:0.5rem; text-transform:uppercase; letter-spacing:0.06em; font-weight:500; }
+  .p6-item { margin-bottom:1.5rem; }
+  .p6-item:last-child { margin-bottom:0; }
 
   .section-divider { border:none; border-top:1px solid var(--border); margin:2.5rem 0; }
 
@@ -178,7 +183,7 @@
 <header class="page-header">
   <div class="pg-label">A11y Test Playground</div>
   <h1>A11y Test Playground: Keyboard Testing</h1>
-  <p>Five scenarios covering steps 1, 2, 4, 5, and 6 of the 6-step keyboard test sequence: tab reach, tab order, activation, component interaction, and keyboard traps. All intentionally broken.</p>
+  <p>Five broken scenarios covering steps 1, 2, 4, 5, and 6 of the 6-step keyboard test sequence: tab reach, tab order, activation, component interaction, and keyboard traps. A sixth scenario shows each one fixed, so you can hear and feel what "correct" is too.</p>
   <div class="how-to" role="note">
     <span>🎯</span>
     <span>How to use: unplug your mouse. Press <strong>Tab</strong>, <strong>Enter</strong>, <strong>Space</strong>, and <strong>Escape</strong>. Find what does not work.</span>
@@ -359,6 +364,84 @@
     </div>
   </div>
 
+  <hr class="section-divider" />
+
+  <!-- SCENARIO 6: correct keyboard behaviour -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-pass" aria-hidden="true">6</div>
+      <div>
+        <div class="scenario-title">Correct keyboard behaviour: passing examples</div>
+        <div class="scenario-meta">The fix for each of the five failures above.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Tab through each item below the same way you tested its broken counterpart above.
+      <span class="wcag-tag">WCAG 2.1.1</span><span class="wcag-tag">WCAG 2.4.3</span><span class="wcag-tag">WCAG 4.1.2</span><span class="wcag-tag">WCAG 2.1.2</span><br>
+      <strong>What to look for:</strong> Every element is reachable, activates with Space or Enter, exposes its state, and lets you leave with Escape.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 6: fixed versions of scenarios 1–5</div>
+
+      <div class="p6-item">
+        <p class="p6-label">Fixes Scenario 1: real &lt;button&gt; element</p>
+        <button class="p1-real-btn" onclick="document.getElementById('p6-status-1').textContent='Reached and activated with Tab, then Enter or Space: no custom handler needed.'">Add to cart</button>
+        <div class="p1-status" id="p6-status-1">Tab to this button, then press Enter or Space.</div>
+      </div>
+
+      <div class="p6-item">
+        <p class="p6-label">Fixes Scenario 2: DOM order matches visual order, no explicit tabindex</p>
+        <div class="p2-grid">
+          <div class="p2-field"><label for="p6-first">First name</label><input id="p6-first" type="text" /></div>
+          <div class="p2-field"><label for="p6-last">Last name</label><input id="p6-last" type="text" /></div>
+          <div class="p2-field"><label for="p6-email">Email</label><input id="p6-email" type="email" /></div>
+          <div class="p2-field"><label for="p6-phone">Phone</label><input id="p6-phone" type="tel" /></div>
+        </div>
+      </div>
+
+      <div class="p6-item">
+        <p class="p6-label">Fixes Scenario 3: native &lt;input type="checkbox"&gt;</p>
+        <div class="p3-checkbox-row">
+          <input type="checkbox" id="p6-check" style="width:20px;height:20px;accent-color:var(--green);" />
+          <label class="p3-label" for="p6-check">Email me updates</label>
+        </div>
+        <div class="p1-status">Space toggles it natively: no keydown handler to remember.</div>
+      </div>
+
+      <div class="p6-item">
+        <p class="p6-label">Fixes Scenario 4: aria-expanded updates on toggle</p>
+        <button class="p4-trigger" id="p6-trigger" aria-expanded="false" aria-controls="p6-panel" onclick="
+          var expanded = this.getAttribute('aria-expanded') === 'true';
+          this.setAttribute('aria-expanded', String(!expanded));
+          document.getElementById('p6-panel').classList.toggle('open');
+          document.getElementById('p6-arrow').classList.toggle('open');">
+          <span>Shipping details</span>
+          <span class="p4-arrow" id="p6-arrow" aria-hidden="true">▾</span>
+        </button>
+        <div class="p4-panel" id="p6-panel">Orders ship within two business days. International shipping available at checkout.</div>
+      </div>
+
+      <div class="p6-item">
+        <p class="p6-label">Fixes Scenario 5: Escape closes, close button reachable by keyboard</p>
+        <button class="p5-trigger" id="p6-open">Open dialog</button>
+        <div class="p5-modal" id="p6-modal" role="dialog" aria-modal="true" aria-label="Newsletter signup">
+          <p>Subscribe to our newsletter. Press Escape, or Tab to Close, to leave.</p>
+          <input type="email" id="p6-email-input" placeholder="Email address" aria-label="Email address" />
+          <a href="#" id="p6-link" onclick="return false">Privacy policy</a>
+          <button class="p1-real-btn" id="p6-close" style="margin-top:4px;">Close</button>
+        </div>
+      </div>
+
+      <div class="result-row">
+        <span class="badge badge-pass">Pass</span>
+        <span class="badge badge-wcag">WCAG 2.1.1</span>
+        <span class="badge badge-wcag">WCAG 2.4.3</span>
+        <span class="badge badge-wcag">WCAG 4.1.2</span>
+        <span class="badge badge-wcag">WCAG 2.1.2</span>
+      </div>
+    </div>
+  </div>
+
 </main>
 
 <footer>
@@ -388,6 +471,42 @@
     } else {
       p5email.focus();
     }
+  });
+
+  // Scenario 6: correct modal, focus trap plus a working Escape and Close button
+  const p6open = document.getElementById('p6-open');
+  const p6modal = document.getElementById('p6-modal');
+  const p6emailInput = document.getElementById('p6-email-input');
+  const p6link = document.getElementById('p6-link');
+  const p6close = document.getElementById('p6-close');
+  const p6focusable = [p6emailInput, p6link, p6close];
+
+  function closeP6Modal() {
+    p6modal.classList.remove('open');
+    p6open.focus();
+  }
+
+  p6open.addEventListener('click', function() {
+    p6modal.classList.add('open');
+    p6emailInput.focus();
+  });
+
+  p6close.addEventListener('click', closeP6Modal);
+
+  p6modal.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeP6Modal();
+      return;
+    }
+    if (e.key !== 'Tab') return;
+    e.preventDefault();
+    var idx = p6focusable.indexOf(document.activeElement);
+    if (e.shiftKey) {
+      idx = (idx <= 0) ? p6focusable.length - 1 : idx - 1;
+    } else {
+      idx = (idx === p6focusable.length - 1) ? 0 : idx + 1;
+    }
+    p6focusable[idx].focus();
   });
 </script>
 

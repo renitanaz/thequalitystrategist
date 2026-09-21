@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>20 A11y Test Playground - NVDA | The Quality Strategist</title>
-  <meta name="description" content="Practice testing with NVDA. Eight scenarios covering headings, links, images, forms, tables, and live regions: with expected NVDA announcements for each." />
+  <meta name="description" content="Practice testing with NVDA. Eleven scenarios covering page titles, landmarks, headings, links, images, forms, tables, custom widgets, and live regions: with expected NVDA announcements for each." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
   <style>
@@ -122,10 +122,14 @@
 <header class="page-header">
   <div class="pg-label">A11y Test Playground</div>
   <h1>NVDA Playground</h1>
-  <p>Eight scenarios with paired failure and pass examples. Enable NVDA + Firefox before you start. Each scenario shows what NVDA announces for the failure and what it should announce for the correct implementation.</p>
+  <p>Eleven scenarios with paired failure and pass examples, covering every pattern in Blog 20's "What to Test and What to Listen For." Enable NVDA + Firefox before you start. Each scenario shows what NVDA announces for the failure and what it should announce for the correct implementation.</p>
   <div class="how-to" role="note">
     <span aria-hidden="true">&#127919;</span>
-    <span><strong>Core rule:</strong> disconnect your mouse. Navigate with keyboard only. If you cannot complete each task by listening alone: that is a defect.</span>
+    <span><strong>Core rule:</strong> disconnect your mouse. Navigate with keyboard only. If you cannot complete each task by listening alone: that is a defect. Throughout this page, <span class="key">Insert</span> is the NVDA key (also called the NVDA button): NVDA's default modifier for every shortcut below.</span>
+  </div>
+  <div class="how-to" role="note" style="background:var(--blue-bg);border-color:rgba(96,165,250,0.2);color:var(--blue);">
+    <span aria-hidden="true">&#8592;</span>
+    <span>New to these gestures? Warm up on the <a href="20 A11y Test Playground - NVDA Navigation Practice.html" style="color:var(--blue);font-weight:500;">Navigation Practice page</a> first: one clean, fully accessible page with no bugs to find, built for Blog 20's Navigation Methodology.</span>
   </div>
 </header>
 
@@ -146,16 +150,26 @@
       <strong>What to look for:</strong> NVDA skips "Our Services" entirely: it is a div with font-size styling, not an h2.
     </div>
     <div class="demo">
-      <div class="demo-label">Scenario 1: visual heading with no semantic markup</div>
-      <div class="demo-inner">
-        <h2>About us</h2>
-        <p style="font-size:0.88rem;color:var(--text-2);margin-top:4px;margin-bottom:1rem;">We are a quality engineering consultancy.</p>
-        <!-- This looks like a heading but is a div -->
-        <div style="font-size:1.25rem;font-weight:600;color:var(--text);margin-bottom:0.5rem;">Our Services</div>
-        <p style="font-size:0.88rem;color:var(--text-2);">We offer testing strategy, automation, and accessibility auditing.</p>
-        <div class="announced"><strong>NVDA with H:</strong> "About us, heading level 2": then jumps past "Our Services" to the next semantic heading. "Our Services" is not announced as a heading.</div>
+      <div class="demo-label">Scenario 1: visual heading vs semantic heading</div>
+      <div class="demo-inner" style="display:flex;flex-direction:column;gap:1rem;">
+        <div>
+          <p style="font-size:0.8rem;color:var(--text-3);margin-bottom:6px;">Fail: div styled as a heading</p>
+          <h2>About us</h2>
+          <p style="font-size:0.88rem;color:var(--text-2);margin-top:4px;margin-bottom:1rem;">We are a quality engineering consultancy.</p>
+          <!-- This looks like a heading but is a div -->
+          <div style="font-size:1.25rem;font-weight:600;color:var(--text);margin-bottom:0.5rem;">Our Services</div>
+          <p style="font-size:0.88rem;color:var(--text-2);">We offer testing strategy, automation, and accessibility auditing.</p>
+          <div class="announced"><strong>NVDA with H:</strong> "About us, heading level 2": then jumps past "Our Services" to the next semantic heading. "Our Services" is not announced as a heading.</div>
+        </div>
+        <div>
+          <p style="font-size:0.8rem;color:var(--text-3);margin-bottom:6px;">Pass: real h3 element</p>
+          <h3 style="font-size:1.25rem;font-weight:600;color:var(--text);margin-bottom:0.5rem;">Our Approach</h3>
+          <p style="font-size:0.88rem;color:var(--text-2);">We offer testing strategy, automation, and accessibility auditing.</p>
+          <div class="announced pass"><strong>NVDA with H:</strong> "Our Approach, heading level 3": correctly announced and reachable by heading navigation ✓</div>
+        </div>
         <div class="result-row">
           <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-pass">Pass</span>
           <span class="badge badge-wcag">WCAG 1.3.1</span>
           <span class="badge badge-wcag">div styled as heading: not an h2/h3 element</span>
         </div>
@@ -180,16 +194,23 @@
       <strong>What to look for:</strong> NVDA announces "Read more, link": the user cannot determine where the link goes without reading surrounding context.
     </div>
     <div class="demo">
-      <div class="demo-label">Scenario 2: non-descriptive link text</div>
+      <div class="demo-label">Scenario 2: non-descriptive link text vs descriptive link text</div>
       <div class="demo-inner">
         <div style="background:var(--bg3);border-radius:8px;padding:1rem 1.25rem;margin-bottom:0.75rem;">
           <p style="font-size:0.88rem;color:var(--text-2);margin-bottom:8px;">We published a full accessibility audit report covering WCAG 2.1 AA compliance across 47 components.</p>
           <a href="#" onclick="return false" style="color:var(--blue);font-size:0.88rem;">Read more</a>
         </div>
         <div class="announced"><strong>NVDA announces:</strong> "Read more, link": destination completely unknown when navigating by links list (Insert+F7)</div>
-        <div class="announced pass" style="margin-top:8px;"><strong>Should announce:</strong> "Read our WCAG 2.1 AA audit report, link": or use aria-label to add context</div>
+
+        <div style="background:var(--bg3);border-radius:8px;padding:1rem 1.25rem;margin-top:1rem;margin-bottom:0.75rem;">
+          <p style="font-size:0.88rem;color:var(--text-2);margin-bottom:8px;">We published a full accessibility audit report covering WCAG 2.1 AA compliance across 47 components.</p>
+          <a href="#" onclick="return false" style="color:var(--blue);font-size:0.88rem;">Read our WCAG 2.1 AA audit report</a>
+        </div>
+        <div class="announced pass"><strong>NVDA announces:</strong> "Read our WCAG 2.1 AA audit report, link": destination is clear from the link text alone, even out of context in the links list ✓</div>
+
         <div class="result-row">
           <span class="badge badge-fail">Fail</span>
+          <span class="badge badge-pass">Pass</span>
           <span class="badge badge-wcag">WCAG 2.4.4</span>
           <span class="badge badge-wcag">Link purpose not clear from link text alone</span>
         </div>
@@ -431,10 +452,128 @@
 
   <hr class="divider" />
 
-  <!-- S8: Elements list exercise -->
+  <!-- S8: Page title -->
   <div class="scenario">
     <div class="scenario-header">
       <div class="scenario-num num-pass">8</div>
+      <div>
+        <div class="scenario-title">Page title: the first thing NVDA announces</div>
+        <div class="scenario-meta">Press Insert+T right now, on this actual page.</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Press <span class="key">Insert</span>+<span class="key">T</span> right now, on this page.
+      <span class="wcag-tag">WCAG 2.4.2</span><br><br>
+      <strong>What to look for:</strong> This is a genuinely live test: it reads this page's real <code>&lt;title&gt;</code>, not a simulated demo.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Live: this page's own title</div>
+      <div class="demo-inner">
+        <div class="announced pass"><strong>NVDA announces:</strong> "20 A11y Test Playground - NVDA, The Quality Strategist": the title identifies both the specific page and the site, so a user with several tabs open can tell them apart by title alone ✓</div>
+        <p style="font-size:0.85rem;color:var(--text-2);margin-top:1rem;">A page title matters most when a screen reader user has several tabs open, or when NVDA announces it on every navigation in a single-page app. A generic title gives no way to tell tabs apart without switching to each one.</p>
+        <div class="announced" style="margin-top:0.75rem;"><strong>What a failure sounds like (for reference: not tested on this page):</strong> "Untitled document" or "React App": every tab in the browser announces the same thing, so a screen reader user can't identify which tab holds which page.</div>
+        <div class="result-row">
+          <span class="badge badge-pass">Pass</span>
+          <span class="badge badge-wcag">WCAG 2.4.2</span>
+          <span class="badge badge-wcag">Every page needs a unique, descriptive title</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S9: Landmarks -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">9</div>
+      <div>
+        <div class="scenario-title">Landmarks: missing vs labelled regions</div>
+        <div class="scenario-meta">Press D to cycle landmarks. Can you reach every region, and tell them apart?</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Press <span class="key">D</span> to cycle through landmarks in each demo below.
+      <span class="wcag-tag">WCAG 1.3.1 / 2.4.1</span><br><br>
+      <strong>What to look for:</strong> Region 1 has no landmark at all. Region 2 has two navs NVDA can't tell apart. Region 3 is correct.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 9: landmark comparisons</div>
+      <div class="demo-inner" style="display:flex;flex-direction:column;gap:1.5rem;">
+        <div>
+          <p style="font-size:0.8rem;color:var(--text-3);margin-bottom:6px;">1: content area with no landmark</p>
+          <div style="background:var(--bg3);border-radius:8px;padding:1rem 1.25rem;font-size:0.85rem;color:var(--text-2);">
+            This whole block is a plain &lt;div&gt;. There is no &lt;main&gt;, no role="main", nothing for D to land on.
+          </div>
+          <div class="announced"><strong>NVDA with D:</strong> skips straight past this block: it has no landmark role at all, so a screen reader user must read every element on the page to find it.</div>
+        </div>
+        <div>
+          <p style="font-size:0.8rem;color:var(--text-3);margin-bottom:6px;">2: two navs, same generic name</p>
+          <nav style="background:var(--bg3);border-radius:8px;padding:0.75rem 1.25rem;font-size:0.85rem;color:var(--text-2);margin-bottom:8px;">Main menu links here</nav>
+          <nav style="background:var(--bg3);border-radius:8px;padding:0.75rem 1.25rem;font-size:0.85rem;color:var(--text-2);">Breadcrumb links here</nav>
+          <div class="announced"><strong>NVDA with D:</strong> announces "navigation" twice with no distinguishing label: impossible to tell which is the main menu and which is the breadcrumb without entering each one.</div>
+        </div>
+        <div>
+          <p style="font-size:0.8rem;color:var(--text-3);margin-bottom:6px;">3: correct, labelled landmarks</p>
+          <nav aria-label="Main menu" style="background:var(--bg3);border-radius:8px;padding:0.75rem 1.25rem;font-size:0.85rem;color:var(--text-2);margin-bottom:8px;">Main menu links here</nav>
+          <div role="main" style="background:var(--bg3);border-radius:8px;padding:1rem 1.25rem;font-size:0.85rem;color:var(--text-2);">Page content lives here, inside a real main landmark.</div>
+          <div class="announced pass"><strong>NVDA with D:</strong> "Main menu, navigation landmark" then "main landmark": both reachable directly, both instantly distinguishable ✓</div>
+        </div>
+        <div class="result-row">
+          <span class="badge badge-fail">1 &amp; 2: Fail</span>
+          <span class="badge badge-pass">3: Pass</span>
+          <span class="badge badge-wcag">WCAG 1.3.1 / 2.4.1</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S10: Role and state -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-fail">10</div>
+      <div>
+        <div class="scenario-title">Custom widget: role and state announced vs silent</div>
+        <div class="scenario-meta">Expand it. Does NVDA say so?</div>
+      </div>
+    </div>
+    <div class="scenario-instruction">
+      <strong>What to do:</strong> Tab to each "Show details" control below. Press Enter or Space to activate it. Listen for the role and the state.
+      <span class="wcag-tag">WCAG 4.1.2</span><br><br>
+      <strong>What to look for:</strong> Toggle 1 never tells you it's a button, or whether it's expanded. Toggle 2 announces both, every time.
+    </div>
+    <div class="demo">
+      <div class="demo-label">Scenario 10: aria-expanded present vs missing</div>
+      <div class="demo-inner" style="display:flex;flex-direction:column;gap:1.5rem;">
+        <div>
+          <p style="font-size:0.8rem;color:var(--text-3);margin-bottom:6px;">Toggle 1: plain div, no role or state</p>
+          <div tabindex="0" id="pg20-tog1" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 18px;font-size:0.88rem;color:var(--text-2);cursor:pointer;display:inline-block;" onclick="var p=document.getElementById('pg20-panel1');p.style.display=p.style.display==='block'?'none':'block';" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">Show details</div>
+          <div id="pg20-panel1" style="display:none;margin-top:8px;font-size:0.85rem;color:var(--text-2);">Extra detail text appears here.</div>
+          <div class="announced"><strong>NVDA announces:</strong> "Show details" with no role and no state: NVDA never identifies it as a button, and never announces whether the panel is open or closed.</div>
+        </div>
+        <div>
+          <p style="font-size:0.8rem;color:var(--text-3);margin-bottom:6px;">Toggle 2: aria-expanded kept in sync</p>
+          <button id="pg20-tog2" aria-expanded="false" aria-controls="pg20-panel2" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 18px;font-size:0.88rem;color:var(--text-2);cursor:pointer;" onclick="var b=this;var expanded=b.getAttribute('aria-expanded')==='true';b.setAttribute('aria-expanded',String(!expanded));var p=document.getElementById('pg20-panel2');p.style.display=expanded?'none':'block';">Show details</button>
+          <div id="pg20-panel2" style="display:none;margin-top:8px;font-size:0.85rem;color:var(--text-2);">Extra detail text appears here.</div>
+          <div class="announced pass"><strong>NVDA announces:</strong> "Show details, collapsed, button" then, after activating, "Show details, expanded, button": the role and the state are both announced, every time ✓</div>
+        </div>
+        <div class="result-row">
+          <span class="badge badge-fail">Toggle 1: Fail</span>
+          <span class="badge badge-pass">Toggle 2: Pass</span>
+          <span class="badge badge-wcag">WCAG 4.1.2</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- S11: Elements list exercise -->
+  <div class="scenario">
+    <div class="scenario-header">
+      <div class="scenario-num num-pass">11</div>
       <div>
         <div class="scenario-title">Elements list: structural audit in 30 seconds</div>
         <div class="scenario-meta">Insert+F7: your fastest structural overview tool.</div>
@@ -446,7 +585,7 @@
       <strong>What to look for:</strong> Headings tab shows the page structure. Links tab shows all link text: any "read more" or "click here" are immediately visible. Form Fields tab shows all inputs and their labels.
     </div>
     <div class="demo">
-      <div class="demo-label">Scenario 8: use the elements list on this page</div>
+      <div class="demo-label">Scenario 11: use the elements list on this page</div>
       <div class="demo-inner">
         <p style="font-size:0.88rem;color:var(--text-2);margin-bottom:0.75rem;">Press <strong style="color:var(--text);">Insert+F7</strong> now. The elements list opens as a dialog. Use it to audit this playground page:</p>
         <ul style="font-size:0.88rem;color:var(--text-2);padding-left:1.25rem;display:flex;flex-direction:column;gap:6px;">
