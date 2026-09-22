@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
@@ -55,7 +55,7 @@
     .references ul{list-style:none;padding:0}.references ul li{margin-bottom:.5rem}.references ul li a{font-size:.85rem;color:var(--text-2);text-decoration:none;display:inline-flex;align-items:center;gap:.4rem}.references ul li a:hover{color:var(--green)}.references ul li a::before{content:'↗';font-size:.75rem;color:var(--text-3)}
     footer{border-top:1px solid var(--border);padding:2rem;text-align:center;font-size:.78rem;color:var(--text-3)}footer a{color:var(--text-3);text-decoration:none}
     @media(max-width:620px){nav.site-nav{padding:0 1.25rem}.nav-links{display:none}.blog-header,main.blog-body{padding-left:1.25rem;padding-right:1.25rem}.nav-pair{grid-template-columns:1fr}}
-      .blog-jump { display:flex; align-items:center; gap:6px; margin-bottom:1.5rem; flex-wrap:wrap; }
+      .blog-jump { display:flex; align-items:center; gap:6px; margin:1.5rem 2rem; flex-wrap:wrap; }
     .blog-jump label { font-size:0.72rem; color:var(--text-3); }
     .blog-jump select { background:var(--bg2); color:var(--text-2); border:1px solid var(--border); border-radius:6px; padding:4px 8px; font-size:0.78rem; font-family:'DM Sans',sans-serif; max-width:280px; }
     .blog-jump select:focus-visible { outline:2px solid var(--green); outline-offset:2px; }
@@ -148,17 +148,14 @@
   </nav>
 
   <h2 id="ci-cd-basics">Before You Start: What a CI/CD Pipeline Actually Is</h2>
-  <p>If you have not set one up before, read this section first. Everything after it assumes you already know these terms.</p>
-  <p><strong>CI/CD</strong> stands for Continuous Integration and Continuous Delivery (or Deployment). For a QA tester, in practice it means one thing: a set of automated steps that run every time someone pushes code, without a person triggering them by hand.</p>
-  <p>A <strong>pipeline</strong> is that set of steps. On GitHub, a pipeline is called a <strong>workflow</strong>, and it is defined in a YAML file that lives in a specific folder in the repository: <code>.github/workflows/</code>. GitHub watches that folder. Any <code>.yml</code> file there, once its trigger conditions are met, runs automatically on GitHub's own servers: not on your laptop.</p>
-  <p>A <strong>build</strong> is one run of that workflow, from start to finish. "The build failed" means one of its steps exited with a non-zero status code: in this blog, that step is the axe-core test finding a violation it was told to fail on.</p>
-  <p>"Failing the build" is not a metaphor. On GitHub it shows as a red cross next to the commit or pull request, and, if the check is marked required, it can block that pull request from being merged until it is fixed. That is the mechanism that turns "we should check accessibility" into something no one can skip.</p>
-  <p>The rest of this blog assumes you can already write and run a Playwright or Cypress test locally. If you cannot yet, do that first: everything here adds an accessibility check on top of a test suite that already runs.</p>
+  <p>New to CI/CD? Read this section first: everything after it assumes these terms.</p>
+  <p><strong>CI/CD</strong> (Continuous Integration and Continuous Delivery, or Deployment) means one thing for a QA tester in practice: automated steps that run every time someone pushes code, without a person triggering them by hand.</p>
+  <p>A <strong>pipeline</strong> is that set of steps. On GitHub it's called a <strong>workflow</strong>: a YAML file in <code>.github/workflows/</code>. GitHub watches that folder and runs any <code>.yml</code> file there automatically on its own servers, once its trigger conditions are met, not on your laptop.</p>
+  <p>A <strong>build</strong> is one run of that workflow.</p>
+  <p>The rest of this blog assumes you can already write and run a Playwright or Cypress test locally. If not, do that first: everything here adds an accessibility check on top of a test suite that already runs.</p>
 
   <h2 id="why">1. Why axe-Core in the Pipeline</h2>
-  <p>Browser-based scanning with <a href="27-Axe-DevTools.html" style="color:var(--blue);"><span class="tool">axe DevTools</span></a> finds violations in the browser. Pipeline automation with <span class="tool">axe-core</span> finds the same violations on every commit, on every branch, before any human sees the code. The difference is not capability: it is timing. Catching a missing form label in CI is cheaper than catching it in a QA session, and far cheaper than catching it in production.</p>
-  <p>axe-core integrates directly into <a href="https://playwright.dev/" target="_blank" rel="noopener noreferrer" style="color:var(--blue);"><span class="tool">Playwright</span></a> and <a href="https://www.cypress.io/" target="_blank" rel="noopener noreferrer" style="color:var(--blue);"><span class="tool">Cypress</span></a> test suites as an additional assertion. No separate scanning tool. No separate test run. Accessibility checks run alongside your existing functional tests on every build.</p>
-  <div class="callout" role="note">axe-core in the pipeline catches the same violations as axe DevTools in the browser: same engine, same rules. The pipeline adds timing: violations are caught at commit, not at release.</div>
+  <p><span class="tool">axe-core</span> integrates directly into <a href="https://playwright.dev/" target="_blank" rel="noopener noreferrer" style="color:var(--blue);"><span class="tool">Playwright</span></a> and <a href="https://www.cypress.io/" target="_blank" rel="noopener noreferrer" style="color:var(--blue);"><span class="tool">Cypress</span></a> test suites as an additional assertion: no separate scanning tool, no separate test run. Accessibility checks run alongside your existing functional tests on every commit, before any human sees the code.</p>
 
   <h2 id="playwright">2. axe-Core with Playwright</h2>
   <p>The <code>@axe-core/playwright</code> package provides the <code>checkA11y</code> helper that runs an axe scan on the current page state.</p>
@@ -282,42 +279,20 @@ jobs:
           name: playwright-report
           path: playwright-report/</pre>
   </details>
-  <ul>
-    <li><strong>name:</strong> The label shown for this workflow in the repository's Actions tab. Purely cosmetic, but useful once you have more than one workflow.</li>
-    <li><strong>on: push / pull_request, branches main:</strong> Decides when the workflow runs. This runs it on every push to main and on every pull request targeting main, so a violation is caught before it merges, not after.</li>
-    <li><strong>runs-on: ubuntu-latest:</strong> GitHub gives you a fresh, empty Linux virtual machine for each run. Nothing from your local machine exists on it, which is why every following step has to set that machine up from scratch.</li>
-    <li><strong>actions/checkout@v4:</strong> Without this step, the runner has no copy of your code at all. This step pulls your repository onto the runner so later steps have something to test.</li>
-    <li><strong>actions/setup-node@v4:</strong> Installs Node.js on the runner so <code>npm</code> and <code>npx</code> commands work. <code>node-version: 20</code> pins the version so a future Node release cannot silently change CI behaviour.</li>
-    <li><strong>npm ci:</strong> Installs dependencies from <code>package-lock.json</code> exactly as locked, rather than <code>npm install</code>, which can resolve to slightly different versions. CI should be reproducible.</li>
-    <li><strong>npx playwright install --with-deps chromium:</strong> The runner does not have a browser installed. This downloads Chromium and the OS-level libraries Playwright needs to run it headlessly.</li>
-    <li><strong>npx playwright test:</strong> Runs the actual test suite, including the axe-core assertion from Section 2. If a critical or serious violation is found, this step exits with a non-zero code and fails the job.</li>
-    <li><strong>Upload test report, if: always():</strong> By default, a failed step skips the steps after it. <code>if: always()</code> overrides that so the HTML report still gets uploaded even when the tests fail, since that is exactly when you need to look at it. It is downloadable from the run's summary page in the Actions tab.</li>
-  </ul>
-
-  <h2 id="how-to-test">How to Test: Tiers and Platform Coverage</h2>
-
-  <h3>Tier 1: Pipeline automation</h3>
-  <p>This entire blog is Tier 1. <span class="tool">axe-core</span> in <a href="https://playwright.dev/" target="_blank" rel="noopener noreferrer" style="color:var(--blue);"><span class="tool">Playwright</span></a> or <a href="https://www.cypress.io/" target="_blank" rel="noopener noreferrer" style="color:var(--blue);"><span class="tool">Cypress</span></a> is the pipeline accessibility gate. Key configuration for WCAG 2.1 AA compliance:</p>
-  <ul>
-    <li>Scope with <code>withTags(['wcag2a', 'wcag2aa'])</code>: targets WCAG 2.1 AA rules only</li>
-    <li>Filter with <code>includedImpacts: ['critical', 'serious']</code>: only Critical and Serious fail the build</li>
-    <li>Run axe after every meaningful interaction state: not just page load</li>
-    <li>Log the full violations array to a CI artifact as JSON so developers can reproduce without re-running the suite</li>
-    <li><strong>Platforms:</strong> Runs headlessly on any OS in CI (Linux, Mac, Windows). Playwright and Cypress both support cross-browser: run on Chromium and Firefox at minimum.</li>
-  </ul>
-
-  <h3>Tier 2: Semi-automated tools</h3>
-  <p>Use <a href="27-Axe-DevTools.html" style="color:var(--blue);"><span class="tool">axe DevTools</span></a> browser extension for interactive validation of what the pipeline flags. Developers can reproduce a pipeline violation in the browser, see the highlighted element, and verify the fix before pushing. This is the feedback loop between Tier 1 and Tier 3.</p>
-
-  <h3>Tier 3: Manual: what axe-core in CI cannot catch</h3>
-  <ul>
-    <li><strong>Keyboard navigation:</strong> Tab through every interactive element. Focus order logic cannot be automated.</li>
-    <li><strong>Screen reader announcements:</strong> NVDA + Firefox on Windows, VoiceOver + Safari on Mac. ARIA attributes present in the DOM does not mean screen readers announce correctly.</li>
-    <li><strong>Alt text quality:</strong> axe confirms alt exists: a human must verify it is meaningful.</li>
-    <li><strong>iOS VoiceOver:</strong> Physical iPhone + Safari. Pipeline tests do not cover native mobile.</li>
-    <li><strong>Android TalkBack:</strong> Physical Android device + Chrome.</li>
-    <li><strong>Visual overlaps and reflow:</strong> Requires viewport testing: not detectable by axe-core.</li>
-  </ul>
+  <details style="margin:1.25rem 0;">
+    <summary style="cursor:pointer;color:var(--text-3);font-size:0.78rem;margin-bottom:4px;">What each step does — show explanation</summary>
+    <ul style="margin-top:0.75rem;">
+      <li><strong>name:</strong> The label shown for this workflow in the repository's Actions tab. Purely cosmetic, but useful once you have more than one workflow.</li>
+      <li><strong>on: push / pull_request, branches main:</strong> Decides when the workflow runs. This runs it on every push to main and on every pull request targeting main, so a violation is caught before it merges, not after.</li>
+      <li><strong>runs-on: ubuntu-latest:</strong> GitHub gives you a fresh, empty Linux virtual machine for each run. Nothing from your local machine exists on it, which is why every following step has to set that machine up from scratch.</li>
+      <li><strong>actions/checkout@v4:</strong> Without this step, the runner has no copy of your code at all. This step pulls your repository onto the runner so later steps have something to test.</li>
+      <li><strong>actions/setup-node@v4:</strong> Installs Node.js on the runner so <code>npm</code> and <code>npx</code> commands work. <code>node-version: 20</code> pins the version so a future Node release cannot silently change CI behaviour.</li>
+      <li><strong>npm ci:</strong> Installs dependencies from <code>package-lock.json</code> exactly as locked, rather than <code>npm install</code>, which can resolve to slightly different versions. CI should be reproducible.</li>
+      <li><strong>npx playwright install --with-deps chromium:</strong> The runner does not have a browser installed. This downloads Chromium and the OS-level libraries Playwright needs to run it headlessly.</li>
+      <li><strong>npx playwright test:</strong> Runs the actual test suite, including the axe-core assertion from Section 2. If a critical or serious violation is found, this step exits with a non-zero code and fails the job.</li>
+      <li><strong>Upload test report, if: always():</strong> By default, a failed step skips the steps after it. <code>if: always()</code> overrides that so the HTML report still gets uploaded even when the tests fail, since that is exactly when you need to look at it. It is downloadable from the run's summary page in the Actions tab.</li>
+    </ul>
+  </details>
 
   <div style="background:var(--amber-bg);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
     <div style="font-size:1.1rem;line-height:1;padding-top:2px;" aria-hidden="true">&#127919;</div>
@@ -326,8 +301,6 @@ jobs:
       <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">Point your Playwright or Cypress test at the <a href="A11y-Test-Playground/31 A11y Test Playground - Axe Core CI.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Axe-Core CI Playground</a>: it contains deliberate Critical, Serious, and Moderate violations plus passing examples. Verify your pipeline catches the failures and passes the correct implementations.</div>
     </div>
   </div>
-  <p>Pipeline axe-core catches the same issues as browser axe DevTools: missing labels, invalid ARIA, colour contrast, empty buttons. It misses the same issues too: keyboard navigation logic, screen reader announcements, focus order, alt text quality, and any violation that only appears in an interaction state not covered by your test suite.</p>
-  <p>The pipeline is the automated floor. Manual testing, keyboard testing, and screen reader testing are still required. The pipeline prevents regressions: it does not replace human testing.</p>
 
   <div class="takeaway" role="note">
     <div class="label">The minimum viable pipeline setup</div>
@@ -336,16 +309,10 @@ jobs:
       <li>Scope to wcag2aa rules and critical/serious impact only.</li>
       <li>Run axe after page load AND after every significant interaction state in your test flow.</li>
       <li>Fail the build on any critical or serious violation. Zero exceptions without a documented exclusion.</li>
+      <li>Runs headlessly on any OS in CI (Linux, Mac, Windows), on Chromium and Firefox at minimum.</li>
     </ul>
   </div>
 
-  <div style="background:var(--blue-bg);border:1px solid rgba(96,165,250,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
-    <div style="font-size:1.1rem;line-height:1;padding-top:2px;" aria-hidden="true">&#128241;</div>
-    <div>
-      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--blue);font-weight:500;margin-bottom:4px;">Testing this on mobile</div>
-      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">For native iOS and Android apps to practise the same checks on, see <a href="39-Mobile-Accessibility-Testing-Practice-Apps.html" style="color:var(--blue);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Blog 39: Mobile Accessibility Testing Practice Apps</a>.</div>
-    </div>
-  </div>
   <div class="series-nav">
     <span class="label">Navigate the series</span>
     <div class="nav-pair">
