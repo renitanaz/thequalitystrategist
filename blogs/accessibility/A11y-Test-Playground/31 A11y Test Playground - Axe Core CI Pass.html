@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>2 A11y Test Playground - Cost of Shift-Right | The Quality Strategist</title>
-  <meta name="description" content="A target page for axe-core in Playwright or Cypress. Contains deliberate Critical, Serious and Moderate violations plus passing implementations. Point your pipeline test at this URL." />
+  <title>31 A11y Test Playground - Axe-Core CI Pass | The Quality Strategist</title>
+  <meta name="description" content="A clean target page for axe-core in Playwright or Cypress. Contains only correct implementations: a real pipeline scan should find zero violations here. Point your fail-the-build assertion at this URL." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
   <style>
@@ -27,15 +27,13 @@
     .section { margin-bottom:3rem; }
     .section-header { font-family:'DM Serif Display',serif; font-size:1.2rem; color:var(--text); margin-bottom:1rem; padding-bottom:0.5rem; border-bottom:1px solid var(--border); }
     .badge { display:inline-block; font-size:0.7rem; padding:2px 8px; border-radius:99px; font-weight:600; margin-right:6px; }
-    .badge-critical { background:var(--red-bg); color:var(--red); border:1px solid rgba(248,113,113,0.25); }
-    .badge-serious { background:var(--amber-bg); color:var(--amber); border:1px solid rgba(251,191,36,0.25); }
-    .badge-moderate { background:rgba(96,165,250,0.07); color:var(--blue); border:1px solid rgba(96,165,250,0.25); }
     .badge-pass { background:var(--green-bg); color:var(--green); border:1px solid rgba(74,222,128,0.25); }
     .item { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:1.1rem 1.25rem; margin-bottom:0.75rem; }
     .item-title { font-size:0.88rem; font-weight:500; color:var(--text); margin-bottom:0.5rem; }
     .item-note { font-size:0.8rem; color:var(--text-3); margin-top:0.4rem; font-style:italic; }
     code { background:var(--bg3); padding:1px 6px; border-radius:3px; font-size:0.85em; color:var(--text-2); font-family:monospace; }
     .visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    .callout { display:flex; align-items:flex-start; gap:14px; background:var(--green-bg); border:1px solid rgba(74,222,128,0.2); border-radius:10px; padding:1.1rem 1.4rem; margin:0 0 2rem 0; }
     footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-3); }
     footer a { color:var(--text-3); text-decoration:none; }
     @media(max-width:620px) { nav.site-nav, main, .page-header { padding-left:1.25rem; padding-right:1.25rem; } }
@@ -49,7 +47,7 @@
 <a class="skip-link" href="#main-content">Skip to main content</a>
 <nav class="site-nav" aria-label="Site navigation">
   <a href="https://renitanaz.github.io/thequalitystrategist/" class="nav-logo">The Quality Strategist</a>
-  <a href="../02-cost-of-shift-right.html" class="nav-back">← Back to Blog 02</a>
+  <a href="../31-Axe-Core-Cypress-Playwright.html" class="nav-back">← Back to Blog 31</a>
 </nav>
 
   <div class="blog-jump">
@@ -100,94 +98,31 @@
     </select>
   </div>
 <header class="page-header">
-  <div class="pg-label">A11y Test Playground: CI Target</div>
-  <h1>Axe-Core CI Playground</h1>
-  <p>Point your Playwright or Cypress axe-core test at this page. It contains deliberate violations and correct implementations. Verify your pipeline catches the failures and passes the correct ones.</p>
-  <div class="code-label">Setup</div>
-  <pre class="code-box" style="white-space:pre;font-family:monospace;font-size:0.82rem;line-height:1.7;overflow-x:auto;">npm install -D @playwright/test @axe-core/playwright
-npx playwright install --with-deps chromium</pre>
-
+  <div class="pg-label">A11y Test Playground: CI Target (Pass)</div>
+  <h1>Axe-Core CI Playground: Clean Page</h1>
+  <p>The companion to the <a href="31 A11y Test Playground - Axe Core CI.html" style="color:var(--blue);">Axe-Core CI Playground</a>. This page has no deliberate violations: every element on it is a correct implementation. A real fail-the-build assertion should find zero Critical or Serious violations here.</p>
   <div class="code-label">Playwright: scan this page</div>
-  <pre class="code-box" style="white-space:pre;font-family:monospace;font-size:0.82rem;line-height:1.7;overflow-x:auto;">import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+  <pre class="code-box" style="white-space:pre;font-family:monospace;font-size:0.82rem;line-height:1.7;overflow-x:auto;">import AxeBuilder from '@axe-core/playwright';
 
-test('playground has expected violations', async ({ page }) =&gt; {
+test('clean playground has zero critical or serious violations', async ({ page }) =&gt; {
   await page.goto('/your-page-under-test.html');
   const results = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa'])
     .analyze();
-  // Should find: Critical (missing alt, missing label, empty button)
-  //              Serious (colour contrast, invalid ARIA)
-  //              Moderate (duplicate ID)
-  console.log('Violations:', results.violations.length);
-  console.log('Incomplete:', results.incomplete.length);
-  console.log('*****************************************');
-
-  results.violations.forEach(v => {
-    console.log(`- [${v.impact}] ${v.id}: ${v.description}`);
-  });
-
-  // Since this playground is INTENTIONALLY broken, assert it finds violations
-  expect(results.violations.length).toBeGreaterThan(0);
+  const blocking = results.violations.filter(v =&gt;
+    ['critical', 'serious'].includes(v.impact)
+  );
+  expect(blocking).toHaveLength(0);
 });</pre>
-  <div class="item-note" style="margin-top:0.75rem;">Save this as a spec file (for example <code>a11y.spec.ts</code>) and run it with <code>npx playwright test</code>.</div>
 </header>
 
 <main id="main-content">
 
-  <!-- VIOLATIONS SECTION -->
-  <div class="section">
-    <div class="section-header">Violations: axe-core should flag these</div>
-
-    <div class="item">
-      <div class="item-title"><span class="badge badge-critical">Critical</span> Image with no alt text: rule: image-alt · WCAG 1.1.1</div>
-      <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='60'%3E%3Crect width='120' height='60' fill='%231e1e1e' rx='3'/%3E%3Crect x='10' y='35' width='10' height='17' fill='%234ade80'/%3E%3Crect x='26' y='25' width='10' height='27' fill='%234ade80'/%3E%3Crect x='42' y='15' width='10' height='37' fill='%234ade80'/%3E%3C/svg%3E" width="120" height="60" style="border-radius:3px;display:block;margin-top:0.5rem;" />
-      <div class="item-note">No alt attribute on this image. axe reports: Critical: image-alt</div>
-    </div>
-
-    <div class="item">
-      <div class="item-title"><span class="badge badge-critical">Critical</span> Input with no label: rule: label · WCAG 1.3.1</div>
-      <input type="text" placeholder="Your name" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:0.88rem;color:var(--text);font-family:'DM Sans',sans-serif;width:100%;max-width:280px;margin-top:0.5rem;" />
-      <div class="item-note">No label element, no aria-label, no aria-labelledby. axe reports: Critical: label</div>
-    </div>
-
-    <div class="item">
-      <div class="item-title"><span class="badge badge-critical">Critical</span> Button with no accessible name: rule: button-name · WCAG 4.1.2</div>
-      <button style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;width:40px;height:40px;cursor:pointer;margin-top:0.5rem;display:inline-flex;align-items:center;justify-content:center;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c8c8c8" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-      </button>
-      <div class="item-note">Icon button with no text and no aria-label. axe reports: Critical: button-name</div>
-    </div>
-
-    <div class="item">
-      <div class="item-title"><span class="badge badge-serious">Serious</span> Colour contrast failure: rule: color-contrast · WCAG 1.4.3</div>
-      <div style="background:#ffffff;border-radius:6px;padding:0.75rem 1rem;margin-top:0.5rem;">
-        <p style="color:#aaaaaa;margin:0;font-size:0.95rem;">Low contrast text: #aaaaaa on white: approximately 2.32:1. Required: 4.5:1.</p>
-      </div>
-      <div class="item-note">axe reports: Serious: color-contrast · ratio ~2.32:1</div>
-    </div>
-
-    <div class="item">
-      <div class="item-title"><span class="badge badge-serious">Serious</span> Invalid ARIA role: rule: aria-roles · WCAG 4.1.2</div>
-      <div role="tooltip-panel" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:0.75rem 1rem;margin-top:0.5rem;font-size:0.88rem;color:var(--text-2);">
-        Element with <code>role="tooltip-panel"</code>: not a valid ARIA role
-      </div>
-      <div class="item-note">axe reports: Serious: aria-roles</div>
-    </div>
-
-    <div class="item">
-      <div class="item-title"><span class="badge badge-moderate">Moderate</span> Duplicate ID: rule: duplicate-id-aria · WCAG 4.1.1</div>
-      <div style="display:flex;flex-direction:column;gap:0.5rem;margin-top:0.5rem;">
-        <label for="pg2-dup" style="font-size:0.88rem;color:var(--text-2);">Email</label>
-        <input id="pg2-dup" type="email" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:0.88rem;color:var(--text);font-family:'DM Sans',sans-serif;width:100%;max-width:280px;" />
-        <label for="pg2-dup" style="font-size:0.88rem;color:var(--text-2);">Phone</label>
-        <input id="pg2-dup" type="tel" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:0.88rem;color:var(--text);font-family:'DM Sans',sans-serif;width:100%;max-width:280px;" />
-      </div>
-      <div class="item-note">Both inputs share id="pg2-dup". axe reports: Moderate: duplicate-id-aria</div>
-    </div>
+  <div class="callout" role="note">
+    <span aria-hidden="true">✓</span>
+    <span>Every item below is the passing counterpart to a violation on the <a href="31 A11y Test Playground - Axe Core CI.html" style="color:var(--green);font-weight:500;">Violations playground</a>. Run your pipeline test against both: it should catch every failure on that page, and report zero blocking violations on this one.</span>
   </div>
 
-  <!-- PASSING SECTION -->
   <div class="section">
     <div class="section-header">Passing implementations: axe-core should report zero violations here</div>
 
@@ -203,12 +138,12 @@ test('playground has expected violations', async ({ page }) =&gt; {
       <div class="item-title"><span class="badge badge-pass">Pass</span> Correctly labelled form</div>
       <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:0.5rem;max-width:320px;">
         <div>
-          <label for="pg2-name-pass" style="display:block;font-size:0.88rem;color:var(--text-2);margin-bottom:4px;font-weight:500;">Full name <span class="visually-hidden">(required)</span><span aria-hidden="true" style="color:var(--red);">*</span></label>
-          <input id="pg2-name-pass" type="text" required aria-required="true" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:0.88rem;color:var(--text);font-family:'DM Sans',sans-serif;width:100%;" />
+          <label for="pg31p-name-pass" style="display:block;font-size:0.88rem;color:var(--text-2);margin-bottom:4px;font-weight:500;">Full name <span class="visually-hidden">(required)</span><span aria-hidden="true" style="color:var(--red);">*</span></label>
+          <input id="pg31p-name-pass" type="text" required aria-required="true" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:0.88rem;color:var(--text);font-family:'DM Sans',sans-serif;width:100%;" />
         </div>
         <div>
-          <label for="pg2-email-pass" style="display:block;font-size:0.88rem;color:var(--text-2);margin-bottom:4px;font-weight:500;">Email address <span class="visually-hidden">(required)</span><span aria-hidden="true" style="color:var(--red);">*</span></label>
-          <input id="pg2-email-pass" type="email" required aria-required="true" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:0.88rem;color:var(--text);font-family:'DM Sans',sans-serif;width:100%;" />
+          <label for="pg31p-email-pass" style="display:block;font-size:0.88rem;color:var(--text-2);margin-bottom:4px;font-weight:500;">Email address <span class="visually-hidden">(required)</span><span aria-hidden="true" style="color:var(--red);">*</span></label>
+          <input id="pg31p-email-pass" type="email" required aria-required="true" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:0.88rem;color:var(--text);font-family:'DM Sans',sans-serif;width:100%;" />
         </div>
         <button style="background:var(--green);color:#000;border:none;border-radius:6px;padding:10px 24px;font-size:0.88rem;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;align-self:flex-start;">Submit form</button>
       </div>
@@ -242,25 +177,12 @@ test('playground has expected violations', async ({ page }) =&gt; {
     <div class="item">
       <div class="item-title"><span class="badge badge-pass">Pass</span> Unique IDs</div>
       <div style="display:flex;flex-direction:column;gap:0.5rem;margin-top:0.5rem;">
-        <label for="pg2-email-unique" style="font-size:0.88rem;color:var(--text-2);">Email</label>
-        <input id="pg2-email-unique" type="email" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:0.88rem;color:var(--text);font-family:'DM Sans',sans-serif;width:100%;max-width:280px;" />
-        <label for="pg2-phone-unique" style="font-size:0.88rem;color:var(--text-2);">Phone</label>
-        <input id="pg2-phone-unique" type="tel" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:0.88rem;color:var(--text);font-family:'DM Sans',sans-serif;width:100%;max-width:280px;" />
+        <label for="pg31p-email-unique" style="font-size:0.88rem;color:var(--text-2);">Email</label>
+        <input id="pg31p-email-unique" type="email" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:0.88rem;color:var(--text);font-family:'DM Sans',sans-serif;width:100%;max-width:280px;" />
+        <label for="pg31p-phone-unique" style="font-size:0.88rem;color:var(--text-2);">Phone</label>
+        <input id="pg31p-phone-unique" type="tel" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:0.88rem;color:var(--text);font-family:'DM Sans',sans-serif;width:100%;max-width:280px;" />
       </div>
-      <div class="item-note">Each input has its own id="pg2-email-unique" / id="pg2-phone-unique". axe passes: duplicate-id-aria ✓</div>
-    </div>
-  </div>
-
-  <!-- INCOMPLETE SECTION -->
-  <div class="section">
-    <div class="section-header">Incomplete: axe needs manual verification on these</div>
-
-    <div class="item">
-      <div class="item-title"><span class="badge" style="background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,0.25);">Incomplete</span> Text on gradient background: contrast cannot be computed</div>
-      <div style="background:linear-gradient(135deg,#1e3a5f,#4a1a6b);border-radius:6px;padding:1.25rem;margin-top:0.5rem;">
-        <p style="color:#c8c8c8;margin:0;font-size:0.95rem;">Text on gradient background. axe cannot determine contrast ratio automatically. Appears in the Incomplete tab: requires manual DevTools colour picker check.</p>
-      </div>
-      <div class="item-note">axe Incomplete: color-contrast: background colour could not be determined</div>
+      <div class="item-note">Each input has its own id="pg31p-email-unique" / id="pg31p-phone-unique". axe passes: duplicate-id-aria ✓</div>
     </div>
   </div>
 
@@ -269,7 +191,8 @@ test('playground has expected violations', async ({ page }) =&gt; {
 <footer>
   <p>
     <a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a>
-    &nbsp;·&nbsp; <a href="../02-cost-of-shift-right.html">Back to Blog 02</a>
+    &nbsp;·&nbsp; <a href="../31-Axe-Core-Cypress-Playwright.html">Back to Blog 31</a>
+    &nbsp;·&nbsp; <a href="31 A11y Test Playground - Axe Core CI.html">See the Violations playground →</a>
   </p>
 </footer>
 </body>
