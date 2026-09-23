@@ -142,7 +142,7 @@
   </nav>
 
   <h2 id="andi-what">1. What ANDI Is</h2>
-  <p>ANDI (Accessible Name and Description Inspector) is a free bookmarklet developed by the US Social Security Administration. It is designed specifically for inspecting how assistive technologies compute the accessible name and description of interactive elements. It does not produce a violation list: it is an inspection tool for understanding what a screen reader will announce for a specific element.</p>
+  <p>ANDI (Accessible Name and Description Inspector) is a free bookmarklet developed by the US Social Security Administration, built for inspecting how assistive technologies compute the accessible name and description of interactive elements.</p>
   <p>ANDI is particularly useful when axe DevTools flags a violation involving an accessible name and you need to understand exactly what name is being computed and why. It shows the full accessibility tree properties for each element: accessible name, description, role, state, and the source of each (aria-label, aria-labelledby, native label, title, placeholder).</p>
   <div class="callout" role="note">ANDI is not a scanner. It is an inspector. Use it to diagnose why a specific element has the wrong accessible name: not to find all issues on a page.</div>
   <figure class="blog-illustration" aria-label="ANDI inspector points at a button labelled Click Here and proudly announces its accessible name">
@@ -216,7 +216,7 @@
   <ul>
     <li><strong>Install:</strong> Drag the ANDI bookmarklet from <a href="https://www.ssa.gov/accessibility/andi/help/install.html" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">ssa.gov/accessibility/andi</a> to your bookmarks bar. Works in Chrome, Firefox, Edge.</li>
     <li><strong>Activate:</strong> Click the ANDI bookmark on any page. An ANDI panel appears at the top of the page.</li>
-    <li><strong>Select a module:</strong> ANDI has modules for Focusable Elements, Images, Links, Buttons, Structure, Tables, Lists, and Colour Contrast.</li>
+    <li><strong>Select a module:</strong> ANDI has modules for Focusable Elements, Graphics/Images, Links/Buttons, Tables, Structures, Colour Contrast, Hidden Content, and Iframes.</li>
     <li><strong>Inspect elements:</strong> Click any element on the page. ANDI shows: accessible name, description, role, state, and which attribute is providing the name (aria-label, aria-labelledby, label for/id, title, placeholder, native text).</li>
     <li><strong>Use arrow navigation:</strong> Use the Next/Previous buttons in the ANDI panel to step through all elements of the selected type without using the mouse.</li>
     <li><strong>Alerts tab:</strong> ANDI flags accessibility alerts for the elements it inspects. These are not violations: they are warnings that require human review.</li>
@@ -224,10 +224,18 @@
 
   <h3>The most useful ANDI checks</h3>
   <ul>
-    <li><strong>Focusable Elements:</strong> Step through every interactive element. For each one, verify the announced name is meaningful and the role is correct.</li>
+    <li><strong>Focusable Elements:</strong> Step through every interactive element. For each one, verify the announced name is meaningful and the role is correct. Its Tab Order button overlays numbered flags on the page showing the tab sequence, and flags elements removed from tab order (<code>tabindex="-1"</code>) or given a positive <code>tabindex</code>.</li>
     <li><strong>Tables module:</strong> Shows header associations, scope attributes, and whether ANDI can determine the accessible name for each cell.</li>
-    <li><strong>Structure module:</strong> Shows heading levels and landmark regions in sequence. <a href="26-WAVE.html" style="color:var(--blue);">WAVE's Structure tab</a> is still the fastest way to check heading hierarchy on a page you have not opened ANDI on already; use this module when you are already in ANDI checking accessible names and want to verify structure in the same pass.</li>
+    <li><strong>Structures module:</strong> Shows heading levels and landmark regions in sequence. <a href="26-WAVE.html" style="color:var(--blue);">WAVE's Structure tab</a> is still the fastest way to check heading hierarchy on a page you have not opened ANDI on already; use this module when you are already in ANDI checking accessible names and want to verify structure in the same pass.</li>
   </ul>
+
+  <h3>Walk through three examples</h3>
+  <p>The steps above cover the mechanics. Here is what they look like against three real scenarios in the <a href="A11y-Test-Playground/30 A11y Test Playground - ANDI.html" style="color:var(--blue);">ANDI Playground</a>.</p>
+  <ol>
+    <li><strong>Scenario 1, placeholder as the only label:</strong> activate ANDI and select Focusable Elements. Click the name input. In the panel, find the Accessible Name row and the Source row underneath it: the name comes from the placeholder, which disappears the moment the user types. That is the fail.</li>
+    <li><strong>Scenario 2, aria-label overriding visible text:</strong> stay on Focusable Elements. Read the button with your eyes first, then click it and read the panel's Accessible Name row. It will not match what you just read: the panel shows the aria-label, a screen reader user hears the aria-label, and a sighted user reads the visible text. Two different messages for the same button.</li>
+    <li><strong>Scenario 5, a table with no headers:</strong> switch the module to Tables and click a data cell. The panel's Column header row is empty because no <code>th</code> elements exist for ANDI to associate the cell with. Scenario 6 on the same page uses proper <code>th scope="col"</code> headers: click a cell there afterward and watch the same row populate.</li>
+  </ol>
 
   <h2 id="andi-catches">3. What ANDI Catches</h2>
   <div class="table-wrap"><table>
@@ -241,6 +249,7 @@
       <tr><td>Heading structure</td><td>1.3.1</td><td>Lists all headings in document order with their level</td></tr>
       <tr><td>Image accessible names</td><td>1.1.1</td><td>Shows alt text, aria-label, or aria-labelledby source for every image</td></tr>
       <tr><td>Link purpose</td><td>2.4.4</td><td>Shows accessible name for every link: non-descriptive names visible immediately</td></tr>
+      <tr><td>Tab order and focus removal</td><td>2.4.3</td><td>Tab Order button overlays numbered flags on the page; flags elements with <code>tabindex="-1"</code> or a positive <code>tabindex</code></td></tr>
     </tbody>
   </table></div>
   <figure class="blog-illustration" aria-label="IBM Equal Access scans 50 pages and produces a very large spreadsheet while the team celebrates">
@@ -403,13 +412,11 @@ npx achecker urls.txt</pre>
     </div>
   </div>
 
-  
-
   <div style="background:var(--blue-bg);border:1px solid rgba(96,165,250,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
     <div style="font-size:1.1rem;line-height:1;padding-top:2px;" aria-hidden="true">&#128241;</div>
     <div>
       <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--blue);font-weight:500;margin-bottom:4px;">Testing this on mobile</div>
-      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">For native iOS and Android apps to practise the same checks on, see <a href="40-Mobile-Accessibility-Testing-Practice-Apps.html" style="color:var(--blue);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Blog 40: Mobile Accessibility Testing Practice Apps</a>.</div>
+      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">Neither tool has a native-app equivalent: ANDI is a browser bookmarklet and IBM Equal Access is a browser extension and Node CLI, both DOM-based. For native iOS and Android apps to practise the same checks on, see <a href="40-Mobile-Accessibility-Testing-Practice-Apps.html" style="color:var(--blue);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Blog 40: Mobile Accessibility Testing Practice Apps</a>.</div>
     </div>
   </div>
   <div class="series-nav">

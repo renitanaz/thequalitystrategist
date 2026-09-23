@@ -217,7 +217,7 @@
   <p>Unlike automated CI tools that produce a list of violations with DOM selectors, WAVE shows you the issue visually in the rendered page. A missing form label appears as a red icon on the input field itself. An empty button appears as an error icon on that button. This makes WAVE significantly faster for triage and explanation than reading a JSON report.</p>
 
   <div class="callout" role="note">
-    WAVE is a Tier 2 semi-automated tool. It runs in the browser on the rendered page, catching issues that require visual context and DOM inspection. It does not integrate into your CI/CD pipeline. Use it alongside <a href="31-Axe-Core-Cypress-Playwright.html" style="color:var(--blue);"><span class="tool">axe-core</span></a> in your pipeline: not instead of it.
+    WAVE is a Tier 2 semi-automated tool. It runs in the browser on the rendered page, catching issues that require visual context and DOM inspection. The free browser extension has no CI/CD mode. WebAIM sells a separate paid <a href="https://wave.webaim.org/api/" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">WAVE API</a> that can be scripted against public URLs, but for free, pipeline-native automation use <a href="31-Axe-Core-Cypress-Playwright.html" style="color:var(--blue);"><span class="tool">axe-core</span></a> in your pipeline: not instead of it.
   </div>
 
   <p>WAVE is available as a Chrome and Firefox extension, and as a web service at <a href="https://wave.webaim.org" target="_blank" rel="noopener noreferrer" style="color:var(--teal);">wave.webaim.org</a> for publicly accessible pages. The extension also works on pages behind authentication, which the web service cannot access.</p>
@@ -369,6 +369,7 @@
     <li><strong>Audit structural elements:</strong> Click the Structure tab in the sidebar. WAVE shows the heading hierarchy, list structure, and landmarks. Verify the heading levels are logical.</li>
     <li><strong>Check features for quality:</strong> Green icons confirm accessibility features exist but not that they are correct. Click each green icon to see the alt text, label text, or landmark label and verify it is meaningful.</li>
     <li><strong>Review contrast:</strong> Purple icons flag contrast failures. Click to see the exact ratio and the WCAG threshold it fails.</li>
+    <li><strong>Check the Order tab:</strong> WAVE numbers every navigable element in tab order and lists its role and accessible name. It won't tell you whether the order is logical: confirm that yourself by comparing the numbering to the visual layout.</li>
   </ol>
 
   <div class="callout amber" role="note">
@@ -416,6 +417,11 @@
   <div class="table-wrap">
     <table>
       <caption class="visually-hidden">Issues WAVE cannot detect and why</caption>
+      <colgroup>
+        <col style="width:24%">
+        <col style="width:44%">
+        <col style="width:32%">
+      </colgroup>
       <thead>
         <tr>
           <th scope="col">Issue</th>
@@ -425,7 +431,7 @@
       </thead>
       <tbody>
         <tr><td>Keyboard traps</td><td>Requires keyboard navigation: no static analysis can replicate it</td><td>Manual keyboard testing</td></tr>
-        <tr><td>Focus order problems</td><td>Requires Tab navigation to observe</td><td>Manual keyboard testing</td></tr>
+        <tr><td>Whether focus order is logical</td><td>WAVE's Order panel numbers the tab sequence and shows each element's role and accessible name, but it does not judge whether that sequence matches visual or reading order</td><td>Manual keyboard testing</td></tr>
         <tr><td>ARIA live region announcements</td><td>Requires a screen reader running at the same time</td><td><a href="20-NVDA-on-Windows.html" style="color:var(--blue);">NVDA</a> or <a href="22-VoiceOver-on-Mac.html" style="color:var(--blue);">VoiceOver</a> testing</td></tr>
         <tr><td>Dynamic content after interaction</td><td>WAVE scans the DOM at load: post-interaction state is not scanned</td><td>Trigger interactions, then re-run WAVE or use axe DevTools</td></tr>
         <tr><td>Meaningful alt text quality</td><td>WAVE confirms alt text exists, not whether it is descriptive</td><td>Read every alt text manually</td></tr>
@@ -494,6 +500,11 @@
   <div class="table-wrap">
     <table>
       <caption class="visually-hidden">WAVE vs axe DevTools comparison</caption>
+      <colgroup>
+        <col style="width:22%">
+        <col style="width:39%">
+        <col style="width:39%">
+      </colgroup>
       <thead>
         <tr>
           <th scope="col">Aspect</th>
@@ -509,7 +520,7 @@
         <tr><td>Contrast checking</td><td>Built in, visual on page</td><td>Built in, reported with exact ratios</td></tr>
         <tr><td>Dynamic content</td><td>Scans initial DOM only</td><td>Can be triggered post-interaction via API</td></tr>
         <tr><td>ARIA validation</td><td>Flags ARIA presence, not correctness</td><td>Validates ARIA role, state, and property combinations</td></tr>
-        <tr><td>CI/CD pipeline</td><td>Not possible</td><td>Core use case via axe-core npm package</td></tr>
+        <tr><td>CI/CD pipeline</td><td>Not the free extension; WebAIM's paid WAVE API can be scripted against public URLs</td><td>Core use case via axe-core npm package, free and open source</td></tr>
         <tr><td>Cost</td><td>Free</td><td>Free (Pro version available)</td></tr>
       </tbody>
     </table>
@@ -590,7 +601,7 @@
       </thead>
       <tbody>
         <tr><td>1. Perceivable</td><td>Strong: alt text, colour contrast, headings, labels</td><td>Alt text quality, audio/video captions, reflow</td></tr>
-        <tr><td>2. Operable</td><td>Partial: skip links, page titles, link purpose (text only)</td><td>Keyboard access, focus order, focus visibility, timing</td></tr>
+        <tr><td>2. Operable</td><td>Partial: skip links, page titles, link purpose (text only), tab order via the Order panel</td><td>Keyboard access, whether focus order is logical, focus visibility, timing</td></tr>
         <tr><td>3. Understandable</td><td>Partial: document language, form labels</td><td>Error identification, error suggestion, consistent navigation</td></tr>
         <tr><td>4. Robust</td><td>Partial: parsing, ARIA presence</td><td>ARIA correctness, live region behaviour, status messages</td></tr>
       </tbody>
@@ -613,9 +624,21 @@
   </div>
 
   <h2 id="how-to-test">How to Test With WAVE</h2>
-  <p>WAVE is Tier 2: semi-automated and browser-only. It has no CI/CD mode, so it does not belong in the pipeline layer of your testing stack. For automated coverage on every build, use <a href="31-Axe-Core-Cypress-Playwright.html" style="color:var(--blue);"><span class="tool">axe-core</span></a> instead: see <a href="31-Axe-Core-Cypress-Playwright.html" style="color:var(--blue);">Blog 31</a> for CI setup. WAVE is not a substitute for that layer.</p>
-  <p>In the browser, follow the systematic session in <a href="#how-to-use" style="color:var(--blue);">Section 3</a> above: install, activate, work through errors first, review alerts, audit structure, then check features and contrast. What WAVE cannot catch is covered in <a href="#what-wave-misses" style="color:var(--blue);">Section 5</a>: keyboard navigation, screen reader announcements, focus order, and dynamic content behaviour still need manual and screen reader testing.</p>
-  <p><strong>Platforms:</strong> Chrome and Firefox on Windows and Mac. There is no mobile browser extension: WAVE does not run on iOS or Android.</p>
+
+  <h3>Tier 1: Pipeline automation</h3>
+  <p>Not the free WAVE extension: it has no CI/CD mode. WebAIM's paid <a href="https://wave.webaim.org/api/" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">WAVE API</a> can be scripted against public URLs, but it costs credits per page and isn't open source. Use <a href="31-Axe-Core-Cypress-Playwright.html" style="color:var(--blue);"><span class="tool">axe-core</span></a> for free, pipeline-native automation instead: see Blog 31 for CI setup.</p>
+
+  <h3>Tier 2: Semi-automated: WAVE in the browser</h3>
+  <p>See <a href="#how-to-use" style="color:var(--blue);">Section 3</a> above for the full workflow: install, activate, work through errors first, review alerts, audit structure, check features and contrast, then check the Order tab.</p>
+  <p><strong>Platforms:</strong> Chrome and Firefox on Windows and Mac. No mobile browser extension: WAVE does not run on iOS or Android, and unlike axe, WebAIM sells no native-app equivalent. For native iOS and Android UI, use the platform's own scanner (Xcode's Accessibility Inspector, Android's Accessibility Scanner) instead.</p>
+
+  <h3>Tier 3: Manual: what WAVE misses</h3>
+  <ul>
+    <li><strong>Keyboard navigation and logical focus order:</strong> the Order tab numbers the tab sequence but cannot judge whether it's logical.</li>
+    <li><strong>Screen reader announcements:</strong> <a href="20-NVDA-on-Windows.html" style="color:var(--blue);">NVDA</a> + Firefox on Windows, <a href="22-VoiceOver-on-Mac.html" style="color:var(--blue);">VoiceOver</a> + Safari on Mac.</li>
+    <li><strong>Dynamic content after interaction:</strong> WAVE scans the DOM at load. Trigger interactions, then re-run WAVE or use axe DevTools.</li>
+    <li><strong>Alt text and ARIA quality:</strong> WAVE confirms presence, not correctness. Read every alt text and verify ARIA usage manually.</li>
+  </ul>
 
   <div class="series-nav">
     <span class="label">Navigate the series</span>

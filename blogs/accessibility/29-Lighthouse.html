@@ -150,9 +150,8 @@
   <p>Lighthouse is built into every Chrome browser. No installation required. It also runs via the Node CLI and integrates with CI/CD pipelines via <span class="tool">lighthouse-ci</span>. It is the most widely distributed accessibility scanning tool available.</p>
 
   <h2 id="the-score">2. The Accessibility Score: What It Measures</h2>
-  <p>The Lighthouse accessibility score is a weighted average of the axe-core rules it runs. A score of 100 does not mean the page is accessible. It means the page passed all automated axe-core checks that Lighthouse runs.</p>
-  <div class="callout amber" role="note">Automated tools catch approximately 30 to 50 percent of WCAG 2.1 AA failures. A score of 100 is the floor for accessibility, not the ceiling. A page with a score of 100 can still fail WCAG on keyboard navigation, screen reader announcements, cognitive load, and dozens of manual criteria.</div>
-  <p>The score weights violations by impact. A missing image alt text reduces the score more than a missing label for a decorative element. This means two pages with different failure patterns can have the same score despite having different severity of real-world impact.</p>
+  <p>The Lighthouse accessibility score is a weighted average of the axe-core rules it runs, weighted by impact: missing image alt text costs more than a missing label on a decorative element. A score of 100 means the page passed every automated check Lighthouse runs, not that the page is accessible.</p>
+  <div class="callout amber" role="note">Automated tools catch roughly 30 to 50 percent of WCAG 2.1 AA failures. A 100 is the floor, not the ceiling: a page can still fail on keyboard navigation, screen reader announcements, cognitive load, and dozens of other manual criteria. Impact weighting also means two pages with different failure patterns can land on the same score despite different real-world severity.</div>
 
   <h2 id="how-to-run">3. How to Run Lighthouse</h2>
   <h3>In Chrome DevTools</h3>
@@ -241,17 +240,11 @@
   <h2 id="how-to-test">How to Test With Lighthouse</h2>
 
   <h3>Tier 1: Pipeline automation</h3>
-  <p>Use <span class="tool">lighthouse-ci</span> to run Lighthouse on every build and fail when the accessibility score drops below a threshold. Set <code>"categories:accessibility": ["error", {"minScore": 0.9}]</code> in your <code>lighthouserc.json</code>. Track score trends across releases. Never let the score regress.</p>
+  <p>Use <span class="tool">lighthouse-ci</span> on every build: see <a href="#ci" style="color:var(--blue);">Section 6</a> above for the config and threshold. Track score trends across releases and never let the score regress.</p>
 
   <h3>Tier 2: Semi-automated: Lighthouse in Chrome DevTools</h3>
-  <ul>
-    <li>Open Chrome DevTools (<code>F12</code>), go to the Lighthouse tab</li>
-    <li>Select Accessibility only. Choose Desktop or Mobile mode.</li>
-    <li>Run in an incognito window with all extensions disabled for an accurate baseline</li>
-    <li>Review every flagged violation. Note the WCAG criterion and fix guidance.</li>
-    <li>Re-run after fixing violations to confirm the score improvement</li>
-    <li><strong>Platforms:</strong> Chrome DevTools on Windows and Mac. Lighthouse CLI runs on any OS headlessly. Lighthouse Mobile mode simulates a mobile viewport but does not test native apps.</li>
-  </ul>
+  <p>See <a href="#how-to-run" style="color:var(--blue);">Section 3</a> above for the full workflow: open DevTools, select Accessibility only, run in incognito with extensions disabled, review each violation, then re-run to confirm the fix.</p>
+  <p><strong>Platforms:</strong> Chrome DevTools on Windows and Mac. Lighthouse CLI runs on any OS headlessly. Lighthouse Mobile mode simulates a mobile viewport but does not test native apps.</p>
   <p><strong>Where to practise:</strong> Open any of the A11y Test Playgrounds from this series in Chrome and run Lighthouse against them. The playgrounds contain deliberate violations: verify Lighthouse catches them and note which ones it misses.</p>
   <ul>
     <li><a href="A11y-Test-Playground/27 A11y Test Playground - Axe DevTools.html" style="color:var(--blue);">Axe DevTools Playground</a>: contains Critical and Serious violations</li>
@@ -268,13 +261,11 @@
     <li><strong>Dynamic content:</strong> Trigger interactions after page load. Re-run axe DevTools: Lighthouse does not re-scan post-interaction.</li>
   </ul>
 
-  
-
   <div style="background:var(--blue-bg);border:1px solid rgba(96,165,250,0.2);border-radius:10px;padding:1.1rem 1.4rem;margin:1.75rem 0;display:flex;align-items:flex-start;gap:14px;">
     <div style="font-size:1.1rem;line-height:1;padding-top:2px;" aria-hidden="true">&#128241;</div>
     <div>
       <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--blue);font-weight:500;margin-bottom:4px;">Testing this on mobile</div>
-      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">For native iOS and Android apps to practise the same checks on, see <a href="40-Mobile-Accessibility-Testing-Practice-Apps.html" style="color:var(--blue);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Blog 40: Mobile Accessibility Testing Practice Apps</a>.</div>
+      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">Lighthouse has no native-app equivalent: Mobile mode only simulates a phone viewport and user agent in the browser, it never touches native iOS or Android UI. For native iOS and Android apps to practise the same checks on, see <a href="40-Mobile-Accessibility-Testing-Practice-Apps.html" style="color:var(--blue);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Blog 40: Mobile Accessibility Testing Practice Apps</a>.</div>
     </div>
   </div>
   <div class="series-nav"><span class="label">Navigate the series</span>
