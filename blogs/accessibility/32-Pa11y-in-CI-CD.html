@@ -97,21 +97,25 @@
   </nav>
 
   <h2 id="what">1. What Pa11y Is</h2>
-  <p>Pa11y is a free, open-source command-line accessibility testing tool. It launches a headless browser, loads a URL, runs accessibility checks using <a href="31-Axe-Core-Cypress-Playwright.html" style="color:var(--blue);"><span class="tool">axe-core</span></a> or HTML_CodeSniffer as the underlying engine, and returns results as JSON, CSV, or CLI output. It requires no browser extension and no GUI: making it the cleanest tool for integrating accessibility into a CI pipeline without adding browser dependencies.</p>
+  <p>Pa11y is a free, open-source command-line accessibility testing tool. It launches a headless browser, loads a URL, and returns results as JSON, CSV, or CLI output. It requires no browser extension and no GUI: making it the cleanest tool for integrating accessibility into a CI pipeline without adding browser dependencies.</p>
+  <p>Pa11y can run either of two rule engines. Its default is HTML_CodeSniffer, an older, narrower rule set. To get <a href="31-Axe-Core-Cypress-Playwright.html" style="color:var(--blue);"><span class="tool">axe-core</span></a> instead, the same engine this series covers everywhere else, you have to ask for it explicitly with <code>runners: ["axe"]</code> in config or <code>--runner axe</code> on the CLI. Every example on this page does that, so what follows is genuinely the axe-core comparison the rest of this section makes: not Pa11y's out-of-the-box behaviour.</p>
 
   <h2 id="install">2. Install and First Run</h2>
   <details style="margin:1.25rem 0;">
     <summary style="cursor:pointer;color:var(--text-3);font-size:0.78rem;margin-bottom:4px;">Install and run commands — show code</summary>
     <pre style="margin-top:0;">npm install -g pa11y
 
-# Run against a URL
+# Run against a URL (default runner: HTML_CodeSniffer)
 pa11y https://example.com
 
-# Run with WCAG 2.1 AA standard
-pa11y --standard WCAG2AA https://example.com
+# Run with the axe-core engine instead of the default
+pa11y --runner axe https://example.com
+
+# Run with WCAG 2.1 AA standard, axe-core engine
+pa11y --standard WCAG2AA --runner axe https://example.com
 
 # Output as JSON
-pa11y --reporter json https://example.com > results.json</pre>
+pa11y --runner axe --reporter json https://example.com > results.json</pre>
   </details>
   <p>Pa11y outputs each issue with: type (error, warning, notice), message, context (the HTML element), and the WCAG criterion reference.</p>
 
@@ -122,7 +126,8 @@ pa11y --reporter json https://example.com > results.json</pre>
     <pre style="margin-top:0;"># .pa11yrc
 {
   "standard": "WCAG2AA",
-  "reporters": ["json"],
+  "runners": ["axe"],
+  "reporter": "json",
   "threshold": 0,
   "ignore": [
     "notice",
@@ -135,6 +140,7 @@ pa11y --reporter json https://example.com > results.json</pre>
   </details>
   <ul>
     <li><strong>standard WCAG2AA:</strong> Targets WCAG 2.1 AA rules specifically</li>
+    <li><strong>runners axe:</strong> Pa11y's default engine is HTML_CodeSniffer. This switches it to axe-core: the same engine as the rest of this series, and required for the comparison in Section 6.</li>
     <li><strong>threshold 0:</strong> Fails if any errors are found. Increase to allow a known number of violations during remediation.</li>
     <li><strong>ignore notice/warning:</strong> Focus the gate on errors only: the definite failures.</li>
     <li><strong>chromeLaunchConfig no-sandbox:</strong> Required for running in most CI environments (GitHub Actions, Jenkins, Docker).</li>
@@ -170,7 +176,7 @@ jobs:
         run: npm install -g pa11y
 
       - name: Run Pa11y accessibility check
-        run: pa11y --standard WCAG2AA --reporter json https://staging.example.com > pa11y-results.json
+        run: pa11y --standard WCAG2AA --runner axe --reporter json https://staging.example.com > pa11y-results.json
 
       - name: Upload Pa11y results
         if: always()
@@ -188,7 +194,7 @@ jobs:
       <li><strong>actions/checkout@v4:</strong> Copies your repository onto the runner. Without it, later steps have nothing to check.</li>
       <li><strong>actions/setup-node@v4:</strong> Installs Node.js so <code>npm</code> is available. <code>node-version: 20</code> pins the version so CI does not change behaviour when Node updates.</li>
       <li><strong>npm install -g pa11y:</strong> Installs Pa11y globally on the runner, since it is not part of your project's own dependencies.</li>
-      <li><strong>Run Pa11y accessibility check:</strong> Scans the target URL and writes the results to <code>pa11y-results.json</code>. This is the step that fails the build (Pa11y's exit code 2) when violations exist.</li>
+      <li><strong>Run Pa11y accessibility check:</strong> Scans the target URL with the axe-core runner and writes the results to <code>pa11y-results.json</code>. This is the step that fails the build (Pa11y's exit code 2) when violations exist.</li>
       <li><strong>Upload Pa11y results, if: always():</strong> A failed step normally skips everything after it. <code>if: always()</code> makes sure the results file still uploads even when Pa11y fails, since that is the run you actually need to inspect. Download it from the run's summary page in the Actions tab.</li>
     </ul>
   </details>
@@ -207,6 +213,7 @@ jobs:
   ],
   "defaults": {
     "standard": "WCAG2AA",
+    "runners": ["axe"],
     "ignore": ["notice", "warning"]
   }
 }
@@ -226,7 +233,7 @@ pa11y-ci --config pa11y-ci.json</pre>
     <tbody>
       <tr><td>Integration approach</td><td>Standalone CLI: scan URLs independently of test suite</td><td>Embedded in existing Playwright/Cypress test flows</td></tr>
       <tr><td>Interaction state scanning</td><td>Page load only by default: scripting required for interactions</td><td>Natural: run axe after any interaction in the test flow</td></tr>
-      <tr><td>Rule engine</td><td>axe-core or HTML_CodeSniffer (configurable)</td><td>axe-core only</td></tr>
+      <tr><td>Rule engine</td><td>HTML_CodeSniffer by default; axe-core with <code>runners: ["axe"]</code></td><td>axe-core only</td></tr>
       <tr><td>Multi-page scanning</td><td>Built in via pa11y-ci URL list</td><td>Requires a test per page</td></tr>
       <tr><td>Authenticated pages</td><td>Requires scripting for login flows</td><td>Natural: Playwright/Cypress handle auth as part of test setup</td></tr>
       <tr><td>Best for</td><td>Quick URL-based scanning, public pages, staging environments</td><td>Testing authenticated flows, post-interaction states, component-level testing</td></tr>
@@ -234,7 +241,7 @@ pa11y-ci --config pa11y-ci.json</pre>
   </table></div>
 
 <h2 id="what-catches">7. What Pa11y Catches and Misses</h2>
-  <p>Pa11y catches the same automated subset as axe DevTools and Lighthouse: missing labels, contrast failures, invalid ARIA, empty buttons: because it uses the same axe-core engine by default. It misses the same things: keyboard navigation logic, screen reader announcements, focus order, alt text quality, and interaction-state violations unless scripted explicitly.</p>
+  <p>Configured with <code>runners: ["axe"]</code> as shown throughout this blog, Pa11y catches the same automated subset as axe DevTools and Lighthouse: missing labels, contrast failures, invalid ARIA, empty buttons: because it is running the same axe-core engine. Left on its default HTML_CodeSniffer runner, the specific rule set differs. Either way it misses the same category of issues: keyboard navigation logic, screen reader announcements, focus order, alt text quality, and interaction-state violations unless scripted explicitly.</p>
 
   <div class="takeaway" role="note">
     <div class="label">When to choose Pa11y</div>
@@ -256,7 +263,7 @@ pa11y-ci --config pa11y-ci.json</pre>
   </ul>
 
   <h3>Tier 2: Semi-automated tools</h3>
-  <p>Pa11y has no browser extension equivalent. After a Pa11y CI failure, use <a href="27-Axe-DevTools.html" style="color:var(--blue);"><span class="tool">axe DevTools</span></a> or <a href="26-WAVE.html" style="color:var(--blue);"><span class="tool">WAVE</span></a> in the browser to visually inspect and locate the element. Pa11y uses axe-core by default: violations reported in CI can be reproduced immediately with axe DevTools on the same page.</p>
+  <p>Pa11y has no browser extension equivalent. After a Pa11y CI failure, use <a href="27-Axe-DevTools.html" style="color:var(--blue);"><span class="tool">axe DevTools</span></a> or <a href="26-WAVE.html" style="color:var(--blue);"><span class="tool">WAVE</span></a> in the browser to visually inspect and locate the element. With <code>runners: ["axe"]</code> configured, as in Section 3, Pa11y is running axe-core: violations reported in CI can be reproduced immediately with axe DevTools on the same page.</p>
 
   <h3>Tier 3: Manual: what Pa11y cannot catch</h3>
   <ul>
@@ -271,7 +278,7 @@ pa11y-ci --config pa11y-ci.json</pre>
     <div style="font-size:1.1rem;line-height:1;padding-top:2px;" aria-hidden="true">&#127919;</div>
     <div>
       <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--amber);font-weight:500;margin-bottom:4px;">Practice on real violations</div>
-      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">Run Pa11y against the <a href="A11y-Test-Playground/31 A11y Test Playground - Axe Core CI.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Axe-Core CI Playground</a> to see how Pa11y reports violations vs how axe DevTools shows them in the browser. Compare the output: same engine, different presentation.</div>
+      <div style="font-size:0.88rem;color:var(--text-2);font-weight:300;">Run <code>pa11y --runner axe</code> against the <a href="A11y-Test-Playground/31 A11y Test Playground - Axe Core CI.html" style="color:var(--amber);font-weight:500;text-decoration:underline;text-underline-offset:3px;">Axe-Core CI Playground</a> to see how Pa11y reports violations vs how axe DevTools shows them in the browser. With the axe runner explicitly set, compare the output: same engine, different presentation. Drop <code>--runner axe</code> and run it again to see HTML_CodeSniffer's default results differ.</div>
     </div>
   </div>
 

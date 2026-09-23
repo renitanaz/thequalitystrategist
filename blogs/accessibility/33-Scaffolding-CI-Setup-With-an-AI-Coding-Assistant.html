@@ -115,11 +115,11 @@ Show me the code before running anything, and explain what each part of the gene
   <pre style="white-space:pre-wrap;">Set up accessibility testing in CI for this project using Pa11y. My site is reachable at &lt;your staging or deployed URL&gt;, and it has more than one page to check: &lt;list your page paths&gt;.
 
 1. Install pa11y-ci as a dev dependency (not global).
-2. Create a pa11y-ci.json listing each URL, with defaults standard: "WCAG2AA" and ignore: ["notice", "warning"]: only errors should fail the build.
+2. Create a pa11y-ci.json listing each URL, with defaults standard: "WCAG2AA", runners: ["axe"], and ignore: ["notice", "warning"]: only errors should fail the build.
 3. Create a GitHub Actions workflow at .github/workflows/accessibility.yml that runs on every push and pull request to main, installs Node and pa11y-ci, runs pa11y-ci against the config file, and uploads the JSON report as a build artifact even when the run fails.
 
 Show me the code before running anything, and explain what each part of the generated workflow file does.</pre>
-  <p style="font-size:0.88rem;color:var(--text-3);">Encodes the choices <a href="32-Pa11y-in-CI-CD.html" style="color:var(--blue);">Blog 32</a> makes: WCAG2AA standard, notices and warnings ignored so only errors gate the build, and pa11y-ci for scanning more than one URL in a single run.</p>
+  <p style="font-size:0.88rem;color:var(--text-3);">Encodes the choices <a href="32-Pa11y-in-CI-CD.html" style="color:var(--blue);">Blog 32</a> makes: WCAG2AA standard, the axe-core runner instead of Pa11y's HTML_CodeSniffer default, notices and warnings ignored so only errors gate the build, and pa11y-ci for scanning more than one URL in a single run.</p>
 
   <h2 id="lighthouse">4. Lighthouse CI</h2>
   <pre style="white-space:pre-wrap;">Set up accessibility testing in CI for this project using Lighthouse CI. My site is reachable at &lt;your staging or deployed URL&gt;.
@@ -182,8 +182,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
-      - run: npm install -g pa11y-ci
-      - run: pa11y-ci --config pa11y-ci.json
+      - run: npm ci
+      - run: npx pa11y-ci --config pa11y-ci.json
 
   lighthouse:
     if: github.event_name != 'workflow_dispatch' || inputs.tool == 'all' || inputs.tool == 'lighthouse'
@@ -192,8 +192,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
-      - run: npm install -g @lhci/cli
-      - run: lhci autorun</pre>
+      - run: npm ci
+      - run: npx lhci autorun</pre>
   </details>
   <p>The <code>if</code> condition on each job is what makes the tool selectable: on an ordinary push or pull request, <code>github.event_name != 'workflow_dispatch'</code> is true, so every job runs regardless of the input. On a manual run, that first clause is false, so the job only runs if <code>inputs.tool</code> matches its own name or equals <code>all</code>. Three independent jobs also run in parallel by default, rather than one long job that runs the three tools in sequence: a broken axe-core step does not stop Pa11y or Lighthouse from still reporting their own results.</p>
 
