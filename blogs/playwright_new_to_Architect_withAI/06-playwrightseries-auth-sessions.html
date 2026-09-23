@@ -181,7 +181,7 @@ test('cart page loads for authenticated user', async ({ page }) => {
   </div>
 
   <h2>storageState: how it works</h2>
-  <p>When a user logs in, the browser stores a session cookie (or a token in localStorage). <code>storageState</code> captures that storage: cookies, localStorage, sessionStorage: and saves it to a JSON file. Tests that load this file start with the browser already in the logged-in state, without replaying the login steps.</p>
+  <p>When a user logs in, the browser stores a session cookie (or a token in localStorage). <code>storageState</code> captures that storage: cookies and localStorage: and saves it to a JSON file. Tests that load this file start with the browser already in the logged-in state, without replaying the login steps.</p>
   <pre><code>// Save state after a real login (in globalSetup):
 await page.context().storageState({ path: 'fixtures/auth-customer.json' });
 
@@ -190,8 +190,8 @@ const context = await browser.newContext({
   storageState: 'fixtures/auth-customer.json'
 });
 </code></pre>
-  <p><strong>What it captures:</strong> cookies (including session cookies), localStorage keys, and sessionStorage keys for the origin the page was on when you called it.</p>
-  <p><strong>What it does not capture:</strong> in-memory state, IndexedDB, or auth tokens stored in JavaScript variables. If your app stores the token in a cookie or localStorage, storageState works perfectly. If it stores the token only in memory, you need a different approach.</p>
+  <p><strong>What it captures:</strong> cookies (including session cookies) and localStorage keys for the origin the page was on when you called it. It can also capture IndexedDB, but only when you opt in explicitly (<code>indexedDB: true</code>).</p>
+  <p><strong>What it does not capture:</strong> sessionStorage (Playwright has no API to persist it, you'd need to read and replay it yourself via <code>page.evaluate()</code>), in-memory state, or auth tokens stored only in JavaScript variables. If your app stores the token in a cookie or localStorage, storageState works perfectly. If it stores the token only in memory or sessionStorage, you need a different approach.</p>
 
   <h2>Multi-role testing: customer and admin</h2>
   <p>PeakAndPack has two roles: customers who see their own data, and admins who see everything. Each role needs its own saved session. Create one globalSetup file that logs in as both and saves two state files:</p>

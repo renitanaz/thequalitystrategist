@@ -31,13 +31,11 @@ test.describe('Visual regression', () => {
 
   test('product listing page @critical', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
     await expect(page).toHaveScreenshot('product-listing.png', TOLERANCE);
   });
 
   test('product card with empty name (BUG-002) @high', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
     // The empty-name product renders the literal fallback text "(no name)".
     const card = page.getByText('(no name)').locator('..');
     await expect(card).toHaveScreenshot('card-empty-name.png', TOLERANCE);
@@ -47,7 +45,6 @@ test.describe('Visual regression', () => {
 
   test('product card negative price (BUG-001) @critical', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
     const card = page.getByText('Sleeping Bag').locator('..');
     await expect(card).toHaveScreenshot('card-negative-price.png', TOLERANCE);
     // Baseline captured WITH the red -$89.00 visible. Fixing BUG-001
@@ -56,13 +53,11 @@ test.describe('Visual regression', () => {
 
   test('cart page layout @high', async ({ page }) => {
     await page.goto('/cart');
-    await page.waitForLoadState('networkidle');
     await expect(page).toHaveScreenshot('cart-page.png', TOLERANCE);
   });
 
   test('checkout page layout @high', async ({ page }) => {
     await page.goto('/checkout');
-    await page.waitForLoadState('networkidle');
     await expect(page).toHaveScreenshot('checkout-page.png', TOLERANCE);
   });
 

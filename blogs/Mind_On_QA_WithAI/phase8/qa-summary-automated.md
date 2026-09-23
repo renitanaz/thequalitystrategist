@@ -9,25 +9,30 @@
 
 | Metric | Value |
 |---|---|
-| Total tests | 37 |
-| Passing | 31 |
-| Failing | 6 |
+| Total tests | 28 |
+| Passing | 24 |
+| Failing | 4 |
 | Suite duration | ~45 seconds |
 
 ---
 
-## Failing tests (6 of the 11 planted bugs)
+## Failing tests (4 of the 11 planted bugs, caught by an outright red X)
 
 | Test | File | Bug ID | Severity |
 |---|---|---|---|
 | TC-101: checkout with valid discount | checkout.spec.ts | BUG-009 | Critical |
 | TC-104: checkout blocks out-of-stock item | checkout.spec.ts | BUG-008 | High |
-| product card with empty name | visual.spec.ts | BUG-002 | Medium |
-| product card negative price | visual.spec.ts | BUG-001 | High |
 | GET /api/orders returns only caller's orders | api.spec.ts | BUG-010 | Critical |
 | GET /api/search without q returns 400 | api.spec.ts | BUG-011 | High |
 
-A suspected large-price overflow (product card at mobile width) was checked at 375px and does not reproduce, no test for it here. BUG-003 (price set at $9,999.99) and BUG-004 through BUG-007 are not covered by this automated suite, they were confirmed or missed by other approaches, see `qa-programme-summary.md`.
+## Passing tests that still reveal a bug (2 more, caught in the visual baseline itself)
+
+| Test | File | Bug ID | Severity | Why it's not in the failing list |
+|---|---|---|---|---|
+| product card with empty name | visual.spec.ts | BUG-002 | Medium | Baseline was captured with the bug already on screen, so today's screenshot matches it and the test passes. Fixing the bug is what will make this test fail, prompting a re-baseline. |
+| product card negative price | visual.spec.ts | BUG-001 | High | Same mechanism: the passing baseline shows the red negative price directly, a human reviewing it catches the bug the test itself won't flag as red. |
+
+That's 6 of the 11 planted bugs surfaced by this automated suite, 4 by failure, 2 by what's visible in a passing baseline. A suspected large-price overflow (product card at mobile width) was checked at 375px and does not reproduce, no test for it here. BUG-003 (price set at $9,999.99) and BUG-004 through BUG-007 are not covered by this automated suite, they were confirmed or missed by other approaches, see `qa-programme-summary.md`.
 
 ---
 

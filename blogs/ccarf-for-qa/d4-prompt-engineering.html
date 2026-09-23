@@ -267,7 +267,7 @@
   <p>4.5 and 4.6 both come down to matching the tool to what the task actually tolerates: latency for batching, independence for reviewing.</p>
 
   <div class="callout blue">
-    <p><strong>PeakAndPack's version:</strong> d1-triage-agent.ts's live, tool-calling triage cannot batch at all, the Batch API doesn't support mid-request tool calls. Only a nightly sweep using the simpler <code>d1-triage-workflow.ts</code> shape, no tools, one call in, one verdict out, actually qualifies.</p>
+    <p><strong>PeakAndPack's version:</strong> d1-triage-agent.ts's live triage calls a custom tool (<code>check_live_api</code>), and the Batch API doesn't support client-side custom tools mid-request, only server tools like web search or code execution. So this one still can't batch as written. Only a nightly sweep using the simpler <code>d1-triage-workflow.ts</code> shape, no custom tools, one call in, one verdict out, actually qualifies.</p>
   </div>
 
   <p>Running that sweep for real needs one more piece the qualify/disqualify decision above doesn't cover: each request in a batch carries a <code>custom_id</code> you choose, a scenario's failure text ID, say, so that when results come back unordered, each verdict can be matched to the failure it belongs to. If a handful of requests fail (a malformed input, a document too large), only those specific <code>custom_id</code>s get resubmitted, not the whole batch.</p>

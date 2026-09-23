@@ -119,7 +119,7 @@
   </p>
   <span class="series-tag">Phase 12 of 15 &middot; CI/CD &amp; Flaky Tests</span>
   <h1>CI/CD, Reporting and Flaky Test Management</h1>
-  <p class="subtitle">Fast feedback on every PR. Tag tests so the right ones run at the right time. Shard for speed. Track flaky tests as quality debt.</p>
+  <p class="subtitle">Fast feedback on every PR. Tag tests so the right ones run at the right time. Shard for speed. Track flaky tests as quality debt. Run an accessibility scan alongside everything else, and know what it doesn't catch.</p>
   <div class="meta-row">
     <span>By RN</span><span>~5 hours</span>
     <span>Series: Playwright: Zero to Architect</span>
@@ -320,12 +320,39 @@ retries: process.env.CI ? 1 : 0, // one retry in CI to catch genuine intermitten
     </ul>
   </div>
 
+  <h2>Accessibility in the pipeline: automated, plus a manual pass</h2>
+  <p>The same pipeline that runs your functional suite can run an accessibility scan on every PR. Add <code>@axe-core/playwright</code> and assert against it like any other test:</p>
+  <pre><code>// tests/accessibility.spec.ts
+import { test, expect } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
+
+test('product listing has no critical a11y violations @a11y @critical', async ({ page }) => {
+  await page.goto('/products');
+  const results = await new AxeBuilder({ page }).analyze();
+  const critical = results.violations.filter(v => v.impact === 'critical' || v.impact === 'serious');
+  expect(critical, JSON.stringify(critical, null, 2)).toHaveLength(0);
+});
+</code></pre>
+  <p>Tag it <code>@a11y</code> alongside <code>@critical</code> so it runs on every PR with the rest of the fast suite, no separate pipeline needed. Pa11y is worth adding as a second automated layer, since it doesn't always flag the same things as axe-core, the same "cross-check at least two tools" principle from testing color contrast applies here too.</p>
+
+  <div class="callout gold">
+    <p><strong>Automated accessibility scans catch roughly 30-50% of real WCAG issues, not all of them.</strong> A green <code>@a11y</code> tag means "nothing obvious," not "accessible." Treat it as a floor, not a finish line, see the dedicated <a href="../accessibility/34-Automated-Tools-Only-Catch-30-50-Percent.html">Shift-Left Accessibility series' Blog 34</a> for the full case.</p>
+  </div>
+
+  <p>The part CI can't do: a keyboard-only walkthrough of the core PeakAndPack flows (browse, add to cart, checkout) with the mouse disconnected, and one screen reader pass over the checkout form specifically, since forms are exactly where automated tools are weakest at catching whether a label actually makes sense out loud. Do this once by hand, document what you found, and re-run it whenever the checkout form changes.</p>
+
+  <div class="callout blue">
+    <p><strong>Going deeper than PeakAndPack's CI check needs.</strong> This phase only covers enough accessibility testing to make the CI badge honest. For the full methodology, keyboard testing technique, screen reader setup, WCAG requirement reference, tool comparisons, see the site's dedicated <a href="../accessibility/00-Shift-Left-Accessibility-Series-Introduction.html">Shift-Left Accessibility series</a>, in particular <a href="../accessibility/10-Keyboard-Testing.html">Blog 10 on keyboard testing</a>, <a href="../accessibility/20-NVDA-on-Windows.html">Blog 20 on NVDA</a>, and <a href="../accessibility/31-Axe-Core-Cypress-Playwright.html">Blog 31 on axe-core in Playwright</a> specifically.</p>
+  </div>
+
   <h2>Deliverables</h2>
   <ul>
     <li><code>.github/workflows/playwright.yml</code>: full sharded CI pipeline with tagging</li>
     <li><code>reporters/custom-reporter.ts</code>: actionable failure output</li>
     <li><code>flaky-register.md</code>: tracked flaky tests with root cause and status</li>
     <li><code>ci-guide.md</code>: when each tag runs, how sharding works, how to read the merged report</li>
+    <li><code>tests/accessibility.spec.ts</code>: axe-core scan tagged <code>@a11y @critical</code>, running on every PR</li>
+    <li><code>manual-a11y-pass.md</code>: keyboard-only walkthrough and screen reader notes on the checkout form, dated so it's clear when it was last done</li>
   </ul>
 
   <div class="assignment">

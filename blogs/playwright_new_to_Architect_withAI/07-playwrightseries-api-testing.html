@@ -188,7 +188,7 @@ test('cart page reflects API-seeded item', async ({ page, request }) => {
   </div>
 
   <h2>Playwright request context</h2>
-  <p>The <code>request</code> fixture gives you a full HTTP client inside a Playwright test. It shares the same origin and cookies as the browser page, which means an API call made with <code>request</code> is authenticated if the browser is authenticated.</p>
+  <p>The <code>request</code> fixture gives you a full HTTP client inside a Playwright test, isolated from any browser page. It only starts pre-authenticated if you explicitly configure <code>storageState</code> for the test. If you need an API call that live-shares cookies with a page you already logged in during the same test, use <code>page.request</code> or <code>context.request</code> instead, those two do stay in sync with the browser context.</p>
   <pre><code>import { test, expect } from '@playwright/test';
 
 test('GET /api/products returns a list', async ({ request }) => {
@@ -216,9 +216,8 @@ test('GET /api/products returns a list', async ({ request }) => {
 });
 
 test('POST /api/cart without auth returns 401', async ({ request }) => {
-  // Create a new context with no auth to test the negative case
-  const ctx = await request.newContext({ baseURL: 'https://peakandpackshopdemo.onrender.com' });
-  const res = await ctx.post('/api/cart', {
+  // The request fixture starts unauthenticated by default, no extra setup needed for the negative case
+  const res = await request.post('/api/cart', {
     data: { productId: 1, quantity: 1 }
   });
   expect(res.status()).toBe(401);

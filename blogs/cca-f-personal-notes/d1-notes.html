@@ -252,7 +252,7 @@
           <text class="bcolor-3" x="230" y="256" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7" fill="var(--purple)">Invocation &amp;</text>
           <text class="bcolor-3" x="230" y="267" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="7" fill="var(--purple)">Context Passing</text>
           <rect class="bcolor-3" x="0" y="190" width="170" height="32" rx="6" fill="var(--bg)" stroke="var(--purple)" stroke-opacity=".4"/>
-          <text x="85" y="210" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9"><tspan fill="var(--text-2)">Task tool + </tspan><tspan fill="var(--amber)" font-weight="700">allowedTools</tspan></text>
+          <text x="85" y="210" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9"><tspan fill="var(--text-2)">Task tool + </tspan><tspan fill="var(--amber)" font-weight="700">tools</tspan></text>
           <rect class="bcolor-3" x="0" y="238" width="170" height="32" rx="6" fill="var(--bg)" stroke="var(--purple)" stroke-opacity=".4"/>
           <text x="85" y="258" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9"><tspan fill="var(--amber)" font-weight="700">AgentDefinition</tspan><tspan fill="var(--text-2)"> config</tspan></text>
           <rect class="bcolor-3" x="0" y="286" width="170" height="32" rx="6" fill="var(--bg)" stroke="var(--purple)" stroke-opacity=".4"/>
@@ -326,7 +326,7 @@
           <div class="kw g2"><dt>Isolated context</dt><dd>Subagents do not automatically inherit the coordinator's conversation history - nothing carries over unless explicitly passed in the prompt.</dd></div>
           <div class="kw g2"><dt>Context Passing Rules</dt><dd><ul><li>State everything the subagent needs explicitly in the prompt - nothing is inherited, and nothing persists between separate invocations.</li><li>Include complete findings from prior agents directly in the subagent's prompt, not just a reference to them.</li><li>Use structured data formats that separate content from metadata (source URLs, doc names, page numbers) to preserve attribution across handoffs.</li></ul></dd></div>
           <div class="kw g2"><dt>Overly narrow decomposition</dt><dd>Risk named explicitly in the guide: a coordinator that splits a broad topic too narrowly leaves real coverage gaps (see Q7 below).</dd></div>
-          <div class="kw g2"><dt>Task tool</dt><dd>The mechanism for spawning subagents. <code>allowedTools</code> must include <code>"Task"</code> for a coordinator to invoke them.</dd></div>
+          <div class="kw g2"><dt>Task tool</dt><dd>The mechanism for spawning subagents. The coordinator's <code>tools</code> field must include <code>"Task"</code> (now often <code>"Agent"</code>, since the tool was renamed) for it to invoke them.</dd></div>
           <div class="kw g2"><dt><code>AgentDefinition</code></dt><dd>Per-subagent configuration: description, system prompt, and tool restrictions.</dd></div>
           <div class="kw g2"><dt>Parallel vs. sequential spawning</dt><dd><strong>Parallel:</strong> multiple <code>Task</code> calls emitted within a <em>single</em> coordinator response - default choice, use when subagents are independent (e.g. web search + document analysis on unrelated sources). <strong>Sequential:</strong> one <code>Task</code> call per coordinator turn, waiting for each result - use only when a real dependency exists (subagent B needs subagent A's output before it can start). Sequential otherwise just adds latency for nothing.</dd></div>
         </dl>
@@ -504,7 +504,7 @@
 
       <h3 class="subhead" id="diagram-coordinator"><span>Coordinator, Subagents, and the Task Tool</span><a href="#kw-1-2-3" class="visual-link">related keywords</a></h3>
       <div class="mindmap-wrap">
-        <svg viewBox="0 0 640 235" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Diagram: a coordinator drawn as a tall rectangle on the left, with two subagents stacked on the right. Each arrow runs from the coordinator to a subagent, labeled allowedTools: Task - the gate that lets the coordinator spawn them. The two arrows fire in the same response for a parallel spawn. Each subagent has its own scoped tools and reports back only to the coordinator, never to each other.">
+        <svg viewBox="0 0 640 235" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" role="img" aria-label="Diagram: a coordinator drawn as a tall rectangle on the left, with two subagents stacked on the right. Each arrow runs from the coordinator to a subagent, labeled tools: Task - the gate that lets the coordinator spawn them. The two arrows fire in the same response for a parallel spawn. Each subagent has its own scoped tools and reports back only to the coordinator, never to each other.">
           <text x="320" y="14" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9" fill="var(--text-3)">2 &times; Task calls, same response &rarr; parallel spawn</text>
 
           <rect x="20" y="20" width="160" height="190" rx="8" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="1.5"/>
@@ -523,8 +523,8 @@
 
           <path d="M180,68 C240,64 340,64 410,66" fill="none" stroke="var(--text-3)" stroke-width="1.5" marker-end="url(#cs1)"/>
           <path d="M180,162 C240,166 340,164 410,162" fill="none" stroke="var(--text-3)" stroke-width="1.5" marker-end="url(#cs2)"/>
-          <text x="295" y="58" text-anchor="middle" font-family="Consolas, monospace" font-size="8" fill="var(--purple)">allowedTools: ["Task"]</text>
-          <text x="295" y="180" text-anchor="middle" font-family="Consolas, monospace" font-size="8" fill="var(--purple)">allowedTools: ["Task"]</text>
+          <text x="295" y="58" text-anchor="middle" font-family="Consolas, monospace" font-size="8" fill="var(--purple)">tools: ["Task"]</text>
+          <text x="295" y="180" text-anchor="middle" font-family="Consolas, monospace" font-size="8" fill="var(--purple)">tools: ["Task"]</text>
 
           <rect x="410" y="35" width="210" height="66" rx="8" fill="var(--bg2)" stroke="rgba(var(--ink-rgb),.15)" stroke-dasharray="4 3"/>
           <text x="515" y="55" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="700" fill="var(--text)">Subagent A</text>
@@ -563,7 +563,7 @@
           <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"/></svg>How this diagram fits together</summary>
           <div class="explain-body">
           <ul>
-            <li><strong><code>allowedTools: ["Task"]</code></strong> is the gate - without it on both arrows, the coordinator has no way to spawn either subagent.</li>
+            <li><strong><code>tools: ["Task"]</code></strong> is the gate - without it on both arrows, the coordinator has no way to spawn either subagent.</li>
             <li><strong>Two arrows in the same response</strong> is what makes this a parallel spawn.</li>
             <li><strong>Hub-and-spoke</strong> - each subagent only reports back to the coordinator, never to each other.</li>
           </ul>
@@ -1177,7 +1177,7 @@
           </details>
           <details class="kw-subhead recall-branch" open>
             <summary class="ro-head g2">&#9314; 1.3 &middot; Subagent invocation &amp; context passing</summary>
-            <div class="ro-line"><code>allowedTools</code> must include <code>"Task"</code> to spawn subagents at all?</div>
+            <div class="ro-line"><code>tools</code> must include <code>"Task"</code> to spawn subagents at all?</div>
             <div class="ro-line">Parallel spawning = multiple <code>Task</code> calls in one response, not across turns?</div>
             <div class="ro-line">No automatic context inheritance - state everything explicitly in the prompt?</div>
             <div class="ro-line">Context Passing Rules: complete prior findings + structured attribution?</div>
@@ -1186,7 +1186,7 @@
               <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
               <div class="cornell-note">
                 <ul>
-                  <li>The <code>Task</code> tool spawns subagents; coordinator's <code>allowedTools</code> must include <code>"Task"</code>.<span class="li-see">&rarr; <a href="#diagram-coordinator">See: Diagram, Coordinator, Subagents, and the Task Tool</a></span></li>
+                  <li>The <code>Task</code> tool spawns subagents; coordinator's <code>tools</code> must include <code>"Task"</code>.<span class="li-see">&rarr; <a href="#diagram-coordinator">See: Diagram, Coordinator, Subagents, and the Task Tool</a></span></li>
                   <li><span class="hl">Exam vs. current Claude Code:</span> current Claude Code (v2.1.63) renamed the Task tool to <code>Agent</code> - <code>Task</code> still works as an alias, and the Agent SDK emits <code>Agent</code> in tool-use blocks. The exam guide predates the rename, so the tested answer is still "Task tool."</li>
                   <li>Subagent context must be <span class="hl">explicit in the prompt</span>: no automatic inheritance, no shared memory between invocations.</li>
                   <li><code>AgentDefinition</code> holds each subagent's description, system prompt, tool restrictions.</li>

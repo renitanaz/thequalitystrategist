@@ -1,19 +1,19 @@
 #!/usr/bin/env node
 /*
  * Bug Analysis Agent (Node.js)
- * The Quality Strategist - AI-Augmented QA Series, Phase 3
+ * The Quality Strategist - AI-Augmented QA Series, Phase 7
  *
  * What it does:
- *   Reads peakandpack-requirements.md sitting in the same folder,
- *   sends it to Claude with a UI-test-case system prompt, and writes
- *   the result to test-cases-ui-agent.md in the same folder.
+ *   Reads ci-output.txt (Playwright CI output) sitting in the same folder,
+ *   sends it to Claude with a bug-analysis system prompt, and writes
+ *   the result to bug-detection-report.md in the same folder.
  *
- * It does NOT open or inspect any running site. The requirements
- * document is the only source of truth.
+ * It does NOT open or inspect any running site. The CI output
+ * you provide is the only source of truth.
  *
- * Setup (full walkthrough is on the Phase 3 AI Agent blog page):
+ * Setup (full walkthrough is on the Phase 7 AI Agent blog page):
  *   1. Have Node 18 or newer installed (node --version).
- *   2. Put this file and peakandpack-requirements.md in one folder.
+ *   2. Put this file and ci-output.txt in one folder.
  *   3. Give it your key:
  *        Mac:               export ANTHROPIC_API_KEY=sk-ant-your-key
  *        Windows PowerShell: $env:ANTHROPIC_API_KEY="sk-ant-your-key"
@@ -84,7 +84,7 @@ async function main() {
         model: MODEL,
         max_tokens: 4000,
         system: SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: 'Here is the bug evidence from the test suite:\n\n' + results }]
+        messages: [{ role: 'user', content: 'Here is the bug evidence from the test suite:\n\n' + requirements }]
       })
     });
   } catch (err) {

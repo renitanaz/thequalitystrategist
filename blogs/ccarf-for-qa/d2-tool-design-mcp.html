@@ -131,7 +131,7 @@
   <h2>Four things D2 actually asks you to know</h2>
   <div class="axis-grid four-things">
     <div class="axis-card"><div class="a-title">2.1 &middot; Descriptions</div><p>The description is the primary way a model selects a tool. Ambiguous or overlapping descriptions cause misrouting, not model failure.</p></div>
-    <div class="axis-card"><div class="a-title">2.2 &middot; Structured errors</div><p><code>isError</code> plus a category (transient, validation, business, permission) plus a retryable flag, not a generic failure string.</p></div>
+    <div class="axis-card"><div class="a-title">2.2 &middot; Structured errors</div><p>MCP itself only requires <code>isError</code>. Layer a category (transient, validation, business, permission) and a retryable flag on top of that as your own convention, not a generic failure string.</p></div>
     <div class="axis-card"><div class="a-title">2.3 &middot; Scope &amp; choice</div><p>Fewer tools per agent beats more. <code>tool_choice</code> forced only for a genuinely fixed first step.</p></div>
     <div class="axis-card"><div class="a-title">2.4 / 2.5 &middot; MCP &amp; built-ins</div><p>Project vs. personal server scope, env var expansion for secrets. Grep, Glob, and when Edit falls back to Read + Write.</p></div>
   </div>
@@ -298,7 +298,7 @@
       <li><a href="d2-mcp-config/.mcp.json">d2-mcp-config/.mcp.json</a>: a real project-scoped MCP server config with env var expansion</li>
       <li><a href="d2-built-in-tools.md">d2-built-in-tools.md</a>: Grep vs. Glob vs. Edit-fallback, grounded in D5's own scratchpad example</li>
     </ul>
-    <p class="howto"><strong>How to use it:</strong> drop <code>.mcp.json</code> at your repo root, set <code>PEAKANDPACK_API_TOKEN</code> in your environment rather than the file, Claude Code expands it at connection time. Personal, experimental servers go in <code>~/.claude.json</code> instead, never committed.</p>
+    <p class="howto"><strong>How to use it:</strong> drop <code>.mcp.json</code> at your repo root, set <code>PEAKANDPACK_API_TOKEN</code> in your environment rather than the file, Claude Code expands it at connection time. A server you only want on your own machine, not shared with the team, goes in <code>~/.claude.json</code> instead, never committed, this file is a local, per-project registry rather than a general settings file.</p>
     <p class="howto"><strong>Building versus reusing:</strong> for a standard integration (Jira, GitHub, Slack), check for an existing community MCP server before writing one, a custom server is worth the maintenance cost only for something genuinely team-specific like PeakAndPack's own API. And if an agent keeps reaching for a built-in tool (Grep) over a more capable MCP tool that's actually available, the MCP tool's description is usually the thing to fix first, the same "description is the interface" point from Part 1, not a reason to remove the built-in option.</p>
     <div class="fw-table-wrap">
       <table class="fw-table">

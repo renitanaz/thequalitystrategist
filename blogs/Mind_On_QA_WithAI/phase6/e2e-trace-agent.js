@@ -1,18 +1,18 @@
 #!/usr/bin/env node
 /*
  * E2E Flow Trace Agent (Node.js)
- * The Quality Strategist - AI-Augmented QA Series, Phase 3
+ * The Quality Strategist - AI-Augmented QA Series, Phase 6
  *
  * What it does:
  *   Reads flow-results.md sitting in the same folder (your saved
- *   sends it to Claude with a UI-test-case system prompt, and writes
- *   the result to test-cases-ui-agent.md in the same folder.
+ *   step-by-step journey results), sends it to Claude with an E2E
+ *   trace-analysis system prompt, and writes the result to
+ *   e2e-trace-output.md in the same folder.
  *
- * step-by-step journey results), analyses the whole journey, and writes
- * e2e-trace-output.md. It does NOT run the flow itself; it reasons from
- * document is the only source of truth.
+ * It does NOT run the flow itself; it reasons from the journey results
+ * you provide, which are the only source of truth.
  *
- * Setup (full walkthrough is on the Phase 3 AI Agent blog page):
+ * Setup (full walkthrough is on the Phase 6 AI Agent blog page):
  *   1. Have Node 18 or newer installed (node --version).
  *   2. Put this file and flow-results.md in one folder.
  *   3. Give it your key:
