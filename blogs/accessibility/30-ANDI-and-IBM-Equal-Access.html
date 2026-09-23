@@ -134,6 +134,7 @@
     <div class="toc-title">In this blog</div>
     <ol>      <li><a href="#andi-what">What ANDI is</a></li>
       <li><a href="#andi-how">How to use ANDI</a></li>
+      <li><a href="#andi-walkthrough">Walk through all six examples</a></li>
       <li><a href="#andi-catches">What ANDI catches</a></li>
       <li><a href="#ibm-what">What IBM Equal Access is</a></li>
       <li><a href="#ibm-how">How to use IBM Equal Access</a></li>
@@ -229,13 +230,67 @@
     <li><strong>Structures module:</strong> Shows heading levels and landmark regions in sequence. <a href="26-WAVE.html" style="color:var(--blue);">WAVE's Structure tab</a> is still the fastest way to check heading hierarchy on a page you have not opened ANDI on already; use this module when you are already in ANDI checking accessible names and want to verify structure in the same pass.</li>
   </ul>
 
-  <h3>Walk through three examples</h3>
-  <p>The steps above cover the mechanics. Here is what they look like against three real scenarios in the <a href="A11y-Test-Playground/30 A11y Test Playground - ANDI.html" style="color:var(--blue);">ANDI Playground</a>.</p>
-  <ol>
-    <li><strong>Scenario 1, placeholder as the only label:</strong> activate ANDI and select Focusable Elements. Click the name input. In the panel, find the Accessible Name row and the Source row underneath it: the name comes from the placeholder, which disappears the moment the user types. That is the fail.</li>
-    <li><strong>Scenario 2, aria-label overriding visible text:</strong> stay on Focusable Elements. Read the button with your eyes first, then click it and read the panel's Accessible Name row. It will not match what you just read: the panel shows the aria-label, a screen reader user hears the aria-label, and a sighted user reads the visible text. Two different messages for the same button.</li>
-    <li><strong>Scenario 5, a table with no headers:</strong> switch the module to Tables and click a data cell. The panel's Column header row is empty because no <code>th</code> elements exist for ANDI to associate the cell with. Scenario 6 on the same page uses proper <code>th scope="col"</code> headers: click a cell there afterward and watch the same row populate.</li>
-  </ol>
+  <h2 id="andi-walkthrough">Walk through all six examples</h2>
+  <p>The steps above cover the mechanics. The <a href="A11y-Test-Playground/30 A11y Test Playground - ANDI.html" style="color:var(--blue);">ANDI Playground</a> has six elements to inspect yourself, with no answers shown on the page: here is what ANDI reports for each one, and why.</p>
+  <div style="margin-bottom:1.5rem;">
+    <p style="margin-bottom:0.5rem;"><strong>Scenario 1, placeholder as the only label</strong></p>
+    <ul>
+      <li>Module: Focusable Elements. Click the name input.</li>
+      <li>Accessible Name row shows the placeholder text, sourced from the placeholder attribute.</li>
+      <li>That text disappears the moment the user starts typing, so the field ends up with no name.</li>
+      <li><strong>Fix:</strong> add a visible <code>label</code> element.</li>
+      <li>WCAG 3.3.2</li>
+    </ul>
+  </div>
+  <div style="margin-bottom:1.5rem;">
+    <p style="margin-bottom:0.5rem;"><strong>Scenario 2, aria-label overriding visible text</strong></p>
+    <ul>
+      <li>Module: Focusable Elements. Read the button with your eyes first, then click it.</li>
+      <li>Accessible Name row shows "Send contact form to support team" (the aria-label), not "Submit" (the visible text).</li>
+      <li>A screen reader user hears the aria-label; a sighted user reads the visible text. Two different messages for the same button.</li>
+      <li><strong>Fix:</strong> make the aria-label contain the visible text.</li>
+      <li>WCAG 2.5.3</li>
+    </ul>
+  </div>
+  <div style="margin-bottom:1.5rem;">
+    <p style="margin-bottom:0.5rem;"><strong>Scenario 3, vague link text</strong></p>
+    <ul>
+      <li>Module: Links/Buttons. View the list of links.</li>
+      <li>"Read more" and "Click here" both show as flagged.</li>
+      <li>Neither means anything read out of context, away from the surrounding paragraph.</li>
+      <li><strong>Fix:</strong> use descriptive link text, or add an aria-label.</li>
+      <li>WCAG 2.4.4</li>
+    </ul>
+  </div>
+  <div style="margin-bottom:1.5rem;">
+    <p style="margin-bottom:0.5rem;"><strong>Scenario 4, filename used as alt text</strong></p>
+    <ul>
+      <li>Module: Graphics/Images. Click the chart image.</li>
+      <li>Accessible Name and Source rows show <code>chart_Q3_final_v2.png</code>, from the alt attribute.</li>
+      <li>Alt text exists, so nothing is technically missing, but it describes a file, not the chart.</li>
+      <li><strong>Fix:</strong> replace the filename with a meaningful description of what the chart shows.</li>
+      <li>WCAG 1.1.1</li>
+    </ul>
+  </div>
+  <div style="margin-bottom:1.5rem;">
+    <p style="margin-bottom:0.5rem;"><strong>Scenario 5, a table with no headers</strong></p>
+    <ul>
+      <li>Module: Tables. Click a data cell.</li>
+      <li>Column header row is empty.</li>
+      <li>No <code>th</code> elements exist for ANDI to associate the cell with.</li>
+      <li><strong>Fix:</strong> add <code>th scope="col"</code> headers.</li>
+      <li>WCAG 1.3.1</li>
+    </ul>
+  </div>
+  <div style="margin-bottom:1.5rem;">
+    <p style="margin-bottom:0.5rem;"><strong>Scenario 6, correct implementations</strong></p>
+    <ul>
+      <li>Inspect the labelled input, the descriptive link, the image, and the table.</li>
+      <li>Sources check out: <code>label[for]</code>, visible link text, the alt attribute, and a populated column header.</li>
+      <li>All four show a meaningful accessible name with no alerts.</li>
+      <li>This is the baseline the other five scenarios fail to meet.</li>
+    </ul>
+  </div>
 
   <h2 id="andi-catches">3. What ANDI Catches</h2>
   <div class="table-wrap"><table>
