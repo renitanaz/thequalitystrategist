@@ -1,0 +1,35 @@
+name: Accessibility Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  pa11y:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: blogs/accessibility/A11y-Test-Playground/a11y-ci
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Pa11y accessibility check
+        run: npx pa11y-ci --config pa11y-ci.json --json > pa11y-results.json
+
+      - name: Upload Pa11y results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: pa11y-results
+          path: blogs/accessibility/A11y-Test-Playground/a11y-ci/pa11y-results.json
