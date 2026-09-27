@@ -73,7 +73,7 @@
       <option value="38-Testing-Video-and-Audio.html">38 Testing Video and Audio</option>
       <option value="39-Sprint-Ready-Accessibility-Checklist.html">39 Sprint-Ready Checklist</option>
       <option value="40-Live-Audit-Full-Page-From-Scratch.html">40 Live Audit From Scratch</option>
-      <option value="41-Mobile-Accessibility-Testing-Practice-Apps.html">41 Mobile Testing: Practice Apps</option>
+      <option value="41-Mobile-Accessibility-Testing-Practice-Apps.html">Guide: Mobile Testing Practice Apps</option>
     </select>
   </div>
   <div class="blog-tags"><span class="tag" style="background:rgba(248,113,113,0.08);color:#f87171;border-color:rgba(248,113,113,0.3)">CI/CD</span><span class="tag" style="">Manual Testing</span><span class="tag" style="">Strategy</span></div>
@@ -89,9 +89,11 @@
   <nav class="toc" aria-label="Table of contents"><div class="toc-title">In this blog</div><ol>      <li><a href="#the-number">The 30 to 50 percent figure</a></li>
       <li><a href="#what-automation-catches">What automation catches well</a></li>
       <li><a href="#what-automation-misses">What automation cannot catch</a></li>
+      <li><a href="#ai-assisted-review">What's changing: AI-assisted review of judgement calls</a></li>
       <li><a href="#the-gap">The gap between score and conformance</a></li>
       <li><a href="#the-testing-stack">The right testing stack</a></li>
       <li><a href="#tool-comparison">Which tool covers what: a WCAG comparison</a></li>
+      <li><a href="#how-to-test">How to test: building the full three-tier stack</a></li>
       <li><a href="#communicating">Communicating this to stakeholders</a></li></ol></nav>
 
   <h2 id="the-number">1. The 30 to 50 Percent Figure</h2>
@@ -132,7 +134,7 @@
     </tbody>
   </table></div>
 
-  <h3>What's Changing: AI-Assisted Review of Judgement Calls</h3>
+  <h2 id="ai-assisted-review">4. What's Changing: AI-Assisted Review of Judgement Calls</h2>
   <p>The 30 to 50 percent figure predates a real shift: an LLM reading rendered page text or an accessibility tree can now do a first pass on some of the judgement calls in the table above, not just the DOM-structure checks a rules engine like axe-core evaluates. This does not move the 30 to 50 percent number. No study has re-measured it against LLM-assisted review, and treating it as re-quantified would be exactly the kind of unqualified score this blog warns against in Section 6. What it changes is which items in the table above can get a useful automated first pass before a human confirms it.</p>
   <div class="callout amber" role="note">This is a triage aid, not a fourth testing tier. It narrows the gap between automation and manual review. It does not close it, and it does not replace Tier 3.</div>
   <div class="table-wrap"><table>
@@ -155,11 +157,11 @@
     </ul>
   </div>
 
-  <h2 id="the-gap">4. The Gap Between Score and Conformance</h2>
+  <h2 id="the-gap">5. The Gap Between Score and Conformance</h2>
   <p>The gap is not a failure of the tools: it is a fundamental limitation of what can be evaluated programmatically. No tool will close this gap because the missing checks require human perception, context, and interaction. The tools are doing everything they can do. The rest is ours to do.</p>
   <p>The gap is also not uniform. A simple marketing page with static content, clear headings, and no custom components may have 70 percent of its failures catchable by automation. A complex single-page application with custom widgets, dynamic content, and video may have 20 percent of its failures catchable by automation. The 30 to 50 percent figure is an average: not a guarantee for any specific page.</p>
 
-  <h2 id="the-testing-stack">5. The Right Testing Stack</h2>
+  <h2 id="the-testing-stack">6. The Right Testing Stack</h2>
   <div class="table-wrap"><table>
     <caption style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">The three-tier accessibility testing stack</caption>
     <thead><tr><th scope="col">Tier</th><th scope="col">Tools</th><th scope="col">What it covers</th><th scope="col">Who does it</th></tr></thead>
@@ -170,7 +172,7 @@
     </tbody>
   </table></div>
 
-  <h2 id="tool-comparison">6. Which Tool Covers What: A WCAG Comparison</h2>
+  <h2 id="tool-comparison">7. Which Tool Covers What: A WCAG Comparison</h2>
   <p>Each tool blog in this series rates its own coverage against the four WCAG 2.1 AA principles. Putting them side by side answers the question this blog keeps raising in the abstract: which specific tool should you reach for, and what does it still leave for Tier 3?</p>
   <div class="table-wrap"><table>
     <caption style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">WCAG 2.1 AA coverage by tool, compared across the four principles</caption>
@@ -187,7 +189,7 @@
   </table></div>
   <div class="callout" role="note">Ratings mirror what each tool's own blog states about its coverage, not a fresh audit. axe DevTools and Lighthouse run axe-core by default, so they share ratings automatically. Pa11y shares those ratings only when configured with <code>runners: ["axe"]</code>: its own default engine is HTML_CodeSniffer, a narrower rule set. A "+" marks a tool whose blog documents extra coverage beyond the shared axe-core baseline, in that tool's own words.</div>
 
-  <h2 id="how-to-test">How to Test: Building the Full Three-Tier Stack</h2>
+  <h2 id="how-to-test">8. How to Test: Building the Full Three-Tier Stack</h2>
 
   <h3>Tier 1: Pipeline automation</h3>
   <p>Covers the 30 to 50 percent that automated tools can catch. Run <a href="32-Axe-Core-Cypress-Playwright.html" style="color:var(--blue);"><span class="tool">axe-core</span></a> in <a href="https://playwright.dev/" target="_blank" rel="noopener noreferrer" style="color:var(--blue);"><span class="tool">Playwright</span></a> or <a href="https://www.cypress.io/" target="_blank" rel="noopener noreferrer" style="color:var(--blue);"><span class="tool">Cypress</span></a> on every commit. Scope to WCAG 2.1 AA, fail on Critical and Serious only. Add <a href="33-Pa11y-in-CI-CD.html" style="color:var(--blue);"><span class="tool">Pa11y CI</span></a> if you want broader URL-based scanning alongside component-level tests.</p>
@@ -220,7 +222,7 @@
     </div>
   </div>
 
-  <h2 id="communicating">7. Communicating This to Stakeholders</h2>
+  <h2 id="communicating">9. Communicating This to Stakeholders</h2>
   <p>The most common misuse of accessibility scores is presenting them to stakeholders as conformance evidence. A Lighthouse score of 100 presented in a compliance report without qualification is misleading: it implies conformance that has not been established.</p>
   <ul>
     <li><strong>What to say:</strong> "Automated checks pass. Manual testing covering keyboard navigation, screen reader behaviour, and content review is in progress."</li>

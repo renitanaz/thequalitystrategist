@@ -11,6 +11,70 @@ on:
       - 'blogs/accessibility/A11y-Test-Playground/**'
 
 jobs:
+  axe-success-demo:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: blogs/accessibility/A11y-Test-Playground/a11y-ci
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Run axe-core against a clean page (expected to pass)
+        run: npx playwright test tests/axe-success.spec.js
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-success-results.json
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: axe-success-results
+          path: blogs/accessibility/A11y-Test-Playground/a11y-ci/playwright-success-results.json
+
+  axe-fail-demo:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: blogs/accessibility/A11y-Test-Playground/a11y-ci
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Run axe-core against pages with deliberate violations (expected to fail)
+        run: npx playwright test tests/axe-fail.spec.js
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-fail-results.json
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: axe-fail-results
+          path: blogs/accessibility/A11y-Test-Playground/a11y-ci/playwright-fail-results.json
+
   pa11y-success-demo:
     runs-on: ubuntu-latest
     defaults:

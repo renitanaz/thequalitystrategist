@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Building a Real Accessibility CI Pipeline: Every Step, Every File — The Quality Strategist</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --olive:#6B7C3A;--olive-dark:#4A5828;--olive-deep:#2E3A18;
+  --cream:#F5F7F0;--warm-white:#FAFCF5;
+  --ink:#1A1F14;--ink2:#3D4235;--ink3:#6B7060;--ink4:#9A9E90;
+  --border:rgba(26,31,20,0.1);--border2:rgba(26,31,20,0.06);
+  --purple:#7A4A9A;--purple-l:#EDE0F5;
+  --gold:#9A6E1A;--gold-l:#F5EDD6;
+  --blue:#2A5C9A;--blue-l:#DDE8F5;
+  --teal:#1A6B54;--teal-l:#D8EEE8;
+  --red:#B0402E;--red-l:#F5DEDA;
+  --green:#1A6B3E;--green-l:#D8EEDF;
+  --ff-serif:'Lora',Georgia,serif;--ff-sans:'DM Sans',system-ui,sans-serif;
+  --ease:cubic-bezier(0.22,1,0.36,1)
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:var(--ff-sans);background:var(--cream);color:var(--ink);line-height:1.6;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--cream)}::-webkit-scrollbar-thumb{background:var(--olive);border-radius:4px}
+nav{position:sticky;top:0;z-index:100;background:rgba(245,247,240,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 6vw}
+.nav-inner{max-width:1000px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:62px}
+.nav-logo{font-family:var(--ff-serif);font-size:17px;color:var(--ink);letter-spacing:-0.3px;display:flex;align-items:center;gap:8px}
+.nav-logo-dot{width:8px;height:8px;border-radius:50%;background:var(--olive);flex-shrink:0}
+.nav-back{font-size:12px;font-weight:500;letter-spacing:0.8px;text-transform:uppercase;color:var(--ink3);transition:color 0.2s;display:flex;align-items:center;gap:6px}
+.nav-back:hover{color:var(--olive)}
+.post-hero{max-width:900px;margin:0 auto;padding:72px 6vw 56px;border-bottom:1px solid var(--border2)}
+.post-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--olive);margin-bottom:20px}
+.post-eyebrow-line{width:24px;height:1.5px;background:var(--olive)}
+.tag{font-size:10px;font-weight:500;letter-spacing:0.8px;text-transform:uppercase;padding:3px 10px;border-radius:10px;display:inline-block}
+.tag-olive{background:#DDE5C8;color:var(--olive-dark)}.tag-blue{background:var(--blue-l);color:var(--blue)}.tag-teal{background:var(--teal-l);color:var(--teal)}.tag-purple{background:var(--purple-l);color:var(--purple)}
+.post-tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.post-title{font-family:var(--ff-serif);font-size:clamp(30px,5vw,50px);line-height:1.15;color:var(--ink);letter-spacing:-0.8px;margin-bottom:20px}
+.post-title em{font-style:italic;color:var(--olive)}
+.post-meta{display:flex;align-items:center;gap:20px;font-size:13px;color:var(--ink4)}
+.post-meta-dot{width:3px;height:3px;border-radius:50%;background:var(--ink4)}
+.post-body{max-width:900px;margin:0 auto;padding:64px 6vw 96px}
+.post-body .lead{font-family:var(--ff-serif);font-size:clamp(17px,2vw,20px);color:var(--ink2);line-height:1.75;margin-bottom:40px;font-style:italic}
+.post-body p{font-size:16.5px;color:var(--ink2);line-height:1.9;margin-bottom:24px}
+.post-body h2{font-family:var(--ff-serif);font-size:clamp(20px,2.5vw,26px);color:var(--ink);margin:52px 0 16px;letter-spacing:-0.3px;line-height:1.2}
+.post-body strong{color:var(--ink);font-weight:600}
+.post-body code{background:var(--warm-white);border:1px solid var(--border2);border-radius:4px;padding:1px 7px;font-size:0.9em;font-family:'DM Sans',monospace}
+.post-body ul{padding-left:22px;margin-bottom:24px;color:var(--ink2)}
+.post-body li{margin-bottom:10px;line-height:1.75}
+.file-tree{background:var(--ink);color:#D8DECA;border-radius:12px;padding:20px 26px;margin:20px 0 28px;font-family:'DM Sans',monospace;font-size:13.5px;line-height:1.8;overflow-x:auto}
+.file-tree .dim{color:#7A8068}
+.ai-callout{background:var(--warm-white);border:1px solid var(--border);border-left:4px solid var(--olive);border-radius:0 12px 12px 0;padding:18px 22px;margin:16px 0 28px;font-size:14.5px;color:var(--ink2);line-height:1.75}
+.ai-callout strong{color:var(--olive-dark)}
+.code-block{background:var(--ink);color:#D8DECA;border-radius:12px;padding:20px 26px;margin:20px 0 28px;font-family:'DM Sans',monospace;font-size:13.5px;line-height:1.7;overflow-x:auto;white-space:pre}
+.result-row{display:flex;gap:16px;margin:16px 0 28px;flex-wrap:wrap}
+.result-card{flex:1;min-width:220px;border-radius:12px;padding:18px 20px;border:1px solid var(--border2)}
+.result-card.pass{background:var(--green-l)}
+.result-card.fail{background:var(--red-l)}
+.result-label{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+.result-card.pass .result-label{color:var(--green)}
+.result-card.fail .result-label{color:var(--red)}
+.result-card p{font-size:14px;margin-bottom:0;color:var(--ink2)}
+.callout{background:var(--olive-deep);color:#E8EDD8;border-radius:16px;padding:32px 36px;margin:48px 0}
+.callout-label{font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--olive);margin-bottom:12px}
+.callout p{font-family:var(--ff-serif);font-size:clamp(15px,1.8vw,18px);line-height:1.75;color:#E8EDD8!important;margin-bottom:0!important}
+.post-hashtags{display:flex;flex-wrap:wrap;gap:8px;margin-top:48px;padding-top:32px;border-top:1px solid var(--border2)}
+.hashtag{font-size:12px;font-weight:500;color:var(--olive-dark);background:#DDE5C8;padding:4px 12px;border-radius:20px}
+footer{background:var(--olive-deep);padding:36px 6vw}
+.footer-inner{max-width:1000px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.footer-logo{font-family:var(--ff-serif);font-size:15px;color:#E8EDD8;display:flex;align-items:center;gap:8px}
+.footer-logo-dot{width:7px;height:7px;border-radius:50%;background:var(--olive);flex-shrink:0}
+.footer-copy{font-size:12px;color:rgba(232,237,216,0.5)}
+.fade-up{opacity:0;transform:translateY(24px);transition:opacity 0.6s var(--ease),transform 0.6s var(--ease)}
+.fade-up.visible{opacity:1;transform:none}
+@media(max-width:620px){.result-row{flex-direction:column}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo"><div class="nav-logo-dot"></div>The Quality Strategist</a>
+    <a href="index.html#blogs" class="nav-back">← All posts</a>
+  </div>
+</nav>
+
+<div class="post-hero">
+  <div class="post-eyebrow"><div class="post-eyebrow-line"></div>Case Study</div>
+  <div class="post-tags">
+    <span class="tag tag-olive">Accessibility</span>
+    <span class="tag tag-blue">CI/CD</span>
+    <span class="tag tag-teal">Case Study</span>
+  </div>
+  <h1 class="post-title">Building a Real Accessibility CI Pipeline: <em>Every Step, Every File</em></h1>
+  <div class="post-meta">
+    <span>RN</span>
+    <div class="post-meta-dot"></div>
+    <span>6 min read</span>
+    <div class="post-meta-dot"></div>
+    <span>2026</span>
+  </div>
+</div>
+
+<div class="post-body">
+
+  <p class="lead">The Shift-Left Accessibility series explains what Pa11y is and why it belongs in CI. This is the other half: the exact steps, the exact files, and where each one has to go to make a real pipeline run — for a project that already has axe-core running in Playwright or Cypress, and wants Pa11y as a second, genuinely different engine, not a repeat of the first one.</p>
+
+  <p class="fade-up">The goal was one workflow that proves itself both ways: a job that passes cleanly against a page that's actually fine, and a job that fails loudly against pages with deliberate violations — <code>pa11y-success-demo</code> and <code>pa11y-fail-demo</code>, run against a small set of target pages.</p>
+
+  <h2 class="fade-up">Step 1: decide where the files live</h2>
+
+  <div class="file-tree fade-up">your-project/<br>
+├── .github/workflows/<br>
+│&nbsp;&nbsp;&nbsp;&nbsp;└── accessibility.yml <span class="dim">← must live exactly here</span><br>
+└── your-project-path/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="dim">[the pages you want the gate to check, untouched]</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;└── a11y-ci/ <span class="dim">← everything CI-specific lives here instead</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── package.json<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── package-lock.json <span class="dim">← generated by npm, must be committed</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── pa11y-ci.json</div>
+
+  <p class="fade-up"><strong>Why:</strong> only one file's location is non-negotiable — GitHub Actions only ever scans <code>.github/workflows/</code> at the repo root, nowhere else.</p>
+
+  <p class="fade-up">Everything else is kept in its own subfolder rather than the repo root or your target folder directly, so tooling doesn't get mixed in with the content or code the project actually ships. The workflow reaches into that subfolder with a single <code>working-directory</code> line instead of living there itself.</p>
+
+  <h2 class="fade-up">Step 2: package.json</h2>
+
+  <p class="fade-up">Inside the new, empty <code>a11y-ci/</code> folder: <code>npm init -y</code> first, then <code>npm install --save-dev pa11y-ci</code> — <strong>as a dev dependency, not global.</strong></p>
+
+  <p class="fade-up"><strong>Why <code>npm init -y</code> first:</strong> <code>--save-dev</code> needs an existing <code>package.json</code> to record the dependency into. Skip this, and <code>npm install --save-dev</code> in an empty folder still installs the package — but with nowhere to save the entry. No error, just a <code>package.json</code> that never gets created, and a confusing failure later when there's nothing for <code>npm ci</code> to read.</p>
+
+  <p class="fade-up"><strong>Why a dev dependency, not global:</strong> a global install means your machine, a teammate's machine, and the CI runner could each silently be running a different version. A dev dependency gets pinned in <code>package-lock.json</code> instead, so <code>npm ci</code> installs the exact same version everywhere — provided that lockfile actually gets committed (Step 4 covers why that matters).</p>
+
+  <pre class="code-block fade-up">{
+  "name": "a11y-ci",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "a11y": "pa11y-ci --config pa11y-ci.json"
+  },
+  "devDependencies": {
+    "pa11y-ci": "^4.1.1"
+  }
+}</pre>
+
+  <p class="fade-up">The <code>scripts</code> entry is optional — <code>npm init -y</code> won't add it for you — but it means anyone on the project can run <code>npm run a11y</code> instead of remembering the full <code>npx pa11y-ci --config ...</code> command.</p>
+
+  <h2 class="fade-up">Step 3: the Pa11y config</h2>
+
+  <p class="fade-up">For your own project: <strong>one</strong> <code>pa11y-ci.json</code>, listing every page or URL you want the gate to check. It sets <code>"standard": "WCAG2AA"</code> and <code>"ignore": ["notice", "warning"]</code> — and deliberately <strong>leaves out</strong> <code>"runners": ["axe"]</code>. That one config passes or fails on its own, based on whatever's actually on those pages — you don't stage anything.</p>
+
+  <pre class="code-block fade-up">{
+  "urls": [
+    "../your-page.html"
+  ],
+  "defaults": {
+    "standard": "WCAG2AA",
+    "ignore": ["notice", "warning"],
+    "chromeLaunchConfig": {
+      "args": ["--no-sandbox"]
+    }
+  }
+}</pre>
+
+  <p class="fade-up"><strong>Why <code>chromeLaunchConfig: { "args": ["--no-sandbox"] }</code>:</strong> Pa11y loads each page in a real headless Chrome, and GitHub's Linux runners refuse to start Chrome's sandbox inside their containers without this flag. Leave it out, and the exact same config that works fine on your own machine fails in CI with a Chrome launch error that has nothing to do with accessibility — this is what makes it behave identically in both places.</p>
+
+  <p class="fade-up"><strong>Why the runner is left on its default (HTML_CodeSniffer), not switched to axe:</strong> axe-core is already running in your Playwright or Cypress suite. Adding <code>runners: ["axe"]</code> here would just run the identical engine a second time — duplicate detection, not broader coverage. Staying on Pa11y's actual default gives you a genuinely different rule set alongside axe-core instead.</p>
+
+  <p class="fade-up">(If Pa11y were your <em>only</em> automated check, with nothing else running axe-core anywhere, that's the one case where adding <code>runners: ["axe"]</code> here would make sense instead.)</p>
+
+  <p class="fade-up"><strong>Why ignore notices and warnings:</strong> only <code>error</code> is a definite violation. Gating the build on lower-confidence findings trains people to distrust the gate the first time it fails on something debatable.</p>
+
+  <p class="fade-up">Point it at the <strong>local, checked-out files</strong>, not the live deployed site — a relative path like <code>../your-page.html</code> is enough (one level up from <code>a11y-ci/</code> lands you back in your target folder); Pa11y converts it to a <code>file://</code> URL itself.</p>
+
+  <p class="fade-up"><strong>Why local files, not live URLs:</strong> a live URL only tells CI about what's already deployed. Scanning the files GitHub just checked out means the gate is checking the change actually sitting in the pull request, before it ships — not confirming, a week later, that something already went out broken.</p>
+
+  <div class="ai-callout fade-up">
+    <strong>Why this post uses two configs instead of one:</strong> <code>pa11y-ci.success.json</code> and <code>pa11y-ci.fail.json</code> point at a clean page and a deliberately broken one — purely so this demo can prove, side by side, that the gate is capable of both passing and failing.
+    <br><br>
+    That split is a teaching device, not a pattern to copy. On your own project, one config covering your real pages is the whole setup.
+    <br><br>
+    This site's own demo now runs both halves for real: axe-core runs separately via Playwright, in its own passing and failing jobs, while these two Pa11y configs sit on the default HTML_CodeSniffer runner described above — two genuinely different engines checking the same pages, not one duplicated.
+  </div>
+
+  <h2 class="fade-up">Step 4: the GitHub Actions workflow</h2>
+
+  <p class="fade-up">One <code>.yml</code> file, one job, is the normal shape: check out the code, set up Node, <code>npm ci</code>, run Pa11y against your config, upload the result as an artifact even if the job fails.</p>
+
+  <ul class="fade-up">
+    <li><strong><code>package-lock.json</code> must be committed:</strong> <code>npm ci</code> reads it to install the exact pinned versions. Skip it — say, by hand-writing <code>package.json</code> instead of running <code>npm install</code> — and this step fails before Pa11y ever runs, with an error that says nothing about accessibility.</li>
+    <li><strong><code>node-version: 24</code>, not 20:</strong> Node 20 reached end of life in April 2026. 24 is the current Active LTS.</li>
+    <li><strong><code>actions/checkout@v7</code>, <code>setup-node@v7</code>, <code>upload-artifact@v7</code>:</strong> the versions still commonly shown in older examples (<code>@v4</code>) target the retired Node 20 runtime and log a deprecation warning even though they still run.</li>
+    <li><strong><code>if: always()</code> on the upload step:</strong> by default, GitHub Actions skips every step after one that fails. Since the whole point of the artifact is to show you what failed, it needs to run in exactly that case — the default behaviour would skip it precisely when it's needed.</li>
+    <li><strong>A <code>paths</code> filter scoped to your target folder:</strong> without it, editing an unrelated file anywhere else in the repo would still trigger the job — CI minutes spent on a check that had nothing to verify.</li>
+  </ul>
+
+  <pre class="code-block fade-up">name: Accessibility Check
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'your-project-path/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'your-project-path/**'
+
+jobs:
+  pa11y-check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: your-project-path/a11y-ci
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Pa11y
+        run: npx pa11y-ci --config pa11y-ci.json --json > pa11y-results.json
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: pa11y-results
+          path: your-project-path/a11y-ci/pa11y-results.json</pre>
+
+  <p class="fade-up">This post's own workflow has <strong>two</strong> jobs, <code>pa11y-success-demo</code> and <code>pa11y-fail-demo</code>, one per demo config — again purely so both outcomes show up side by side in the Actions tab.</p>
+
+  <p class="fade-up">Two jobs matter here for a structural reason: a GitHub Actions job's status is a single pass/fail. If both demo checks were steps in the <em>same</em> job, one failing step would mark the whole job red — even the half that's supposed to pass. On a real project with one config, one job is all you need.</p>
+
+  <h2 class="fade-up">Step 5: verify locally, before it ever touches CI</h2>
+
+  <p class="fade-up">Run <code>npx pa11y-ci --config pa11y-ci.json</code> (or <code>npm run a11y</code>, from Step 2's script) from a terminal, before writing a single line of workflow YAML.</p>
+
+  <p class="fade-up"><strong>Why:</strong> a misconfigured flag or a wrong path is far cheaper to catch in fifteen seconds locally than after pushing, waiting for a runner, and reading through an Actions log to find the same mistake.</p>
+
+  <h2 class="fade-up">Step 6: when it runs, and where to see it</h2>
+
+  <p class="fade-up"><strong>When:</strong> on every push and pull request to <code>main</code> that touches a file under your target folder. Nothing runs before that push happens, and nothing runs for changes outside that path.</p>
+
+  <p class="fade-up"><strong>Where:</strong> repo → <strong>Actions</strong> tab → the latest run → scroll to the job graph under the workflow name.</p>
+
+  <div class="result-row fade-up">
+    <div class="result-card pass">
+      <div class="result-label">pa11y-success-demo</div>
+      <p>0 errors · exit code 0</p>
+    </div>
+    <div class="result-card fail">
+      <div class="result-label">pa11y-fail-demo</div>
+      <p>real violations found · exit code 2</p>
+    </div>
+  </div>
+
+  <p class="fade-up">The overall run may still show "Failure" at the top — that's GitHub rolling every job into one status, and one of these two jobs is supposed to fail. The two jobs underneath are the actual signal.</p>
+
+  <div class="callout fade-up">
+    <div class="callout-label">Bottom Line</div>
+    <p>A working accessibility CI gate isn't a bigger idea than the series already covers — it's four small files, placed deliberately, each with a reason for sitting exactly where it does.</p>
+  </div>
+
+  <div class="post-hashtags fade-up">
+    <span class="hashtag">#Accessibility</span>
+    <span class="hashtag">#CICD</span>
+    <span class="hashtag">#Pa11y</span>
+    <span class="hashtag">#QAStrategy</span>
+    <span class="hashtag">#ShiftLeft</span>
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo"><div class="footer-logo-dot"></div>The Quality Strategist</div>
+    <div class="footer-copy">Built with intention. Tested with care. &#169; 2026</div>
+  </div>
+</footer>
+
+<script>
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold:0.08, rootMargin:'0px 0px -40px 0px' });
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

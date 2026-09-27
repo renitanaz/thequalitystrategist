@@ -73,7 +73,7 @@
       <option value="38-Testing-Video-and-Audio.html">38 Testing Video and Audio</option>
       <option value="39-Sprint-Ready-Accessibility-Checklist.html" selected>39 Sprint-Ready Checklist</option>
       <option value="40-Live-Audit-Full-Page-From-Scratch.html">40 Live Audit From Scratch</option>
-      <option value="41-Mobile-Accessibility-Testing-Practice-Apps.html">41 Mobile Testing: Practice Apps</option>
+      <option value="41-Mobile-Accessibility-Testing-Practice-Apps.html">Guide: Mobile Testing Practice Apps</option>
     </select>
   </div>
   <div class="blog-tags"><span class="tag" style="background:rgba(74,222,128,0.08);color:#4ade80;border-color:rgba(74,222,128,0.3)">Applied QA</span><span class="tag" style="">Checklist</span><span class="tag" style="">Sprint</span><span class="tag" style="">Shift-Left</span></div>
@@ -98,9 +98,14 @@
       <li><a href="#exit-criteria">Definition of done</a></li></ol></nav>
 
 <h2 id="how-to-use">1. How to Use This Checklist</h2>
-  <p>This checklist covers the most common and highest-impact accessibility failures. Run it on every feature before marking a story done. It is not a full WCAG audit: it is the minimum bar for a sprint exit. A full audit happens at release. This happens every sprint.</p>
-  <p>Each item maps to a WCAG criterion. Each item can be checked in under two minutes. The full checklist takes 30 to 60 minutes for a typical feature depending on complexity.</p>
-  <div class="callout" role="note">This checklist assumes automated axe-core checks are already running in the pipeline. The items here are what automation cannot catch: the manual layer that must be done by a human before the story closes.</div>
+  <p>This checklist covers the most common and highest-impact accessibility failures, and it runs on three different schedules, not one:</p>
+  <ul>
+    <li><strong>Tier 1 (Section 2's pipeline items):</strong> automated, runs on every commit. Nothing to schedule: it either passes or it doesn't.</li>
+    <li><strong>Tier 2 (Section 2's browser-tool items):</strong> a few minutes per feature. Run before marking a story done.</li>
+    <li><strong>Tier 3 (Sections 3 through 9, manual and screen reader):</strong> runs at release, not per story or per sprint. Four full platform walkthroughs — NVDA, VoiceOver Mac, VoiceOver iOS, TalkBack — on every story closing in a two-week sprint is not sustainable, and Tiers 1 and 2 already gate the bulk of what ships day to day.</li>
+  </ul>
+  <p>Each item maps to a WCAG criterion. Each item can be checked in under two minutes. The full Tier 3 pass takes 30 to 60 minutes at release, depending on how much shipped since the last one.</p>
+  <div class="callout" role="note">This checklist assumes automated axe-core checks are already running in the pipeline. Tier 3 is what neither automation nor a quick browser-tool pass can catch: it needs a human, on a release cadence, not a per-story one.</div>
 
   <h2 id="automated">2. Automated Checks</h2>
   <div class="check-section">
@@ -202,17 +207,24 @@
   </div>
 
   <h2 id="exit-criteria">10. Definition of Done for Accessibility</h2>
-  <p>A story is not done until all of the following are true:</p>
+  <p><strong>A story is not done</strong> until:</p>
   <ul>
-    <li>axe-core CI pipeline passes with zero new critical or serious violations</li>
-    <li>All manual checklist items above are verified and any failures are logged as defects</li>
-    <li>Critical and Major accessibility defects raised in this story are fixed before the story closes</li>
+    <li>axe-core CI pipeline passes with zero new critical or serious violations (Tier 1)</li>
+    <li>Section 2's browser-tool checks are verified and any failures are logged as defects (Tier 2)</li>
+    <li>Critical and Major defects found by Tier 1 or Tier 2 are fixed before the story closes</li>
     <li>Moderate and Minor defects are logged in the backlog with a target sprint</li>
   </ul>
-  <div class="callout green" role="note">Accessibility is part of the definition of done: not a separate phase after development. A feature that ships with a critical accessibility defect has not passed QA.</div>
+  <p><strong>A release is not ready</strong> until, in addition to the above holding for every story shipped since the last release:</p>
+  <ul>
+    <li>The Tier 3 manual checklist (Sections 3 through 9) has been run and any failures are logged as defects</li>
+    <li>Critical and Major accessibility defects found by Tier 3 are fixed before release</li>
+    <li>Moderate and Minor Tier 3 defects are logged in the backlog with a target release</li>
+  </ul>
+  <div class="callout green" role="note">Accessibility is part of the definition of done at both gates, story and release: not a separate phase bolted onto either. A feature that ships with a critical accessibility defect has not passed QA, whichever gate should have caught it.</div>
 
   <div class="takeaway" role="note">
-    <div class="label">The 10-minute fast track for small changes</div>
+    <div class="label">Optional: a 10-minute Tier 3 spot-check for small changes</div>
+    <p>Tier 3 now runs at release, not per story — nothing below is required at story close. Use it on a small change when you want an early read on keyboard and screen reader behaviour, ahead of the release-time pass that will catch it either way.</p>
     <ul>
       <li>Run axe DevTools. Fix any new violations.</li>
       <li>Tab through every new interactive element. Check focus indicators.</li>
@@ -235,7 +247,7 @@
   </ul>
 
   <h3>Tier 3: Manual: the rest of this checklist</h3>
-  <p>Sections 3 through 9 of this checklist are Tier 3. They require a human with a keyboard and optionally a screen reader. Minimum manual coverage per story:</p>
+  <p>Sections 3 through 9 of this checklist are Tier 3. They require a human with a keyboard and optionally a screen reader. Run this pass at release, covering everything that shipped since the last one — not per story, per <a href="#how-to-use" style="color:var(--blue);">Section 1</a>. Minimum manual coverage per release:</p>
   <ul>
     <li><strong>Keyboard (all platforms):</strong> Tab through every new interactive element. Check focus indicators, order, and traps.</li>
     <li><strong>NVDA + Firefox (Windows):</strong> Tab through new elements. Verify label, role, and state announcements.</li>

@@ -73,7 +73,7 @@
       <option value="38-Testing-Video-and-Audio.html">38 Testing Video and Audio</option>
       <option value="39-Sprint-Ready-Accessibility-Checklist.html">39 Sprint-Ready Checklist</option>
       <option value="40-Live-Audit-Full-Page-From-Scratch.html">40 Live Audit From Scratch</option>
-      <option value="41-Mobile-Accessibility-Testing-Practice-Apps.html">41 Mobile Testing: Practice Apps</option>
+      <option value="41-Mobile-Accessibility-Testing-Practice-Apps.html">Guide: Mobile Testing Practice Apps</option>
     </select>
   </div>
   <div class="blog-tags"><span class="tag" style="background:rgba(251,191,36,0.08);color:#fbbf24;border-color:rgba(251,191,36,0.3)">Applied QA</span><span class="tag" style="">Defects</span><span class="tag" style="">WCAG</span></div>
@@ -106,7 +106,7 @@
       <tr><td>WCAG criterion</td><td>Number, name, and level. Example: "1.3.1 Info and Relationships: Level A"</td></tr>
       <tr><td>Impact</td><td>Critical / Serious / Moderate / Minor and which users are affected</td></tr>
       <tr><td>Steps to reproduce</td><td>Numbered steps from page load. Include tool and browser/screen reader version.</td></tr>
-      <tr><td>Fix guidance</td><td>The code change that would fix it. Not always possible to specify: but include when you can.</td></tr>
+      <tr><td>Fix guidance</td><td>The code change that would fix it. When axe-core or Pa11y flagged the issue, copy their own suggested fix (axe-core's <code>failureSummary</code>, Pa11y's message) rather than working one out yourself: you do not need to already know the HTML/CSS/ARIA remediation. Only write your own when no tool caught it and you already know the fix; otherwise, leave it blank rather than guessing.</td></tr>
     </tbody>
   </table></div>
 
@@ -195,12 +195,12 @@ Steps to reproduce:
 3. [Include tool, browser, SR version]
 
 Fix guidance:
-[The code change. Include the HTML/CSS/ARIA attribute needed.]</div>
+[The code change. Copy the tool's own suggested fix when one exists (axe-core's failureSummary / Pa11y's message) — otherwise leave blank rather than guessing.]</div>
 
   <div class="takeaway" role="note">
     <div class="label">The test for a good accessibility defect</div>
     <ul>
-      <li>Can a developer reproduce it without asking you a single question?</li>
+      <li>Enough steps to reproduce?</li>
       <li>Does it tell them what the code should do differently?</li>
       <li>Does it include the exact WCAG criterion so it can be prioritised correctly?</li>
       <li>For screen reader defects: does it include the exact announcement in quotes?</li>
@@ -210,7 +210,7 @@ Fix guidance:
   <h2 id="how-to-test">How to Test: Writing Defects at Each Tier</h2>
 
   <h3>Tier 1: Pipeline automation</h3>
-  <p>Pipeline tools (<a href="32-Axe-Core-Cypress-Playwright.html" style="color:var(--blue);"><span class="tool">axe-core</span></a>, <a href="33-Pa11y-in-CI-CD.html" style="color:var(--blue);"><span class="tool">Pa11y</span></a>) surface automated violations: missing labels, contrast failures, invalid ARIA. These are the easiest defects to write because axe provides the rule ID, WCAG criterion, impact, and DOM selector. Copy this directly into the defect. The axe JSON output gives you everything except steps to reproduce and fix guidance, which you add manually.</p>
+  <p>Pipeline tools (<a href="32-Axe-Core-Cypress-Playwright.html" style="color:var(--blue);"><span class="tool">axe-core</span></a>, <a href="33-Pa11y-in-CI-CD.html" style="color:var(--blue);"><span class="tool">Pa11y</span></a>) surface automated violations: missing labels, contrast failures, invalid ARIA. These are the easiest defects to write, and the easiest to hand off too — both tools describe what would fix the issue in enough detail to copy straight into the defect. axe-core's JSON output includes a rule ID, WCAG criterion, impact, DOM selector, and a <code>failureSummary</code> field stating the fix for most violations. Pa11y's message field does the same for HTML_CodeSniffer's own rules. Copy this directly into the defect, fix guidance included: you do not need to already know the HTML/CSS/ARIA remediation yourself before writing it up. The one thing neither tool gives you is steps to reproduce, since that depends on how you found the page.</p>
 
   <h3>Tier 2: Semi-automated tools</h3>
   <p>Browser tools (<a href="27-Axe-DevTools.html" style="color:var(--blue);"><span class="tool">axe DevTools</span></a>, <a href="26-WAVE.html" style="color:var(--blue);"><span class="tool">WAVE</span></a>, <a href="31-ANDI.html" style="color:var(--blue);"><span class="tool">ANDI</span></a>) give visual context. Use the element highlight in axe DevTools to locate the affected element and capture its selector. Use ANDI to get the exact accessible name and source attribute: this is what goes in the "current behaviour" field. WAVE alerts add the WCAG criterion and a summary of the issue type.</p>

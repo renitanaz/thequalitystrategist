@@ -73,7 +73,7 @@
       <option value="38-Testing-Video-and-Audio.html">38 Testing Video and Audio</option>
       <option value="39-Sprint-Ready-Accessibility-Checklist.html">39 Sprint-Ready Checklist</option>
       <option value="40-Live-Audit-Full-Page-From-Scratch.html">40 Live Audit From Scratch</option>
-      <option value="41-Mobile-Accessibility-Testing-Practice-Apps.html">41 Mobile Testing: Practice Apps</option>
+      <option value="41-Mobile-Accessibility-Testing-Practice-Apps.html">Guide: Mobile Testing Practice Apps</option>
     </select>
   </div>
   <div class="blog-tags"><span class="tag" style="background:rgba(167,139,250,0.08);color:#a78bfa;border-color:rgba(167,139,250,0.3)">CI/CD</span><span class="tag" style="">AI-Assisted</span><span class="tag" style="">Automation</span></div>
@@ -94,7 +94,7 @@
       <li><a href="#lighthouse">Lighthouse CI</a></li>
       <li><a href="#ibm-equal-access">IBM Equal Access</a></li>
       <li><a href="#start-here">Where to start if you are new to this</a></li>
-      <li><a href="#all-three">Running axe-core and Pa11y together, selectable from one workflow</a></li>
+      <li><a href="#all-three">Pa11y and axe-core, combined from day one</a></li>
       <li><a href="#troubleshooting">Troubleshooting what the assistant gets wrong</a></li>
       <li><a href="#reviewing">Reviewing the output</a></li></ol>
   </nav>
@@ -162,44 +162,50 @@ Show me the code before running anything, and explain what each part of the gene
   <p>New to CI/CD or accessibility automation? Start here, not with the prompts above.</p>
   <ol>
     <li><strong>Repo access:</strong> you need push access to add a file under <code>.github/workflows/</code>. Actions is already enabled, nothing to turn on.</li>
-    <li><strong>Pick one tool, not four:</strong> axe-core and Pa11y is the recommended pair (<a href="#all-three" style="color:var(--blue);">Section 6</a>), or axe-core alone for the smallest first step.</li>
+    <li><strong>Start with the pair, not four tools:</strong> axe-core and Pa11y together (<a href="#all-three" style="color:var(--blue);">Section 6</a>) is the recommended starting point, not something to add later — axe-core no longer needs an existing suite to justify starting it (see the next point).</li>
     <li><strong>Read the tool's own blog first:</strong> <a href="32-Axe-Core-Cypress-Playwright.html" style="color:var(--blue);">Blog 32</a> for axe-core, <a href="33-Pa11y-in-CI-CD.html" style="color:var(--blue);">Blog 33</a> for Pa11y. The prompts encode those choices, they do not explain them.</li>
-    <li><strong>Check the prerequisite:</strong> axe-core needs an existing Playwright or Cypress suite. Pa11y just needs a reachable URL, so it is the easier starting point with nothing else running yet.</li>
-    <li><strong>Run one prompt, merge it, watch it pass on a real PR</strong> before adding a second tool.</li>
+    <li><strong>Check the prerequisite:</strong> axe-core does not need an existing Playwright or Cypress suite. Start it with one minimal test per page that just loads the page and runs axe-core, no interactions scripted, then grow that same suite into interaction and authenticated-state coverage over time. Pa11y needs nothing more than a reachable URL. Both halves of the pair are buildable from nothing on day one.</li>
+    <li><strong>Run the prompt, merge it, watch both jobs pass on a real PR</strong> before writing your first interaction-state test.</li>
   </ol>
 
-  <h2 id="all-three">6. Running axe-core and Pa11y Together, Selectable From One Workflow</h2>
-  <p>The recommended combination is axe-core plus Pa11y on the default runner: axe-core catches interaction and authenticated-state violations no scanner-only tool reaches, and Pa11y's default HTML_CodeSniffer engine adds a genuinely different rule set for almost no extra setup, with no tests to write. Add <a href="#lighthouse" style="color:var(--blue);">Lighthouse CI</a> or <a href="#ibm-equal-access" style="color:var(--blue);">IBM Equal Access</a> to the same pattern below only if you need score-trend tracking or Section 508 coverage: neither adds much new detection on top of this pair, since Lighthouse runs the same axe-core engine underneath (<a href="29-Lighthouse.html" style="color:var(--blue);">Blog 29</a>).</p>
-  <pre style="white-space:pre-wrap;">Combine the axe-core and Pa11y setups above into a single GitHub Actions workflow at .github/workflows/accessibility.yml, with these rules:
+  <h2 id="all-three">6. Pa11y and axe-core, Combined From Day One</h2>
+  <p>The recommended Tier 1 combination is Pa11y on its default HTML_CodeSniffer runner plus axe-core via Playwright — and both start on day one, together, not one added after the other. There is no tool to pick and no dropdown to choose between them: axe-core no longer needs an existing Playwright suite to justify adding it, so the "start with one tool" caution in Sections 2 and 3 doesn't apply to this combined setup. Add <a href="#lighthouse" style="color:var(--blue);">Lighthouse CI</a> or <a href="#ibm-equal-access" style="color:var(--blue);">IBM Equal Access</a> to the same pattern below only if you need score-trend tracking or Section 508 coverage: neither adds much new detection on top of this pair, since Lighthouse runs the same axe-core engine underneath (<a href="29-Lighthouse.html" style="color:var(--blue);">Blog 29</a>).</p>
+  <pre style="white-space:pre-wrap;">Set up two accessibility checks in .github/workflows/accessibility.yml, run as independent parallel jobs on every push and pull request to main:
 
-1. On every push and pull request to main, run both as independent parallel jobs. For Pa11y, use the default HTML_CodeSniffer runner, not the axe-core runner: axe-core already runs as its own job, so Pa11y should add a different rule engine, not duplicate it.
-2. Also support a manual trigger (workflow_dispatch) with a dropdown input named "tool" that defaults to "all" and offers "axe-core" and "pa11y" as choices, so a manual run can target just one tool.
-3. Each job should only run when the trigger is push/pull_request, or when workflow_dispatch was used and the selected tool matches that job (or "all" was selected).
-4. Keep each tool's own install, config, and fail-the-build behaviour exactly as scoped in its own prompt.
-5. Each job uploads its own report as a separate build artifact, even when it fails.
+1. Pa11y, on its default HTML_CodeSniffer runner (do not set "runners": ["axe"] — axe-core already runs as its own job below, so Pa11y should add a different rule engine, not duplicate it). Config: WCAG2AA standard, ignore notice and warning, chromeLaunchConfig with --no-sandbox.
 
-Show me the code before running anything, and explain how the conditional logic on each job decides whether to run.</pre>
+   Ask me which page source to use before generating the config:
+   (a) a fixed "urls" array of local, checked-out file paths — the right choice for a PR gate, since it checks the change actually sitting in the pull request
+   (b) a "sitemap" URL instead, to crawl a deployed site automatically — only valid once something is actually deployed, so this belongs on a separate scheduled or post-deploy job, not the PR gate
+
+2. axe-core, via Playwright. Start with one test per page that just loads the page and asserts zero critical or serious violations — no interactions scripted yet. This suite is meant to grow into interaction and authenticated-state coverage later; do not wait for that coverage to exist before adding this job.
+
+3. Each job uploads its own report as a build artifact, even when it fails.
+
+Show me the code before running anything, and ask me for the page list (or sitemap URL) rather than inventing one.</pre>
   <details style="margin:1.25rem 0;">
-    <summary style="cursor:pointer;color:var(--text-3);font-size:0.78rem;margin-bottom:4px;">The shape this produces — show example</summary>
-    <pre style="margin-top:0;">name: Accessibility Tests
+    <summary style="cursor:pointer;color:var(--text-3);font-size:0.78rem;margin-bottom:4px;">The shape this produces (urls variant) — show example</summary>
+    <pre style="margin-top:0;"># pa11y-ci.json
+{
+  "urls": ["../your-page.html"],
+  "defaults": {
+    "standard": "WCAG2AA",
+    "ignore": ["notice", "warning"],
+    "chromeLaunchConfig": { "args": ["--no-sandbox"] }
+  }
+}
+
+# .github/workflows/accessibility.yml
+name: Accessibility Tests
 
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
-  workflow_dispatch:
-    inputs:
-      tool:
-        description: 'Which tool to run (defaults to all on push/PR)'
-        required: false
-        default: 'all'
-        type: choice
-        options: [all, axe-core, pa11y]
 
 jobs:
   axe-core:
-    if: github.event_name != 'workflow_dispatch' || inputs.tool == 'all' || inputs.tool == 'axe-core'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -213,7 +219,6 @@ jobs:
         with: { name: axe-core-report, path: playwright-report/ }
 
   pa11y:
-    if: github.event_name != 'workflow_dispatch' || inputs.tool == 'all' || inputs.tool == 'pa11y'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -222,7 +227,10 @@ jobs:
       - run: npm ci
       - run: npx pa11y-ci --config pa11y-ci.json</pre>
   </details>
-  <p>The <code>if</code> condition on each job is what makes the tool selectable: on an ordinary push or pull request, <code>github.event_name != 'workflow_dispatch'</code> is true, so every job runs regardless of the input. On a manual run, that first clause is false, so the job only runs if <code>inputs.tool</code> matches its own name or equals <code>all</code>. The two jobs also run in parallel by default, rather than one job that runs both tools in sequence: a broken axe-core step does not stop Pa11y from still reporting its own results. Adding Lighthouse CI or IBM Equal Access later is the same pattern: a new job, a new <code>if</code> clause, and a new option in the <code>tool</code> dropdown.</p>
+  <p>Swapping in the sitemap variant only changes the config, not the workflow: <code>"urls": [...]</code> becomes <code>"sitemap": "https://your-deployed-site.com/sitemap.xml"</code> (add <code>"sitemapFindAll": true</code> to also follow nested sitemap indexes). Because a sitemap only exists once a site is live, that variant belongs on a separate job triggered on a schedule or after deploy — not on the push/pull_request jobs above, which are checking the change before it ships.</p>
+  <p>The two jobs run in parallel by default, rather than one job running both tools in sequence: a broken axe-core step does not stop Pa11y from still reporting its own results. The axe-core job's own test file is what grows over time — a new <code>test()</code> for each interaction or authenticated state — while the workflow file around it stays exactly the same. Adding Lighthouse CI or IBM Equal Access later is the same pattern: one more parallel job, nothing about the existing two changes.</p>
+
+  <p>Want to see this exact pairing built by hand instead of scaffolded, with the reasoning for every file and setting spelled out? See <a href="../../blog-real-accessibility-ci-pipeline.html" style="color:var(--blue);">Building a Real Accessibility CI Pipeline: Every Step, Every File</a>.</p>
 
   <h2 id="troubleshooting">7. Troubleshooting What the Assistant Gets Wrong</h2>
   <p>An assistant produces working YAML far more often than it produces the <em>right</em> YAML for your project. These are the failure modes worth checking for specifically, because they fail quietly rather than throwing an error.</p>
@@ -265,8 +273,7 @@ jobs:
   <aside class="references" aria-label="References"><div class="ref-title">References</div><ul role="list">      <li><a href="https://github.com/dequelabs/axe-core" target="_blank" rel="noopener noreferrer">axe-core on GitHub</a></li>
       <li><a href="https://github.com/pa11y/pa11y-ci" target="_blank" rel="noopener noreferrer">pa11y-ci on GitHub</a></li>
       <li><a href="https://github.com/GoogleChrome/lighthouse-ci" target="_blank" rel="noopener noreferrer">Lighthouse CI on GitHub</a></li>
-      <li><a href="https://github.com/IBMa/equal-access/blob/master/accessibility-checker/README.md" target="_blank" rel="noopener noreferrer">IBM accessibility-checker on GitHub</a></li>
-      <li><a href="https://docs.github.com/en/actions/using-workflows/manually-running-a-workflow" target="_blank" rel="noopener noreferrer">workflow_dispatch: GitHub Actions docs</a></li></ul></aside>
+      <li><a href="https://github.com/IBMa/equal-access/blob/master/accessibility-checker/README.md" target="_blank" rel="noopener noreferrer">IBM accessibility-checker on GitHub</a></li></ul></aside>
 </main>
 <footer><p><a href="https://renitanaz.github.io/thequalitystrategist/">The Quality Strategist</a> &nbsp;·&nbsp; Built with intention. Tested with care. &nbsp;·&nbsp; © 2026</p></footer>
 </body></html>
