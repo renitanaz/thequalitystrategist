@@ -2,117 +2,123 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script>(function(){try{if(localStorage.getItem('pw-theme')==='light'){document.documentElement.setAttribute('data-theme','light');}}catch(e){}})();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Phase 2: Locators | Playwright: Zero to Architect</title>
 <meta name="description" content="Phase 2 of Playwright: Zero to Architect. Find elements the right way. Locator priority, semantic locators, scoping, and AI locator mistakes.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --olive:#6B7C3A; --olive-dark:#4A5828; --olive-deep:#2E3A18;
-    --cream:#F5F7F0; --warm-white:#FAFCF5;
-    --ink:#1A1F14; --ink2:#3D4235; --ink3:#6B7060; --ink4:#9A9E90;
-    --border:rgba(26,31,20,0.1); --border2:rgba(26,31,20,0.06);
-    --purple:#7A4A9A; --purple-l:#EDE0F5;
-    --gold:#9A6E1A; --gold-l:#F5EDD6;
-    --blue:#2A5C9A; --blue-l:#DDE8F5;
-    --teal:#1A6B54; --teal-l:#D8EEE8;
-    --terra:#8A4A2A; --terra-l:#F5E4D8;
-    --green:#1A7A3A; --green-l:#D8F0E0;
-    --ff-serif:'Lora',Georgia,serif;
-    --ff-sans:'DM Sans',system-ui,sans-serif;
-    --ease:cubic-bezier(0.22,1,0.36,1);
-  }
-  *{margin:0;padding:0;box-sizing:border-box;}
-  body{font-family:var(--ff-sans);background:var(--warm-white);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;}
-  a{color:inherit;}
-  header.site-header{border-bottom:1px solid var(--border);padding:1.1rem 1.5rem;background:var(--warm-white);}
-  .site-header-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
-  .site-name{font-family:var(--ff-serif);font-weight:600;font-size:1.05rem;text-decoration:none;}
-  main{max-width:880px;margin:0 auto;padding:2.6rem 1.5rem 5rem;}
-  .breadcrumb{font-size:.82rem;color:var(--ink3);margin-bottom:1.3rem;}
-  .breadcrumb a{text-decoration:none;}
-  .breadcrumb a:hover{text-decoration:underline;}
-  .series-tag{display:inline-block;font-size:.76rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--blue);background:var(--blue-l);padding:.3rem .7rem;border-radius:999px;margin-bottom:1.1rem;}
-  h1{font-family:var(--ff-serif);font-size:2rem;font-weight:700;line-height:1.2;margin-bottom:.8rem;}
-  .subtitle{font-size:1.08rem;color:var(--ink2);margin-bottom:1.6rem;max-width:680px;}
-  .meta-row{display:flex;gap:1.1rem;font-size:.82rem;color:var(--ink3);margin-bottom:1.6rem;border-bottom:1px solid var(--border);padding-bottom:1.3rem;flex-wrap:wrap;}
-  h2{font-family:var(--ff-serif);font-size:1.35rem;font-weight:700;margin-top:2.2rem;margin-bottom:.8rem;}
-  h3{font-family:var(--ff-serif);font-size:1.1rem;font-weight:700;margin-top:1.6rem;margin-bottom:.6rem;}
-  p{margin-bottom:.9rem;color:var(--ink2);font-size:.97rem;}
-  strong{color:var(--ink);font-weight:700;}
-  ul,ol{margin:0 0 1rem 1.3rem;color:var(--ink2);}
-  li{margin-bottom:.4rem;font-size:.97rem;}
-  code{background:var(--cream);padding:.15rem .4rem;border-radius:5px;font-size:.87em;color:var(--olive-deep);}
-  pre{background:var(--ink);color:var(--cream);padding:1rem 1.1rem;border-radius:10px;overflow-x:auto;font-size:.82rem;margin:1rem 0;line-height:1.55;}
-  pre code{background:none;color:inherit;padding:0;}
-  .callout{border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.91rem;}
-  .callout p{margin-bottom:0;}
-  .callout.green{background:var(--green-l);border-left:3px solid var(--green);}.callout.green p{color:var(--olive-deep);}
-  .callout.warn{background:var(--terra-l);border-left:3px solid var(--terra);}.callout.warn p{color:var(--terra);}
-  .callout.blue{background:var(--blue-l);border-left:3px solid var(--blue);}.callout.blue p{color:var(--blue);}
-  .callout.gold{background:var(--gold-l);border-left:3px solid var(--gold);}.callout.gold p{color:var(--gold);}
-  .callout.purple{background:var(--purple-l);border-left:3px solid var(--purple);}.callout.purple p{color:var(--purple);}
-  .fw-table-wrap{overflow-x:auto;margin:1rem 0 1.5rem;}
-  table.fw-table{width:100%;border-collapse:collapse;font-size:.82rem;line-height:1.45;}
-  table.fw-table th,table.fw-table td{border:1px solid var(--border);padding:.5rem .7rem;text-align:left;vertical-align:top;}
-  table.fw-table th{background:var(--cream);font-weight:700;font-size:.77rem;}
-  table.fw-table td{color:var(--ink2);}
-  table.fw-table tr:nth-child(odd) td{background:var(--warm-white);}
-  table.fw-table tr:nth-child(even) td{background:var(--cream);}
-  table.fw-table.compact th,table.fw-table.compact td{padding:.28rem .55rem;font-size:.8rem;}
-  /* Phase progress strip */
-  .phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem;}
-  .phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--ink4);background:var(--warm-white);text-decoration:none;}
-  .phase-pip.active{background:var(--blue);color:var(--warm-white);border-color:transparent;}
-  .phase-pip.done{background:var(--green-l);color:var(--green);border-color:var(--green);}
-  /* Before/After blocks */
-  .ba-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0;}
-  .ba-block{border-radius:10px;overflow:hidden;}
-  .ba-label{padding:.4rem .8rem;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;}
-  .ba-block.before .ba-label{background:var(--terra-l);color:var(--terra);}
-  .ba-block.after .ba-label{background:var(--green-l);color:var(--green);}
-  .ba-block pre{margin:0;border-radius:0 0 10px 10px;}
-  /* Assignment block */
-  .assignment{background:var(--blue-l);border:1px solid var(--blue);border-radius:12px;padding:1.2rem 1.4rem;margin:2rem 0 1rem;}
-  .assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem;}
-  .assignment h3{font-family:var(--ff-serif);color:var(--ink);margin-top:.2rem;margin-bottom:.5rem;}
-  .bonus{background:var(--purple-l);border:1px solid var(--purple);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem;}
-  .bonus .b-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--purple);margin-bottom:.4rem;}
-  /* Collapsible solution */
-  details.solution{margin:1rem 0 2rem;border:1px solid var(--border);border-radius:12px;overflow:hidden;}
-  details.solution summary{padding:.9rem 1.2rem;cursor:pointer;font-weight:700;font-size:.92rem;background:var(--cream);list-style:none;display:flex;align-items:center;gap:.5rem;}
-  details.solution summary::before{content:"&#9654;";font-size:.7rem;color:var(--ink3);transition:transform .2s;}
-  details.solution[open] summary::before{transform:rotate(90deg);}
-  details.solution summary::-webkit-details-marker{display:none;}
-  .solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border);}
-  .solution-body p{font-size:.92rem;}
-  /* Nav */
-  .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:1.8rem;flex-wrap:wrap;}
-  .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:700;font-size:.9rem;padding:.7rem 1.2rem;border-radius:8px;transition:background .2s var(--ease);}
-  .nav-cta.primary{background:var(--olive);color:var(--warm-white);}
-  .nav-cta.primary:hover{background:var(--olive-dark);}
-  .nav-cta.secondary{background:var(--cream);color:var(--ink2);border:1px solid var(--border);}
-  footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.85rem;color:var(--ink3);}
-  footer a{text-decoration:none;}
-  footer a:hover{text-decoration:underline;}
-  @media(max-width:600px){
-    h1{font-size:1.55rem;}
-    .ba-wrap{grid-template-columns:1fr;}
-    .meta-row{flex-wrap:wrap;gap:.5rem;}
-  }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+  --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+  --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.09); --purple-border:rgba(167,139,250,0.35);
+  --green:#4ade80; --green-bg:rgba(74,222,128,0.07); --green-border:rgba(74,222,128,0.25);
+  --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07); --blue-border:rgba(96,165,250,0.25);
+  --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07); --amber-border:rgba(251,191,36,0.25);
+  --red:#f87171; --red-bg:rgba(248,113,113,0.07); --red-border:rgba(248,113,113,0.25);
+  --ff-serif:'DM Serif Display',Georgia,serif; --ff-sans:'DM Sans',system-ui,sans-serif;
+}
+:root[data-theme="light"]{
+  --bg:#FAFCF5; --bg2:#F5F7F0; --bg3:#EDF0E4; --border:#DEE3D3;
+  --text:#1A1F14; --text-2:#3D4235; --text-3:#6B7060;
+  --purple:#7A4A9A; --purple-bg:#EDE0F5; --purple-border:rgba(122,74,154,0.35);
+  --green:#1A7A3A; --green-bg:#D8F0E0; --green-border:rgba(26,122,58,0.25);
+  --blue:#2A5C9A; --blue-bg:#DDE8F5; --blue-border:rgba(42,92,154,0.25);
+  --amber:#9A6E1A; --amber-bg:#F5EDD6; --amber-border:rgba(154,110,26,0.25);
+  --red:#B0402E; --red-bg:#F5DEDA; --red-border:rgba(176,64,46,0.25);
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body{background:var(--bg);color:var(--text);font-family:var(--ff-sans);font-size:16px;line-height:1.8;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.skip-link{position:absolute;top:-100%;left:1rem;background:var(--green);color:#000;padding:.5rem 1rem;border-radius:0 0 6px 6px;font-size:.85rem;font-weight:500;text-decoration:none;z-index:999}
+.skip-link:focus{top:0}
+nav.site-nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:56px}
+.nav-logo{font-family:var(--ff-serif);font-size:1rem;color:var(--text);text-decoration:none}
+.theme-toggle{background:var(--bg3);border:1px solid var(--border);color:var(--text-2);border-radius:8px;padding:.4rem .8rem;font-size:.78rem;cursor:pointer;font-family:var(--ff-sans);}
+.theme-toggle:hover{border-color:var(--purple);color:var(--text)}
+main{max-width:900px;margin:0 auto;padding:3rem 1.5rem 5rem}
+.breadcrumb{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem}
+.breadcrumb a{color:var(--text-3);text-decoration:none}
+.breadcrumb a:hover{color:var(--purple)}
+.series-tag{font-size:.7rem;padding:4px 11px;border-radius:99px;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);letter-spacing:.04em;text-transform:uppercase;font-weight:500;display:inline-block;margin-bottom:1.25rem}
+h1{font-family:var(--ff-serif);font-size:clamp(1.85rem,4vw,2.6rem);line-height:1.2;color:var(--text);margin-bottom:.75rem;font-weight:400}
+.subtitle{font-family:var(--ff-serif);font-size:1.1rem;font-style:italic;color:var(--text-3);margin-bottom:1.5rem;max-width:680px}
+.meta-row{display:flex;align-items:center;gap:1.25rem;font-size:.82rem;color:var(--text-3);flex-wrap:wrap;margin-bottom:1.6rem;padding-bottom:1.3rem;border-bottom:1px solid var(--border)}
+h2{font-family:var(--ff-serif);font-size:1.5rem;font-weight:400;color:var(--text);margin:3.5rem 0 1.1rem;padding-top:1rem;border-top:1px solid var(--border)}
+h3{font-size:1rem;font-weight:500;color:var(--text);margin:1.75rem 0 .5rem}
+p{color:var(--text-2);margin-bottom:1.25rem;font-weight:300}
+strong{color:var(--text);font-weight:500}
+ul,ol{padding-left:1.4rem;margin-bottom:1.25rem;color:var(--text-2);font-weight:300}
+li{margin-bottom:.45rem}
+code{background:var(--bg3);padding:1px 6px;border-radius:3px;font-size:.85em;color:var(--text-2);font-family:monospace}
+pre{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:1rem 1.1rem;font-family:monospace;font-size:.82rem;color:var(--text-2);line-height:1.65;overflow-x:auto;margin:1rem 0}
+pre code{background:none;padding:0;color:inherit}
+.callout{display:block;background:var(--blue-bg);border-left:3px solid var(--blue);border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.95rem;color:var(--text);line-height:1.7}
+.callout p{margin-bottom:0;color:var(--text-2)}
+.callout.amber{background:var(--amber-bg);border-color:var(--amber)}
+.callout.green{background:var(--green-bg);border-color:var(--green)}
+.callout.red{background:var(--red-bg);border-color:var(--red)}
+.callout.blue{background:var(--blue-bg);border-color:var(--blue)}
+.callout.purple{background:var(--purple-bg);border-color:var(--purple)}
+.table-wrap{display:block;overflow-x:auto;margin:1.5rem 0;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+thead th{background:var(--bg2);padding:9px 13px;text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);font-weight:500;border-bottom:1px solid var(--border)}
+tbody td{padding:9px 13px;border-bottom:1px solid var(--border);color:var(--text-2);vertical-align:top;line-height:1.55;font-size:.85rem}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--bg2)}
+/* Phase progress strip */
+.phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem}
+.phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--text-3);background:var(--bg2);text-decoration:none}
+.phase-pip:hover{border-color:var(--purple);color:var(--text)}
+.phase-pip.active{background:var(--purple);color:#0d0d0d;border-color:transparent}
+.phase-pip.done{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+/* Before/After blocks */
+.ba-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0}
+.ba-block{border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+.ba-label{padding:.4rem .8rem;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.ba-block.before .ba-label{background:var(--red-bg);color:var(--red)}
+.ba-block.after .ba-label{background:var(--green-bg);color:var(--green)}
+.ba-block pre{margin:0;border-radius:0;border:none}
+/* Assignment / bonus blocks */
+.assignment{background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:12px;padding:1.2rem 1.4rem;margin:2rem 0 1rem}
+.assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem}
+.assignment h3{font-family:var(--ff-serif);color:var(--text);margin-top:.2rem;margin-bottom:.5rem;font-weight:400}
+.bonus{background:var(--purple-bg);border:1px solid var(--purple-border);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem}
+.bonus .b-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--purple);margin-bottom:.4rem}
+/* Collapsible solution */
+details.solution{margin:1rem 0 2rem;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+details.solution summary{padding:.9rem 1.2rem;cursor:pointer;font-weight:700;font-size:.92rem;background:var(--bg2);list-style:none;display:flex;align-items:center;gap:.5rem;color:var(--text)}
+details.solution summary::-webkit-details-marker{display:none}
+details.solution summary::before{content:"\25B6";font-size:.7rem;color:var(--text-3);transition:transform .2s}
+details.solution[open] summary::before{transform:rotate(90deg)}
+.solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border)}
+.solution-body p{font-size:.92rem}
+.series-nav{margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border)}
+.nav-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.nav-blog{display:flex;align-items:center;gap:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.25rem;text-decoration:none;transition:border-color .2s,background .2s}
+.nav-blog:hover{border-color:var(--purple);background:var(--bg3)}
+.nav-blog-arrow{color:var(--text-3);font-size:1rem;flex-shrink:0}
+.nav-blog-title{font-size:.88rem;font-weight:500;color:var(--text)}
+.nav-blog-sub{font-size:.75rem;color:var(--text-3);margin-top:2px}
+footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.8rem;color:var(--text-3)}
+footer a{color:var(--text-3);text-decoration:none}
+footer a:hover{color:var(--purple)}
+@media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
-<header class="site-header">
-  <div class="site-header-inner">
-    <a class="site-name" href="../../index.html">The Quality Strategist</a>
-  </div>
-</header>
+<a class="skip-link" href="#main-content">Skip to main content</a>
 
-<main>
+<nav class="site-nav" aria-label="Site navigation">
+  <a class="nav-logo" href="../../index.html">The Quality Strategist</a>
+  <button class="theme-toggle" id="themeToggle" type="button">Light</button>
+</nav>
+
+<main id="main-content">
 
   <p class="breadcrumb">
     <a href="../../index.html">Home</a> &nbsp;/&nbsp;
@@ -140,7 +146,7 @@
     <a href="03-playwrightseries-assertions-waits.html" class="phase-pip" title="Phase 3: Assertions &amp; Waits">3</a>
     <a href="04-playwrightseries-debugging-flakiness.html" class="phase-pip" title="Phase 4: Debugging &amp; Flakiness">4</a>
     <a href="05-playwrightseries-test-data-state.html" class="phase-pip" title="Phase 5: Test Data &amp; State">5</a>
-    <a href="06-playwrightseries-auth-sessions.html" class="phase-pip" title="Phase 6: Authentication &amp; Sessions">6</a>
+    <a href="06-playwrightseries-auth-sessions.html" class="phase-pip" title="Phase 6: Auth &amp; Sessions">6</a>
     <a href="07-playwrightseries-api-testing.html" class="phase-pip" title="Phase 7: API Testing">7</a>
     <a href="08-playwrightseries-advanced-scenarios.html" class="phase-pip" title="Phase 8: Advanced Scenarios">8</a>
     <a href="09-playwrightseries-page-objects.html" class="phase-pip" title="Phase 9: Page Object Model">9</a>
@@ -151,7 +157,6 @@
     <a href="14-playwrightseries-automation-leadership.html" class="phase-pip" title="Phase 14: Automation Leadership">14</a>
     <a href="15-playwrightseries-capstone-projects.html" class="phase-pip" title="Phase 15: Capstone Projects">15</a>
   </div>
-
 
   <h2>Goal</h2>
   <p>Find elements the right way so tests survive UI changes without breaking. The locator you choose is the single biggest factor in whether your test is brittle or resilient.</p>
@@ -175,7 +180,7 @@ await page.locator('#checkout-submit-btn').click();
 // A developer can rename every class on the page.
 // These tests still pass.
 await page.getByRole('button', { name: /add to cart/i }).click();
-await page.getByRole('heading', { level: 2 }).textContent();
+await page.getByRole('heading', { level: 3 }).textContent();
 await page.getByRole('button', { name: /checkout/i }).click();
 </code></pre>
     </div>
@@ -183,8 +188,8 @@ await page.getByRole('button', { name: /checkout/i }).click();
 
   <h2>Locator priority</h2>
   <p>Playwright gives you many ways to find an element. Use the highest one available ; use the highest available resilient to change:</p>
-  <div class="fw-table-wrap">
-    <table class="fw-table">
+  <div class="table-wrap">
+    <table>
       <thead><tr><th>Priority</th><th>Locator</th><th>Why</th></tr></thead>
       <tbody>
         <tr><td><strong>1 (best)</strong></td><td><code>getByRole()</code></td><td>Matches what a screen reader sees. Survives restyling and restructuring.</td></tr>
@@ -202,16 +207,17 @@ await page.getByRole('button', { name: /checkout/i }).click();
   <pre><code>// Find the "Add to cart" button (role: button, name: the button text)
 page.getByRole('button', { name: /add to cart/i })
 
-// Find the product heading (role: heading, level 2)
-page.getByRole('heading', { level: 2, name: /trekking poles/i })
-
-// Find the email input (role: textbox, name from its label)
-page.getByRole('textbox', { name: /email/i })
+// Find the product heading (role: heading, level 3)
+page.getByRole('heading', { level: 3, name: /trekking poles/i })
 
 // Find the search box (role: textbox, name from its placeholder)
 page.getByRole('textbox', { name: /search gear/i })
 </code></pre>
   <p>The <code>name</code> option matches the element's accessible name ; usually its visible text, its <code>aria-label</code>, or the text of its associated <code>&lt;label&gt;</code>. Passing a regex (<code>/add to cart/i</code>) makes the match case-insensitive and partial, which is more resilient than an exact string.</p>
+
+  <div class="callout red">
+    <p><strong>PeakAndPack's login inputs have no accessible name at all.</strong> No <code>&lt;label&gt;</code>, no <code>aria-label</code>, not even a <code>placeholder</code> &mdash; confirmed by inspecting the live DOM. <code>getByLabel(/email/i)</code> and <code>getByRole('textbox', { name: /email/i })</code> both fail to find them, because there's nothing for either to match against. This is a real accessibility defect worth logging on its own (a screen reader user has no way to tell the two fields apart), and it's why every login example in this series uses <code>page.locator('input[type="email"]')</code> and <code>page.locator('input[type="password"]')</code> instead: an attribute selector, tier 6 on the table above, reached for only because tiers 1 through 5 genuinely have nothing to attach to here.</p>
+  </div>
 
   <h2>Scoping: find inside a container</h2>
   <p>PeakAndPack's product listing has multiple "Add to cart" buttons ; one per card. <code>getByRole('button', { name: /add to cart/i })</code> would match all of them and Playwright would not know which to click. Scope the locator to the specific card first:</p>
@@ -234,7 +240,7 @@ await expect(page.getByTestId('cart-item-count')).toHaveText('3');
 
   <h2>AI-generated locator mistakes</h2>
   <p>When you use AI to generate Playwright tests, the locators are the most likely thing to get wrong. AI tools default to CSS classes because they are the most visible pattern in HTML. Know the signs:</p>
-  <div class="callout warn">
+  <div class="callout red">
     <p><strong>Red flags in AI-generated locators.</strong></p>
     <ul style="margin:.5rem 0 0 1.2rem;">
       <li><code>page.locator('.btn-primary')</code>: CSS class. Ask: is there a visible button text I can use instead?</li>
@@ -249,7 +255,7 @@ await expect(page.getByTestId('cart-item-count')).toHaveText('3');
     <p><strong>The test that survives a redesign.</strong> When the PeakAndPack design team rebrands next quarter, changes every colour, renames every CSS class, and restructures the product cards, a test suite built on <code>getByRole</code> and <code>getByLabel</code> keeps passing. A suite built on CSS selectors needs to be rewritten. The locator decision made in Phase 2 is the single biggest factor in how much maintenance your suite requires six months from now.</p>
   </div>
 
-  <div class="callout warn">
+  <div class="callout red">
     <p><strong>Common mistakes in Phase 2.</strong></p>
     <ul style="margin:.5rem 0 0 1.2rem;">
       <li><strong>Using CSS classes by default.</strong> The most common mistake, especially when copying AI output. Always ask: is there a role or label I can use instead?</li>
@@ -268,7 +274,7 @@ await expect(page.getByTestId('cart-item-count')).toHaveText('3');
   <div class="assignment">
     <div class="a-label">Assignment</div>
     <h3>Write 5 locators for PeakAndPack without a single CSS class</h3>
-    <p>Open PeakAndPack at <a href="https://peakandpack-ui.onrender.com" target="_blank">peakandpack-ui.onrender.com</a>. Using the browser's inspector, find 5 interactive elements and write a locator for each using the highest priority available. Document your choice: why this locator type for this element? Add them all to a spec file and confirm each one resolves to exactly one element (Playwright will error if it matches more than one).</p>
+    <p>Open PeakAndPack at <a href="https://peakandpack-ui.onrender.com" target="_blank" style="color:var(--purple)">peakandpack-ui.onrender.com</a>. Using the browser's inspector, find 5 interactive elements and write a locator for each using the highest priority available. Document your choice: why this locator type for this element? Add them all to a spec file and confirm each one resolves to exactly one element (Playwright will error if it matches more than one).</p>
   </div>
 
   <div class="bonus">
@@ -277,7 +283,7 @@ await expect(page.getByTestId('cart-item-count')).toHaveText('3');
   </div>
 
   <details class="solution">
-    <summary>Show solution -- try it yourself first</summary>
+    <summary>Show solution &mdash; try it yourself first</summary>
     <div class="solution-body">
       <h3>Example: 5 resilient locators for PeakAndPack</h3>
       <pre><code>import { test, expect } from '@playwright/test';
@@ -288,11 +294,11 @@ test('resilient locators across PeakAndPack', async ({ page }) => {
   // 1. Site heading - getByRole (most resilient)
   await expect(page.getByRole('heading', { name: /peakandpack/i })).toBeVisible();
 
-  // 2. Email input on login - getByLabel (matches the label element)
+  // 2. Email input on login - no accessible name exists, input[type] is the honest choice (see callout above)
   await page.goto('https://peakandpack-ui.onrender.com/login');
-  await page.getByLabel(/email/i).fill('test@example.com');
+  await page.locator('input[type="email"]').fill('test@example.com');
 
-  // 3. Specific product card - scoped locator (no <article> wrapper exists, see callout above)
+  // 3. Specific product card - scoped locator (no &lt;article&gt; wrapper exists, see callout above)
   const card = page.locator('div').filter({ has: page.getByRole('heading', { name: 'Trekking Poles (Pair)' }) }).first();
   await expect(card).toBeVisible();
 
@@ -309,14 +315,15 @@ test('resilient locators across PeakAndPack', async ({ page }) => {
     </div>
   </details>
 
-
-  <div class="nav-row">
-    <a href="01-playwrightseries-test-design.html" class="nav-cta secondary">&larr; Phase 1: Test Design Thinking</a>
-    <a href="03-playwrightseries-assertions-waits.html" class="nav-cta primary">Phase 3: Assertions &amp; Waits &rarr;</a>
+  <div class="series-nav">
+    <div class="nav-pair">
+      <a href="01-playwrightseries-test-design.html" class="nav-blog"><span class="nav-blog-arrow" aria-hidden="true">&larr;</span><div><div class="nav-blog-title">Phase 1: Test Design Thinking</div><div class="nav-blog-sub">What belongs at which layer, before writing code</div></div></a>
+      <a href="03-playwrightseries-assertions-waits.html" class="nav-blog"><div><div class="nav-blog-title">Phase 3: Assertions &amp; Waits</div><div class="nav-blog-sub">Waiting for the right signal, not a fixed delay</div></div><span class="nav-blog-arrow" aria-hidden="true">&rarr;</span></a>
+    </div>
   </div>
 
   <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
-    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; Playwright: Zero to Architect</p>
+    <p style="font-size:.8rem;color:var(--text-3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; Playwright: Zero to Architect</p>
   </div>
 
 </main>
@@ -324,6 +331,25 @@ test('resilient locators across PeakAndPack', async ({ page }) => {
 <footer>
   <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
 </footer>
+
+<script>
+(function(){
+  var btn = document.getElementById('themeToggle');
+  function isLight(){ return document.documentElement.getAttribute('data-theme') === 'light'; }
+  function sync(){ btn.textContent = isLight() ? 'Dark' : 'Light'; }
+  sync();
+  btn.addEventListener('click', function(){
+    if(isLight()){
+      document.documentElement.removeAttribute('data-theme');
+      try{ localStorage.setItem('pw-theme','dark'); }catch(e){}
+    } else {
+      document.documentElement.setAttribute('data-theme','light');
+      try{ localStorage.setItem('pw-theme','light'); }catch(e){}
+    }
+    sync();
+  });
+})();
+</script>
 
 </body>
 </html>

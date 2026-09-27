@@ -2,115 +2,123 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script>(function(){try{if(localStorage.getItem('pw-theme')==='light'){document.documentElement.setAttribute('data-theme','light');}}catch(e){}})();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Phase 5: Test Data and State Control | Playwright: Zero to Architect</title>
 <meta name="description" content="Phase 5 of Playwright: Zero to Architect. Build independent, deterministic tests safe to run in parallel.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --olive:#6B7C3A; --olive-dark:#4A5828; --olive-deep:#2E3A18;
-    --cream:#F5F7F0; --warm-white:#FAFCF5;
-    --ink:#1A1F14; --ink2:#3D4235; --ink3:#6B7060; --ink4:#9A9E90;
-    --border:rgba(26,31,20,0.1); --border2:rgba(26,31,20,0.06);
-    --purple:#7A4A9A; --purple-l:#EDE0F5;
-    --gold:#9A6E1A; --gold-l:#F5EDD6;
-    --blue:#2A5C9A; --blue-l:#DDE8F5;
-    --teal:#1A6B54; --teal-l:#D8EEE8;
-    --terra:#8A4A2A; --terra-l:#F5E4D8;
-    --green:#1A7A3A; --green-l:#D8F0E0;
-    --ff-serif:'Lora',Georgia,serif;
-    --ff-sans:'DM Sans',system-ui,sans-serif;
-    --ease:cubic-bezier(0.22,1,0.36,1);
-  }
-  *{margin:0;padding:0;box-sizing:border-box;}
-  body{font-family:var(--ff-sans);background:var(--warm-white);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;}
-  a{color:inherit;}
-  header.site-header{border-bottom:1px solid var(--border);padding:1.1rem 1.5rem;background:var(--warm-white);}
-  .site-header-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
-  .site-name{font-family:var(--ff-serif);font-weight:600;font-size:1.05rem;text-decoration:none;}
-  main{max-width:880px;margin:0 auto;padding:2.6rem 1.5rem 5rem;}
-  .breadcrumb{font-size:.82rem;color:var(--ink3);margin-bottom:1.3rem;}
-  .breadcrumb a{text-decoration:none;}
-  .breadcrumb a:hover{text-decoration:underline;}
-  .series-tag{display:inline-block;font-size:.76rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--blue);background:var(--blue-l);padding:.3rem .7rem;border-radius:999px;margin-bottom:1.1rem;}
-  h1{font-family:var(--ff-serif);font-size:2rem;font-weight:700;line-height:1.2;margin-bottom:.8rem;}
-  .subtitle{font-size:1.08rem;color:var(--ink2);margin-bottom:1.6rem;max-width:680px;}
-  .meta-row{display:flex;gap:1.1rem;font-size:.82rem;color:var(--ink3);margin-bottom:1.6rem;border-bottom:1px solid var(--border);padding-bottom:1.3rem;flex-wrap:wrap;}
-  h2{font-family:var(--ff-serif);font-size:1.35rem;font-weight:700;margin-top:2.2rem;margin-bottom:.8rem;}
-  h3{font-family:var(--ff-serif);font-size:1.1rem;font-weight:700;margin-top:1.6rem;margin-bottom:.6rem;}
-  p{margin-bottom:.9rem;color:var(--ink2);font-size:.97rem;}
-  strong{color:var(--ink);font-weight:700;}
-  ul,ol{margin:0 0 1rem 1.3rem;color:var(--ink2);}
-  li{margin-bottom:.4rem;font-size:.97rem;}
-  code{background:var(--cream);padding:.15rem .4rem;border-radius:5px;font-size:.87em;color:var(--olive-deep);}
-  pre{background:var(--ink);color:var(--cream);padding:1rem 1.1rem;border-radius:10px;overflow-x:auto;font-size:.82rem;margin:1rem 0;line-height:1.55;}
-  pre code{background:none;color:inherit;padding:0;}
-  .callout{border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.91rem;}
-  .callout p{margin-bottom:0;}
-  .callout.green{background:var(--green-l);border-left:3px solid var(--green);}.callout.green p{color:var(--olive-deep);}
-  .callout.warn{background:var(--terra-l);border-left:3px solid var(--terra);}.callout.warn p{color:var(--terra);}
-  .callout.blue{background:var(--blue-l);border-left:3px solid var(--blue);}.callout.blue p{color:var(--blue);}
-  .callout.gold{background:var(--gold-l);border-left:3px solid var(--gold);}.callout.gold p{color:var(--gold);}
-  .callout.purple{background:var(--purple-l);border-left:3px solid var(--purple);}.callout.purple p{color:var(--purple);}
-  .fw-table-wrap{overflow-x:auto;margin:1rem 0 1.5rem;}
-  table.fw-table{width:100%;border-collapse:collapse;font-size:.82rem;line-height:1.45;}
-  table.fw-table th,table.fw-table td{border:1px solid var(--border);padding:.5rem .7rem;text-align:left;vertical-align:top;}
-  table.fw-table th{background:var(--cream);font-weight:700;font-size:.77rem;}
-  table.fw-table td{color:var(--ink2);}
-  table.fw-table tr:nth-child(odd) td{background:var(--warm-white);}
-  table.fw-table tr:nth-child(even) td{background:var(--cream);}
-  table.fw-table.compact th,table.fw-table.compact td{padding:.28rem .55rem;font-size:.8rem;}
-  /* Phase progress strip */
-  .phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem;}
-  .phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--ink4);background:var(--warm-white);text-decoration:none;}
-  .phase-pip.active{background:var(--blue);color:var(--warm-white);border-color:transparent;}
-  .phase-pip.done{background:var(--green-l);color:var(--green);border-color:var(--green);}
-  /* Before/After blocks */
-  .ba-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0;}
-  .ba-block{border-radius:10px;overflow:hidden;}
-  .ba-label{padding:.4rem .8rem;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;}
-  .ba-block.before .ba-label{background:var(--terra-l);color:var(--terra);}
-  .ba-block.after .ba-label{background:var(--green-l);color:var(--green);}
-  .ba-block pre{margin:0;border-radius:0 0 10px 10px;}
-  /* Assignment block */
-  .assignment{background:var(--blue-l);border:1px solid var(--blue);border-radius:12px;padding:1.2rem 1.4rem;margin:2rem 0 1rem;}
-  .assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem;}
-  .assignment h3{font-family:var(--ff-serif);color:var(--ink);margin-top:.2rem;margin-bottom:.5rem;}
-  .bonus{background:var(--purple-l);border:1px solid var(--purple);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem;}
-  .bonus .b-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--purple);margin-bottom:.4rem;}
-  /* Collapsible solution */
-  details.solution{margin:1rem 0 2rem;border:1px solid var(--border);border-radius:12px;overflow:hidden;}
-  details.solution summary{padding:.9rem 1.2rem;cursor:pointer;font-weight:700;font-size:.92rem;background:var(--cream);list-style:none;display:flex;align-items:center;gap:.5rem;}
-  details.solution summary::before{content:"&#9654;";font-size:.7rem;color:var(--ink3);transition:transform .2s;}
-  details.solution[open] summary::before{transform:rotate(90deg);}
-  details.solution summary::-webkit-details-marker{display:none;}
-  .solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border);}
-  .solution-body p{font-size:.92rem;}
-  /* Nav */
-  .nav-row{display:flex;justify-content:space-between;gap:.8rem;margin-top:1.8rem;flex-wrap:wrap;}
-  .nav-cta{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:700;font-size:.9rem;padding:.7rem 1.2rem;border-radius:8px;transition:background .2s var(--ease);}
-  .nav-cta.primary{background:var(--olive);color:var(--warm-white);}
-  .nav-cta.primary:hover{background:var(--olive-dark);}
-  .nav-cta.secondary{background:var(--cream);color:var(--ink2);border:1px solid var(--border);}
-  footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.85rem;color:var(--ink3);}
-  footer a{text-decoration:none;}
-  footer a:hover{text-decoration:underline;}
-  @media(max-width:600px){
-    h1{font-size:1.55rem;}
-    .ba-wrap{grid-template-columns:1fr;}
-    .meta-row{flex-wrap:wrap;gap:.5rem;}
-  }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+  --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+  --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.09); --purple-border:rgba(167,139,250,0.35);
+  --green:#4ade80; --green-bg:rgba(74,222,128,0.07); --green-border:rgba(74,222,128,0.25);
+  --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07); --blue-border:rgba(96,165,250,0.25);
+  --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07); --amber-border:rgba(251,191,36,0.25);
+  --red:#f87171; --red-bg:rgba(248,113,113,0.07); --red-border:rgba(248,113,113,0.25);
+  --ff-serif:'DM Serif Display',Georgia,serif; --ff-sans:'DM Sans',system-ui,sans-serif;
+}
+:root[data-theme="light"]{
+  --bg:#FAFCF5; --bg2:#F5F7F0; --bg3:#EDF0E4; --border:#DEE3D3;
+  --text:#1A1F14; --text-2:#3D4235; --text-3:#6B7060;
+  --purple:#7A4A9A; --purple-bg:#EDE0F5; --purple-border:rgba(122,74,154,0.35);
+  --green:#1A7A3A; --green-bg:#D8F0E0; --green-border:rgba(26,122,58,0.25);
+  --blue:#2A5C9A; --blue-bg:#DDE8F5; --blue-border:rgba(42,92,154,0.25);
+  --amber:#9A6E1A; --amber-bg:#F5EDD6; --amber-border:rgba(154,110,26,0.25);
+  --red:#B0402E; --red-bg:#F5DEDA; --red-border:rgba(176,64,46,0.25);
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body{background:var(--bg);color:var(--text);font-family:var(--ff-sans);font-size:16px;line-height:1.8;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.skip-link{position:absolute;top:-100%;left:1rem;background:var(--green);color:#000;padding:.5rem 1rem;border-radius:0 0 6px 6px;font-size:.85rem;font-weight:500;text-decoration:none;z-index:999}
+.skip-link:focus{top:0}
+nav.site-nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:56px}
+.nav-logo{font-family:var(--ff-serif);font-size:1rem;color:var(--text);text-decoration:none}
+.theme-toggle{background:var(--bg3);border:1px solid var(--border);color:var(--text-2);border-radius:8px;padding:.4rem .8rem;font-size:.78rem;cursor:pointer;font-family:var(--ff-sans);}
+.theme-toggle:hover{border-color:var(--purple);color:var(--text)}
+main{max-width:900px;margin:0 auto;padding:3rem 1.5rem 5rem}
+.breadcrumb{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem}
+.breadcrumb a{color:var(--text-3);text-decoration:none}
+.breadcrumb a:hover{color:var(--purple)}
+.series-tag{font-size:.7rem;padding:4px 11px;border-radius:99px;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);letter-spacing:.04em;text-transform:uppercase;font-weight:500;display:inline-block;margin-bottom:1.25rem}
+h1{font-family:var(--ff-serif);font-size:clamp(1.85rem,4vw,2.6rem);line-height:1.2;color:var(--text);margin-bottom:.75rem;font-weight:400}
+.subtitle{font-family:var(--ff-serif);font-size:1.1rem;font-style:italic;color:var(--text-3);margin-bottom:1.5rem;max-width:680px}
+.meta-row{display:flex;align-items:center;gap:1.25rem;font-size:.82rem;color:var(--text-3);flex-wrap:wrap;margin-bottom:1.6rem;padding-bottom:1.3rem;border-bottom:1px solid var(--border)}
+h2{font-family:var(--ff-serif);font-size:1.5rem;font-weight:400;color:var(--text);margin:3.5rem 0 1.1rem;padding-top:1rem;border-top:1px solid var(--border)}
+h3{font-size:1rem;font-weight:500;color:var(--text);margin:1.75rem 0 .5rem}
+p{color:var(--text-2);margin-bottom:1.25rem;font-weight:300}
+strong{color:var(--text);font-weight:500}
+ul,ol{padding-left:1.4rem;margin-bottom:1.25rem;color:var(--text-2);font-weight:300}
+li{margin-bottom:.45rem}
+code{background:var(--bg3);padding:1px 6px;border-radius:3px;font-size:.85em;color:var(--text-2);font-family:monospace}
+pre{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:1rem 1.1rem;font-family:monospace;font-size:.82rem;color:var(--text-2);line-height:1.65;overflow-x:auto;margin:1rem 0}
+pre code{background:none;padding:0;color:inherit}
+.callout{display:block;background:var(--blue-bg);border-left:3px solid var(--blue);border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.95rem;color:var(--text);line-height:1.7}
+.callout p{margin-bottom:0;color:var(--text-2)}
+.callout.amber{background:var(--amber-bg);border-color:var(--amber)}
+.callout.green{background:var(--green-bg);border-color:var(--green)}
+.callout.red{background:var(--red-bg);border-color:var(--red)}
+.callout.blue{background:var(--blue-bg);border-color:var(--blue)}
+.callout.purple{background:var(--purple-bg);border-color:var(--purple)}
+.table-wrap{display:block;overflow-x:auto;margin:1.5rem 0;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+thead th{background:var(--bg2);padding:9px 13px;text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);font-weight:500;border-bottom:1px solid var(--border)}
+tbody td{padding:9px 13px;border-bottom:1px solid var(--border);color:var(--text-2);vertical-align:top;line-height:1.55;font-size:.85rem}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--bg2)}
+/* Phase progress strip */
+.phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem}
+.phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--text-3);background:var(--bg2);text-decoration:none}
+.phase-pip:hover{border-color:var(--purple);color:var(--text)}
+.phase-pip.active{background:var(--purple);color:#0d0d0d;border-color:transparent}
+.phase-pip.done{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+/* Before/After blocks */
+.ba-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0}
+.ba-block{border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+.ba-label{padding:.4rem .8rem;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.ba-block.before .ba-label{background:var(--red-bg);color:var(--red)}
+.ba-block.after .ba-label{background:var(--green-bg);color:var(--green)}
+.ba-block pre{margin:0;border-radius:0;border:none}
+/* Assignment / bonus blocks */
+.assignment{background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:12px;padding:1.2rem 1.4rem;margin:2rem 0 1rem}
+.assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem}
+.assignment h3{font-family:var(--ff-serif);color:var(--text);margin-top:.2rem;margin-bottom:.5rem;font-weight:400}
+.bonus{background:var(--purple-bg);border:1px solid var(--purple-border);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem}
+.bonus .b-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--purple);margin-bottom:.4rem}
+/* Collapsible solution */
+details.solution{margin:1rem 0 2rem;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+details.solution summary{padding:.9rem 1.2rem;cursor:pointer;font-weight:700;font-size:.92rem;background:var(--bg2);list-style:none;display:flex;align-items:center;gap:.5rem;color:var(--text)}
+details.solution summary::-webkit-details-marker{display:none}
+details.solution summary::before{content:"\25B6";font-size:.7rem;color:var(--text-3);transition:transform .2s}
+details.solution[open] summary::before{transform:rotate(90deg)}
+.solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border)}
+.solution-body p{font-size:.92rem}
+.series-nav{margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border)}
+.nav-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.nav-blog{display:flex;align-items:center;gap:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.25rem;text-decoration:none;transition:border-color .2s,background .2s}
+.nav-blog:hover{border-color:var(--purple);background:var(--bg3)}
+.nav-blog-arrow{color:var(--text-3);font-size:1rem;flex-shrink:0}
+.nav-blog-title{font-size:.88rem;font-weight:500;color:var(--text)}
+.nav-blog-sub{font-size:.75rem;color:var(--text-3);margin-top:2px}
+footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.8rem;color:var(--text-3)}
+footer a{color:var(--text-3);text-decoration:none}
+footer a:hover{color:var(--purple)}
+@media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<header class="site-header">
-  <div class="site-header-inner">
-    <a class="site-name" href="../../index.html">The Quality Strategist</a>
-  </div>
-</header>
-<main>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a class="nav-logo" href="../../index.html">The Quality Strategist</a>
+  <button class="theme-toggle" id="themeToggle" type="button">Light</button>
+</nav>
+
+<main id="main-content">
   <p class="breadcrumb">
     <a href="../../index.html">Home</a> &nbsp;/&nbsp;
     <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
@@ -133,7 +141,7 @@
     <a href="03-playwrightseries-assertions-waits.html" class="phase-pip" title="Phase 3: Assertions &amp; Waits">3</a>
     <a href="04-playwrightseries-debugging-flakiness.html" class="phase-pip" title="Phase 4: Debugging &amp; Flakiness">4</a>
     <span class="phase-pip active" title="Phase 5: Test Data &amp; State">5</span>
-    <a href="06-playwrightseries-auth-sessions.html" class="phase-pip" title="Phase 6: Authentication &amp; Sessions">6</a>
+    <a href="06-playwrightseries-auth-sessions.html" class="phase-pip" title="Phase 6: Auth &amp; Sessions">6</a>
     <a href="07-playwrightseries-api-testing.html" class="phase-pip" title="Phase 7: API Testing">7</a>
     <a href="08-playwrightseries-advanced-scenarios.html" class="phase-pip" title="Phase 8: Advanced Scenarios">8</a>
     <a href="09-playwrightseries-page-objects.html" class="phase-pip" title="Phase 9: Page Object Model">9</a>
@@ -174,15 +182,34 @@ test('test 2: cart has one item', async ({ page }) => {
 // Run in any order, any number of times, in parallel: both pass.
 
 test('cart shows item added via API', async ({ page, request }) => {
+  // Log in via API to get this test's session token
+  const loginRes = await request.post('https://peakandpackshopdemo.onrender.com/api/auth/login', {
+    data: { email: 'test@peakandpack.com', password: 'password123' }
+  });
+  const { token, user } = await loginRes.json();
+
   // Seed the cart via API -- fast, no UI interaction needed
   await request.post('https://peakandpackshopdemo.onrender.com/api/cart', {
-    data: { productId: 1, quantity: 1 }
+    headers: { Authorization: `Bearer ${token}` },
+    data: { product_id: 1, quantity: 1 }
   });
+
+  // The UI reads its session from localStorage, not a cookie: inject the
+  // same token before the app boots so it's logged in as the same user
+  await page.addInitScript(([t, u]) => {
+    localStorage.setItem('token', t);
+    localStorage.setItem('user', u);
+  }, [token, JSON.stringify(user)]);
+
   await page.goto('https://peakandpack-ui.onrender.com/cart');
   await expect(page.getByRole('button', { name: 'Remove' })).toHaveCount(1);
 });
 </code></pre>
     </div>
+  </div>
+
+  <div class="callout blue">
+    <p><strong>Two logins, not one.</strong> The <code>request</code> fixture's login gets a token so the API call can prove who it's acting as. The <code>page.addInitScript</code> call is a second, separate step: it makes the browser believe it's logged in too, since PeakAndPack's UI checks <code>localStorage</code>, which an API call can never touch. Skip the second step and the API seeding still works, but the UI shows "you need to log in" instead of the cart you just built. This pattern (API login for setup, <code>addInitScript</code> to sync the browser) recurs through the rest of this series wherever a test seeds data via the API and then checks it through the UI.</p>
   </div>
 
   <h2>Test independence: the rule</h2>
@@ -199,16 +226,28 @@ test('cart shows item added via API', async ({ page, request }) => {
   <pre><code>import { test, expect } from '@playwright/test';
 
 test('checkout flow completes', async ({ page, request }) => {
-  // Setup: create a cart with one item via API (not through the UI)
+  // Log in via API, then set up the cart as that same user
+  const loginRes = await request.post('https://peakandpackshopdemo.onrender.com/api/auth/login', {
+    data: { email: 'test@peakandpack.com', password: 'password123' }
+  });
+  const { token, user } = await loginRes.json();
+
   const cartRes = await request.post('https://peakandpackshopdemo.onrender.com/api/cart', {
-    data: { productId: 1, quantity: 1 }
+    headers: { Authorization: `Bearer ${token}` },
+    data: { product_id: 1, quantity: 1 }
   });
   expect(cartRes.status()).toBe(200);
+
+  // Sync the browser to the same session before navigating
+  await page.addInitScript(([t, u]) => {
+    localStorage.setItem('token', t);
+    localStorage.setItem('user', u);
+  }, [token, JSON.stringify(user)]);
 
   // Test: assert the UI checkout flow
   await page.goto('https://peakandpack-ui.onrender.com/cart');
   await page.getByRole('button', { name: /proceed to checkout/i }).click();
-  await page.getByRole('button', { name: /place order/i }).click();
+  await page.getByRole('button', { name: /confirm order/i }).click();
   await expect(
     page.getByRole('heading', { name: /order placed/i })
   ).toBeVisible();
@@ -225,9 +264,9 @@ async function globalSetup() {
   const browser = await chromium.launch();
   const page = await browser.newPage();
   await page.goto('https://peakandpack-ui.onrender.com/login');
-  await page.getByLabel(/email/i).fill('test@peakandpack.com');
-  await page.getByLabel(/password/i).fill('password123');
-  await page.getByRole('button', { name: /sign in/i }).click();
+  await page.locator('input[type="email"]').fill('test@peakandpack.com');
+  await page.locator('input[type="password"]').fill('password123');
+  await page.getByRole('button', { name: /log in/i }).click();
   await page.waitForURL('https://peakandpack-ui.onrender.com/');
   // Save the session to a file
   await page.context().storageState({ path: 'fixtures/auth.json' });
@@ -257,18 +296,18 @@ export default defineConfig({
   });
 
   await page.goto('https://peakandpack-ui.onrender.com/login');
-  await page.getByLabel(/email/i).fill(email);
-  await page.getByLabel(/password/i).fill('password123');
-  await page.getByRole('button', { name: /sign in/i }).click();
+  await page.locator('input[type="email"]').fill(email);
+  await page.locator('input[type="password"]').fill('password123');
+  await page.getByRole('button', { name: /log in/i }).click();
   await expect(page).toHaveURL('/');
 });
 </code></pre>
 
-  <div class="callout gold">
+  <div class="callout amber">
     <p><strong>The parallel test is the stress test.</strong> A test suite that passes sequentially but fails in parallel almost always has hidden data coupling. Enable <code>fullyParallel: true</code> in your config and run the suite. The failures it reveals are not parallel problems -- they are independence problems that parallel execution makes visible.</p>
   </div>
 
-  <div class="callout warn">
+  <div class="callout red">
     <p><strong>Common mistakes in Phase 5.</strong></p>
     <ul style="margin:.5rem 0 0 1.2rem;">
       <li><strong>Using the same test account for all tests.</strong> The moment two tests touch the same cart simultaneously, they corrupt each other's data. Generate a unique user per test.</li>
@@ -297,21 +336,27 @@ export default defineConfig({
   </div>
 
   <details class="solution">
-    <summary>Show solution -- try it yourself first</summary>
+    <summary>Show solution &mdash; try it yourself first</summary>
     <div class="solution-body">
       <h3>Independent versions of both tests</h3>
       <pre><code>// Both tests set up their own state. Order does not matter.
 test('cart shows one item after API add', async ({ page, request }) => {
-  // Each test gets its own unique user
+  // Each test gets its own unique user. Registering already returns a
+  // token and user object, so there's no need for a separate login call.
   const email = `test-${Date.now()}@peakandpack.com`;
-  await request.post('https://peakandpackshopdemo.onrender.com/api/auth/register', { data: { email, password: 'pw123' }});
-  const loginRes = await request.post('https://peakandpackshopdemo.onrender.com/api/auth/login', { data: { email, password: 'pw123' }});
-  const { token } = await loginRes.json();
+  const registerRes = await request.post('https://peakandpackshopdemo.onrender.com/api/auth/register', {
+    data: { email, password: 'pw123456' }
+  });
+  const { token, user } = await registerRes.json();
   await request.post('https://peakandpackshopdemo.onrender.com/api/cart', {
     headers: { Authorization: `Bearer ${token}` },
-    data: { productId: 1, quantity: 1 }
+    data: { product_id: 1, quantity: 1 }
   });
-  // Now assert the UI with that user's session
+  // Sync the browser to this same user before asserting the UI
+  await page.addInitScript(([t, u]) => {
+    localStorage.setItem('token', t);
+    localStorage.setItem('user', u);
+  }, [token, JSON.stringify(user)]);
   await page.goto('https://peakandpack-ui.onrender.com/cart');
   await expect(page.getByRole('button', { name: 'Remove' })).toHaveCount(1);
 });
@@ -319,25 +364,55 @@ test('cart shows one item after API add', async ({ page, request }) => {
 test('empty cart shows zero count', async ({ page, request }) => {
   // Different unique user -- completely isolated
   const email = `test-${Date.now() + 1}@peakandpack.com`;
-  await request.post('https://peakandpackshopdemo.onrender.com/api/auth/register', { data: { email, password: 'pw123' }});
+  const registerRes = await request.post('https://peakandpackshopdemo.onrender.com/api/auth/register', {
+    data: { email, password: 'pw123456' }
+  });
+  const { token, user } = await registerRes.json();
+  await page.addInitScript(([t, u]) => {
+    localStorage.setItem('token', t);
+    localStorage.setItem('user', u);
+  }, [token, JSON.stringify(user)]);
   await page.goto('https://peakandpack-ui.onrender.com/cart');
   await expect(page.getByText('Your cart is empty.')).toBeVisible();
 });
 </code></pre>
       <p><strong>Why the timestamp works for isolation.</strong> <code>Date.now()</code> returns milliseconds since epoch. Two tests running in parallel get different timestamps and therefore different email addresses. No collision. For very high parallelism, use a UUID library instead.</p>
+      <p><strong>Why register instead of register-then-login.</strong> PeakAndPack's <code>/api/auth/register</code> endpoint already returns a token and user object for the new account, the same shape <code>/api/auth/login</code> returns. A separate login call right after registering would work, but it's a redundant network round trip for state you already have.</p>
     </div>
   </details>
 
-  <div class="nav-row">
-    <a href="04-playwrightseries-debugging-flakiness.html" class="nav-cta secondary">&larr; Phase 4: Debugging &amp; Flakiness</a>
-    <a href="06-playwrightseries-auth-sessions.html" class="nav-cta primary">Phase 6: Authentication &amp; Sessions &rarr;</a>
+  <div class="series-nav">
+    <div class="nav-pair">
+      <a href="04-playwrightseries-debugging-flakiness.html" class="nav-blog"><span class="nav-blog-arrow" aria-hidden="true">&larr;</span><div><div class="nav-blog-title">Phase 4: Debugging &amp; Flakiness</div><div class="nav-blog-sub">Reading a trace, isolating a flaky test</div></div></a>
+      <a href="06-playwrightseries-auth-sessions.html" class="nav-blog"><div><div class="nav-blog-title">Phase 6: Authentication &amp; Sessions</div><div class="nav-blog-sub">Logging in once, reusing the session everywhere</div></div><span class="nav-blog-arrow" aria-hidden="true">&rarr;</span></a>
+    </div>
   </div>
   <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
-    <p style="font-size:.8rem;color:var(--ink3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; Playwright: Zero to Architect</p>
+    <p style="font-size:.8rem;color:var(--text-3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; Playwright: Zero to Architect</p>
   </div>
 </main>
 <footer>
   <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
 </footer>
+
+<script>
+(function(){
+  var btn = document.getElementById('themeToggle');
+  function isLight(){ return document.documentElement.getAttribute('data-theme') === 'light'; }
+  function sync(){ btn.textContent = isLight() ? 'Dark' : 'Light'; }
+  sync();
+  btn.addEventListener('click', function(){
+    if(isLight()){
+      document.documentElement.removeAttribute('data-theme');
+      try{ localStorage.setItem('pw-theme','dark'); }catch(e){}
+    } else {
+      document.documentElement.setAttribute('data-theme','light');
+      try{ localStorage.setItem('pw-theme','light'); }catch(e){}
+    }
+    sync();
+  });
+})();
+</script>
+
 </body>
 </html>
