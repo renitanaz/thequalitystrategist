@@ -40,11 +40,11 @@ nav.site-nav{position:sticky;top:0;z-index:100;background:var(--bg);border-botto
 .theme-toggle{background:var(--bg3);border:1px solid var(--border);color:var(--text-2);border-radius:8px;padding:.4rem .8rem;font-size:.78rem;cursor:pointer;font-family:var(--ff-sans);}
 .theme-toggle:hover{border-color:var(--purple);color:var(--text)}
 main{max-width:900px;margin:0 auto;padding:3rem 1.5rem 5rem}
-.breadcrumb{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem}
+.breadcrumb{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
 .breadcrumb a{color:var(--text-3);text-decoration:none}
 .breadcrumb a:hover{color:var(--purple)}
 .series-tag{font-size:.7rem;padding:4px 11px;border-radius:99px;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);letter-spacing:.04em;text-transform:uppercase;font-weight:500;display:inline-block;margin-bottom:1.25rem}
-h1{font-family:var(--ff-serif);font-size:clamp(1.85rem,4vw,2.6rem);line-height:1.2;color:var(--text);margin-bottom:.75rem;font-weight:400}
+h1{font-family:var(--ff-serif);font-size:clamp(1.85rem,4vw,2.6rem);line-height:1.2;color:var(--purple);margin-bottom:.75rem;font-weight:400}
 .subtitle{font-family:var(--ff-serif);font-size:1.1rem;font-style:italic;color:var(--text-3);margin-bottom:1.5rem;max-width:680px}
 .meta-row{display:flex;align-items:center;gap:1.25rem;font-size:.82rem;color:var(--text-3);flex-wrap:wrap;margin-bottom:1.6rem;padding-bottom:1.3rem;border-bottom:1px solid var(--border)}
 h2{font-family:var(--ff-serif);font-size:1.5rem;font-weight:400;color:var(--text);margin:3.5rem 0 1.1rem;padding-top:1rem;border-top:1px solid var(--border)}
@@ -83,7 +83,7 @@ tbody tr:hover td{background:var(--bg2)}
 .ba-block.after .ba-label{background:var(--green-bg);color:var(--green)}
 .ba-block pre{margin:0;border-radius:0;border:none}
 /* Assignment / bonus blocks */
-.assignment{background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:12px;padding:1.2rem 1.4rem;margin:2rem 0 1rem}
+.assignment{background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:12px;padding:1.2rem 1.4rem;margin:4.5rem 0 1rem}
 .assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem}
 .assignment h3{font-family:var(--ff-serif);color:var(--text);margin-top:.2rem;margin-bottom:.5rem;font-weight:400}
 .bonus{background:var(--purple-bg);border:1px solid var(--purple-border);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem}
@@ -97,6 +97,7 @@ details.solution[open] summary::before{transform:rotate(90deg)}
 .solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border)}
 .solution-body p{font-size:.92rem}
 .series-nav{margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border)}
+.series-nav .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);font-weight:500;margin-bottom:.75rem;display:block}
 .nav-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .nav-blog{display:flex;align-items:center;gap:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.25rem;text-decoration:none;transition:border-color .2s,background .2s}
 .nav-blog:hover{border-color:var(--purple);background:var(--bg3)}
@@ -119,20 +120,21 @@ footer a:hover{color:var(--purple)}
 </nav>
 
 <main id="main-content">
-  <p class="breadcrumb">
-    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
-    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
-    <a href="00-playwrightseries-landing.html">Playwright: Zero to Architect</a> &nbsp;/&nbsp;
-    Phase 4
-  </p>
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="../../blogs.html">Blogs</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <a href="00-playwrightseries-landing.html">Playwright: Zero to Architect</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <span aria-current="page">Phase 4 of 15</span>
+  </nav>
   <span class="series-tag">Phase 4 of 15 &middot; Debugging &amp; Flakiness</span>
   <h1>Debugging and Flakiness</h1>
   <p class="subtitle">Debug methodically with Trace Viewer. Diagnose flakiness by root cause. Retries hide problems; fixes solve them.</p>
   <div class="meta-row">
-    <span>By RN</span>
-    <span>~3 hours</span>
-    <span>Series: Playwright: Zero to Architect</span>
+    <span><strong>Series: Playwright: Zero to Architect</strong></span>
     <span>Demo: PeakAndPack</span>
+    <span>9 min read</span>
+    <span>By: RN</span>
   </div>
   <div class="phase-strip" aria-label="Series progress">
     <a href="00-playwrightseries-intro-setup.html" class="phase-pip" title="Phase 0: Intro &amp; Setup">0</a>
@@ -156,7 +158,7 @@ footer a:hover{color:var(--purple)}
   <h2>Goal</h2>
   <p>Debug failing tests methodically. Diagnose flakiness by root cause rather than masking it with retries. A flaky test is not a Playwright problem: it is a signal about your test, your app, or your environment.</p>
 
-  <h2>Before: guessing at failures</h2>
+  <h2 id="guessing-failures">1. Before: guessing at failures</h2>
   <div class="ba-wrap">
     <div class="ba-block before">
       <div class="ba-label">Before: adding retries to hide flakiness</div>
@@ -195,7 +197,7 @@ test('add to cart works', async ({ page }) => {
     </div>
   </div>
 
-  <h2>The Trace Viewer: your primary debugging tool</h2>
+  <h2 id="trace-viewer">2. The Trace Viewer: your primary debugging tool</h2>
   <p>When a test fails, the first thing to open is not the terminal output: it is the Trace Viewer. It shows every action the test took, a screenshot at each step, the DOM state, console logs, and network requests, all in a timeline you can scrub through.</p>
   <p>Enable tracing for failed tests in <code>playwright.config.ts</code>:</p>
   <pre><code>use: {
@@ -211,7 +213,7 @@ test('add to cart works', async ({ page }) => {
     <li><strong>Console tab</strong>: JavaScript errors in the app that do not surface in the test output.</li>
   </ul>
 
-  <h2>App failure vs test failure</h2>
+  <h2 id="app-vs-test">3. App failure vs test failure</h2>
   <p>The most important diagnostic question: is the product broken, or is the test wrong? The answer changes everything about what you do next.</p>
   <div class="table-wrap">
     <table>
@@ -226,7 +228,7 @@ test('add to cart works', async ({ page }) => {
     </table>
   </div>
 
-  <h2>Common flaky patterns and their fixes</h2>
+  <h2 id="flaky-patterns">4. Common flaky patterns and their fixes</h2>
   <div class="table-wrap">
     <table>
       <thead><tr><th>Flaky pattern</th><th>Root cause</th><th>Fix</th></tr></thead>
@@ -240,12 +242,12 @@ test('add to cart works', async ({ page }) => {
     </table>
   </div>
 
-  <h2>Surface intermittent failures deliberately</h2>
+  <h2 id="surface-flakiness">5. Surface intermittent failures deliberately</h2>
   <p>A test that fails 1 in 10 runs will not show up in normal CI. Run it repeatedly to surface the flakiness before shipping:</p>
   <pre><code>npx playwright test tests/cart.spec.ts --repeat-each=20</code></pre>
   <p>If it fails any of the 20 runs, it is flaky. Investigate the trace from the failing run before doing anything else.</p>
 
-  <h2>When retries are legitimate</h2>
+  <h2 id="legitimate-retries">6. When retries are legitimate</h2>
   <p>Retries are not always wrong. They are legitimate when the cause is genuinely external and uncontrollable: a third-party API that is occasionally slow, a free-tier host that cold-starts. The rule is: retries for environmental noise, not for test or app problems. If a retry masks a real bug, you will never know the bug exists.</p>
 
   <div class="callout amber">
@@ -262,22 +264,18 @@ test('add to cart works', async ({ page }) => {
     </ul>
   </div>
 
-  <h2>Deliverables</h2>
+  <h2 id="deliverables">7. Deliverables</h2>
   <ul>
     <li><code>tests/debug-examples.spec.ts</code>: intentionally flaky versions of tests alongside their fixed versions</li>
     <li><code>flakiness-diagnosis.md</code>: the root cause table and your personal flakiness register</li>
   </ul>
 
+  <hr style="border:none;border-top:1px solid var(--border);margin:0">
+
   <div class="assignment">
     <div class="a-label">Assignment</div>
     <h3>Diagnose a flaky test using the Trace Viewer</h3>
     <p>Write a test for PeakAndPack that navigates to the product listing and asserts that a specific product card is visible. Introduce artificial flakiness by removing the <code>await</code> from the navigation call (<code>page.goto('https://peakandpack-ui.onrender.com/')</code> without <code>await</code>). Run it 10 times with <code>--repeat-each=10</code>. When it fails, open the trace. Find the exact step where it failed and explain in <code>flakiness-diagnosis.md</code> what the trace shows and why the missing <code>await</code> caused it.</p>
-  </div>
-
-  <div class="bonus">
-    <div class="b-label">Bonus challenge</div>
-    <p><strong>Build a flakiness register for your suite.</strong> Run your full test suite 5 times with <code>--repeat-each=5</code>. Record every test that failed at least once across the 5 runs. Categorise each by root cause using the pattern table above. How many are timing issues? How many are shared state? What is your flakiness rate (failing tests / total test runs)?</p>
-  </div>
 
   <details class="solution">
     <summary>Show solution &mdash; try it yourself first</summary>
@@ -303,8 +301,15 @@ test('product card is visible', async ({ page }) => {
       <p><strong>Why it is intermittent.</strong> On a fast machine the navigation completes quickly and the assertion sometimes passes before the race condition bites. On a slow machine or in CI, the gap between the unwaited goto and the assertion is wide enough that the page is visibly empty when the assertion runs.</p>
     </div>
   </details>
+  </div>
+
+  <div class="bonus">
+    <div class="b-label">Bonus challenge</div>
+    <p><strong>Build a flakiness register for your suite.</strong> Run your full test suite 5 times with <code>--repeat-each=5</code>. Record every test that failed at least once across the 5 runs. Categorise each by root cause using the pattern table above. How many are timing issues? How many are shared state? What is your flakiness rate (failing tests / total test runs)?</p>
+  </div>
 
   <div class="series-nav">
+    <span class="label">Navigate the series</span>
     <div class="nav-pair">
       <a href="03-playwrightseries-assertions-waits.html" class="nav-blog"><span class="nav-blog-arrow" aria-hidden="true">&larr;</span><div><div class="nav-blog-title">Phase 3: Assertions &amp; Waits</div><div class="nav-blog-sub">Waiting for the right signal, not a fixed delay</div></div></a>
       <a href="05-playwrightseries-test-data-state.html" class="nav-blog"><div><div class="nav-blog-title">Phase 5: Test Data &amp; State</div><div class="nav-blog-sub">Isolated data per worker, no shared state</div></div><span class="nav-blog-arrow" aria-hidden="true">&rarr;</span></a>

@@ -40,11 +40,11 @@ nav.site-nav{position:sticky;top:0;z-index:100;background:var(--bg);border-botto
 .theme-toggle{background:var(--bg3);border:1px solid var(--border);color:var(--text-2);border-radius:8px;padding:.4rem .8rem;font-size:.78rem;cursor:pointer;font-family:var(--ff-sans);}
 .theme-toggle:hover{border-color:var(--purple);color:var(--text)}
 main{max-width:900px;margin:0 auto;padding:3rem 1.5rem 5rem}
-.breadcrumb{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem}
+.breadcrumb{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
 .breadcrumb a{color:var(--text-3);text-decoration:none}
 .breadcrumb a:hover{color:var(--purple)}
 .series-tag{font-size:.7rem;padding:4px 11px;border-radius:99px;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);letter-spacing:.04em;text-transform:uppercase;font-weight:500;display:inline-block;margin-bottom:1.25rem}
-h1{font-family:var(--ff-serif);font-size:clamp(1.85rem,4vw,2.6rem);line-height:1.2;color:var(--text);margin-bottom:.75rem;font-weight:400}
+h1{font-family:var(--ff-serif);font-size:clamp(1.85rem,4vw,2.6rem);line-height:1.2;color:var(--purple);margin-bottom:.75rem;font-weight:400}
 .subtitle{font-family:var(--ff-serif);font-size:1.1rem;font-style:italic;color:var(--text-3);margin-bottom:1.5rem;max-width:680px}
 .meta-row{display:flex;align-items:center;gap:1.25rem;font-size:.82rem;color:var(--text-3);flex-wrap:wrap;margin-bottom:1.6rem;padding-bottom:1.3rem;border-bottom:1px solid var(--border)}
 h2{font-family:var(--ff-serif);font-size:1.5rem;font-weight:400;color:var(--text);margin:3.5rem 0 1.1rem;padding-top:1rem;border-top:1px solid var(--border)}
@@ -83,7 +83,7 @@ tbody tr:hover td{background:var(--bg2)}
 .ba-block.after .ba-label{background:var(--green-bg);color:var(--green)}
 .ba-block pre{margin:0;border-radius:0;border:none}
 /* Assignment / bonus blocks */
-.assignment{background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:12px;padding:1.2rem 1.4rem;margin:2rem 0 1rem}
+.assignment{background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:12px;padding:1.2rem 1.4rem;margin:4.5rem 0 1rem}
 .assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem}
 .assignment h3{font-family:var(--ff-serif);color:var(--text);margin-top:.2rem;margin-bottom:.5rem;font-weight:400}
 .bonus{background:var(--purple-bg);border:1px solid var(--purple-border);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem}
@@ -97,6 +97,7 @@ details.solution[open] summary::before{transform:rotate(90deg)}
 .solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border)}
 .solution-body p{font-size:.92rem}
 .series-nav{margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border)}
+.series-nav .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);font-weight:500;margin-bottom:.75rem;display:block}
 .nav-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .nav-blog{display:flex;align-items:center;gap:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.25rem;text-decoration:none;transition:border-color .2s,background .2s}
 .nav-blog:hover{border-color:var(--purple);background:var(--bg3)}
@@ -120,12 +121,13 @@ footer a:hover{color:var(--purple)}
 
 <main id="main-content">
 
-  <p class="breadcrumb">
-    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
-    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
-    <a href="00-playwrightseries-landing.html">Playwright: Zero to Architect</a> &nbsp;/&nbsp;
-    Phase 2
-  </p>
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="../../blogs.html">Blogs</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <a href="00-playwrightseries-landing.html">Playwright: Zero to Architect</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <span aria-current="page">Phase 2 of 15</span>
+  </nav>
 
   <span class="series-tag">Phase 2 of 15 &middot; Locators</span>
 
@@ -133,10 +135,10 @@ footer a:hover{color:var(--purple)}
   <p class="subtitle">The locator you choose is the single biggest factor in whether your test survives a UI change or breaks the moment a developer renames a class.</p>
 
   <div class="meta-row">
-    <span>By RN</span>
-    <span>~3 hours</span>
-    <span>Series: Playwright: Zero to Architect</span>
+    <span><strong>Series: Playwright: Zero to Architect</strong></span>
     <span>Demo: PeakAndPack</span>
+    <span>9 min read</span>
+    <span>By: RN</span>
   </div>
 
   <div class="phase-strip" aria-label="Series progress">
@@ -161,7 +163,7 @@ footer a:hover{color:var(--purple)}
   <h2>Goal</h2>
   <p>Find elements the right way so tests survive UI changes without breaking. The locator you choose is the single biggest factor in whether your test is brittle or resilient.</p>
 
-  <h2>Before: the fragile locator problem</h2>
+  <h2 id="fragile-locators">1. Before: the fragile locator problem</h2>
   <p>A developer renames a CSS class during a refactor. Nothing breaks for the user ; the page looks and works the same. But three tests fail on CI. This is the fragile locator problem:</p>
 
   <div class="ba-wrap">
@@ -186,7 +188,7 @@ await page.getByRole('button', { name: /checkout/i }).click();
     </div>
   </div>
 
-  <h2>Locator priority</h2>
+  <h2 id="locator-priority">2. Locator priority</h2>
   <p>Playwright gives you many ways to find an element. Use the highest one available ; use the highest available resilient to change:</p>
   <div class="table-wrap">
     <table>
@@ -202,7 +204,7 @@ await page.getByRole('button', { name: /checkout/i }).click();
     </table>
   </div>
 
-  <h2>getByRole in depth</h2>
+  <h2 id="getbyrole">3. getByRole in depth</h2>
   <p>The most important locator. It finds elements by their ARIA role and accessible name ; the same way a screen reader or assistive technology would. Every interactive element has a role: buttons are <code>button</code>, links are <code>link</code>, headings are <code>heading</code>, form fields are <code>textbox</code> or <code>combobox</code>.</p>
   <pre><code>// Find the "Add to cart" button (role: button, name: the button text)
 page.getByRole('button', { name: /add to cart/i })
@@ -219,7 +221,7 @@ page.getByRole('textbox', { name: /search gear/i })
     <p><strong>PeakAndPack's login inputs have no accessible name at all.</strong> No <code>&lt;label&gt;</code>, no <code>aria-label</code>, not even a <code>placeholder</code> &mdash; confirmed by inspecting the live DOM. <code>getByLabel(/email/i)</code> and <code>getByRole('textbox', { name: /email/i })</code> both fail to find them, because there's nothing for either to match against. This is a real accessibility defect worth logging on its own (a screen reader user has no way to tell the two fields apart), and it's why every login example in this series uses <code>page.locator('input[type="email"]')</code> and <code>page.locator('input[type="password"]')</code> instead: an attribute selector, tier 6 on the table above, reached for only because tiers 1 through 5 genuinely have nothing to attach to here.</p>
   </div>
 
-  <h2>Scoping: find inside a container</h2>
+  <h2 id="scoping">4. Scoping: find inside a container</h2>
   <p>PeakAndPack's product listing has multiple "Add to cart" buttons ; one per card. <code>getByRole('button', { name: /add to cart/i })</code> would match all of them and Playwright would not know which to click. Scope the locator to the specific card first:</p>
   <pre><code>// Scope to the specific product card first, then find the button inside it
 const card = page.locator('div').filter({ has: page.getByRole('heading', { name: 'Trekking Poles (Pair)' }) }).first();
@@ -229,7 +231,7 @@ await card.getByRole('button', { name: /add to cart/i }).click();
     <p><strong>Why not <code>getByRole('article')</code> here.</strong> That's the textbook version of this pattern, and it's worth knowing, but PeakAndPack's product cards aren't semantic <code>&lt;article&gt;</code> elements, they're plain <code>&lt;div&gt;</code>s. So the scoping locator falls back to <code>locator('div').filter({ has: ... })</code>: still role-based where it matters (the filter condition and the button inside it), the outer container is the one piece of the DOM with no better handle. That gap is itself worth raising with the frontend team: wrapping each card in <code>&lt;article&gt;</code> would make it a one-line <code>getByRole('article')</code> instead.</p>
   </div>
 
-  <h2>When to use data-testid</h2>
+  <h2 id="data-testid">5. When to use data-testid</h2>
   <p>Some elements have no stable role or visible text: dynamic icons, status indicators, custom components. For these, add a <code>data-testid</code> attribute to the HTML and use <code>getByTestId()</code>. This is a controlled contract between you and the frontend developer: the test ID is there for testing and must not be removed.</p>
   <pre><code>// In the HTML (ask the developer to add this):
 &lt;div data-testid="cart-item-count"&gt;3&lt;/div&gt;
@@ -238,7 +240,7 @@ await card.getByRole('button', { name: /add to cart/i }).click();
 await expect(page.getByTestId('cart-item-count')).toHaveText('3');
 </code></pre>
 
-  <h2>AI-generated locator mistakes</h2>
+  <h2 id="ai-locator-mistakes">6. AI-generated locator mistakes</h2>
   <p>When you use AI to generate Playwright tests, the locators are the most likely thing to get wrong. AI tools default to CSS classes because they are the most visible pattern in HTML. Know the signs:</p>
   <div class="callout red">
     <p><strong>Red flags in AI-generated locators.</strong></p>
@@ -250,7 +252,7 @@ await expect(page.getByTestId('cart-item-count')).toHaveText('3');
     </ul>
   </div>
 
-  <h2>After: a resilient test suite</h2>
+  <h2 id="resilient-suite">7. After: a resilient test suite</h2>
   <div class="callout green">
     <p><strong>The test that survives a redesign.</strong> When the PeakAndPack design team rebrands next quarter, changes every colour, renames every CSS class, and restructures the product cards, a test suite built on <code>getByRole</code> and <code>getByLabel</code> keeps passing. A suite built on CSS selectors needs to be rewritten. The locator decision made in Phase 2 is the single biggest factor in how much maintenance your suite requires six months from now.</p>
   </div>
@@ -265,22 +267,18 @@ await expect(page.getByTestId('cart-item-count')).toHaveText('3');
     </ul>
   </div>
 
-  <h2>Deliverables</h2>
+  <h2 id="deliverables">8. Deliverables</h2>
   <ul>
     <li><code>tests/locators.spec.ts</code>: 5 tests using resilient locators across PeakAndPack</li>
     <li><code>locator-guide.md</code>: the priority table and when-to-use-each rules</li>
   </ul>
 
+  <hr style="border:none;border-top:1px solid var(--border);margin:0">
+
   <div class="assignment">
     <div class="a-label">Assignment</div>
     <h3>Write 5 locators for PeakAndPack without a single CSS class</h3>
     <p>Open PeakAndPack at <a href="https://peakandpack-ui.onrender.com" target="_blank" style="color:var(--purple)">peakandpack-ui.onrender.com</a>. Using the browser's inspector, find 5 interactive elements and write a locator for each using the highest priority available. Document your choice: why this locator type for this element? Add them all to a spec file and confirm each one resolves to exactly one element (Playwright will error if it matches more than one).</p>
-  </div>
-
-  <div class="bonus">
-    <div class="b-label">Bonus challenge</div>
-    <p><strong>Review an AI-generated test.</strong> Use Claude or another AI to generate a Playwright test for PeakAndPack's checkout flow. Then audit every locator it produced against the priority table. How many are CSS classes? How many would you replace? Rewrite the test using only <code>getByRole</code>, <code>getByLabel</code>, and <code>getByTestId</code> where necessary.</p>
-  </div>
 
   <details class="solution">
     <summary>Show solution &mdash; try it yourself first</summary>
@@ -314,8 +312,15 @@ test('resilient locators across PeakAndPack', async ({ page }) => {
       <p><strong>Why step 5 doesn't use <code>getByTestId</code>.</strong> The "When to use data-testid" section above is real advice, but PeakAndPack doesn't have a single <code>data-testid</code> anywhere today. Reach for it when you hit an element with no role or stable text, not by default. Here, the cart total already has a role and readable text, so <code>getByRole</code> covers it with nothing to add.</p>
     </div>
   </details>
+  </div>
+
+  <div class="bonus">
+    <div class="b-label">Bonus challenge</div>
+    <p><strong>Review an AI-generated test.</strong> Use Claude or another AI to generate a Playwright test for PeakAndPack's checkout flow. Then audit every locator it produced against the priority table. How many are CSS classes? How many would you replace? Rewrite the test using only <code>getByRole</code>, <code>getByLabel</code>, and <code>getByTestId</code> where necessary.</p>
+  </div>
 
   <div class="series-nav">
+    <span class="label">Navigate the series</span>
     <div class="nav-pair">
       <a href="01-playwrightseries-test-design.html" class="nav-blog"><span class="nav-blog-arrow" aria-hidden="true">&larr;</span><div><div class="nav-blog-title">Phase 1: Test Design Thinking</div><div class="nav-blog-sub">What belongs at which layer, before writing code</div></div></a>
       <a href="03-playwrightseries-assertions-waits.html" class="nav-blog"><div><div class="nav-blog-title">Phase 3: Assertions &amp; Waits</div><div class="nav-blog-sub">Waiting for the right signal, not a fixed delay</div></div><span class="nav-blog-arrow" aria-hidden="true">&rarr;</span></a>

@@ -40,11 +40,11 @@ nav.site-nav{position:sticky;top:0;z-index:100;background:var(--bg);border-botto
 .theme-toggle{background:var(--bg3);border:1px solid var(--border);color:var(--text-2);border-radius:8px;padding:.4rem .8rem;font-size:.78rem;cursor:pointer;font-family:var(--ff-sans);}
 .theme-toggle:hover{border-color:var(--purple);color:var(--text)}
 main{max-width:900px;margin:0 auto;padding:3rem 1.5rem 5rem}
-.breadcrumb{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem}
+.breadcrumb{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
 .breadcrumb a{color:var(--text-3);text-decoration:none}
 .breadcrumb a:hover{color:var(--purple)}
 .series-tag{font-size:.7rem;padding:4px 11px;border-radius:99px;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);letter-spacing:.04em;text-transform:uppercase;font-weight:500;display:inline-block;margin-bottom:1.25rem}
-h1{font-family:var(--ff-serif);font-size:clamp(1.85rem,4vw,2.6rem);line-height:1.2;color:var(--text);margin-bottom:.75rem;font-weight:400}
+h1{font-family:var(--ff-serif);font-size:clamp(1.85rem,4vw,2.6rem);line-height:1.2;color:var(--purple);margin-bottom:.75rem;font-weight:400}
 .subtitle{font-family:var(--ff-serif);font-size:1.1rem;font-style:italic;color:var(--text-3);margin-bottom:1.5rem;max-width:680px}
 .meta-row{display:flex;align-items:center;gap:1.25rem;font-size:.82rem;color:var(--text-3);flex-wrap:wrap;margin-bottom:1.6rem;padding-bottom:1.3rem;border-bottom:1px solid var(--border)}
 h2{font-family:var(--ff-serif);font-size:1.5rem;font-weight:400;color:var(--text);margin:3.5rem 0 1.1rem;padding-top:1rem;border-top:1px solid var(--border)}
@@ -83,7 +83,7 @@ tbody tr:hover td{background:var(--bg2)}
 .ba-block.after .ba-label{background:var(--green-bg);color:var(--green)}
 .ba-block pre{margin:0;border-radius:0;border:none}
 /* Assignment / bonus blocks */
-.assignment{background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:12px;padding:1.2rem 1.4rem;margin:2rem 0 1rem}
+.assignment{background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:12px;padding:1.2rem 1.4rem;margin:4.5rem 0 1rem}
 .assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem}
 .assignment h3{font-family:var(--ff-serif);color:var(--text);margin-top:.2rem;margin-bottom:.5rem;font-weight:400}
 .bonus{background:var(--purple-bg);border:1px solid var(--purple-border);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem}
@@ -97,6 +97,7 @@ details.solution[open] summary::before{transform:rotate(90deg)}
 .solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border)}
 .solution-body p{font-size:.92rem}
 .series-nav{margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border)}
+.series-nav .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);font-weight:500;margin-bottom:.75rem;display:block}
 .nav-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .nav-blog{display:flex;align-items:center;gap:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.25rem;text-decoration:none;transition:border-color .2s,background .2s}
 .nav-blog:hover{border-color:var(--purple);background:var(--bg3)}
@@ -119,20 +120,21 @@ footer a:hover{color:var(--purple)}
 </nav>
 
 <main id="main-content">
-  <p class="breadcrumb">
-    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
-    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
-    <a href="00-playwrightseries-landing.html">Playwright: Zero to Architect</a> &nbsp;/&nbsp;
-    Phase 5
-  </p>
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="../../blogs.html">Blogs</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <a href="00-playwrightseries-landing.html">Playwright: Zero to Architect</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <span aria-current="page">Phase 5 of 15</span>
+  </nav>
   <span class="series-tag">Phase 5 of 15 &middot; Test Data &amp; State</span>
   <h1>Test Data and State Control</h1>
   <p class="subtitle">Build tests that are independent, deterministic, and safe to run in parallel. A test that depends on another test is not a test.</p>
   <div class="meta-row">
-    <span>By RN</span>
-    <span>~4 hours</span>
-    <span>Series: Playwright: Zero to Architect</span>
+    <span><strong>Series: Playwright: Zero to Architect</strong></span>
     <span>Demo: PeakAndPack</span>
+    <span>9 min read</span>
+    <span>By: RN</span>
   </div>
   <div class="phase-strip" aria-label="Series progress">
     <a href="00-playwrightseries-intro-setup.html" class="phase-pip" title="Phase 0: Intro &amp; Setup">0</a>
@@ -156,7 +158,7 @@ footer a:hover{color:var(--purple)}
   <h2>Goal</h2>
   <p>Build tests that are independent, deterministic, and safe to run in parallel. A test that depends on another test's data, or on the order tests run, is not a test: it is a script that sometimes works.</p>
 
-  <h2>Before: tests that depend on each other</h2>
+  <h2 id="coupled-tests">1. Before: tests that depend on each other</h2>
   <div class="ba-wrap">
     <div class="ba-block before">
       <div class="ba-label">Before: order-dependent tests sharing state</div>
@@ -212,7 +214,7 @@ test('cart shows item added via API', async ({ page, request }) => {
     <p><strong>Two logins, not one.</strong> The <code>request</code> fixture's login gets a token so the API call can prove who it's acting as. The <code>page.addInitScript</code> call is a second, separate step: it makes the browser believe it's logged in too, since PeakAndPack's UI checks <code>localStorage</code>, which an API call can never touch. Skip the second step and the API seeding still works, but the UI shows "you need to log in" instead of the cart you just built. This pattern (API login for setup, <code>addInitScript</code> to sync the browser) recurs through the rest of this series wherever a test seeds data via the API and then checks it through the UI.</p>
   </div>
 
-  <h2>Test independence: the rule</h2>
+  <h2 id="test-independence">2. Test independence: the rule</h2>
   <p>Every test must be able to run in isolation, in any order, on any worker, and produce the same result. If removing a test from the suite changes whether another test passes, they are coupled and need to be fixed.</p>
   <p>The three things that break independence:</p>
   <ul>
@@ -221,7 +223,7 @@ test('cart shows item added via API', async ({ page, request }) => {
     <li><strong>Execution order dependency</strong>: a test that only works if another test ran before it.</li>
   </ul>
 
-  <h2>API setup vs UI setup</h2>
+  <h2 id="api-vs-ui-setup">3. API setup vs UI setup</h2>
   <p>For any test that needs data to exist before it starts (a cart with items, a logged-in user, a specific product in stock), set it up via the API rather than the UI. The API is faster, more reliable, and does not count as part of the test.</p>
   <pre><code>import { test, expect } from '@playwright/test';
 
@@ -254,7 +256,7 @@ test('checkout flow completes', async ({ page, request }) => {
 });
 </code></pre>
 
-  <h2>storageState: save a session, reuse it everywhere</h2>
+  <h2 id="storage-state">4. storageState: save a session, reuse it everywhere</h2>
   <p>Logging in through the UI in every test that needs authentication is slow and fragile. Playwright can save the browser's storage state (cookies, localStorage, sessionStorage) after a single login and reuse it across tests without repeating the login flow.</p>
   <p>Step 1: create a global setup file that logs in once and saves the state:</p>
   <pre><code>// fixtures/storageState.ts -- run once before the test suite
@@ -285,7 +287,7 @@ export default defineConfig({
 });
 </code></pre>
 
-  <h2>Parallel-safe data: isolated test users</h2>
+  <h2 id="parallel-safe-data">5. Parallel-safe data: isolated test users</h2>
   <p>When tests run in parallel, two workers can interfere if they use the same user account. Each worker needs its own isolated data. The cleanest approach: generate a unique email per test using a timestamp or UUID.</p>
   <pre><code>test('new user can register and check out', async ({ page, request }) => {
   // Unique email per test run -- no collision with parallel workers
@@ -317,23 +319,19 @@ export default defineConfig({
     </ul>
   </div>
 
-  <h2>Deliverables</h2>
+  <h2 id="deliverables">6. Deliverables</h2>
   <ul>
     <li><code>tests/state.spec.ts</code>: independent, API-seeded tests with no UI setup</li>
     <li><code>fixtures/storageState.ts</code>: global setup that saves the auth session</li>
     <li><code>data-isolation.md</code>: your parallel-safe data patterns for PeakAndPack</li>
   </ul>
 
+  <hr style="border:none;border-top:1px solid var(--border);margin:0">
+
   <div class="assignment">
     <div class="a-label">Assignment</div>
     <h3>Break and fix a coupled test</h3>
     <p>Write two tests: the first adds an item to the PeakAndPack cart through the UI, the second asserts the cart has one item. Run them in order and confirm they pass. Then swap their order in the file and run again. Confirm the second test now fails. Finally, rewrite both tests to be independent using API seeding. Run them in any order and confirm both pass regardless.</p>
-  </div>
-
-  <div class="bonus">
-    <div class="b-label">Bonus challenge</div>
-    <p><strong>Enable fullyParallel and find the coupling.</strong> Set <code>fullyParallel: true</code> in your config and run your full suite from phases 0 to 5. If any tests fail that passed in sequential mode, identify the coupling and fix it. Document what you found in <code>data-isolation.md</code>.</p>
-  </div>
 
   <details class="solution">
     <summary>Show solution &mdash; try it yourself first</summary>
@@ -380,8 +378,15 @@ test('empty cart shows zero count', async ({ page, request }) => {
       <p><strong>Why register instead of register-then-login.</strong> PeakAndPack's <code>/api/auth/register</code> endpoint already returns a token and user object for the new account, the same shape <code>/api/auth/login</code> returns. A separate login call right after registering would work, but it's a redundant network round trip for state you already have.</p>
     </div>
   </details>
+  </div>
+
+  <div class="bonus">
+    <div class="b-label">Bonus challenge</div>
+    <p><strong>Enable fullyParallel and find the coupling.</strong> Set <code>fullyParallel: true</code> in your config and run your full suite from phases 0 to 5. If any tests fail that passed in sequential mode, identify the coupling and fix it. Document what you found in <code>data-isolation.md</code>.</p>
+  </div>
 
   <div class="series-nav">
+    <span class="label">Navigate the series</span>
     <div class="nav-pair">
       <a href="04-playwrightseries-debugging-flakiness.html" class="nav-blog"><span class="nav-blog-arrow" aria-hidden="true">&larr;</span><div><div class="nav-blog-title">Phase 4: Debugging &amp; Flakiness</div><div class="nav-blog-sub">Reading a trace, isolating a flaky test</div></div></a>
       <a href="06-playwrightseries-auth-sessions.html" class="nav-blog"><div><div class="nav-blog-title">Phase 6: Authentication &amp; Sessions</div><div class="nav-blog-sub">Logging in once, reusing the session everywhere</div></div><span class="nav-blog-arrow" aria-hidden="true">&rarr;</span></a>

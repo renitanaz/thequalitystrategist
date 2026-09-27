@@ -40,11 +40,11 @@ nav.site-nav{position:sticky;top:0;z-index:100;background:var(--bg);border-botto
 .theme-toggle{background:var(--bg3);border:1px solid var(--border);color:var(--text-2);border-radius:8px;padding:.4rem .8rem;font-size:.78rem;cursor:pointer;font-family:var(--ff-sans);}
 .theme-toggle:hover{border-color:var(--purple);color:var(--text)}
 main{max-width:900px;margin:0 auto;padding:3rem 1.5rem 5rem}
-.breadcrumb{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem}
+.breadcrumb{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
 .breadcrumb a{color:var(--text-3);text-decoration:none}
 .breadcrumb a:hover{color:var(--purple)}
 .series-tag{font-size:.7rem;padding:4px 11px;border-radius:99px;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);letter-spacing:.04em;text-transform:uppercase;font-weight:500;display:inline-block;margin-bottom:1.25rem}
-h1{font-family:var(--ff-serif);font-size:clamp(1.85rem,4vw,2.6rem);line-height:1.2;color:var(--text);margin-bottom:.75rem;font-weight:400}
+h1{font-family:var(--ff-serif);font-size:clamp(1.85rem,4vw,2.6rem);line-height:1.2;color:var(--purple);margin-bottom:.75rem;font-weight:400}
 .subtitle{font-family:var(--ff-serif);font-size:1.1rem;font-style:italic;color:var(--text-3);margin-bottom:1.5rem;max-width:680px}
 .meta-row{display:flex;align-items:center;gap:1.25rem;font-size:.82rem;color:var(--text-3);flex-wrap:wrap;margin-bottom:1.6rem;padding-bottom:1.3rem;border-bottom:1px solid var(--border)}
 h2{font-family:var(--ff-serif);font-size:1.5rem;font-weight:400;color:var(--text);margin:3.5rem 0 1.1rem;padding-top:1rem;border-top:1px solid var(--border)}
@@ -83,7 +83,7 @@ tbody tr:hover td{background:var(--bg2)}
 .ba-block.after .ba-label{background:var(--green-bg);color:var(--green)}
 .ba-block pre{margin:0;border-radius:0;border:none}
 /* Assignment / bonus blocks */
-.assignment{background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:12px;padding:1.2rem 1.4rem;margin:2rem 0 1rem}
+.assignment{background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:12px;padding:1.2rem 1.4rem;margin:4.5rem 0 1rem}
 .assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem}
 .assignment h3{font-family:var(--ff-serif);color:var(--text);margin-top:.2rem;margin-bottom:.5rem;font-weight:400}
 .bonus{background:var(--purple-bg);border:1px solid var(--purple-border);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem}
@@ -97,6 +97,7 @@ details.solution[open] summary::before{transform:rotate(90deg)}
 .solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border)}
 .solution-body p{font-size:.92rem}
 .series-nav{margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border)}
+.series-nav .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);font-weight:500;margin-bottom:.75rem;display:block}
 .nav-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .nav-blog{display:flex;align-items:center;gap:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.25rem;text-decoration:none;transition:border-color .2s,background .2s}
 .nav-blog:hover{border-color:var(--purple);background:var(--bg3)}
@@ -119,20 +120,21 @@ footer a:hover{color:var(--purple)}
 </nav>
 
 <main id="main-content">
-  <p class="breadcrumb">
-    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
-    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
-    <a href="00-playwrightseries-landing.html">Playwright: Zero to Architect</a> &nbsp;/&nbsp;
-    Phase 6
-  </p>
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="../../blogs.html">Blogs</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <a href="00-playwrightseries-landing.html">Playwright: Zero to Architect</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <span aria-current="page">Phase 6 of 15</span>
+  </nav>
   <span class="series-tag">Phase 6 of 15 &middot; Authentication &amp; Sessions</span>
   <h1>Authentication and Sessions</h1>
   <p class="subtitle">Save a session once, reuse it everywhere. Test multiple roles without logging in through the UI for every test.</p>
   <div class="meta-row">
-    <span>By RN</span>
-    <span>~4 hours</span>
-    <span>Series: Playwright: Zero to Architect</span>
+    <span><strong>Series: Playwright: Zero to Architect</strong></span>
     <span>Demo: PeakAndPack</span>
+    <span>9 min read</span>
+    <span>By: RN</span>
   </div>
   <div class="phase-strip" aria-label="Series progress">
     <a href="00-playwrightseries-intro-setup.html" class="phase-pip" title="Phase 0: Intro &amp; Setup">0</a>
@@ -156,7 +158,7 @@ footer a:hover{color:var(--purple)}
   <h2>Goal</h2>
   <p>Handle authentication properly at scale. Test multiple roles without logging in through the UI for every test. A suite that logs in through the browser for every authenticated test is slow, brittle, and unnecessary.</p>
 
-  <h2>Before: logging in through the UI in every test</h2>
+  <h2 id="before-ui-login">1. Before: logging in through the UI in every test</h2>
   <div class="ba-wrap">
     <div class="ba-block before">
       <div class="ba-label">Before: UI login in every test</div>
@@ -188,7 +190,7 @@ test('cart page loads for authenticated user', async ({ page }) => {
     </div>
   </div>
 
-  <h2>storageState: how it works</h2>
+  <h2 id="storage-state-works">2. storageState: how it works</h2>
   <p>When a user logs in, the browser stores a session cookie (or a token in localStorage). <code>storageState</code> captures that storage: cookies and localStorage: and saves it to a JSON file. Tests that load this file start with the browser already in the logged-in state, without replaying the login steps.</p>
   <pre><code>// Save state after a real login (in globalSetup):
 await page.context().storageState({ path: 'fixtures/auth-customer.json' });
@@ -201,7 +203,7 @@ const context = await browser.newContext({
   <p><strong>What it captures:</strong> cookies (including session cookies) and localStorage keys for the origin the page was on when you called it. It can also capture IndexedDB, but only when you opt in explicitly (<code>indexedDB: true</code>).</p>
   <p><strong>What it does not capture:</strong> sessionStorage (Playwright has no API to persist it, you'd need to read and replay it yourself via <code>page.evaluate()</code>), in-memory state, or auth tokens stored only in JavaScript variables. If your app stores the token in a cookie or localStorage, storageState works perfectly. If it stores the token only in memory or sessionStorage, you need a different approach.</p>
 
-  <h2>Multi-role testing: customer and admin</h2>
+  <h2 id="multi-role">3. Multi-role testing: customer and admin</h2>
   <div class="callout red">
     <p><strong>PeakAndPack itself has no admin role.</strong> There is no <code>/admin</code> route and no second account type; navigating there just renders the same product page. The pattern below is illustrative of how you'd test role-based access on an app that <em>does</em> have one: read it for the storageState and context-per-role technique, not as something you can literally run against this demo. If you want to actually execute this section, the honest move is what Phase 0 already taught: treat "no admin panel" as a real finding, not a gap to paper over with an assumed feature.</p>
   </div>
@@ -236,7 +238,7 @@ async function globalSetup(config: FullConfig) {
 export default globalSetup;
 </code></pre>
 
-  <h2>Role-based access tests</h2>
+  <h2 id="role-based-access">4. Role-based access tests</h2>
   <p>With two session files, you can write tests that verify each role sees only what it should:</p>
   <pre><code>import { test, expect } from '@playwright/test';
 
@@ -262,7 +264,7 @@ test('admin can access admin panel', async ({ browser }) => {
 });
 </code></pre>
 
-  <h2>Session expiry: handling mid-test logouts</h2>
+  <h2 id="session-expiry">5. Session expiry: handling mid-test logouts</h2>
   <p>If a session expires while a long test is running, the next request will get a 401 and the test will fail in a confusing way. Handle it explicitly:</p>
   <pre><code>// Watch for auth redirects and report them clearly
 page.on('response', response => {
@@ -272,7 +274,7 @@ page.on('response', response => {
 });
 </code></pre>
 
-  <h2>Concurrent sessions: two users at the same time</h2>
+  <h2 id="concurrent-sessions">6. Concurrent sessions: two users at the same time</h2>
   <p>Some bugs only surface when two users interact with the same data simultaneously. Test this by creating two browser contexts in one test:</p>
   <pre><code>test('two users cannot checkout the last item simultaneously', async ({ browser }) => {
   // User A and User B each get their own browser context and session
@@ -312,23 +314,19 @@ page.on('response', response => {
     </ul>
   </div>
 
-  <h2>Deliverables</h2>
+  <h2 id="deliverables">7. Deliverables</h2>
   <ul>
     <li><code>fixtures/auth.ts</code>: globalSetup that saves customer and admin sessions</li>
     <li><code>tests/rbac.spec.ts</code>: role-based access tests for PeakAndPack</li>
     <li><code>tests/multi-user.spec.ts</code>: concurrent session test</li>
   </ul>
 
+  <hr style="border:none;border-top:1px solid var(--border);margin:0">
+
   <div class="assignment">
     <div class="a-label">Assignment</div>
     <h3>Save and reuse a real session</h3>
     <p>Write a globalSetup that logs in as a PeakAndPack customer and saves the session to <code>fixtures/customer.json</code>. Then write two tests using that saved session with zero UI login steps: one that verifies the logged-in customer can view their cart, and one that verifies an unauthenticated context (no storageState at all) gets turned away when it hits an endpoint that requires auth, such as <code>/api/orders</code>. That auth-vs-no-auth gap is real on PeakAndPack, per the API reference: use it in place of the illustrative customer/admin split above.</p>
-  </div>
-
-  <div class="bonus">
-    <div class="b-label">Bonus challenge</div>
-    <p><strong>Write a concurrent checkout test.</strong> Using two browser contexts, have two users add the last in-stock item to their carts at exactly the same time using <code>Promise.all</code>. Assert that at least one of them gets an out-of-stock error. This tests the race condition in PeakAndPack's stock check (BUG-008 from the AI-Augmented QA series). Does the concurrent test surface the bug?</p>
-  </div>
 
   <details class="solution">
     <summary>Show solution &mdash; try it yourself first</summary>
@@ -373,8 +371,15 @@ test('unauthenticated request to /api/orders is rejected', async ({ browser }) =
       <p><strong>Why the second test uses a fresh context, not a page navigation.</strong> There is no UI gate to test against &mdash; the frontend does not redirect anonymous visitors away from any route. The real, documented gate is server-side: <code>/api/orders</code> requires auth (see the API reference), and a request with no session gets a 401. Testing at that layer confirms the thing that's actually enforced, instead of a UI behaviour that was never built.</p>
     </div>
   </details>
+  </div>
+
+  <div class="bonus">
+    <div class="b-label">Bonus challenge</div>
+    <p><strong>Write a concurrent checkout test.</strong> Using two browser contexts, have two users add the last in-stock item to their carts at exactly the same time using <code>Promise.all</code>. Assert that at least one of them gets an out-of-stock error. This tests the race condition in PeakAndPack's stock check (BUG-008 from the AI-Augmented QA series). Does the concurrent test surface the bug?</p>
+  </div>
 
   <div class="series-nav">
+    <span class="label">Navigate the series</span>
     <div class="nav-pair">
       <a href="05-playwrightseries-test-data-state.html" class="nav-blog"><span class="nav-blog-arrow" aria-hidden="true">&larr;</span><div><div class="nav-blog-title">Phase 5: Test Data &amp; State</div><div class="nav-blog-sub">Isolated data per worker, no shared state</div></div></a>
       <a href="07-playwrightseries-api-testing.html" class="nav-blog"><div><div class="nav-blog-title">Phase 7: API Testing</div><div class="nav-blog-sub">Contract tests, hybrid tests, and network mocking</div></div><span class="nav-blog-arrow" aria-hidden="true">&rarr;</span></a>

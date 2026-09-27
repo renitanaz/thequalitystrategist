@@ -40,11 +40,11 @@ nav.site-nav{position:sticky;top:0;z-index:100;background:var(--bg);border-botto
 .theme-toggle{background:var(--bg3);border:1px solid var(--border);color:var(--text-2);border-radius:8px;padding:.4rem .8rem;font-size:.78rem;cursor:pointer;font-family:var(--ff-sans);}
 .theme-toggle:hover{border-color:var(--purple);color:var(--text)}
 main{max-width:900px;margin:0 auto;padding:3rem 1.5rem 5rem}
-.breadcrumb{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem}
+.breadcrumb{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
 .breadcrumb a{color:var(--text-3);text-decoration:none}
 .breadcrumb a:hover{color:var(--purple)}
 .series-tag{font-size:.7rem;padding:4px 11px;border-radius:99px;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);letter-spacing:.04em;text-transform:uppercase;font-weight:500;display:inline-block;margin-bottom:1.25rem}
-h1{font-family:var(--ff-serif);font-size:clamp(1.85rem,4vw,2.6rem);line-height:1.2;color:var(--text);margin-bottom:.75rem;font-weight:400}
+h1{font-family:var(--ff-serif);font-size:clamp(1.85rem,4vw,2.6rem);line-height:1.2;color:var(--purple);margin-bottom:.75rem;font-weight:400}
 .subtitle{font-family:var(--ff-serif);font-size:1.1rem;font-style:italic;color:var(--text-3);margin-bottom:1.5rem;max-width:680px}
 .meta-row{display:flex;align-items:center;gap:1.25rem;font-size:.82rem;color:var(--text-3);flex-wrap:wrap;margin-bottom:1.6rem;padding-bottom:1.3rem;border-bottom:1px solid var(--border)}
 h2{font-family:var(--ff-serif);font-size:1.5rem;font-weight:400;color:var(--text);margin:3.5rem 0 1.1rem;padding-top:1rem;border-top:1px solid var(--border)}
@@ -83,7 +83,7 @@ tbody tr:hover td{background:var(--bg2)}
 .ba-block.after .ba-label{background:var(--green-bg);color:var(--green)}
 .ba-block pre{margin:0;border-radius:0;border:none}
 /* Assignment / bonus blocks */
-.assignment{background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:12px;padding:1.2rem 1.4rem;margin:2rem 0 1rem}
+.assignment{background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:12px;padding:1.2rem 1.4rem;margin:4.5rem 0 1rem}
 .assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem}
 .assignment h3{font-family:var(--ff-serif);color:var(--text);margin-top:.2rem;margin-bottom:.5rem;font-weight:400}
 .bonus{background:var(--purple-bg);border:1px solid var(--purple-border);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem}
@@ -97,6 +97,7 @@ details.solution[open] summary::before{transform:rotate(90deg)}
 .solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border)}
 .solution-body p{font-size:.92rem}
 .series-nav{margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border)}
+.series-nav .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);font-weight:500;margin-bottom:.75rem;display:block}
 .nav-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .nav-blog{display:flex;align-items:center;gap:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.25rem;text-decoration:none;transition:border-color .2s,background .2s}
 .nav-blog:hover{border-color:var(--purple);background:var(--bg3)}
@@ -119,20 +120,21 @@ footer a:hover{color:var(--purple)}
 </nav>
 
 <main id="main-content">
-  <p class="breadcrumb">
-    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
-    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
-    <a href="00-playwrightseries-landing.html">Playwright: Zero to Architect</a> &nbsp;/&nbsp;
-    Phase 11
-  </p>
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="../../blogs.html">Blogs</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <a href="00-playwrightseries-landing.html">Playwright: Zero to Architect</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <span aria-current="page">Phase 11 of 15</span>
+  </nav>
   <span class="series-tag">Phase 11 of 15 &middot; Visual Regression</span>
   <h1>Visual Regression and Screenshot Testing</h1>
   <p class="subtitle">Catch visual changes no functional test catches. A button that moves, a price that overflows, a card that renders blank -- screenshot comparison catches all of them.</p>
   <div class="meta-row">
-    <span>By RN</span>
-    <span>~4 hours</span>
-    <span>Series: Playwright: Zero to Architect</span>
+    <span><strong>Series: Playwright: Zero to Architect</strong></span>
     <span>Demo: PeakAndPack</span>
+    <span>9 min read</span>
+    <span>By: RN</span>
   </div>
   <div class="phase-strip" aria-label="Series progress">
     <a href="00-playwrightseries-intro-setup.html" class="phase-pip" title="Phase 0: Intro &amp; Setup">0</a>
@@ -156,7 +158,7 @@ footer a:hover{color:var(--purple)}
   <h2>Goal</h2>
   <p>Catch visual changes that no assertion catches. A button that moves 10 pixels, a price that overflows its container on mobile, a card that renders blank: none of these trigger a functional test failure. Screenshot comparison catches all of them.</p>
 
-  <h2>Before: visual bugs invisible to functional tests</h2>
+  <h2 id="before-invisible-bugs">1. Before: visual bugs invisible to functional tests</h2>
   <div class="ba-wrap">
     <div class="ba-block before">
       <div class="ba-label">Before: functional tests pass, visual bugs invisible</div>
@@ -185,7 +187,7 @@ test('product listing matches baseline', async ({ page }) => {
     </div>
   </div>
 
-  <h2>Capturing baselines</h2>
+  <h2 id="capturing-baselines">2. Capturing baselines</h2>
   <p>The first time you run <code>toHaveScreenshot()</code>, there is no baseline yet. Playwright fails the test and creates the baseline file automatically. Run the update command to accept the current state as the baseline:</p>
   <pre><code>npx playwright test --update-snapshots</code></pre>
   <p>Baselines are stored in a <code>snapshots/</code> folder next to the spec file. Commit them to the repo. They are the ground truth every future run is compared against.</p>
@@ -216,7 +218,7 @@ test('mobile product listing matches baseline', async ({ page }) => {
 });
 </code></pre>
 
-  <h2>Masking dynamic content</h2>
+  <h2 id="masking">3. Masking dynamic content</h2>
   <p>Timestamps, live prices, user avatars, and random content change between runs and cause false failures. Mask them so they are ignored in the comparison. PeakAndPack's order history page has exactly this problem: every order row prints the timestamp it was placed at, so a baseline captured today never matches a run captured tomorrow:</p>
   <pre><code>test('order history matches baseline', async ({ page }) => {
   await page.goto('/orders');
@@ -230,7 +232,7 @@ test('mobile product listing matches baseline', async ({ page }) => {
 </code></pre>
   <p>Masked areas are replaced with a solid colour in the comparison. The rest of the page is still compared pixel by pixel. An app with per-user avatars or live-updating prices would mask those the same way, once the frontend team adds a stable <code>data-testid</code> to them (PeakAndPack itself has none yet, see Phase 2).</p>
 
-  <h2>Component screenshots vs full-page screenshots</h2>
+  <h2 id="component-vs-full-page">4. Component screenshots vs full-page screenshots</h2>
   <pre><code>// Full page (default): captures the entire scrollable page
 await expect(page).toHaveScreenshot('full-page.png');
 
@@ -245,7 +247,7 @@ await expect(page).toHaveScreenshot('header.png', {
 </code></pre>
   <p>Component screenshots are faster and more stable than full-page ones. A full-page screenshot fails if anything on the page changes. A card screenshot only fails if that card changes.</p>
 
-  <h2>When to re-baseline vs when the diff is a real bug</h2>
+  <h2 id="when-to-rebaseline">5. When to re-baseline vs when the diff is a real bug</h2>
   <p>This is the judgment call no tool makes for you. The rule: re-baseline when the change is intentional, file a bug when it is not.</p>
   <div class="table-wrap">
     <table>
@@ -259,7 +261,7 @@ await expect(page).toHaveScreenshot('header.png', {
     </table>
   </div>
 
-  <h2>Visual tests in CI</h2>
+  <h2 id="visual-tests-ci">6. Visual tests in CI</h2>
   <pre><code># .github/workflows/visual.yml
 name: Visual regression
 on: [push, pull_request]
@@ -291,7 +293,7 @@ jobs:
     </ul>
   </div>
 
-  <h2>Deliverables</h2>
+  <h2 id="deliverables">7. Deliverables</h2>
   <ul>
     <li><code>tests/visual.spec.ts</code>: baseline captures for product listing, cart, checkout (desktop and mobile)</li>
     <li><code>snapshots/</code>: committed baseline images</li>
@@ -299,16 +301,12 @@ jobs:
     <li><code>visual-guide.md</code>: re-baseline decisions and masking strategy</li>
   </ul>
 
+  <hr style="border:none;border-top:1px solid var(--border);margin:0">
+
   <div class="assignment">
     <div class="a-label">Assignment</div>
     <h3>Catch a visual regression deliberately introduced</h3>
     <p>Capture a baseline for the PeakAndPack product listing. Then open the PeakAndPack URL in a browser, use the developer tools to temporarily hide the product card images (add <code>display:none</code> to the img elements). Run the visual test without updating the baseline. Confirm the test fails and the diff report shows the missing images. Then remove the CSS change and confirm the test passes again.</p>
-  </div>
-
-  <div class="bonus">
-    <div class="b-label">Bonus challenge</div>
-    <p><strong>Write a component screenshot test for the cart total.</strong> The <code>Total: $X.XX</code> heading on the cart page is a small, specific component. Write a visual test that captures just that heading using <code>expect(element).toHaveScreenshot()</code>. Add an item to the cart via API first, capture the one-item total, then add a second item and capture the two-item total. Now you have two baselines that document the component's two key states.</p>
-  </div>
 
   <details class="solution">
     <summary>Show solution &mdash; try it yourself first</summary>
@@ -328,8 +326,15 @@ test('product listing visual regression', async ({ page }) => {
       <p><strong>Why waitForLoadState('networkidle') matters.</strong> Images load asynchronously. If you capture the screenshot before all images have loaded, you get a baseline with placeholder images. Then the next run, when images have loaded, every card fails the comparison. <code>networkidle</code> waits until there have been no network requests for 500ms, which means all images are loaded.</p>
     </div>
   </details>
+  </div>
+
+  <div class="bonus">
+    <div class="b-label">Bonus challenge</div>
+    <p><strong>Write a component screenshot test for the cart total.</strong> The <code>Total: $X.XX</code> heading on the cart page is a small, specific component. Write a visual test that captures just that heading using <code>expect(element).toHaveScreenshot()</code>. Add an item to the cart via API first, capture the one-item total, then add a second item and capture the two-item total. Now you have two baselines that document the component's two key states.</p>
+  </div>
 
   <div class="series-nav">
+    <span class="label">Navigate the series</span>
     <div class="nav-pair">
       <a href="10-playwrightseries-fixtures-config.html" class="nav-blog"><span class="nav-blog-arrow" aria-hidden="true">&larr;</span><div><div class="nav-blog-title">Phase 10: Fixtures &amp; Config</div><div class="nav-blog-sub">Composable, typed setup instead of beforeEach</div></div></a>
       <a href="12-playwrightseries-cicd-flaky-tests.html" class="nav-blog"><div><div class="nav-blog-title">Phase 12: CI/CD &amp; Flaky Tests</div><div class="nav-blog-sub">Running the suite where it actually matters</div></div><span class="nav-blog-arrow" aria-hidden="true">&rarr;</span></a>

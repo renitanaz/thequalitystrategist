@@ -40,11 +40,11 @@ nav.site-nav{position:sticky;top:0;z-index:100;background:var(--bg);border-botto
 .theme-toggle{background:var(--bg3);border:1px solid var(--border);color:var(--text-2);border-radius:8px;padding:.4rem .8rem;font-size:.78rem;cursor:pointer;font-family:var(--ff-sans);}
 .theme-toggle:hover{border-color:var(--purple);color:var(--text)}
 main{max-width:900px;margin:0 auto;padding:3rem 1.5rem 5rem}
-.breadcrumb{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem}
+.breadcrumb{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
 .breadcrumb a{color:var(--text-3);text-decoration:none}
 .breadcrumb a:hover{color:var(--purple)}
 .series-tag{font-size:.7rem;padding:4px 11px;border-radius:99px;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);letter-spacing:.04em;text-transform:uppercase;font-weight:500;display:inline-block;margin-bottom:1.25rem}
-h1{font-family:var(--ff-serif);font-size:clamp(1.85rem,4vw,2.6rem);line-height:1.2;color:var(--text);margin-bottom:.75rem;font-weight:400}
+h1{font-family:var(--ff-serif);font-size:clamp(1.85rem,4vw,2.6rem);line-height:1.2;color:var(--purple);margin-bottom:.75rem;font-weight:400}
 .subtitle{font-family:var(--ff-serif);font-size:1.1rem;font-style:italic;color:var(--text-3);margin-bottom:1.5rem;max-width:680px}
 .meta-row{display:flex;align-items:center;gap:1.25rem;font-size:.82rem;color:var(--text-3);flex-wrap:wrap;margin-bottom:1.6rem;padding-bottom:1.3rem;border-bottom:1px solid var(--border)}
 h2{font-family:var(--ff-serif);font-size:1.5rem;font-weight:400;color:var(--text);margin:3.5rem 0 1.1rem;padding-top:1rem;border-top:1px solid var(--border)}
@@ -83,7 +83,7 @@ tbody tr:hover td{background:var(--bg2)}
 .ba-block.after .ba-label{background:var(--green-bg);color:var(--green)}
 .ba-block pre{margin:0;border-radius:0;border:none}
 /* Assignment / bonus blocks */
-.assignment{background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:12px;padding:1.2rem 1.4rem;margin:2rem 0 1rem}
+.assignment{background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:12px;padding:1.2rem 1.4rem;margin:4.5rem 0 1rem}
 .assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem}
 .assignment h3{font-family:var(--ff-serif);color:var(--text);margin-top:.2rem;margin-bottom:.5rem;font-weight:400}
 .bonus{background:var(--purple-bg);border:1px solid var(--purple-border);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem}
@@ -97,6 +97,7 @@ details.solution[open] summary::before{transform:rotate(90deg)}
 .solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border)}
 .solution-body p{font-size:.92rem}
 .series-nav{margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border)}
+.series-nav .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);font-weight:500;margin-bottom:.75rem;display:block}
 .nav-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .nav-blog{display:flex;align-items:center;gap:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.25rem;text-decoration:none;transition:border-color .2s,background .2s}
 .nav-blog:hover{border-color:var(--purple);background:var(--bg3)}
@@ -119,20 +120,21 @@ footer a:hover{color:var(--purple)}
 </nav>
 
 <main id="main-content">
-  <p class="breadcrumb">
-    <a href="../../index.html">Home</a> &nbsp;/&nbsp;
-    <a href="../../blogs.html">Blogs</a> &nbsp;/&nbsp;
-    <a href="00-playwrightseries-landing.html">Playwright: Zero to Architect</a> &nbsp;/&nbsp;
-    Phase 10
-  </p>
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="../../blogs.html">Blogs</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <a href="00-playwrightseries-landing.html">Playwright: Zero to Architect</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <span aria-current="page">Phase 10 of 15</span>
+  </nav>
   <span class="series-tag">Phase 10 of 15 &middot; Fixtures &amp; Config</span>
   <h1>Fixtures, Hooks and Advanced Configuration</h1>
   <p class="subtitle">Stop repeating setup code. Fixtures compose and are typed. Configuration controls everything. Once you understand both, the suite becomes significantly easier to maintain.</p>
   <div class="meta-row">
-    <span>By RN</span>
-    <span>~4 hours</span>
-    <span>Series: Playwright: Zero to Architect</span>
+    <span><strong>Series: Playwright: Zero to Architect</strong></span>
     <span>Demo: PeakAndPack</span>
+    <span>9 min read</span>
+    <span>By: RN</span>
   </div>
   <div class="phase-strip" aria-label="Series progress">
     <a href="00-playwrightseries-intro-setup.html" class="phase-pip" title="Phase 0: Intro &amp; Setup">0</a>
@@ -156,7 +158,7 @@ footer a:hover{color:var(--purple)}
   <h2>Goal</h2>
   <p>Stop repeating setup code. Fixtures compose and are typed. <code>beforeEach</code> is a workaround. Configuration controls every aspect of how Playwright runs. Once you understand all three, the suite becomes significantly easier to maintain.</p>
 
-  <h2>Before: beforeEach doing too much</h2>
+  <h2 id="before-beforeeach">1. Before: beforeEach doing too much</h2>
   <div class="ba-wrap">
     <div class="ba-block before">
       <div class="ba-label">Before: setup scattered in beforeEach</div>
@@ -213,7 +215,7 @@ test('cart requires auth', async ({ request, authToken }) => {
     </div>
   </div>
 
-  <h2>Fixtures vs beforeEach: the real difference</h2>
+  <h2 id="fixtures-vs-beforeeach">2. Fixtures vs beforeEach: the real difference</h2>
   <div class="table-wrap">
     <table>
       <thead><tr><th></th><th>Fixtures</th><th>beforeEach</th></tr></thead>
@@ -227,7 +229,7 @@ test('cart requires auth', async ({ request, authToken }) => {
     </table>
   </div>
 
-  <h2>Building composable fixtures</h2>
+  <h2 id="composable-fixtures">3. Building composable fixtures</h2>
   <pre><code>// fixtures/index.ts
 import { test as base, Page } from '@playwright/test';
 import { CartPage } from '../pages/CartPage';
@@ -285,7 +287,7 @@ export const test = base.extend&lt;Fixtures&gt;({
     <p><strong>Why <code>addInitScript</code>, not just <code>page.goto</code>.</strong> PeakAndPack's UI decides whether you're logged in by reading <code>token</code> and <code>user</code> from <code>localStorage</code> at boot, not from a cookie. The <code>request</code> fixture and <code>page.request</code> only share cookies with the browser context, so an API login never reaches the page's own storage. <code>page.addInitScript</code> runs before any page script, so it sets both keys before the app's first read. Setting <code>token</code> alone is not enough: the app also checks for a <code>user</code> object and treats a missing one as logged out.</p>
   </div>
 
-  <h2>Fixture scope: test vs worker</h2>
+  <h2 id="fixture-scope">4. Fixture scope: test vs worker</h2>
   <p>By default fixtures run fresh for every test. For expensive setup that can safely be shared, use worker scope:</p>
   <pre><code>export const test = base.extend&lt;{}, { sharedToken: string }&gt;({
   // Worker scope: runs once per worker process, shared across all tests in that worker
@@ -303,7 +305,7 @@ export const test = base.extend&lt;Fixtures&gt;({
     <p><strong>The <code>shared@peakandpack.com</code> account above is illustrative</strong>, not a real seeded account on PeakAndPack. It shows the worker-scope pattern; swap in a real test account (<code>test@peakandpack.com</code>) or a dedicated one you create for shared, read-only fixtures.</p>
   </div>
 
-  <h2>Playwright projects: one config, multiple environments</h2>
+  <h2 id="projects">5. Playwright projects: one config, multiple environments</h2>
   <p>Projects let you run the same tests against different environments or browsers from one config file:</p>
   <pre><code>// playwright.config.ts
 export default defineConfig({
@@ -326,7 +328,7 @@ export default defineConfig({
 </code></pre>
   <p>Run a specific project: <code>npx playwright test --project=mobile</code></p>
 
-  <h2>Full configuration reference</h2>
+  <h2 id="config-reference">6. Full configuration reference</h2>
   <pre><code>export default defineConfig({
   testDir: './tests',
   fullyParallel: true,       // run all tests simultaneously
@@ -354,7 +356,7 @@ export default defineConfig({
     </ul>
   </div>
 
-  <h2>Deliverables</h2>
+  <h2 id="deliverables">7. Deliverables</h2>
   <ul>
     <li><code>fixtures/auth.ts</code>: authToken and loggedInPage fixtures</li>
     <li><code>fixtures/cart.ts</code>: seededCart fixture with teardown</li>
@@ -362,16 +364,12 @@ export default defineConfig({
     <li><code>playwright.config.ts</code>: full config with projects, parallel settings, and all use options</li>
   </ul>
 
+  <hr style="border:none;border-top:1px solid var(--border);margin:0">
+
   <div class="assignment">
     <div class="a-label">Assignment</div>
     <h3>Build and use the seededCart fixture</h3>
     <p>Create the <code>seededCart</code> fixture from the example above. Write two tests that both use it: one that asserts the cart has one item, and one that checks out. Confirm both tests start with the cart already populated and that the teardown cleans the cart after each test (verify by checking the cart count is 0 at the start of the second test without any setup code).</p>
-  </div>
-
-  <div class="bonus">
-    <div class="b-label">Bonus challenge</div>
-    <p><strong>Add a mobile project and run visual tests on it.</strong> Add a mobile project to <code>playwright.config.ts</code> using the iPhone 13 device profile. Run the visual tests from Phase 11 (or write a new one) with <code>--project=mobile</code>. Capture a baseline and compare it to the desktop baseline. What visual differences does the mobile viewport reveal?</p>
-  </div>
 
   <details class="solution">
     <summary>Show solution &mdash; try it yourself first</summary>
@@ -415,8 +413,15 @@ export const test = base.extend&lt;{ seededCart: CartPage }&gt;({
       <p><strong>Why teardown belongs in the fixture, not afterEach.</strong> If you put cleanup in <code>afterEach</code>, it runs even when the test didn't use the seeded cart. The fixture teardown only runs when the fixture was actually used, which is the correct behaviour.</p>
     </div>
   </details>
+  </div>
+
+  <div class="bonus">
+    <div class="b-label">Bonus challenge</div>
+    <p><strong>Add a mobile project and run visual tests on it.</strong> Add a mobile project to <code>playwright.config.ts</code> using the iPhone 13 device profile. Run the visual tests from Phase 11 (or write a new one) with <code>--project=mobile</code>. Capture a baseline and compare it to the desktop baseline. What visual differences does the mobile viewport reveal?</p>
+  </div>
 
   <div class="series-nav">
+    <span class="label">Navigate the series</span>
     <div class="nav-pair">
       <a href="09-playwrightseries-page-objects.html" class="nav-blog"><span class="nav-blog-arrow" aria-hidden="true">&larr;</span><div><div class="nav-blog-title">Phase 9: Page Object Model</div><div class="nav-blog-sub">A reference architecture that scales with the suite</div></div></a>
       <a href="11-playwrightseries-visual-regression.html" class="nav-blog"><div><div class="nav-blog-title">Phase 11: Visual Regression</div><div class="nav-blog-sub">Catching pixel-level regressions on purpose</div></div><span class="nav-blog-arrow" aria-hidden="true">&rarr;</span></a>
