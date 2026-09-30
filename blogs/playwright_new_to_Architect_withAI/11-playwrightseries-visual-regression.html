@@ -183,7 +183,7 @@ footer a:hover{color:var(--purple)}
 test('product listing loads', async ({ page }) => {
   await page.goto('https://peakandpack-ui.onrender.com/');
   await expect(
-    page.getByRole('heading', { name: /products/i })
+    page.getByRole('heading', { name: /peakandpack gear/i })
   ).toBeVisible(); // passes regardless of how the card looks
 });
 </code></pre>
@@ -238,7 +238,8 @@ test('mobile product listing matches baseline', async ({ page }) => {
   <h2 id="masking">3. Masking dynamic content</h2>
   <p>Timestamps, live prices, user avatars, and random content change between runs and cause false failures. Mask them so they are ignored in the comparison. PeakAndPack's order history page has exactly this problem: every order row prints the timestamp it was placed at, so a baseline captured today never matches a run captured tomorrow:</p>
   <pre><code>test('order history matches baseline', async ({ page }) => {
-  // Order history lists each order with the time it was placed
+  // Order history lists each order with the time it was placed.
+  // Needs a logged-in session (Phase 5's storageState setup)
   await page.goto('/orders');
   await expect(page).toHaveScreenshot('order-history.png', {
     // Masked areas are painted over in both images, so they never cause a diff
@@ -257,7 +258,7 @@ test('mobile product listing matches baseline', async ({ page }) => {
 await expect(page).toHaveScreenshot('full-page.png');
 
 // Specific element: captures only the product card
-const card = page.locator('div').filter({ has: page.getByRole('heading', { level: 3 }) }).first();
+const card = page.getByTestId('product-card').first(); // the first card only
 await expect(card).toHaveScreenshot('product-card.png');
 
 // Clipped region: captures a specific area

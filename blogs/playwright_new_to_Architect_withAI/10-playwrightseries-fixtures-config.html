@@ -203,7 +203,7 @@ test('cart requires auth', async ({ request }) => {
 <pre><code>// fixtures/index.ts -- defined once, used anywhere
 import { test as base } from '@playwright/test';
 
-type Fixtures = { authToken: string; seededCart: void };
+type Fixtures = { authToken: string };
 
 export const test = base.extend&lt;Fixtures&gt;({
   authToken: async ({ request }, use) => {
@@ -313,13 +313,17 @@ export const test = base.extend&lt;Fixtures&gt;({
   <p>By default fixtures run fresh for every test. For expensive setup that can safely be shared, use worker scope:</p>
   <pre><code>export const test = base.extend&lt;{}, { sharedToken: string }&gt;({
   // Worker scope: runs once per worker process, shared across all tests in that worker
-  sharedToken: [async ({ request }, use) => {
+  // A worker fixture can't use the built-in request fixture, which is created
+  // per test, so it opens its own API context from the playwright fixture
+  sharedToken: [async ({ playwright }, use) => {
+    const api = await playwright.request.newContext();
     // Log in once through the API
-    const res = await request.post('https://peakandpackshopdemo.onrender.com/api/auth/login', {
+    const res = await api.post('https://peakandpackshopdemo.onrender.com/api/auth/login', {
       data: { email: 'shared@peakandpack.com', password: 'password123' }
     });
     // Hand the token to every test in this worker
     await use((await res.json()).token);
+    await api.dispose(); // runs when the worker shuts down
   }, { scope: 'worker' }],
 });
 </code></pre>

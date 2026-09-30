@@ -219,10 +219,22 @@ test('10% discount reduces total correctly', async ({ page }) => {
   await page.locator('input[type="email"]').fill('test@peakandpack.com');
   await page.locator('input[type="password"]').fill('password123');
   await page.getByRole('button', { name: /log in/i }).click();
+  // The "Added to cart" alert appears once the server has saved the item
+  const added = page.waitForEvent('dialog');
   await page.getByRole('button', { name: /add to cart/i }).first().click();
+  await (await added).accept();
   await page.goto('https://peakandpack-ui.onrender.com/cart');
   await page.getByRole('button', { name: /proceed to checkout/i }).click();
-  await page.getByRole('textbox', { name: /discount code/i }).fill('SAVE10');
+  // The "Discount code" label isn't linked to its input, so the placeholder is the hook
+  await page.getByPlaceholder('e.g. SAVE10').fill('SAVE10');
+  // Pay in the checkout's payment iframe first: "Confirm Order" stays
+  // disabled until it's done (Phase 8 explains iframes)
+  const payment = page.frameLocator('iframe[title="Payment form"]');
+  await payment.getByLabel('Card number').fill('4111 1111 1111 1111');
+  await payment.getByLabel('Expiry').fill('12/28');
+  await payment.getByLabel('CVV').fill('123');
+  await payment.getByLabel('Cardholder name').fill('Test User');
+  await payment.getByRole('button', { name: 'Pay now' }).click();
   await page.getByRole('button', { name: /confirm order/i }).click();
   await expect(page.getByRole('heading', { name: /order placed/i })).toBeVisible();
 });
@@ -244,10 +256,22 @@ test('checkout with discount code completes', async ({ page }) => {
   await page.locator('input[type="email"]').fill('test@peakandpack.com');
   await page.locator('input[type="password"]').fill('password123');
   await page.getByRole('button', { name: /log in/i }).click();
+  // The "Added to cart" alert appears once the server has saved the item
+  const added = page.waitForEvent('dialog');
   await page.getByRole('button', { name: /add to cart/i }).first().click();
+  await (await added).accept();
   await page.goto('https://peakandpack-ui.onrender.com/cart');
   await page.getByRole('button', { name: /proceed to checkout/i }).click();
-  await page.getByRole('textbox', { name: /discount code/i }).fill('SAVE10');
+  // The "Discount code" label isn't linked to its input, so the placeholder is the hook
+  await page.getByPlaceholder('e.g. SAVE10').fill('SAVE10');
+  // Pay in the checkout's payment iframe first: "Confirm Order" stays
+  // disabled until it's done (Phase 8 explains iframes)
+  const payment = page.frameLocator('iframe[title="Payment form"]');
+  await payment.getByLabel('Card number').fill('4111 1111 1111 1111');
+  await payment.getByLabel('Expiry').fill('12/28');
+  await payment.getByLabel('CVV').fill('123');
+  await payment.getByLabel('Cardholder name').fill('Test User');
+  await payment.getByRole('button', { name: 'Pay now' }).click();
   await page.getByRole('button', { name: /confirm order/i }).click();
   await expect(page.getByRole('heading', { name: /order placed/i })).toBeVisible();
 });
@@ -256,7 +280,7 @@ test('checkout with discount code completes', async ({ page }) => {
   </div>
 
   <div class="callout red">
-    <p><strong>These two examples skip one real step:</strong> PeakAndPack's checkout has a payment form inside an iframe, and its button only turns on once that form is filled in. Examples before Phase 8 (Iframes) leave out that middle step so you can focus on what this phase is actually teaching.</p>
+    <p><strong>These two examples include a step this phase doesn't teach:</strong> PeakAndPack's checkout has a payment form inside an iframe, and its button only turns on once that form is filled in. The payment lines are there so the examples run as written. Phase 8 (Iframes) explains how they work.</p>
   </div>
 
   <h2 id="test-design-principles">3. Test design principles</h2>

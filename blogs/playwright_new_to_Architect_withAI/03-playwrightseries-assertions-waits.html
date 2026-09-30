@@ -322,9 +322,21 @@ await expect(page.getByRole('heading', { name: /order placed/i })).toBeVisible()
     <summary>Show solution: try it yourself first</summary>
     <div class="solution-body">
       <h3>The fixed test</h3>
-      <pre><code>// BEFORE (flaky): sleep-based wait
+      <pre><code>import { test, expect, Page } from '@playwright/test';
+
+// Adding to the cart needs a logged-in user. PeakAndPack's labels aren't
+// linked to their inputs, so the input type is the stable hook here.
+async function logIn(page: Page) {
+  await page.goto('/login');
+  await page.locator('input[type="email"]').fill('test@peakandpack.com');
+  await page.locator('input[type="password"]').fill('password123');
+  await page.getByRole('button', { name: /log in/i }).click();
+  await page.waitForURL('/'); // login sends you back to the product list
+}
+
+// BEFORE (flaky): sleep-based wait
 test('add to cart is reflected in the cart (flaky)', async ({ page }) => {
-  await page.goto('https://peakandpack-ui.onrender.com/');
+  await logIn(page);
   await page.getByRole('button', { name: /add to cart/i }).first().click();
   await page.waitForTimeout(1000); // hope this is enough
   await page.goto('/cart');
@@ -333,11 +345,12 @@ test('add to cart is reflected in the cart (flaky)', async ({ page }) => {
 
 // AFTER (reliable): waitForResponse
 test('add to cart is reflected in the cart (reliable)', async ({ page }) => {
-  await page.goto('https://peakandpack-ui.onrender.com/');
-  // Set up the listener BEFORE the click. Confirm '/api/cart' against
-  // your own DevTools Network tab first, it's illustrative here.
+  await logIn(page);
+  // Set up the listener BEFORE the click. The button sends POST /api/cart
+  // (you can see it in DevTools, Network tab), and the server answers 200.
   const cartUpdated = page.waitForResponse(
-    res => res.url().includes('/api/cart') && res.status() === 200
+    res => res.url().includes('/api/cart') &&
+           res.request().method() === 'POST' && res.status() === 200
   );
   await page.getByRole('button', { name: /add to cart/i }).first().click();
   await cartUpdated; // only continues once the server confirmed

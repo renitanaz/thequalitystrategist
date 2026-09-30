@@ -194,19 +194,28 @@ test('add to cart works', async ({ page }) => {
     <div class="ba-block after">
       <div class="ba-label">After: root cause found and fixed</div>
 <pre><code>// Root cause: CSS locator matched wrong element on slow renders.
-// Fixed with role-based scoped locator + waitForResponse.
-// Zero retries needed.
+// Fixed with a scoped locator + waitForResponse. Zero retries needed.
 
 test('add to cart works', async ({ page }) => {
-  await page.goto('https://peakandpack-ui.onrender.com/');
-  const firstCard = page.locator('div').filter({ has: page.getByRole('heading', { level: 3 }) }).first();
+  // Adding to the cart needs a logged-in user
+  await page.goto('https://peakandpack-ui.onrender.com/login');
+  await page.locator('input[type="email"]').fill('test@peakandpack.com');
+  await page.locator('input[type="password"]').fill('password123');
+  await page.getByRole('button', { name: /log in/i }).click();
+
+  // One named card, not the whole grid
+  const card = page.getByTestId('product-card')
+    .filter({ has: page.getByRole('heading', { name: 'Trekking Poles (Pair)' }) });
+  // Listen BEFORE the click for the server confirming the add
   const cartUpdated = page.waitForResponse(
-    r => r.url().includes('/api/cart') && r.status() === 200
+    r => r.url().includes('/api/cart') &amp;&amp; r.request().method() === 'POST' &amp;&amp; r.status() === 200
   );
-  await firstCard.getByRole('button', { name: /add to cart/i }).click();
+  await card.getByRole('button', { name: /add to cart/i }).click();
   await cartUpdated;
+
   await page.goto('https://peakandpack-ui.onrender.com/cart');
-  await expect(page.getByRole('button', { name: 'Remove' })).toHaveCount(1);
+  // Check the item by name: the demo account is shared, so other items may be there too
+  await expect(page.getByText('Trekking Poles (Pair)')).toBeVisible();
 });
 </code></pre>
     </div>
@@ -308,7 +317,7 @@ npx playwright test tests/cart.spec.ts --repeat-each=20</code></pre>
 test('product card is visible (flaky)', async ({ page }) => {
   page.goto('https://peakandpack-ui.onrender.com/'); // missing await -- does not wait for load
   await expect(
-    page.locator('div').filter({ has: page.getByRole('heading', { level: 3 }) }).first()
+    page.getByTestId('product-card').first()
   ).toBeVisible(); // fires before the page has loaded
 });
 
@@ -316,7 +325,7 @@ test('product card is visible (flaky)', async ({ page }) => {
 test('product card is visible', async ({ page }) => {
   await page.goto('https://peakandpack-ui.onrender.com/'); // waits for load
   await expect(
-    page.locator('div').filter({ has: page.getByRole('heading', { level: 3 }) }).first()
+    page.getByTestId('product-card').first()
   ).toBeVisible();
 });
 </code></pre>

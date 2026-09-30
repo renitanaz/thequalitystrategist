@@ -184,12 +184,16 @@ footer a:hover{color:var(--purple)}
 // In Postman: manually test POST /api/cart
 // In Playwright: navigate to cart and re-add via UI
 test('cart shows added item', async ({ page }) => {
-  await page.goto('https://peakandpack-ui.onrender.com/');
+  // Log in through the UI, again, in every test that needs a cart
+  await page.goto('https://peakandpack-ui.onrender.com/login');
+  await page.locator('input[type="email"]').fill('test@peakandpack.com');
+  await page.locator('input[type="password"]').fill('password123');
+  await page.getByRole('button', { name: /log in/i }).click();
   // Repeat the UI add-to-cart flow just to set up state
   await page.getByRole('button', { name: /add to cart/i }).first().click();
   await page.waitForResponse(r => r.url().includes('/api/cart'));
   await page.goto('https://peakandpack-ui.onrender.com/cart');
-  await expect(page.getByRole('button', { name: 'Remove' })).toHaveCount(1);
+  await expect(page.getByText('Trekking Poles (Pair)')).toBeVisible();
 });
 </code></pre>
     </div>
@@ -221,7 +225,8 @@ test('cart page reflects API-seeded item', async ({ page, request }) => {
 
   // Test via UI: this is what we're actually verifying
   await page.goto('https://peakandpack-ui.onrender.com/cart');
-  await expect(page.getByRole('button', { name: 'Remove' })).toHaveCount(1);
+  // Check by name, not by counting rows: everyone shares this demo account,
+  // so its cart may already hold other items
   await expect(page.getByText('Trekking Poles (Pair)')).toBeVisible();
 });
 </code></pre>
@@ -292,7 +297,21 @@ test('GET /api/products/:id with invalid id returns 404', async ({ request }) =>
 
   <h2 id="network-mocking">4. Network mocking: test error states without breaking the server</h2>
   <p>Some scenarios are hard to reproduce against a real server: a 500 error, a timeout, a payment failure. Playwright's <code>route</code> API intercepts requests and returns whatever response you define:</p>
-  <pre><code>test('checkout shows error when API returns 500', async ({ page }) => {
+  <pre><code>test('checkout shows an error when the API returns 500', async ({ page, request }) => {
+  // Log in and put an item in the cart through the API (section 2's pattern)
+  const loginRes = await request.post('https://peakandpackshopdemo.onrender.com/api/auth/login', {
+    data: { email: 'test@peakandpack.com', password: 'password123' }
+  });
+  const { token, user } = await loginRes.json();
+  await request.post('https://peakandpackshopdemo.onrender.com/api/cart', {
+    headers: { Authorization: `Bearer ${token}` },
+    data: { product_id: 1, quantity: 1 }
+  });
+  await page.addInitScript(([t, u]) => {
+    localStorage.setItem('token', t);
+    localStorage.setItem('user', u);
+  }, [token, JSON.stringify(user)]);
+
   // Intercept the checkout endpoint and force a 500. Use the full URL, not
   // a bare path: a relative pattern resolves against baseURL (the UI host),
   // and checkout actually lives on the separate API host, so it would
@@ -305,14 +324,23 @@ test('GET /api/products/:id with invalid id returns 404', async ({ request }) =>
     });
   });
 
-  await page.goto('https://peakandpack-ui.onrender.com/cart');
-  await page.getByRole('button', { name: /checkout/i }).click();
-  // Assert the UI shows a user-friendly error, not a crash
-  await expect(
-    page.getByRole('alert')
-  ).toContainText(/something went wrong/i);
+  await page.goto('https://peakandpack-ui.onrender.com/checkout');
+  // Pay in the checkout's payment iframe first: "Confirm Order" stays
+  // disabled until it's done (Phase 8 explains iframes)
+  const payment = page.frameLocator('iframe[title="Payment form"]');
+  await payment.getByLabel('Card number').fill('4111 1111 1111 1111');
+  await payment.getByLabel('Expiry').fill('12/28');
+  await payment.getByLabel('CVV').fill('123');
+  await payment.getByLabel('Cardholder name').fill('Test User');
+  await payment.getByRole('button', { name: 'Pay now' }).click();
+  await page.getByRole('button', { name: 'Confirm Order' }).click();
+
+  // The page shows the server's error instead of a confirmation, and no order
+  await expect(page.getByText('Internal server error')).toBeVisible();
+  await expect(page.getByRole('heading', { name: /order placed/i })).toHaveCount(0);
 });
 </code></pre>
+  <p><strong>Look at what the customer actually sees.</strong> The page shows the server's raw message, "Internal server error", in red. It isn't a crash, but it doesn't tell the customer whether they were charged or what to do next. A mock like this is how you find that out without breaking the real server, and it's worth raising as a finding.</p>
 
   <h2 id="js-vs-python">5. JS vs Python: when Python request context is better</h2>
   <p>For pure API testing in a Playwright suite, JavaScript and Python are equivalent. The Python version becomes the better choice when you need to combine Playwright API calls with Python-native eval tooling: for example, running a RAGAs evaluation on the API response in the same script. That pattern is covered in the AI and LLM Testing series.</p>
@@ -375,11 +403,20 @@ test('GET /api/products/:id with invalid id returns 404', async ({ request }) =>
 
   // Assert: navigate to cart and verify both appear
   await page.goto('https://peakandpack-ui.onrender.com/cart');
-  const items = page.getByRole('button', { name: 'Remove' });
-  await expect(items).toHaveCount(2);
+  // Both products are listed (by name: the shared account may hold other items too)
+  await expect(page.getByText('Trekking Poles (Pair)')).toBeVisible();
+  await expect(page.getByText('4-Season Tent')).toBeVisible();
 
   // Test the checkout flow
   await page.getByRole('button', { name: /proceed to checkout/i }).click();
+  // Pay in the checkout's payment iframe first: "Confirm Order" stays
+  // disabled until it's done (Phase 8 explains iframes)
+  const payment = page.frameLocator('iframe[title="Payment form"]');
+  await payment.getByLabel('Card number').fill('4111 1111 1111 1111');
+  await payment.getByLabel('Expiry').fill('12/28');
+  await payment.getByLabel('CVV').fill('123');
+  await payment.getByLabel('Cardholder name').fill('Test User');
+  await payment.getByRole('button', { name: 'Pay now' }).click();
   const checkoutDone = page.waitForResponse(
     r => r.url().includes('/api/orders/checkout') && r.status() === 201
   );

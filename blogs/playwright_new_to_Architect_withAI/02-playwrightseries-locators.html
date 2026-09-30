@@ -249,16 +249,26 @@ page.getByRole('textbox', { name: /search gear/i })
 
   <h2 id="scoping">4. Scoping: find inside a container</h2>
   <p>PeakAndPack's product listing has multiple "Add to cart" buttons, one per card. <code>getByRole('button', { name: /add to cart/i })</code> would match all of them and Playwright would not know which to click. Scope the locator to the specific card first:</p>
-  <pre><code>// Scope to the specific product card first, then find the button inside it
-const card = page.locator('div').filter({ has: page.getByRole('heading', { name: 'Trekking Poles (Pair)' }) }).first();
+  <pre><code>// Each product card carries data-testid="product-card".
+// Keep only the card whose heading names the product you want...
+const card = page.getByTestId('product-card')
+  .filter({ has: page.getByRole('heading', { name: 'Trekking Poles (Pair)' }) });
+// ...then find the button inside that one card
 await card.getByRole('button', { name: /add to cart/i }).click();
 </code></pre>
   <div class="callout blue">
-    <p><strong>Why not <code>getByRole('article')</code> here.</strong> That's the textbook version of this pattern, and it's worth knowing, but PeakAndPack's product cards aren't semantic <code>&lt;article&gt;</code> elements, they're plain <code>&lt;div&gt;</code>s. So the scoping locator falls back to <code>locator('div').filter({ has: ... })</code>: still role-based where it matters (the filter condition and the button inside it), the outer container is the one piece of the DOM with no better handle. That gap is itself worth raising with the frontend team: wrapping each card in <code>&lt;article&gt;</code> would make it a one-line <code>getByRole('article')</code> instead.</p>
+    <p><strong>Why not <code>locator('div').filter(...)</code>.</strong> It looks equivalent, but it isn't:</p>
+    <ul>
+      <li>A filter with <code>has</code> keeps every element that contains a match somewhere inside it, not just the closest one. On PeakAndPack, four nested <code>&lt;div&gt;</code>s contain the Trekking Poles heading: the card, the product grid, the page wrapper and React's root.</li>
+      <li><code>.first()</code> picks the outermost of those, the React root, which holds all eight "Add to cart" buttons. The click then fails with the same strict mode error scoping was meant to prevent.</li>
+      <li>The cards aren't semantic <code>&lt;article&gt;</code> elements either, so the textbook <code>getByRole('article')</code> isn't available.</li>
+    </ul>
+    <p style="margin-top:.6rem">The <code>product-card</code> test ID is the one stable handle on the card itself. This is exactly the situation section 5 describes: a container with no role of its own.</p>
   </div>
 
   <h2 id="data-testid">5. When to use data-testid</h2>
   <p>Some elements have no stable role or visible text: dynamic icons, status indicators, custom components. For these, add a <code>data-testid</code> attribute to the HTML and use <code>getByTestId()</code>. This is a controlled contract between you and the frontend developer: the test ID is there for testing and must not be removed.</p>
+  <p>PeakAndPack has exactly one: <code>data-testid="product-card"</code> on each product card, used in section 4. A card is a plain <code>&lt;div&gt;</code> with no role, so the test ID is the only stable way to point at it. When you need one that doesn't exist yet, ask for it:</p>
   <pre><code>// In the HTML (ask the developer to add this):
 &lt;div data-testid="cart-item-count"&gt;3&lt;/div&gt;
 
@@ -283,19 +293,35 @@ await expect(page.getByTestId('cart-item-count')).toHaveText('3');
     <p><strong>The test that survives a redesign.</strong> When the PeakAndPack design team rebrands next quarter, changes every colour, renames every CSS class, and restructures the product cards, a test suite built on <code>getByRole</code> and <code>getByLabel</code> keeps passing. A suite built on CSS selectors needs to be rewritten. The locator decision made in Phase 2 is the single biggest factor in how much maintenance your suite requires six months from now.</p>
   </div>
 
+  <h2 id="self-healing">8. "Self-healing": two techniques, one name</h2>
+  <p>Vendors, job ads and your own team will use "self-healing" for two different things. Only one of them is what this phase teaches, and the difference decides whether anyone has to check the result.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Technique</th><th>What it does</th><th>Runs unattended?</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Resilient locators</strong> (this phase)</td><td>You describe the element by its meaning: its role, label or visible text. A renamed class or a moved <code>&lt;div&gt;</code> changes nothing the locator depends on, so there's nothing to repair.</td><td>Yes. No AI, no person, every run.</td></tr>
+        <tr><td><strong>Runtime locator healing</strong> (tools such as Healenium for Selenium, testRigor, Mabl, Functionize)</td><td>When an element can't be found the way it was last time, the tool finds the closest match using other signals (text, role, position, nearby elements), carries on, and logs what it chose. Each product does this differently.</td><td>Yes. It happens during every run, with nobody approving each match.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><strong>Why both are safe to run unattended.</strong> The problem is narrow: the page's structure changed, but the element's meaning didn't. A submit button is still a submit button. That's pattern matching, not judgment. Asking a person to approve every class rename would bury them in trivial approvals, and approvals nobody reads are worse than none. The real risk is healing onto the wrong element, so prefer tools that report low-confidence matches and fail loudly instead of guessing, and read their healing logs.</p>
+  <div class="callout amber">
+    <p><strong>Neither of these is auto-fix.</strong> When a test fails because the app's behaviour changed, not its markup, fixing it means changing the test's code. That's code-level auto-fix: an AI proposes the change, and a person approves it before it merges, every time. That approval step is permanent, not a stage to grow out of: a failing test can mean a real bug, an intended change or a bad test, and only someone who knows the product can tell which. Phase 13 covers how to do it. Playwright's own test agents (version 1.56 and later) include one called the "healer". Despite the name, it proposes code changes, so it belongs in this second category.</p>
+  </div>
+
   <div class="callout red">
     <p><strong>Common mistakes in Phase 2.</strong></p>
     <ul style="margin:.5rem 0 0 1.2rem;">
       <li><strong>Using CSS classes by default.</strong> The most common mistake, especially when copying AI output. Always ask: is there a role or label I can use instead?</li>
       <li><strong>Not scoping duplicate roles.</strong> If getByRole matches more than one element, Playwright will throw a "strict mode violation". Scope the locator to a container first.</li>
       <li><strong>Overusing data-testid.</strong> Adding a testid to every element creates maintenance burden on both sides (test and code). Reserve it for elements that genuinely have no stable role or text.</li>
-      <li><strong>Exact string matching.</strong> <code>getByRole('button', { name: 'Add to cart' })</code> breaks if the text ever changes to "Add to Cart". Use a regex: <code>/add to cart/i</code>.</li>
+      <li><strong>Adding <code>exact: true</code> by default.</strong> A plain string name already ignores case and matches part of the text, so <code>{ name: 'Add to cart' }</code> still finds "Add to Cart". <code>exact: true</code> turns that off and breaks on any wording change. Use it only when a partial match would hit the wrong element.</li>
     </ul>
   </div>
 
-  <h2 id="deliverables">8. Deliverables</h2>
+  <h2 id="deliverables">9. Deliverables</h2>
   <ul>
-    <li><code>tests/locators.spec.ts</code>: 5 tests using resilient locators across PeakAndPack</li>
+    <li><code>tests/locators.spec.ts</code>: a test using 5 resilient locators across PeakAndPack</li>
     <li><code>locator-guide.md</code>: the priority table and when-to-use-each rules</li>
   </ul>
 
@@ -313,29 +339,34 @@ await expect(page.getByTestId('cart-item-count')).toHaveText('3');
       <pre><code>import { test, expect } from '@playwright/test';
 
 test('resilient locators across PeakAndPack', async ({ page }) => {
-  await page.goto('https://peakandpack-ui.onrender.com/');
-
-  // 1. Site heading - getByRole (most resilient)
-  await expect(page.getByRole('heading', { name: /peakandpack/i })).toBeVisible();
-
-  // 2. Email input on login - no accessible name exists, input[type] is the honest choice (see callout above)
+  // 1. Email and password inputs on login - no accessible name exists,
+  //    so input[type] is the honest choice (see callout above)
   await page.goto('https://peakandpack-ui.onrender.com/login');
-  await page.locator('input[type="email"]').fill('test@example.com');
+  await page.locator('input[type="email"]').fill('test@peakandpack.com');
+  await page.locator('input[type="password"]').fill('password123');
 
-  // 3. Specific product card - scoped locator (no &lt;article&gt; wrapper exists, see callout above)
-  const card = page.locator('div').filter({ has: page.getByRole('heading', { name: 'Trekking Poles (Pair)' }) }).first();
+  // 2. Log in button - getByRole, it has visible text
+  await page.getByRole('button', { name: /log in/i }).click();
+
+  // 3. Specific product card - the card's test ID, narrowed by its heading (see section 4).
+  //    Logging in lands you back on the product list
+  const card = page.getByTestId('product-card')
+    .filter({ has: page.getByRole('heading', { name: 'Trekking Poles (Pair)' }) });
   await expect(card).toBeVisible();
 
-  // 4. Add to cart button inside that card - scoped to avoid duplicates
+  // 4. Add to cart button inside that card - scoped to avoid duplicates.
+  //    The "Added to cart" alert appears once the server has saved it, so wait for it
+  const added = page.waitForEvent('dialog');
   await card.getByRole('button', { name: /add to cart/i }).click();
+  await (await added).accept();
 
-  // 5. Cart total - getByRole (no data-testid exists on PeakAndPack yet, role works fine here)
+  // 5. Cart total - getByRole (the heading has a role and readable text, so no test ID needed)
   await page.goto('https://peakandpack-ui.onrender.com/cart');
   await expect(page.getByRole('heading', { name: /^total:/i })).toBeVisible();
 });
 </code></pre>
       <p><strong>Why scoping for the button matters.</strong> Without the <code>card</code> scope, <code>getByRole('button', { name: /add to cart/i })</code> matches every product card's button and Playwright throws a strict mode error. Scoping to the card first means the locator is both resilient (role-based) and precise (scoped).</p>
-      <p><strong>Why step 5 doesn't use <code>getByTestId</code>.</strong> The "When to use data-testid" section above is real advice, but PeakAndPack doesn't have a single <code>data-testid</code> anywhere today. Reach for it when you hit an element with no role or stable text, not by default. Here, the cart total already has a role and readable text, so <code>getByRole</code> covers it with nothing to add.</p>
+      <p><strong>Why step 5 doesn't use <code>getByTestId</code>.</strong> PeakAndPack only has a test ID where nothing else works: the product card, a <code>&lt;div&gt;</code> with no role. Reach for one when you hit an element with no role or stable text, not by default. Here, the cart total already has a role and readable text, so <code>getByRole</code> covers it with nothing to add.</p>
     </div>
   </details>
   </div>

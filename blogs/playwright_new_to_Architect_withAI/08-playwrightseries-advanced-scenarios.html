@@ -172,14 +172,35 @@ footer a:hover{color:var(--purple)}
   <h2>Goal</h2>
   <p>Handle the parts of real applications that make most automation engineers give up. File uploads, multiple tabs, dialogs, iframes, drag and drop, and infinite scroll: each requires a specific Playwright pattern.</p>
 
-  <div class="callout red">
-    <p><strong>One of these six scenarios is real, the other five are not.</strong></p>
-    <ul style="margin:.5rem 0 0 1.2rem;">
-      <li><strong>Real: the payment iframe.</strong> PeakAndPack's checkout has <code>&lt;iframe id="payment-iframe" src="/admin/payment-sandbox.html" title="Payment form"&gt;</code>, with labelled Card number, Expiry, CVV and Cardholder name fields and a "Pay now" button inside it. The Iframes section is accurate and runnable as written.</li>
-      <li><strong>Not in the app:</strong> an admin panel (beyond that payment sandbox page), CSV import or export, confirm dialogs, drag-to-reorder lists, and infinite scroll. The catalog is a fixed 10 products, loaded in one page.</li>
-      <li><strong>So those five sections are illustrations.</strong> They're written in PeakAndPack's voice for consistency, but they show the Playwright API for each scenario rather than code you can run against this demo.</li>
+  <div class="callout blue">
+    <p><strong>All six scenarios are on PeakAndPack.</strong></p>
+    <ul>
+      <li><strong>File upload and download:</strong> Import CSV and Export CSV in the admin panel.</li>
+      <li><strong>Multiple tabs:</strong> the small &#8599; link on every product card, which opens the product in a new tab.</li>
+      <li><strong>Dialogs:</strong> an alert after "Add to cart", and a confirmation before deleting a product in the admin panel.</li>
+      <li><strong>Iframes:</strong> the payment form at checkout.</li>
+      <li><strong>Drag and drop:</strong> reordering product rows in the admin panel.</li>
+      <li><strong>Infinite scroll:</strong> the product list shows 8 products, then loads the rest as you scroll.</li>
     </ul>
-    <p style="margin-top:.6rem">That's a realistic situation: most projects have scenarios their main app doesn't exercise yet. The fix, shown in this phase's assignment, is a small local fixture, not a hunt for a feature that isn't there.</p>
+  </div>
+  <p>The admin panel lives on the API server, at <code>https://peakandpackshopdemo.onrender.com/admin/</code>, not on the store's address. It also keeps its login in a JavaScript variable, which Phase 6 showed storageState can't save, so every admin test signs in through the panel's form:</p>
+  <pre><code>// Shared by every admin-panel test in this phase
+import { test, expect, Page } from '@playwright/test';
+
+const ADMIN = 'https://peakandpackshopdemo.onrender.com/admin/';
+
+async function signInAsAdmin(page: Page) {
+  await page.goto(ADMIN);
+  // The login fields have placeholders but no labels, so the placeholder is the hook
+  await page.getByPlaceholder('admin@peakandpack.com').fill('admin@peakandpack.com');
+  await page.getByPlaceholder('Password').fill('adminpass123');
+  await page.getByRole('button', { name: 'Sign in as admin' }).click();
+  // The product table only appears once sign-in has worked
+  await expect(page.getByRole('heading', { name: 'Products' })).toBeVisible();
+}
+</code></pre>
+  <div class="callout amber">
+    <p><strong>These tests change real data.</strong> PeakAndPack rebuilds its database every time its server restarts, but on the shared demo, everyone sees your changes until then. Clean up after yourself: import a product with a unique name and delete that same product, and drag rows back where they were.</p>
   </div>
 
   <h2 id="before-skipping">1. Before: skipping or hardcoding workarounds</h2>
@@ -187,128 +208,161 @@ footer a:hover{color:var(--purple)}
   <div class="ba-wrap">
     <div class="ba-block before">
       <div class="ba-label">Before: skipping the hard part</div>
-<pre><code>// The test skips file upload because "it's too hard to automate".
-// The dialog test uses a fixed wait instead of handling the dialog.
+<pre><code>// The upload test is skipped because "it's too hard to automate".
+// The delete test waits and hopes instead of handling the dialog.
 // These are not tests -- they're gaps in coverage.
 
 test.skip('admin CSV upload'); // TODO: figure this out later
 
 test('delete button works', async ({ page }) => {
-  await page.goto('https://peakandpack-ui.onrender.com/admin/products');
-  await page.getByRole('button', { name: /delete/i }).first().click();
+  await signInAsAdmin(page);
+  await page.getByRole('button', { name: 'Delete' }).first().click();
   await page.waitForTimeout(500); // hope the dialog appears
-  // Dialog never handled -- test passes without confirming the delete
+  // Nobody answers the dialog, so Playwright clicks Cancel for you.
+  // Nothing is deleted, there's no assertion, and the test passes anyway.
 });
 </code></pre>
     </div>
     <div class="ba-block after">
       <div class="ba-label">After: every scenario handled properly</div>
-<pre><code>// File upload handled with setInputFiles.
-// Dialog handled by registering a listener before the action.
+<pre><code>// Upload with setInputFiles, answer the dialog, check the result.
 
-test('admin can upload product CSV', async ({ page }) => {
-  await page.goto('https://peakandpack-ui.onrender.com/admin/import');
-  await page.getByLabel(/upload/i).setInputFiles('fixtures/products.csv');
-  await page.getByRole('button', { name: /import/i }).click();
-  await expect(page.getByRole('status')).toContainText(/imported/i);
-});
+test('an imported product can be deleted after confirming', async ({ page }) => {
+  await signInAsAdmin(page);
+  const name = `Test Lantern ${Date.now()}`; // unique, so reruns never collide
 
-test('delete button removes product after confirmation', async ({ page }) => {
-  // Register dialog handler BEFORE the action that triggers it
+  // File upload: fill the file input directly, no file picker involved
+  await page.getByLabel('Import CSV').setInputFiles({
+    name: 'new-product.csv',
+    mimeType: 'text/csv',
+    buffer: Buffer.from(`name,price,stock,category\n${name},19.99,10,Camping\n`),
+  });
+  await expect(page.getByText('Imported 1 products.')).toBeVisible();
+
+  // Dialog: register the handler BEFORE the click that opens it
   page.once('dialog', dialog => dialog.accept());
-  await page.goto('https://peakandpack-ui.onrender.com/admin/products');
-  await page.getByRole('button', { name: /delete/i }).first().click();
-  await expect(page.getByRole('alert')).toContainText(/deleted/i);
+  await page.getByRole('row', { name: new RegExp(name) })
+    .getByRole('button', { name: 'Delete' }).click();
+  await expect(page.getByText(`"${name}" deleted.`)).toBeVisible();
 });
 </code></pre>
     </div>
   </div>
+  <p>Yes, "Imported 1 products." is the app's own wording. Small copy bugs like that are worth a note in your bug list too.</p>
 
   <h2 id="file-upload-download">2. File upload and download</h2>
-  <p><code>setInputFiles()</code> sets a file on a file input element without opening the OS file picker, which Playwright can't automate:</p>
-  <pre><code>// Upload a file
-await page.getByLabel(/upload csv/i).setInputFiles('fixtures/products.csv');
+  <p>Import and export are how data enters and leaves a system in bulk, so one broken import can corrupt hundreds of records at once. <code>setInputFiles()</code> sets a file on a file input without opening the operating system's file picker, which Playwright can't control. PeakAndPack's file input is hidden inside the "Import CSV" label, and that's fine: <code>getByLabel</code> still finds it, and <code>setInputFiles</code> doesn't need it to be visible.</p>
+  <pre><code>import fs from 'fs';
 
-// Upload multiple files
-await page.getByLabel(/images/i).setInputFiles([
-  'fixtures/image1.png',
-  'fixtures/image2.png',
-]);
+// Upload a file from disk (PeakAndPack serves a sample at /admin/sample-products.csv)...
+await page.getByLabel('Import CSV').setInputFiles('fixtures/sample-products.csv');
 
-// Download a file and assert its content
+// ...or build the file inside the test, so the data sits next to the assertion
+await page.getByLabel('Import CSV').setInputFiles({
+  name: 'products.csv',
+  mimeType: 'text/csv',
+  buffer: Buffer.from('name,price,stock,category\nTest Lantern,19.99,10,Camping\n'),
+});
+
+// Download: start waiting BEFORE the click, then read the saved file
 const downloadPromise = page.waitForEvent('download');
-await page.getByRole('link', { name: /export/i }).click();
+await page.getByRole('link', { name: 'Export CSV' }).click();
 const download = await downloadPromise;
-const path = await download.path();
-const content = require('fs').readFileSync(path, 'utf8');
-expect(content).toContain('product_id');
+expect(download.suggestedFilename()).toBe('products.csv');
+const csv = fs.readFileSync(await download.path(), 'utf8');
+expect(csv.split('\n')[0].trim()).toBe('id,name,price,stock,category'); // the header row
 </code></pre>
 
   <h2 id="multi-tabs">3. Multiple tabs and windows</h2>
-  <p>When a link or button opens a new tab, Playwright gives you the new page object via the <code>popup</code> event:</p>
-  <pre><code>// Open a product in a new tab and assert both tabs are consistent
-const [newTab] = await Promise.all([
-  page.waitForEvent('popup'),
-  page.getByRole('link', { name: /open in new tab/i }).click(),
-]);
-await newTab.waitForLoadState();
+  <p>Links that open a new tab are easy to leave untested, yet the new tab starts its own page load and can land somewhere broken or empty. Every PeakAndPack product card has a small &#8599; link, titled "Open in new tab", that opens the product's page in a new tab. Playwright hands you the new tab through the <code>popup</code> event:</p>
+  <pre><code>const card = page.getByTestId('product-card')
+  .filter({ has: page.getByRole('heading', { name: 'Trekking Poles (Pair)' }) });
 
-// Assert the new tab shows the same product
-await expect(newTab.getByRole('heading', { name: /trekking poles/i })).toBeVisible();
-// Assert the original tab is unchanged
-await expect(page.getByRole('heading', { name: /products/i })).toBeVisible();
+// Start waiting for the new tab BEFORE the click that opens it
+const popupPromise = page.waitForEvent('popup');
+// The link's visible text is just an arrow, so its title is the readable hook
+await card.getByTitle('Open in new tab').click();
+const newTab = await popupPromise;
+
+// The new tab shows that product's own page...
+await expect(newTab).toHaveURL(/\/product\?id=\d+/);
+await expect(newTab.getByRole('heading', { level: 1 })).toHaveText('Trekking Poles (Pair)');
+// ...and the original tab is still on the product list
+await expect(page.getByRole('heading', { name: 'PeakAndPack Gear' })).toBeVisible();
 </code></pre>
+  <p><strong>Two findings in one link.</strong> A screen reader announces this link by its arrow character, not "Open in new tab", because a title only names a link that has no text of its own. An <code>aria-label="Open in new tab"</code> would fix that for users, and would let the test use <code>getByRole('link', { name: /open in new tab/i })</code> instead of <code>getByTitle</code>.</p>
+  <p>To test two tabs of the same session, such as adding to the cart in one tab and checking it in another, open the second with <code>context.newPage()</code>. Both tabs share the browser context, so they share the login too.</p>
 
   <h2 id="dialogs">4. Dialogs and alerts</h2>
-  <p>Browser dialogs (alert, confirm, prompt) must be handled by registering a listener before the action that triggers them. If you don't handle a dialog, Playwright dismisses it automatically and the test may fail for the wrong reason:</p>
-  <pre><code>// Accept a confirm dialog
-page.once('dialog', dialog => dialog.accept());
-await page.getByRole('button', { name: /delete/i }).click();
+  <p>A browser dialog pauses the page until someone answers it. If your test doesn't answer, Playwright dismisses it for you. For a <code>confirm()</code>, that means clicking Cancel, which is how the "before" test above passed without deleting anything. Register the handler before the action:</p>
+  <pre><code>const row = page.getByRole('row', { name: /Test Lantern/ });
 
-// Dismiss a confirm dialog (click Cancel)
+// Dismiss the delete confirmation (Cancel): the product must still be there
 page.once('dialog', dialog => dialog.dismiss());
-await page.getByRole('button', { name: /delete/i }).click();
+await row.getByRole('button', { name: 'Delete' }).click();
+await expect(row).toBeVisible();
 
-// Handle a prompt dialog and enter text
-page.once('dialog', dialog => dialog.accept('My new name'));
-await page.getByRole('button', { name: /rename/i }).click();
+// Accept it, and check what it asked first
+page.once('dialog', async dialog => {
+  expect(dialog.message()).toContain('This cannot be undone');
+  await dialog.accept();
+});
+await row.getByRole('button', { name: 'Delete' }).click();
+
+// On the store, "Add to cart" shows an alert only once the server has saved
+// the item, so waiting for the alert doubles as a "cart updated" signal
+const alertPromise = page.waitForEvent('dialog');
+await card.getByRole('button', { name: /add to cart/i }).click();
+const alert = await alertPromise;
+expect(alert.message()).toBe('Added "Trekking Poles (Pair)" to cart');
+await alert.accept();
 </code></pre>
 
   <h2 id="iframes">5. Iframes</h2>
-  <p>Elements inside an iframe are in a separate document. Use <code>frameLocator()</code> to scope your locator to the iframe first:</p>
-  <pre><code>// Find an element inside an iframe
+  <p>Payment forms often sit inside an iframe on purpose, so card details never touch the store's own page. Elements inside an iframe are in a separate document, so <code>page.getByLabel()</code> can't see them. Scope to the iframe first with <code>frameLocator()</code>:</p>
+  <pre><code>// Scope every locator to the payment iframe first
 const frame = page.frameLocator('iframe[title="Payment form"]');
-await frame.getByLabel(/card number/i).fill('4111 1111 1111 1111');
-await frame.getByLabel(/expiry/i).fill('12/28');
-await frame.getByRole('button', { name: /pay/i }).click();
+await frame.getByLabel('Card number').fill('4111 1111 1111 1111');
+await frame.getByLabel('Expiry').fill('12/28');
+await frame.getByLabel('CVV').fill('123');
+await frame.getByLabel('Cardholder name').fill('Test User');
+await frame.getByRole('button', { name: 'Pay now' }).click();
+
+// Back on the page itself: paying unlocks the store's own button
+await expect(page.getByRole('button', { name: 'Confirm Order' })).toBeEnabled();
 </code></pre>
 
   <h2 id="drag-drop">6. Drag and drop</h2>
-  <p>For HTML5 drag and drop, use <code>dragTo()</code>. For custom drag implementations, use <code>dispatchEvent</code> with the mouse events the implementation listens for:</p>
-  <pre><code>// HTML5 drag and drop
-const item = page.getByRole('listitem').nth(0);
-const target = page.getByRole('listitem').nth(2);
-await item.dragTo(target);
+  <p>Reordering is easy to break without noticing: rows can move on screen while the new order never reaches the server. The admin panel's product rows use the browser's built-in (HTML5) drag and drop, which <code>dragTo()</code> handles. For a custom drag built on mouse events, use <code>page.mouse.down()</code>, <code>move()</code> and <code>up()</code> instead.</p>
+  <pre><code>const rows = page.getByRole('row'); // row 0 is the table header
+const firstRow = await rows.nth(1).textContent();
 
-// Assert the new order
-const items = await page.getByRole('listitem').allTextContents();
-expect(items[0]).toContain('expected first item');
+// Drag the first product down onto the third
+await rows.nth(1).dragTo(rows.nth(3));
+await expect(page.getByText('Order saved.')).toBeVisible();
+await expect(rows.nth(3)).toHaveText(firstRow!);
+
+// Moving on screen isn't the same as being saved: sign in again and re-check
+await signInAsAdmin(page);
+await expect(rows.nth(3)).toHaveText(firstRow!);
 </code></pre>
 
   <h2 id="infinite-scroll">7. Infinite scroll and virtualized lists</h2>
-  <p>Products not yet loaded into the DOM cannot be found by a locator. Scroll to load them first:</p>
-  <pre><code>// Scroll to the bottom of the page to trigger loading more products
-await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  <p>Products that haven't loaded yet aren't in the page at all, so no locator can find them. PeakAndPack shows 8 products, then loads the rest when an invisible marker below the grid scrolls into view. Scroll first, then assert:</p>
+  <pre><code>await page.goto('/');
+const cards = page.getByTestId('product-card');
+await expect(cards).toHaveCount(8); // the first batch
 
-// Wait for the new items to appear
-const productCards = page.locator('div').filter({ has: page.getByRole('heading', { level: 3 }) });
-await expect(productCards).toHaveCount(25);
+// Scrolling past the last card brings the marker into view, which loads the next batch
+await cards.last().scrollIntoViewIfNeeded();
+await page.mouse.wheel(0, 2000);
 
-// Now assert the items that were not in the initial load
-await expect(
-  productCards.nth(24)
-).toBeVisible();
+// toHaveCount retries until the new cards arrive
+await expect(cards).toHaveCount(10);
+// Check a product that wasn't in the first batch
+await expect(page.getByRole('heading', { name: 'Climbing Harness' })).toBeVisible();
 </code></pre>
+  <p>A hard-coded 10 breaks the day the catalog grows. It's fine here because the catalog is fixed. On a real store, assert that a specific later product appears, or that the count went up.</p>
 
   <div class="callout amber">
     <p><strong>Register event listeners before the action, not after.</strong> This applies to dialogs, popups, downloads, and file choosers. Playwright events fire at the moment of the action. If you set up the listener a millisecond after the click, you've already missed it.</p>
@@ -326,57 +380,81 @@ await expect(
 
   <h2 id="deliverables">8. Deliverables</h2>
   <ul>
-    <li><code>tests/advanced.spec.ts</code>: a runnable payment-iframe test against PeakAndPack, plus the dialog tests against your local fixture from the assignment</li>
-    <li><code>advanced-scenarios-guide.md</code>: which Playwright API to use for each of the six scenarios, including the four you can't run here yet</li>
+    <li><code>tests/advanced.spec.ts</code>: one test per scenario, all six against PeakAndPack</li>
+    <li><code>advanced-scenarios-guide.md</code>: which Playwright API to use for each scenario, and the trap each one sets</li>
   </ul>
 
   <hr style="border:none;border-top:1px solid var(--border);margin:0">
 
   <div class="assignment">
     <div class="a-label">Assignment</div>
-    <h3>Handle a confirm dialog properly, against a fixture you build</h3>
-    <p>Create <code>fixtures/confirm-delete.html</code>: a bare page with one button wired to <code>onclick="if(confirm('Delete this item?')) document.body.innerHTML = 'Deleted'"</code>. Load it with <code>page.goto('file://' + path.resolve('fixtures/confirm-delete.html'))</code>. Write two tests: the first accepts the dialog and asserts the page now shows "Deleted", the second dismisses it and asserts the button is still there. Both must register the dialog handler before clicking. This is the realistic shape of the problem: your app doesn't have the scenario yet, so you prove the Playwright pattern against a fixture before the feature exists to test for real.</p>
+    <h3>Handle the delete confirmation on the real admin panel</h3>
+    <p>Sign in to the admin panel and import one product with a unique name. Then write two tests: one dismisses the delete confirmation and asserts the product is still listed, the other accepts it and asserts the product is gone. Both must register the dialog handler before clicking, and both must leave the catalog as they found it.</p>
 
   <details class="solution">
     <summary>Show solution: try it yourself first</summary>
     <div class="solution-body">
-      <h3>The fixture, and accept/dismiss dialog tests against it</h3>
-      <pre><code>&lt;!-- fixtures/confirm-delete.html --&gt;
-&lt;button onclick="if(confirm('Delete this item?')) document.body.innerHTML = 'Deleted'"&gt;
-  Delete
-&lt;/button&gt;</code></pre>
-      <pre><code>import { test, expect } from '@playwright/test';
-import path from 'path';
+      <h3>Two delete tests, each importing its own product</h3>
+      <pre><code>// Shared by every admin-panel test in this phase
+import { test, expect, Page } from '@playwright/test';
 
-// A small local page with a confirm() dialog, since PeakAndPack doesn't have one
-const fixtureUrl = 'file://' + path.resolve('fixtures/confirm-delete.html');
+const ADMIN = 'https://peakandpackshopdemo.onrender.com/admin/';
 
-test('accepting the dialog deletes the item', async ({ page }) => {
-  await page.goto(fixtureUrl);
-  // Register BEFORE clicking: the dialog opens the instant the button is pressed
-  page.once('dialog', dialog => dialog.accept());
-  await page.getByRole('button', { name: /delete/i }).click();
-  // Accepting confirms the delete, so the success message appears
-  await expect(page.getByText('Deleted')).toBeVisible();
+async function signInAsAdmin(page: Page) {
+  await page.goto(ADMIN);
+  // The login fields have placeholders but no labels, so the placeholder is the hook
+  await page.getByPlaceholder('admin@peakandpack.com').fill('admin@peakandpack.com');
+  await page.getByPlaceholder('Password').fill('adminpass123');
+  await page.getByRole('button', { name: 'Sign in as admin' }).click();
+  // The product table only appears once sign-in has worked
+  await expect(page.getByRole('heading', { name: 'Products' })).toBeVisible();
+}
+
+// Import one uniquely named product and return its table row
+async function importProduct(page: Page) {
+  const name = `Test Lantern ${Date.now()}`; // unique, so reruns never collide
+  await page.getByLabel('Import CSV').setInputFiles({
+    name: 'new-product.csv',
+    mimeType: 'text/csv',
+    buffer: Buffer.from(`name,price,stock,category\n${name},19.99,10,Camping\n`),
+  });
+  await expect(page.getByText('Imported 1 products.')).toBeVisible();
+  return page.getByRole('row', { name: new RegExp(name) });
+}
+
+test.beforeEach(async ({ page }) => {
+  await signInAsAdmin(page);
 });
 
-test('dismissing the dialog keeps the button', async ({ page }) => {
-  await page.goto(fixtureUrl);
-  // Same setup, but press Cancel this time
+test('cancelling the confirmation keeps the product', async ({ page }) => {
+  const row = await importProduct(page);
+  // Register BEFORE clicking: the dialog opens the instant the button is pressed
   page.once('dialog', dialog => dialog.dismiss());
-  await page.getByRole('button', { name: /delete/i }).click();
-  // Nothing was deleted, so the Delete button is still there
-  await expect(page.getByRole('button', { name: /delete/i })).toBeVisible();
+  await row.getByRole('button', { name: 'Delete' }).click();
+  await expect(row).toBeVisible(); // Cancel means nothing was deleted
+
+  // Clean up: this time, confirm
+  page.once('dialog', dialog => dialog.accept());
+  await row.getByRole('button', { name: 'Delete' }).click();
+  await expect(row).toHaveCount(0);
+});
+
+test('confirming deletes the product', async ({ page }) => {
+  const row = await importProduct(page);
+  page.once('dialog', dialog => dialog.accept());
+  await row.getByRole('button', { name: 'Delete' }).click();
+  await expect(row).toHaveCount(0); // gone from the table
 });
 </code></pre>
-      <p><strong>Why a fixture, not a workaround.</strong> Building a two-line HTML file to prove a Playwright pattern isn't a lesser exercise than testing it against a real feature: it's how you'd validate the technique on a team where the confirm-dialog feature is still on the roadmap. When PeakAndPack, or your real project, ships an actual delete confirmation, the dialog-handling code above transfers unchanged: only the <code>goto</code> URL and the assertions after it change.</p>
+      <p><strong>Why test Cancel at all.</strong> Cancel is the safety net: a Delete button that ignores Cancel destroys data the user meant to keep. It's also what Playwright does silently when you forget a handler, which is how the "before" test in section 1 passed without deleting anything.</p>
+      <p><strong>Why each test imports its own product.</strong> Deleting one of the seeded products would break every other test that expects it, including other readers' runs on the shared demo. A product each test creates for itself makes the test independent, the rule from Phase 5.</p>
     </div>
   </details>
   </div>
 
   <div class="bonus">
     <div class="b-label">Bonus challenge</div>
-    <p><strong>Test a download against a fixture, the same way.</strong> Build <code>fixtures/export.html</code> with a link that downloads a small inline CSV (a <code>data:</code> URL works, or serve one static file locally). Write a test that clicks the link, captures the download with <code>waitForEvent('download')</code>, reads the file from disk, and asserts it contains a header row with <code>id,name,price</code>. Once PeakAndPack (or your real project) ships an actual export feature, the pattern transfers directly. Only the URL changes.</p>
+    <p><strong>Prove the export includes what you imported.</strong> Import a uniquely named product, click Export CSV, and assert the downloaded file has a line with that product's name and price. Then delete the product. This checks two features against each other: if the export and the table disagree, one of them is wrong.</p>
   </div>
 
   <div class="series-nav">

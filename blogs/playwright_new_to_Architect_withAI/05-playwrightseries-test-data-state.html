@@ -219,7 +219,9 @@ test('cart shows item added via API', async ({ page, request }) => {
   }, [token, JSON.stringify(user)]);
 
   await page.goto('https://peakandpack-ui.onrender.com/cart');
-  await expect(page.getByRole('button', { name: 'Remove' })).toHaveCount(1);
+  // Check by name, not by counting rows: this demo account is shared, so its
+  // cart may hold other items (section 5 fixes that with a user per test)
+  await expect(page.getByText('Trekking Poles (Pair)')).toBeVisible();
 });
 </code></pre>
     </div>
@@ -270,6 +272,14 @@ test('checkout flow completes', async ({ page, request }) => {
   // Test: assert the UI checkout flow
   await page.goto('https://peakandpack-ui.onrender.com/cart');
   await page.getByRole('button', { name: /proceed to checkout/i }).click();
+  // Pay in the checkout's payment iframe first: "Confirm Order" stays
+  // disabled until it's done (Phase 8 explains iframes)
+  const payment = page.frameLocator('iframe[title="Payment form"]');
+  await payment.getByLabel('Card number').fill('4111 1111 1111 1111');
+  await payment.getByLabel('Expiry').fill('12/28');
+  await payment.getByLabel('CVV').fill('123');
+  await payment.getByLabel('Cardholder name').fill('Test User');
+  await payment.getByRole('button', { name: 'Pay now' }).click();
   await page.getByRole('button', { name: /confirm order/i }).click();
   await expect(
     page.getByRole('heading', { name: /order placed/i })
@@ -310,7 +320,7 @@ export default defineConfig({
 
   <h2 id="parallel-safe-data">5. Parallel-safe data: isolated test users</h2>
   <p>When tests run in parallel, two workers can interfere if they use the same user account. Each worker needs its own isolated data. The cleanest approach: generate a unique email per test using a timestamp or UUID.</p>
-  <pre><code>test('new user can register and check out', async ({ page, request }) => {
+  <pre><code>test('new user can register and log in', async ({ page, request }) => {
   // Unique email per test run -- no collision with parallel workers
   const email = `test-${Date.now()}@peakandpack.com`;
 

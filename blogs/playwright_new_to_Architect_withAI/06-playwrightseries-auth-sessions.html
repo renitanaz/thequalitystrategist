@@ -226,37 +226,41 @@ const context = await browser.newContext({
     <li>sessionStorage. Playwright has no API to save it, so you'd read and replay it yourself with <code>page.evaluate()</code>.</li>
     <li>In-memory state, such as a token held only in a JavaScript variable.</li>
   </ul>
-  <p>If your app keeps its token in a cookie or localStorage, as PeakAndPack does, storageState works. If it keeps it only in memory or sessionStorage, you need a different approach.</p>
+  <p>If your app keeps its token in a cookie or localStorage, storageState works. If it keeps it only in memory or sessionStorage, you need a different approach. PeakAndPack has one of each:</p>
+  <ul>
+    <li><strong>The store</strong> keeps its token in localStorage, so a saved session works.</li>
+    <li><strong>The admin panel</strong> keeps its token in a JavaScript variable, so a saved session can't carry it. Every admin-panel test signs in through the panel's own form, as you'll see in Phase 8.</li>
+  </ul>
 
   <h2 id="multi-role">3. Multi-role testing: customer and admin</h2>
-  <div class="callout red">
-    <p><strong>PeakAndPack itself has no admin role.</strong> There is no <code>/admin</code> route and no second account type; navigating there just renders the same product page. The pattern below is illustrative of how you'd test role-based access on an app that <em>does</em> have one: read it for the storageState and context-per-role technique, not as something you can literally run against this demo. If you want to actually execute this section, the honest move is what Phase 0 already taught: treat "no admin panel" as a real finding, not a gap to paper over with an assumed feature.</p>
-  </div>
-  <p>The pattern: an app with two roles, customers who see their own data and admins who see everything, needs one saved session per role. A globalSetup file logs in as both and saves two state files:</p>
-  <pre><code>// fixtures/auth.ts -- saves sessions for both roles
-import { chromium, FullConfig } from '@playwright/test';
+  <p>Role bugs are some of the most expensive a store can ship: a customer who can reach admin data is a security incident, not a display glitch. PeakAndPack has two roles to test:</p>
+  <ul>
+    <li><strong>Customer:</strong> <code>test@peakandpack.com</code> (password <code>password123</code>), and anyone who registers.</li>
+    <li><strong>Admin:</strong> <code>admin@peakandpack.com</code> (password <code>adminpass123</code>). Signing in to the store as the admin adds an <strong>Admin</strong> link to the header, and the admin API accepts the admin's token.</li>
+  </ul>
+  <p>Testing roles means one saved session per role. A globalSetup file logs in as each and saves two state files:</p>
+  <pre><code>// fixtures/auth.ts -- logs in once per role and saves each session to a file.
+// Register it in playwright.config.ts with: globalSetup: './fixtures/auth.ts'
+import { chromium, Browser } from '@playwright/test';
 
-async function globalSetup(config: FullConfig) {
+const UI = 'https://peakandpack-ui.onrender.com';
+
+async function saveSession(browser: Browser, email: string, password: string, path: string) {
+  const page = await browser.newPage(); // a new page here also means a fresh, empty session
+  await page.goto(`${UI}/login`);
+  // The login labels aren't linked to their inputs, so the input type is the hook
+  await page.locator('input[type="email"]').fill(email);
+  await page.locator('input[type="password"]').fill(password);
+  await page.getByRole('button', { name: /log in/i }).click();
+  await page.waitForURL(`${UI}/`); // both roles land back on the product list
+  await page.context().storageState({ path }); // saves the token from localStorage
+  await page.close();
+}
+
+async function globalSetup() {
   const browser = await chromium.launch();
-
-  // Save customer session
-  const customerPage = await browser.newPage();
-  await customerPage.goto('https://peakandpack-ui.onrender.com/login');
-  await customerPage.locator('input[type="email"]').fill('customer@peakandpack.com');
-  await customerPage.locator('input[type="password"]').fill('password123');
-  await customerPage.getByRole('button', { name: /log in/i }).click();
-  await customerPage.waitForURL('/');
-  await customerPage.context().storageState({ path: 'fixtures/customer.json' });
-
-  // Save admin session
-  const adminPage = await browser.newPage();
-  await adminPage.goto('https://peakandpack-ui.onrender.com/login');
-  await adminPage.locator('input[type="email"]').fill('admin@peakandpack.com');
-  await adminPage.locator('input[type="password"]').fill('adminpass');
-  await adminPage.getByRole('button', { name: /log in/i }).click();
-  await adminPage.waitForURL('/admin');
-  await adminPage.context().storageState({ path: 'fixtures/admin.json' });
-
+  await saveSession(browser, 'test@peakandpack.com', 'password123', 'fixtures/customer.json');
+  await saveSession(browser, 'admin@peakandpack.com', 'adminpass123', 'fixtures/admin.json');
   await browser.close();
 }
 
@@ -264,69 +268,120 @@ export default globalSetup;
 </code></pre>
 
   <h2 id="role-based-access">4. Role-based access tests</h2>
-  <p>With two session files, you can write tests that verify each role sees only what it should:</p>
-  <pre><code>import { test, expect } from '@playwright/test';
+  <p>A role test has two layers, and only one of them is security. Hiding the Admin link from customers is a convenience. The server refusing a customer's token is the actual control. Test both, and don't mistake the first for the second:</p>
+  <pre><code>// tests/rbac.spec.ts
+import { test, expect, APIRequestContext } from '@playwright/test';
 
-// Customer cannot access the admin panel
-test('customer is redirected away from admin', async ({ browser }) => {
-  const context = await browser.newContext({
-    storageState: 'fixtures/customer.json'
+// UI layer: each describe block loads one role's saved session
+test.describe('as a customer', () => {
+  test.use({ storageState: 'fixtures/customer.json' });
+
+  test('does not see the Admin link', async ({ page }) => {
+    await page.goto('/');
+    // Prove the session loaded first: "no Admin link" would also pass on a logged-out page
+    await expect(page.getByText('Hi, Test User')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Admin' })).toHaveCount(0);
   });
-  const page = await context.newPage();
-  await page.goto('https://peakandpack-ui.onrender.com/admin');
-  // Should redirect to home or show 403
-  await expect(page).not.toHaveURL('/admin');
 });
 
-// Admin can access the admin panel
-test('admin can access admin panel', async ({ browser }) => {
-  const context = await browser.newContext({
-    storageState: 'fixtures/admin.json'
+test.describe('as an admin', () => {
+  test.use({ storageState: 'fixtures/admin.json' });
+
+  test('sees the Admin link', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByText('Hi, Admin')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Admin' })).toBeVisible();
   });
-  const page = await context.newPage();
-  await page.goto('https://peakandpack-ui.onrender.com/admin');
-  await expect(page.getByRole('heading', { name: /admin/i })).toBeVisible();
+});
+
+// API layer: the check that actually protects admin data
+const API = 'https://peakandpackshopdemo.onrender.com';
+
+// Log in through the API and return the token
+async function tokenFor(request: APIRequestContext, email: string, password: string) {
+  const res = await request.post(`${API}/api/auth/login`, { data: { email, password } });
+  return (await res.json()).token as string;
+}
+
+test('admin API refuses a customer token (403)', async ({ request }) => {
+  const token = await tokenFor(request, 'test@peakandpack.com', 'password123');
+  const res = await request.get(`${API}/api/admin/products`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  expect(res.status()).toBe(403); // logged in, but not allowed
+});
+
+test('admin API refuses a request with no token (401)', async ({ request }) => {
+  const res = await request.get(`${API}/api/admin/products`);
+  expect(res.status()).toBe(401); // not logged in at all
+});
+
+test('admin API accepts an admin token', async ({ request }) => {
+  const token = await tokenFor(request, 'admin@peakandpack.com', 'adminpass123');
+  const res = await request.get(`${API}/api/admin/products`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  expect(res.status()).toBe(200);
 });
 </code></pre>
+  <p><strong>Why 401 and 403 are separate tests.</strong> 401 means "who are you?" and 403 means "I know who you are, and no." A server that answers either one with 200 is broken in a different way, so each gets its own assertion.</p>
+  <div class="callout blue">
+    <p><strong>Where the Admin link goes.</strong> The link points to <code>/admin/</code> on the store's own address. The admin panel that Phase 8 tests is on the API server, at <code>https://peakandpackshopdemo.onrender.com/admin/</code>. Following the store's link as the admin and trying to sign in is a worthwhile exploratory check of its own: note what happens.</p>
+  </div>
 
   <h2 id="session-expiry">5. Session expiry: handling mid-test logouts</h2>
-  <p>If a session expires while a long test is running, the next request will get a 401 and the test will fail in a confusing way. Handle it explicitly:</p>
-  <pre><code>// Watch for auth redirects and report them clearly
+  <p>PeakAndPack's tokens last 24 hours. If one expires while a long test is running, the next request is refused and the test fails somewhere confusing, often on an assertion that has nothing to do with login. Handle it explicitly:</p>
+  <pre><code>// Fail with a clear message the moment a request is refused.
+// PeakAndPack answers an expired token with 403 on most routes, and 401 on admin routes.
 page.on('response', response => {
-  if (response.status() === 401) {
-    throw new Error(`Session expired during test: ${response.url()}`);
+  if ([401, 403].includes(response.status())) {
+    throw new Error(`Session rejected during test: ${response.status()} ${response.url()}`);
   }
 });
 </code></pre>
+  <p>Leave this listener out of tests that expect a refusal, like the 401 and 403 checks above, or it will fail them for doing their job.</p>
 
-  <h2 id="concurrent-sessions">6. Concurrent sessions: two users at the same time</h2>
-  <p>Some bugs only surface when two users interact with the same data simultaneously. Test this by creating two browser contexts in one test:</p>
-  <pre><code>test('two users cannot checkout the last item simultaneously', async ({ browser }) => {
-  // User A and User B each get their own browser context and session
-  const contextA = await browser.newContext({ storageState: 'fixtures/customer.json' });
-  const contextB = await browser.newContext({ storageState: 'fixtures/customer2.json' });
-  const pageA = await contextA.newPage();
-  const pageB = await contextB.newPage();
+  <h2 id="concurrent-sessions">6. Two users at once: can one see the other's data?</h2>
+  <p>Some bugs only show up with two people: one user's data appearing for another. Each browser context, and each API request context, is a separate session, so one test can act as two users:</p>
+  <pre><code>// tests/multi-user.spec.ts
+import { test, expect } from '@playwright/test';
 
-  // Both navigate to the same low-stock product
-  await Promise.all([pageA.goto('/product/1'), pageB.goto('/product/1')]);
+const API = 'https://peakandpackshopdemo.onrender.com';
 
-  // Both try to add to cart at the same time
-  await Promise.all([
-    pageA.getByRole('button', { name: /add to cart/i }).click(),
-    pageB.getByRole('button', { name: /add to cart/i }).click(),
-  ]);
+test("a customer's order list shows only their own orders", async ({ playwright }) => {
+  // A request context is a separate session, like a browser context without the browser
+  const api = await playwright.request.newContext({ baseURL: API });
 
-  // Only one should succeed if stock is 1
-  // Check: at least one gets an out-of-stock error
-  const pageAError = await pageA.getByRole('alert').isVisible();
-  const pageBError = await pageB.getByRole('alert').isVisible();
-  expect(pageAError || pageBError).toBe(true);
+  // Two brand-new customers, so no other test's orders get in the way
+  const stamp = Date.now();
+  async function register(name: string) {
+    const res = await api.post('/api/auth/register', {
+      data: { name, email: `${name}-${stamp}@example.com`, password: 'test-pass-1' },
+    });
+    return (await res.json()).token as string;
+  }
+  const alice = await register('alice');
+  const bob = await register('bob');
+  const as = (token: string) => ({ Authorization: `Bearer ${token}` });
+
+  // Alice buys something
+  await api.post('/api/cart', { headers: as(alice), data: { product_id: 1, quantity: 1 } });
+  const checkout = await api.post('/api/orders/checkout', { headers: as(alice), data: {} });
+  const { order_id } = await checkout.json();
+
+  // Bob, who has ordered nothing, asks for his orders
+  const { orders } = await (await api.get('/api/orders', { headers: as(bob) })).json();
+
+  // Bob must never see Alice's order
+  expect(orders.map((o: { id: number }) => o.id)).not.toContain(order_id);
+  await api.dispose();
 });
 </code></pre>
+  <p><strong>This test fails on PeakAndPack today, and that's the point.</strong> <code>/api/orders</code> returns every customer's orders, not just the caller's: BUG-010 in the AI-Augmented QA series. Leave it failing, or mark it with <code>test.fail()</code> and a link to the bug report, so the problem stays visible. Changing the assertion until it passes would hide a real privacy bug. Phase 13 comes back to exactly that temptation.</p>
+  <p><strong>Why the API, not two browsers.</strong> Two browser contexts, each loading its own storageState, would work too. The bug is in the API response, though, so testing there is faster and points straight at the cause.</p>
 
   <div class="callout amber">
-    <p><strong>storageState expires when the session does.</strong> If your app uses short-lived tokens (common in production), regenerate <code>auth.json</code> at the start of each CI run via globalSetup. Do not commit a stale <code>auth.json</code> to the repo and wonder why tests fail on Monday.</p>
+    <p><strong>storageState expires when the session does.</strong> PeakAndPack's tokens last 24 hours, and production apps often use much shorter ones. Regenerate <code>auth.json</code> at the start of each CI run via globalSetup. Do not commit a stale <code>auth.json</code> to the repo and wonder why tests fail on Monday.</p>
   </div>
 
   <div class="callout red">
@@ -334,16 +389,16 @@ page.on('response', response => {
     <ul style="margin:.5rem 0 0 1.2rem;">
       <li><strong>Using storageState from one role for another role's tests.</strong> Loading the admin session in a customer test gives your test admin privileges it should not have. Keep one JSON file per role.</li>
       <li><strong>Committing auth.json with real credentials stored in it.</strong> storageState files contain session tokens. Add them to <code>.gitignore</code> and generate them fresh in CI.</li>
-      <li><strong>Not handling session expiry.</strong> A test that starts at 11:59pm with a midnight session expiry will fail at midnight. Add a response listener for 401s to get a clear error message.</li>
+      <li><strong>Not handling session expiry.</strong> A test that starts at 11:59pm with a midnight session expiry will fail at midnight. Add a response listener for 401 and 403 responses to get a clear error message.</li>
       <li><strong>Sharing a browser context across parallel workers.</strong> Each Playwright worker gets its own browser context automatically. Do not try to share contexts between tests running in parallel.</li>
     </ul>
   </div>
 
   <h2 id="deliverables">7. Deliverables</h2>
   <ul>
-    <li><code>fixtures/auth.ts</code>: globalSetup that saves a customer session, with the admin half written and ready for an app that has that role</li>
-    <li><code>tests/rbac.spec.ts</code>: the role-based access pattern, written out. PeakAndPack has no admin role, so this is a template for your own app rather than a suite you can run here.</li>
-    <li><code>tests/multi-user.spec.ts</code>: concurrent session test</li>
+    <li><code>fixtures/auth.ts</code>: globalSetup that saves a customer session and an admin session</li>
+    <li><code>tests/rbac.spec.ts</code>: the Admin link checks for both roles, plus the admin API's 401, 403 and 200 checks</li>
+    <li><code>tests/multi-user.spec.ts</code>: the two-customer order test, which fails today on BUG-010</li>
   </ul>
 
   <hr style="border:none;border-top:1px solid var(--border);margin:0">
@@ -351,7 +406,7 @@ page.on('response', response => {
   <div class="assignment">
     <div class="a-label">Assignment</div>
     <h3>Save and reuse a real session</h3>
-    <p>Write a globalSetup that logs in as a PeakAndPack customer and saves the session to <code>fixtures/customer.json</code>. Then write two tests using that saved session with zero UI login steps: one that verifies the logged-in customer can view their cart, and one that verifies an unauthenticated context (no storageState at all) gets turned away when it hits an endpoint that requires auth, such as <code>/api/orders</code>. That auth-vs-no-auth gap is real on PeakAndPack, per the API reference: use it in place of the illustrative customer/admin split above.</p>
+    <p>Write a globalSetup that logs in as a PeakAndPack customer and saves the session to <code>fixtures/customer.json</code>. Then write two tests using that saved session with zero UI login steps: one that verifies the logged-in customer can view their cart, and one that verifies an unauthenticated context (no storageState at all) gets turned away when it hits an endpoint that requires auth, such as <code>/api/orders</code>. It's the same kind of 401 check as the admin API test in section 4, on a route every customer uses.</p>
 
   <details class="solution">
     <summary>Show solution: try it yourself first</summary>
@@ -400,7 +455,7 @@ test('unauthenticated request to /api/orders is rejected', async ({ browser }) =
 
   <div class="bonus">
     <div class="b-label">Bonus challenge</div>
-    <p><strong>Write a concurrent checkout test.</strong> Using two browser contexts, have two users add the last in-stock item to their carts at exactly the same time using <code>Promise.all</code>. Assert that at least one of them gets an out-of-stock error. This tests the race condition in PeakAndPack's stock check (BUG-008 from the AI-Augmented QA series). Does the concurrent test surface the bug?</p>
+    <p><strong>Find out whether stock is checked at all.</strong> Using two request contexts and <code>Promise.all</code>, have two new customers each put 10 of the 4-Season Tent (product 2, 15 in stock) in their carts and check out at the same moment. Only one order should succeed. Then try a single customer ordering 20. If both versions succeed, the bug isn't a race condition: checkout never checks stock at all (BUG-008 in the AI-Augmented QA series). Telling those two apart decides who fixes it, and how.</p>
   </div>
 
   <div class="series-nav">

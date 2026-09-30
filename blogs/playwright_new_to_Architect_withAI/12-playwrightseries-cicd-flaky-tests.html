@@ -338,6 +338,130 @@ retries: process.env.CI ? 1 : 0, // one retry in CI to catch genuine intermitten
     <p><strong>The flaky rate is a quality metric.</strong> Report it alongside test pass rate in your sprint review. "95 tests passing, 3 flaky (1.5%)" is honest. "98 tests passing" when 3 of them only pass on retry is not. The flaky register makes invisible quality debt visible.</p>
   </div>
 
+  <h2 id="auto-quarantine">6. Auto-quarantine: take repeat offenders out of the gate</h2>
+  <p>A register only helps if someone acts on it. In the meantime, a test that fails one run in three blocks merges for no reason, and people learn to rerun until it's green, which trains them to shrug at real failures too. Auto-quarantine deals with the repeat offenders automatically. After a test has been flaky a set number of times, it:</p>
+  <ul>
+    <li>comes out of the required check, so it can't block a merge;</li>
+    <li>keeps running in a separate job, so its results are still collected;</li>
+    <li>gets an issue, so a person owns the fix.</li>
+  </ul>
+  <p><strong>Part 1: a quarantine list the config reads.</strong> Two projects split the suite: <code>gate</code> runs everything except quarantined tests, <code>quarantine</code> runs only those.</p>
+  <pre><code>// playwright.config.ts
+import { defineConfig } from '@playwright/test';
+import fs from 'fs';
+
+// Titles of tests currently in quarantine, kept up to date by scripts/quarantine-flaky.ts
+const quarantined: string[] = JSON.parse(fs.readFileSync('quarantine.json', 'utf8'));
+// Turn the titles into one regex, escaping characters that have a meaning in regex
+const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&amp;');
+// /$^/ matches nothing, so an empty quarantine list excludes nothing
+const quarantine = quarantined.length ? new RegExp(quarantined.map(escape).join('|')) : /$^/;
+
+export default defineConfig({
+  testDir: './tests',
+  retries: process.env.CI ? 1 : 0, // a pass on retry is what marks a test as flaky
+  // The JSON report is what the quarantine script reads
+  reporter: [['html'], ['json', { outputFile: 'results.json' }]],
+  projects: [
+    // The required check: every test except the quarantined ones
+    { name: 'gate', grepInvert: quarantine },
+    // Quarantined tests still run, in a job that can't block a merge
+    { name: 'quarantine', grep: quarantine },
+  ],
+});
+</code></pre>
+  <p><strong>Part 2: a script that counts flaky runs.</strong> After each nightly run, it reads the JSON report, adds one to each flaky test's count, and quarantines a test on its third flaky run. Install <code>tsx</code> to run it (<code>npm install -D tsx</code>).</p>
+  <pre><code>// scripts/quarantine-flaky.ts
+// Reads the JSON report from the last run, counts which tests were flaky,
+// and moves any test that has now been flaky THRESHOLD times into quarantine.json.
+import fs from 'fs';
+
+const THRESHOLD = 3; // flaky runs before a test is quarantined
+
+type Spec = { title: string; tests: { status: string }[] };
+type Suite = { specs: Spec[]; suites?: Suite[] };
+
+// 'flaky' is Playwright's status for a test that failed, then passed on retry
+function flakyTitles(suite: Suite): string[] {
+  const here = suite.specs
+    .filter(spec => spec.tests.some(t => t.status === 'flaky'))
+    .map(spec => spec.title);
+  // Suites nest (file > describe > describe), so walk the children too
+  return here.concat(...(suite.suites ?? []).map(flakyTitles));
+}
+
+const report = JSON.parse(fs.readFileSync('results.json', 'utf8'));
+const flaky: string[] = report.suites.flatMap(flakyTitles);
+
+// Keep a running count per test, across CI runs
+const historyFile = 'flaky-history.json';
+const history: Record&lt;string, number> = fs.existsSync(historyFile)
+  ? JSON.parse(fs.readFileSync(historyFile, 'utf8'))
+  : {};
+for (const title of flaky) history[title] = (history[title] ?? 0) + 1;
+fs.writeFileSync(historyFile, JSON.stringify(history, null, 2));
+
+// Past the threshold goes into quarantine, except @critical tests:
+// a flaky critical test keeps blocking, because someone needs to look at it now
+const quarantine: string[] = JSON.parse(fs.readFileSync('quarantine.json', 'utf8'));
+const newlyQuarantined = Object.entries(history)
+  .filter(([title, count]) => count >= THRESHOLD &amp;&amp; !title.includes('@critical'))
+  .map(([title]) => title)
+  .filter(title => !quarantine.includes(title));
+fs.writeFileSync('quarantine.json', JSON.stringify([...quarantine, ...newlyQuarantined], null, 2));
+
+// Print the new ones so the workflow can open an issue for each
+console.log(JSON.stringify(newlyQuarantined));
+</code></pre>
+  <p><strong>Part 3: a nightly job that runs it, saves the lists and opens the issues.</strong></p>
+  <pre><code># In .github/workflows/playwright.yml, alongside the test jobs
+  quarantine-check:
+    if: github.event_name == 'schedule'  # nightly only
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # to commit the updated lists
+      issues: write    # to open an issue per quarantined test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test --project=gate
+        continue-on-error: true  # still read the report when tests fail
+
+      - name: Quarantine tests that keep flaking
+        id: quarantine
+        run: echo "new=$(npx tsx scripts/quarantine-flaky.ts)" >> "$GITHUB_OUTPUT"
+
+      - name: Commit the updated lists
+        run: |
+          git config user.name "flaky-bot"
+          git config user.email "flaky-bot@users.noreply.github.com"
+          git add quarantine.json flaky-history.json
+          git commit -m "Update flaky test quarantine" || echo "Nothing changed"
+          git push
+
+      - name: Open an issue for each newly quarantined test
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NEW: ${{ steps.quarantine.outputs.new }}
+        run: |
+          echo "$NEW" | jq -r '.[]' | while read -r title; do
+            gh issue create --title "Quarantined flaky test: $title" \
+              --body "Flaky in 3 nightly runs, so it no longer blocks merges. Find the root cause, fix it, and remove it from quarantine.json."
+          done
+</code></pre>
+  <p>In the pull request workflow, run <code>npx playwright test --project=gate</code> as the required check, and <code>--project=quarantine</code> in a separate job with <code>continue-on-error: true</code>. Mark only the gate job as required in your branch protection rules. The nightly job pushes to your main branch, so branch protection has to allow the Actions bot to push, or you can have it open a pull request instead.</p>
+  <div class="callout blue">
+    <p><strong>This runs unattended, and that's deliberate.</strong> Quarantine doesn't change what any test checks: the test keeps running, an issue names it, and undoing it means deleting one line. Two guardrails keep it honest:</p>
+    <ul>
+      <li><strong><code>@critical</code> tests are never quarantined.</strong> A flaky checkout test keeps blocking, because someone needs to look at it now.</li>
+      <li><strong>Every quarantined test gets an issue</strong>, so nothing leaves the gate silently.</li>
+    </ul>
+    <p style="margin-top:.6rem">Fixing the test is a different matter. An AI that diagnoses a flaky test and proposes a code change needs a person to approve it before it merges. <a href="13-playwrightseries-ai-assisted.html">Phase 13</a> covers the human-reviewed version. The Agentic SDLC series (coming later) covers an agent that detects, diagnoses and proposes the fix on its own, still with a person approving the merge.</p>
+  </div>
+
   <div class="callout red">
     <p><strong>Common mistakes in Phase 12.</strong></p>
     <ul style="margin:.5rem 0 0 1.2rem;">
@@ -348,7 +472,7 @@ retries: process.env.CI ? 1 : 0, // one retry in CI to catch genuine intermitten
     </ul>
   </div>
 
-  <h2 id="accessibility-in-pipeline">6. Accessibility in the pipeline: automated, plus a manual pass</h2>
+  <h2 id="accessibility-in-pipeline">7. Accessibility in the pipeline: automated, plus a manual pass</h2>
   <p>The same pipeline that runs your functional suite can run an accessibility scan on every PR. Add <code>@axe-core/playwright</code> and assert against it like any other test:</p>
   <pre><code>// tests/accessibility.spec.ts
 import { test, expect } from '@playwright/test';
@@ -380,11 +504,12 @@ test('product listing has no critical a11y violations @a11y @critical', async ({
     <p><strong>Going deeper than PeakAndPack's CI check needs.</strong> This phase only covers enough accessibility testing to make the CI badge honest. For the full methodology (keyboard technique, screen reader setup, WCAG reference, tool comparisons), see the site's dedicated <a href="../accessibility/00-Shift-Left-Accessibility-Series-Introduction.html">Shift-Left Accessibility series</a>, in particular <a href="../accessibility/10-Keyboard-Testing.html">Blog 10 on keyboard testing</a>, <a href="../accessibility/20-NVDA-on-Windows.html">Blog 20 on NVDA</a>, and <a href="../accessibility/32-Axe-Core-Cypress-Playwright.html">Blog 32 on axe-core in Playwright</a> specifically.</p>
   </div>
 
-  <h2 id="deliverables">7. Deliverables</h2>
+  <h2 id="deliverables">8. Deliverables</h2>
   <ul>
     <li><code>.github/workflows/playwright.yml</code>: full sharded CI pipeline with tagging</li>
     <li><code>reporters/custom-reporter.ts</code>: actionable failure output</li>
     <li><code>flaky-register.md</code>: tracked flaky tests with root cause and status</li>
+    <li><code>scripts/quarantine-flaky.ts</code> and <code>quarantine.json</code>: the auto-quarantine script and the list it maintains, plus the nightly <code>quarantine-check</code> job</li>
     <li><code>ci-guide.md</code>: when each tag runs, how sharding works, how to read the merged report</li>
     <li><code>tests/accessibility.spec.ts</code>: axe-core scan tagged <code>@a11y @critical</code>, running on every PR</li>
     <li><code>manual-a11y-pass.md</code>: keyboard-only walkthrough and screen reader notes on the checkout form, dated so it's clear when it was last done</li>

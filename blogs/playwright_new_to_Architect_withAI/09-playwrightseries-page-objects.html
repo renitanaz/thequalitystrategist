@@ -184,7 +184,7 @@ footer a:hover{color:var(--purple)}
 test('checkout with discount', async ({ page }) => {
   await page.goto('https://peakandpack-ui.onrender.com/cart');
   await page.getByRole('button', { name: /proceed to checkout/i }).click(); // in 20 files
-  await page.getByLabel(/discount code/i).fill('SAVE10');
+  await page.getByPlaceholder('e.g. SAVE10').fill('SAVE10'); // the label isn't linked to the input
   await page.getByRole('button', { name: /confirm order/i }).click();
   await expect(page.getByRole('heading', { name: /order placed/i })).toBeVisible();
 });
@@ -201,6 +201,8 @@ test('checkout without discount', async ({ page }) => {
       <div class="ba-label">After: locators in page objects, tests read like journeys</div>
 <pre><code>// The "proceed to checkout" locator lives in CartPage only.
 // PeakAndPack renames it: one file to update, all tests pass again.
+// (Both versions assume a logged-in customer with an item in the cart:
+// Phase 5's API setup, which Phase 10 turns into a fixture.)
 
 test('checkout with discount', async ({ page }) => {
   const cart = new CartPage(page);
@@ -240,6 +242,9 @@ export class CartPage {
 
   // Each cart row has one Remove button, so counting them counts the items
   async getItemCount(): Promise&lt;number&gt; {
+    // count() doesn't wait, so wait for the loaded cart first: the heading
+    // only appears once the cart has finished loading
+    await this.page.getByRole('heading', { name: 'Your Cart' }).waitFor();
     return await this.page.getByRole('button', { name: 'Remove' }).count();
   }
 
@@ -268,7 +273,8 @@ export class CheckoutPage {
 
   // Step 1 (optional): enter a discount code
   async applyDiscount(code: string) {
-    await this.page.getByLabel(/discount code/i).fill(code);
+    // The "Discount code" label isn't linked to its input, so the placeholder is the hook
+    await this.page.getByPlaceholder('e.g. SAVE10').fill(code);
   }
 
   // Step 2: fill the payment form, which lives inside an iframe

@@ -273,10 +273,42 @@ and the total-recalculation check.</code></pre>
     </ul>
   </div>
 
-  <h2 id="deliverables">5. Deliverables</h2>
+  <h2 id="ai-assisted-fix">5. AI-assisted fixing: a person approves every change</h2>
+  <p>Some failures take a while to diagnose. AI can speed up the reading: give it the error and the trace, and it will suggest what went wrong and how to fix it. What it can't do is decide what the failure means. A failing test means one of three things:</p>
+  <ul>
+    <li><strong>A real regression:</strong> the app broke, and the test is right to fail.</li>
+    <li><strong>An intended change nobody updated the test for:</strong> the app changed on purpose, and the test needs to follow.</li>
+    <li><strong>A bad test:</strong> a weak locator, a missing wait, a wrong assumption.</li>
+  </ul>
+  <p>Only the first is a bug, and only someone who knows what the product should do can tell the three apart. An AI asked to make a test pass will find a way, and for a real regression, that way is changing the test to accept the bug. Once the test is green, nobody looks at it again.</p>
+  <p>So this is code-level auto-fix with a person approving every change, permanently. It's not a stage to grow out of, for the same reason code review didn't disappear when CI got good. The workflow:</p>
+  <ol>
+    <li><strong>Collect the evidence.</strong> Rerun the failing test with a trace (<code>npx playwright test tests/multi-user.spec.ts --trace on</code>), open it with <code>npx playwright show-trace</code>, and copy the error, the failing step and any relevant network response.</li>
+    <li><strong>Ask for a diagnosis before a fix</strong>, with the three possibilities in the prompt:
+      <pre><code>This Playwright test is failing. Before suggesting any change, tell me which
+of these it is, and what in the evidence points there:
+1. The app has a bug, and the test is right to fail
+2. The app changed on purpose, and the test is out of date
+3. The test itself is wrong
+Don't change what an assertion expects unless you've answered 2 and I confirm it.
+
+Test:
+[paste the test]
+
+Error and trace notes:
+[paste the error, the failing step and any relevant network response]
+</code></pre></li>
+    <li><strong>Check the verdict against what you know about the product</strong>, then review any code change against the three rules from section 2.</li>
+    <li><strong>Apply it and rerun</strong> the test with <code>--repeat-each=10</code> before it merges.</li>
+  </ol>
+  <p><strong>Try it on Phase 6's failing test.</strong> The two-customer test fails because Bob's order list includes Alice's order. A bare "make this test pass" invites exactly the wrong fix: flip the assertion, or filter other customers' orders out of the list before checking it. Both turn the test green and hide a privacy bug. The right answer is option 1: the test is correct, BUG-010 is real, and the fix belongs in the API.</p>
+  <p>The same rule covers tools that apply fixes for you, such as Playwright's healer agent: read the diff and the reasoning before anything merges. An agent that files bugs and proposes fixes on its own, still with a person approving the merge, is covered in the Agentic SDLC series, coming later.</p>
+
+  <h2 id="deliverables">6. Deliverables</h2>
   <ul>
     <li><code>ai-review-checklist.md</code>: the three-rule review prompt, saved as a reusable file</li>
     <li><code>tests/cart-removal.spec.ts</code>: one AI-generated test, reviewed and corrected against the checklist</li>
+    <li><code>ai-fix-log.md</code>: one failing test diagnosed with AI help: the evidence, the AI's verdict, your decision, and why</li>
   </ul>
 
   <hr style="border:none;border-top:1px solid var(--border);margin:0">
@@ -300,19 +332,25 @@ test('removing an item takes it out of the cart', async ({ page }) => {
   await page.locator('input[type="password"]').fill('password123');
   await page.getByRole('button', { name: /log in/i }).click();
 
-  // Put one item in the cart, then remove it
+  // Put one item in the cart. The "Added to cart" alert only appears once the
+  // server has saved it, so wait for it before leaving the page
+  const added = page.waitForEvent('dialog');
   await page.getByRole('button', { name: /add to cart/i }).first().click();
+  await (await added).accept();
+
+  // Then remove it
   await page.goto('/cart');
   await page.getByRole('button', { name: /remove/i }).click();
 
-  // Still on the cart page, and the removed item is gone.
-  // No cart-total check: the AI's draft used a data-testid PeakAndPack doesn't have.
-  await expect(page.getByText('Your Cart')).toBeVisible();
+  // Still on the cart page, and the removed item is gone. Not "cart is empty":
+  // everyone shares this demo account, so other items may be in its cart.
+  // No cart-total check: the AI's draft used a test ID PeakAndPack doesn't have.
+  await expect(page.getByRole('heading', { name: 'Your Cart' })).toBeVisible();
   await expect(page.getByText('Trekking Poles (Pair)')).not.toBeVisible();
 });
 </code></pre>
-      <p><strong>What the first draft got wrong.</strong> The initial AI output asserted <code>page.getByTestId('cart-total')).toHaveText('$0.00')</code>. PeakAndPack has no <code>data-testid</code> attributes anywhere, confirmed back in Phase 2, so the model invented a hook that doesn't exist. The reviewed version drops that assertion and checks something real: the removed item's name is no longer visible.</p>
-      <p><strong>Why this still needs a human.</strong> Knowing PeakAndPack has no test IDs isn't something the model could know from the requirements text alone, it's something you know from having actually looked at the app. That gap, between what's written down and what's true of the running system, is exactly what the review pass exists to close.</p>
+      <p><strong>What the first draft got wrong.</strong> The initial AI output asserted <code>page.getByTestId('cart-total')).toHaveText('$0.00')</code>. PeakAndPack has exactly one test ID, <code>product-card</code> (Phase 2), and nothing on the cart total, so the model invented a hook that doesn't exist. The reviewed version drops that assertion and checks something real: the removed item's name is no longer visible.</p>
+      <p><strong>Why this still needs a human.</strong> Knowing which test IDs PeakAndPack actually has isn't something the model could know from the requirements text alone, it's something you know from having actually looked at the app. That gap, between what's written down and what's true of the running system, is exactly what the review pass exists to close.</p>
     </div>
   </details>
   </div>
