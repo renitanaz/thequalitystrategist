@@ -190,8 +190,8 @@ footer a:hover{color:var(--purple)}
   <div class="project-card">
     <div class="project-title"><span class="project-num">3</span>CI pipeline with flaky-test quarantine</div>
     <div class="project-meta">Draws on: Phase 12, Phase 4</div>
-    <p>Set up GitHub Actions to run the full suite on every PR, sharded for speed. Add the quarantine mechanism from Phase 12: a test that keeps failing intermittently moves onto the quarantine list, and so into a separate, non-blocking job, instead of being deleted or ignored.</p>
-    <p><strong>Done looks like:</strong> a PR can't merge on a genuine failure, but a known-flaky test doesn't block merges either, and there's a visible list of what's in quarantine and why.</p>
+    <p>Set up GitHub Actions to run the full suite on every PR, sharded for speed. Then make Phase 12's quarantine list automatic: a nightly job that counts how often each test was flaky, moves a test onto the list on its third time, never quarantines a <code>@critical</code> test, and opens an issue for each one it moves.</p>
+    <p><strong>Done looks like:</strong> a PR can't merge on a genuine failure, but a known-flaky test doesn't block merges either, and every quarantined test has an open issue saying why.</p>
   </div>
 
   <div class="project-card">
@@ -221,7 +221,90 @@ footer a:hover{color:var(--purple)}
       <h3>What tends to go wrong in each</h3>
       <p><strong>Project 1:</strong> the most common mistake is a page object that just wraps locators one-to-one with no real actions (<code>getEmailField()</code> instead of <code>login(email, password)</code>). A good page object hides the steps, not just the selectors.</p>
       <p><strong>Project 2:</strong> baselining a bug feels wrong the first time you do it. It isn't, the baseline records current reality, and updating it when BUG-011 gets fixed is a one-line change, not a redesign.</p>
-      <p><strong>Project 3:</strong> quarantine only works if something forces a review of what's in it. A quarantine list that only grows is worse than no quarantine, it hides real regressions behind old, ignored ones.</p>
+      <p><strong>Project 3:</strong> quarantine only works if something forces a review of what's in it. A quarantine list that only grows is worse than no quarantine: it hides real regressions behind old, ignored ones. That's why each quarantined test gets an issue. One way to build it, in two pieces:</p>
+      <p>A script that reads the JSON report after each nightly run (add <code>['json', { outputFile: 'results.json' }]</code> to the config's reporters, and install <code>tsx</code> with <code>npm install -D tsx</code> to run it):</p>
+      <pre><code>// scripts/quarantine-flaky.ts
+// Reads the JSON report from the last run, counts which tests were flaky,
+// and moves any test that has now been flaky THRESHOLD times into quarantine.json.
+import fs from 'fs';
+
+const THRESHOLD = 3; // flaky runs before a test is quarantined
+
+type Spec = { title: string; tests: { status: string }[] };
+type Suite = { specs: Spec[]; suites?: Suite[] };
+
+// 'flaky' is Playwright's status for a test that failed, then passed on retry
+function flakyTitles(suite: Suite): string[] {
+  const here = suite.specs
+    .filter(spec => spec.tests.some(t => t.status === 'flaky'))
+    .map(spec => spec.title);
+  // Suites nest (file > describe > describe), so walk the children too
+  return here.concat(...(suite.suites ?? []).map(flakyTitles));
+}
+
+const report = JSON.parse(fs.readFileSync('results.json', 'utf8'));
+const flaky: string[] = report.suites.flatMap(flakyTitles);
+
+// Keep a running count per test, across CI runs
+const historyFile = 'flaky-history.json';
+const history: Record&lt;string, number> = fs.existsSync(historyFile)
+  ? JSON.parse(fs.readFileSync(historyFile, 'utf8'))
+  : {};
+for (const title of flaky) history[title] = (history[title] ?? 0) + 1;
+fs.writeFileSync(historyFile, JSON.stringify(history, null, 2));
+
+// Past the threshold goes into quarantine, except @critical tests:
+// a flaky critical test keeps blocking, because someone needs to look at it now
+const quarantine: string[] = JSON.parse(fs.readFileSync('quarantine.json', 'utf8'));
+const newlyQuarantined = Object.entries(history)
+  .filter(([title, count]) => count >= THRESHOLD &amp;&amp; !title.includes('@critical'))
+  .map(([title]) => title)
+  .filter(title => !quarantine.includes(title));
+fs.writeFileSync('quarantine.json', JSON.stringify([...quarantine, ...newlyQuarantined], null, 2));
+
+// Print the new ones so the workflow can open an issue for each
+console.log(JSON.stringify(newlyQuarantined));
+</code></pre>
+      <p>And a nightly job that runs it, saves the lists and opens the issues:</p>
+      <pre><code># In .github/workflows/playwright.yml, alongside the test jobs
+  quarantine-check:
+    if: github.event_name == 'schedule'  # nightly only
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # to commit the updated lists
+      issues: write    # to open an issue per quarantined test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test --project=gate
+        continue-on-error: true  # still read the report when tests fail
+
+      - name: Quarantine tests that keep flaking
+        id: quarantine
+        run: echo "new=$(npx tsx scripts/quarantine-flaky.ts)" >> "$GITHUB_OUTPUT"
+
+      - name: Commit the updated lists
+        run: |
+          git config user.name "flaky-bot"
+          git config user.email "flaky-bot@users.noreply.github.com"
+          git add quarantine.json flaky-history.json
+          git commit -m "Update flaky test quarantine" || echo "Nothing changed"
+          git push
+
+      - name: Open an issue for each newly quarantined test
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NEW: ${{ steps.quarantine.outputs.new }}
+        run: |
+          echo "$NEW" | jq -r '.[]' | while read -r title; do
+            gh issue create --title "Quarantined flaky test: $title" \
+              --body "Flaky in 3 nightly runs, so it no longer blocks merges. Find the root cause, fix it, and remove it from quarantine.json."
+          done
+</code></pre>
+      <p>The job pushes to your main branch, so branch protection has to allow the Actions bot to push, or you can have it open a pull request instead.</p>
       <p><strong>Project 4:</strong> the value is in the "decided not to fix" column as much as the fixes. A reviewer that agrees with every finding without pushback hasn't actually exercised judgment.</p>
       <p><strong>Project 5:</strong> the failure mode is running the accessibility check as a separate, ignorable job. If it doesn't block the same way a broken login blocks, it will get muted the first time it's inconvenient.</p>
       <p><strong>Project 6:</strong> the report is often written for yourself, dense with context only you have. Test it by having someone unfamiliar with the project read it and try to answer "where would my first test go" from the document alone.</p>
