@@ -108,6 +108,9 @@ footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;
 footer a{color:var(--text-3);text-decoration:none}
 footer a:hover{color:var(--purple)}
 @media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
+.blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
+.blog-tags .series-tag{margin-bottom:0}
+.tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
 </style>
 <meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
 <meta property="og:image:width" content="1200">
@@ -134,7 +137,13 @@ footer a:hover{color:var(--purple)}
     <span aria-current="page">Phase 3 of 15</span>
   </nav>
 
-  <span class="series-tag">Phase 3 of 15 &middot; Assertions &amp; Waits</span>
+  <div class="blog-tags" aria-label="Blog categories" role="group">
+    <span class="series-tag">Phase 3 of 15 &middot; Assertions &amp; Waits</span>
+    <span class="tag">Assertions</span>
+    <span class="tag">Auto-Retry</span>
+    <span class="tag">Network Waits</span>
+    <span class="tag">Flaky Tests</span>
+  </div>
 
   <h1>Assertions and Waits</h1>
   <p class="subtitle">Weak assertions pass when they should fail. Fixed sleeps make tests slow and still flaky. Both are avoidable.</p>
@@ -169,6 +178,12 @@ footer a:hover{color:var(--purple)}
   <p>Assert business outcomes, not implementation details. Wait for meaning, not time. Weak assertions pass when they should fail. Fixed sleeps make tests slow and still flaky. Both are avoidable.</p>
 
   <h2 id="weak-assertions">1. Before: weak assertions and fixed sleeps</h2>
+  <p>A test is only useful if it fails when something is actually wrong. Two habits undermine that:</p>
+  <ul>
+    <li><strong>Loose assertions</strong> that still pass on a broken page, so real bugs get through.</li>
+    <li><strong>Fixed sleeps</strong> that guess how long the app will take, so the suite is slow and still flaky.</li>
+  </ul>
+  <p>Here's what both look like, and the fix:</p>
 
   <div class="ba-wrap">
     <div class="ba-block before">
@@ -238,8 +253,11 @@ const response = await page.request.post('https://peakandpackshopdemo.onrender.c
 });
 expect(response.status()).toBe(200);
 </code></pre>
-  <p><strong>Note the domain split.</strong> The UI lives at <code>peakandpack-ui.onrender.com</code>, the API it actually calls lives at a different host, <code>peakandpackshopdemo.onrender.com</code>, a separate Render service from the same project. Assuming the API shares the UI's domain is an easy mistake; open DevTools &rarr; Network and check the real request URL before writing an API test, don't guess it from the page you're looking at.</p>
-  <p><strong>Note the auth requirement.</strong> PeakAndPack's cart and order endpoints reject unauthenticated requests with a 401. The token the React app uses lives in <code>localStorage</code>, which <code>page.request</code> and the bare <code>request</code> fixture cannot read: you have to fetch a fresh one from <code>/api/auth/login</code> and attach it as a <code>Bearer</code> header yourself.</p>
+  <p>Two things about PeakAndPack's API to know before writing assertions against it:</p>
+  <ul>
+    <li><strong>The API is on a different host.</strong> The UI lives at <code>peakandpack-ui.onrender.com</code>, but the API it calls is at <code>peakandpackshopdemo.onrender.com</code>, a separate Render service from the same project. Before writing an API test, open DevTools &rarr; Network and check the real request URL rather than guessing it from the page address.</li>
+    <li><strong>Cart and order endpoints need a token.</strong> Without one they return 401. The React app keeps its token in <code>localStorage</code>, which <code>page.request</code> and the <code>request</code> fixture can't read, so fetch a fresh token from <code>/api/auth/login</code> and send it as a <code>Bearer</code> header yourself.</li>
+  </ul>
 
   <h2 id="no-ui-signal">4. When there's no UI signal at all</h2>
   <p>Some apps update a visible count optimistically, before the server confirms. PeakAndPack does neither: click "Add to cart" and nothing changes on screen, no count, no toast, no button state change. The only way to know it worked is to check the cart page or the network response. This is the strongest possible argument for <code>waitForResponse</code> over a sleep: when there is no UI to poll, guessing a timeout is not a fallback, it's the only strategy left, and it is a bad one.</p>
@@ -273,7 +291,7 @@ await expect(page.getByRole('heading', { name: /order placed/i })).toBeVisible()
 
   <h2 id="reliable-suite">6. After: reliable assertions and waits</h2>
   <div class="callout green">
-    <p><strong>The test that never needs a sleep.</strong> Every async action in PeakAndPack has a network response that signals completion. Using <code>waitForResponse</code> means your tests are as fast as the app, not slower than your worst-case sleep. They also fail faster and more clearly -- a timeout on a real response is a real problem, not a timing guess.</p>
+    <p><strong>The test that never needs a sleep.</strong> Every async action in PeakAndPack has a network response that signals completion. Using <code>waitForResponse</code> means your tests are as fast as the app, not slower than your worst-case sleep. They also fail faster and more clearly: a timeout on a real response is a real problem, not a timing guess.</p>
   </div>
 
   <div class="callout red">
@@ -288,9 +306,9 @@ await expect(page.getByRole('heading', { name: /order placed/i })).toBeVisible()
 
   <h2 id="deliverables">7. Deliverables</h2>
   <ul>
-    <li><code>tests/assertions.spec.ts</code> : strong assertions throughout, no weak checks</li>
-    <li><code>tests/waits.spec.ts</code> : waitForResponse examples replacing every sleep</li>
-    <li><code>flaky-to-reliable.md</code> : before/after comparison of a flaky test fixed with waitForResponse</li>
+    <li><code>tests/assertions.spec.ts</code>: strong assertions throughout, no weak checks</li>
+    <li><code>tests/waits.spec.ts</code>: waitForResponse examples replacing every sleep</li>
+    <li><code>flaky-to-reliable.md</code>: before/after comparison of a flaky test fixed with waitForResponse</li>
   </ul>
 
   <hr style="border:none;border-top:1px solid var(--border);margin:0">
@@ -301,7 +319,7 @@ await expect(page.getByRole('heading', { name: /order placed/i })).toBeVisible()
     <p>Write a test for PeakAndPack's "Add to cart" flow that uses <code>waitForTimeout(1000)</code>, then navigates to <code>/cart</code> and checks the item is listed. Run it 10 times with <code>npx playwright test --repeat-each=10</code> and note how many times it fails. Then replace the sleep with <code>waitForResponse</code> pointing at the real add-to-cart request (check DevTools &rarr; Network for the actual URL first). Run it 10 times again. Document the before and after failure counts in <code>flaky-to-reliable.md</code>.</p>
 
   <details class="solution">
-    <summary>Show solution &mdash; try it yourself first</summary>
+    <summary>Show solution: try it yourself first</summary>
     <div class="solution-body">
       <h3>The fixed test</h3>
       <pre><code>// BEFORE (flaky): sleep-based wait

@@ -44,7 +44,8 @@ main{max-width:900px;margin:0 auto;padding:3rem 1.5rem 5rem}
 .breadcrumb a{color:var(--text-3);text-decoration:none}
 .breadcrumb a:hover{color:var(--purple)}
 .series-tag{font-size:.7rem;padding:4px 11px;border-radius:99px;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);letter-spacing:.04em;text-transform:uppercase;font-weight:500;display:inline-block;margin-bottom:1.25rem}
-.blog-tags{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.25rem}
+.blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
+.blog-tags .series-tag{margin-bottom:0}
 .tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
 .tag.accent{background:var(--purple-bg);color:var(--purple);border-color:var(--purple-border)}
 h1{font-family:var(--ff-serif);font-size:clamp(1.85rem,4vw,2.6rem);line-height:1.2;color:var(--purple);margin-bottom:.75rem;font-weight:400}
@@ -141,10 +142,9 @@ footer a:hover{color:var(--purple)}
     <span aria-current="page">Phase 1 of 15</span>
   </nav>
 
-  <span class="series-tag">Phase 1 of 15 &middot; Test Design Thinking</span>
-
   <div class="blog-tags" aria-label="Blog categories" role="group">
-    <span class="tag accent">Test Design</span>
+    <span class="series-tag">Phase 1 of 15 &middot; Test Design Thinking</span>
+    <span class="tag">Test Design</span>
     <span class="tag">Test Pyramid</span>
     <span class="tag">Boundary Value Analysis</span>
     <span class="tag">Decision Tables</span>
@@ -182,7 +182,22 @@ footer a:hover{color:var(--purple)}
   <h2>Goal</h2>
   <p>Decide what belongs in each test layer before you write any code. Most automation problems aren't Playwright problems, they're test design problems. A badly designed test breaks all the time, checks the wrong thing, or tells you nothing useful when it fails.</p>
 
-  <h2 id="why-test-design">1. Why do we need to think through test design?</h2>
+  <h2 id="test-pyramid">1. The test pyramid</h2>
+  <p>Most features can be tested at more than one level. A discount calculation, for example, can be checked by calling the function directly, by sending a request to the server, or by clicking through checkout in a real browser. All three can catch the same bug. What differs is how fast each one runs, and how often it fails for reasons that have nothing to do with the bug.</p>
+  <p>The test pyramid helps you choose the level. Picture three layers: a wide base of fast unit tests, a smaller middle of API (integration) tests, and a narrow top of full end-to-end browser tests. The shape is the point: most tests sit near the bottom, where they're quick and stable, and only journeys that genuinely need a browser go at the top. It's a guide for where to put your effort, not a strict rule.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Layer</th><th>Tests what</th><th>Speed</th><th>Use for</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Unit</strong></td><td>A single function or component in isolation</td><td>Milliseconds</td><td>Logic, calculations, transformations</td></tr>
+        <tr><td><strong>API / Integration</strong></td><td>The server and its responses</td><td>Seconds</td><td>Business rules, data validation, auth</td></tr>
+        <tr><td><strong>UI / E2E</strong></td><td>The full user journey through a real browser</td><td>10&ndash;60 seconds</td><td>Critical user flows, cross-layer integration</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><strong>The key idea:</strong> put each test at the lowest layer that still gives you confidence. A calculation doesn't need a browser. A user journey does.</p>
+
+  <h2 id="why-test-design">2. Why do we need to think through test design?</h2>
   <p>Every test costs three things:</p>
   <ul>
     <li>Time to write it</li>
@@ -244,20 +259,6 @@ test('checkout with discount code completes', async ({ page }) => {
     <p><strong>These two examples skip one real step:</strong> PeakAndPack's checkout has a payment form inside an iframe, and its button only turns on once that form is filled in. Examples before Phase 8 (Iframes) leave out that middle step so you can focus on what this phase is actually teaching.</p>
   </div>
 
-  <h2 id="test-pyramid">2. The test pyramid</h2>
-  <p>The test pyramid is a guide for where to put your effort, not a strict rule. It says: write lots of fast unit tests, fewer API (integration) tests, and only a small number of full end-to-end browser tests.</p>
-  <div class="table-wrap">
-    <table>
-      <thead><tr><th>Layer</th><th>Tests what</th><th>Speed</th><th>Use for</th></tr></thead>
-      <tbody>
-        <tr><td><strong>Unit</strong></td><td>A single function or component in isolation</td><td>Milliseconds</td><td>Logic, calculations, transformations</td></tr>
-        <tr><td><strong>API / Integration</strong></td><td>The server and its responses</td><td>Seconds</td><td>Business rules, data validation, auth</td></tr>
-        <tr><td><strong>UI / E2E</strong></td><td>The full user journey through a real browser</td><td>10&ndash;60 seconds</td><td>Critical user flows, cross-layer integration</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <p><strong>The key idea:</strong> put each test at the lowest layer that still gives you confidence. A calculation doesn't need a browser. A user journey does.</p>
-
   <h2 id="test-design-principles">3. Test design principles</h2>
 
   <div class="principle-card">
@@ -303,7 +304,7 @@ test('checkout with discount code completes', async ({ page }) => {
   <h2 id="worked-example">6. Worked example: writing up the reasoning</h2>
   <p>This is what a written test design record actually looks like, not a separate summary bolted on at the end, just the right frame around each table.</p>
   <p>Start by naming the layer each table is deciding for: unit tests for logic, API tests for contracts, E2E tests for critical journeys only. Then the boundary values for the one field that has them:</p>
-  <p><strong>Boundary Value Analysis &mdash; quantity field</strong></p>
+  <p><strong>Boundary Value Analysis: quantity field</strong></p>
   <div class="table-wrap">
     <table>
       <thead><tr><th>Input</th><th>Why test it</th><th>Layer</th></tr></thead>
@@ -318,7 +319,7 @@ test('checkout with discount code completes', async ({ page }) => {
     </table>
   </div>
   <p>Then the combinations that only show up once more than one condition is involved:</p>
-  <p><strong>Decision table &mdash; discount code logic</strong></p>
+  <p><strong>Decision table: discount code logic</strong></p>
   <div class="table-wrap">
     <table>
       <thead><tr><th>Code valid?</th><th>Cart has items?</th><th>Expected outcome</th><th>Test needed?</th></tr></thead>
@@ -342,7 +343,7 @@ test('checkout with discount code completes', async ({ page }) => {
     <p>Think about: what happens with an empty email? A valid email but wrong password? A valid email that does not exist? Which of these needs a browser test and which is better as an API test?</p>
 
   <details class="solution">
-    <summary>Show solution &mdash; try it yourself first</summary>
+    <summary>Show solution: try it yourself first</summary>
     <div class="solution-body">
       <h3>Decision table for PeakAndPack login</h3>
       <div class="table-wrap">

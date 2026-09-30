@@ -108,6 +108,9 @@ footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;
 footer a{color:var(--text-3);text-decoration:none}
 footer a:hover{color:var(--purple)}
 @media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
+.blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
+.blog-tags .series-tag{margin-bottom:0}
+.tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
 </style>
 <meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
 <meta property="og:image:width" content="1200">
@@ -132,7 +135,13 @@ footer a:hover{color:var(--purple)}
     <span aria-hidden="true">&rsaquo;</span>
     <span aria-current="page">Phase 11 of 15</span>
   </nav>
-  <span class="series-tag">Phase 11 of 15 &middot; Visual Regression</span>
+  <div class="blog-tags" aria-label="Blog categories" role="group">
+    <span class="series-tag">Phase 11 of 15 &middot; Visual Regression</span>
+    <span class="tag">Visual Regression</span>
+    <span class="tag">Screenshots</span>
+    <span class="tag">Baselines</span>
+    <span class="tag">Masking</span>
+  </div>
   <h1>Visual Regression and Screenshot Testing</h1>
   <p class="subtitle">Catch visual changes no functional test catches. A button that moves, a price that overflows, a card that renders blank -- screenshot comparison catches all of them.</p>
   <div class="meta-row">
@@ -164,6 +173,7 @@ footer a:hover{color:var(--purple)}
   <p>Catch visual changes that no assertion catches. A button that moves 10 pixels, a price that overflows its container on mobile, a card that renders blank: none of these trigger a functional test failure. Screenshot comparison catches all of them.</p>
 
   <h2 id="before-invisible-bugs">1. Before: visual bugs invisible to functional tests</h2>
+  <p>Functional tests check that the right things are on the page, not how the page looks. A user who can't read a clipped price, or can't reach a button pushed off-screen, is still stuck, even when every assertion passes:</p>
   <div class="ba-wrap">
     <div class="ba-block before">
       <div class="ba-label">Before: functional tests pass, visual bugs invisible</div>
@@ -242,6 +252,7 @@ test('mobile product listing matches baseline', async ({ page }) => {
   <p>Masked areas are replaced with a solid colour in the comparison. The rest of the page is still compared pixel by pixel. An app with per-user avatars or live-updating prices would mask those the same way, once the frontend team adds a stable <code>data-testid</code> to them (PeakAndPack itself has none yet, see Phase 2).</p>
 
   <h2 id="component-vs-full-page">4. Component screenshots vs full-page screenshots</h2>
+  <p>What you capture decides how often a visual test fails, and how much each failure tells you. There are three options:</p>
   <pre><code>// Full page (default): captures the entire scrollable page
 await expect(page).toHaveScreenshot('full-page.png');
 
@@ -318,7 +329,7 @@ jobs:
     <p>Capture a baseline for the PeakAndPack product listing. Then open the PeakAndPack URL in a browser, use the developer tools to temporarily hide the product card images (add <code>display:none</code> to the img elements). Run the visual test without updating the baseline. Confirm the test fails and the diff report shows the missing images. Then remove the CSS change and confirm the test passes again.</p>
 
   <details class="solution">
-    <summary>Show solution &mdash; try it yourself first</summary>
+    <summary>Show solution: try it yourself first</summary>
     <div class="solution-body">
       <h3>Visual regression test with masking</h3>
       <pre><code>import { test, expect } from '@playwright/test';

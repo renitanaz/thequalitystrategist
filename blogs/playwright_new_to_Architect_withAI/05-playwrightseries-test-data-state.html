@@ -108,6 +108,9 @@ footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;
 footer a{color:var(--text-3);text-decoration:none}
 footer a:hover{color:var(--purple)}
 @media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
+.blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
+.blog-tags .series-tag{margin-bottom:0}
+.tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
 </style>
 <meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
 <meta property="og:image:width" content="1200">
@@ -132,7 +135,13 @@ footer a:hover{color:var(--purple)}
     <span aria-hidden="true">&rsaquo;</span>
     <span aria-current="page">Phase 5 of 15</span>
   </nav>
-  <span class="series-tag">Phase 5 of 15 &middot; Test Data &amp; State</span>
+  <div class="blog-tags" aria-label="Blog categories" role="group">
+    <span class="series-tag">Phase 5 of 15 &middot; Test Data &amp; State</span>
+    <span class="tag">Test Data</span>
+    <span class="tag">Test Isolation</span>
+    <span class="tag">Saved Sessions</span>
+    <span class="tag">Parallel Runs</span>
+  </div>
   <h1>Test Data and State Control</h1>
   <p class="subtitle">Build tests that are independent, deterministic, and safe to run in parallel. A test that depends on another test is not a test.</p>
   <div class="meta-row">
@@ -164,6 +173,7 @@ footer a:hover{color:var(--purple)}
   <p>Build tests that are independent, deterministic, and safe to run in parallel. A test that depends on another test's data, or on the order tests run, is not a test: it is a script that sometimes works.</p>
 
   <h2 id="coupled-tests">1. Before: tests that depend on each other</h2>
+  <p>Tests that lean on each other's data pass when run one way and fail when run another. That makes every failure hard to trust: it might be a real bug, or it might just be the order the tests happened to run in. Here's the pattern, and the fix:</p>
   <div class="ba-wrap">
     <div class="ba-block before">
       <div class="ba-label">Before: order-dependent tests sharing state</div>
@@ -216,7 +226,13 @@ test('cart shows item added via API', async ({ page, request }) => {
   </div>
 
   <div class="callout blue">
-    <p><strong>Two logins, not one.</strong> The <code>request</code> fixture's login gets a token so the API call can prove who it's acting as. The <code>page.addInitScript</code> call is a second, separate step: it makes the browser believe it's logged in too, since PeakAndPack's UI checks <code>localStorage</code>, which an API call can never touch. Skip the second step and the API seeding still works, but the UI shows "you need to log in" instead of the cart you just built. This pattern (API login for setup, <code>addInitScript</code> to sync the browser) recurs through the rest of this series wherever a test seeds data via the API and then checks it through the UI.</p>
+    <p><strong>Two logins, not one.</strong></p>
+    <ul style="margin:.5rem 0 0 1.2rem;">
+      <li><strong>The <code>request</code> login</strong> gets a token, so the API call can prove who it's acting as.</li>
+      <li><strong>The <code>page.addInitScript</code> step</strong> makes the browser believe it's logged in too. PeakAndPack's UI checks <code>localStorage</code>, which an API call can never touch.</li>
+      <li><strong>Skip the second step</strong> and the API seeding still works, but the UI shows "you need to log in" instead of the cart you just built.</li>
+    </ul>
+    <p style="margin-top:.6rem">This pattern (API login for setup, <code>addInitScript</code> to sync the browser) recurs wherever a later phase seeds data through the API and then checks it through the UI.</p>
   </div>
 
   <h2 id="test-independence">2. Test independence: the rule</h2>
@@ -314,7 +330,7 @@ export default defineConfig({
 </code></pre>
 
   <div class="callout amber">
-    <p><strong>The parallel test is the stress test.</strong> A test suite that passes sequentially but fails in parallel almost always has hidden data coupling. Enable <code>fullyParallel: true</code> in your config and run the suite. The failures it reveals are not parallel problems -- they are independence problems that parallel execution makes visible.</p>
+    <p><strong>The parallel test is the stress test.</strong> A test suite that passes sequentially but fails in parallel almost always has hidden data coupling. Enable <code>fullyParallel: true</code> in your config and run the suite. The failures it reveals are not parallel problems: they are independence problems that parallel execution makes visible.</p>
   </div>
 
   <div class="callout red">
@@ -342,7 +358,7 @@ export default defineConfig({
     <p>Write two tests: the first adds an item to the PeakAndPack cart through the UI, the second asserts the cart has one item. Run them in order and confirm they pass. Then swap their order in the file and run again. Confirm the second test now fails. Finally, rewrite both tests to be independent using API seeding. Run them in any order and confirm both pass regardless.</p>
 
   <details class="solution">
-    <summary>Show solution &mdash; try it yourself first</summary>
+    <summary>Show solution: try it yourself first</summary>
     <div class="solution-body">
       <h3>Independent versions of both tests</h3>
       <pre><code>// Both tests set up their own state. Order does not matter.

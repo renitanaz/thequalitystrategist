@@ -108,6 +108,9 @@ footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;
 footer a{color:var(--text-3);text-decoration:none}
 footer a:hover{color:var(--purple)}
 @media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
+.blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
+.blog-tags .series-tag{margin-bottom:0}
+.tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
 </style>
 <meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
 <meta property="og:image:width" content="1200">
@@ -132,7 +135,13 @@ footer a:hover{color:var(--purple)}
     <span aria-hidden="true">&rsaquo;</span>
     <span aria-current="page">Phase 6 of 15</span>
   </nav>
-  <span class="series-tag">Phase 6 of 15 &middot; Authentication &amp; Sessions</span>
+  <div class="blog-tags" aria-label="Blog categories" role="group">
+    <span class="series-tag">Phase 6 of 15 &middot; Authentication &amp; Sessions</span>
+    <span class="tag">Authentication</span>
+    <span class="tag">Saved Sessions</span>
+    <span class="tag">Multiple Roles</span>
+    <span class="tag">Session Expiry</span>
+  </div>
   <h1>Authentication and Sessions</h1>
   <p class="subtitle">Save a session once, reuse it everywhere. Test multiple roles without logging in through the UI for every test.</p>
   <div class="meta-row">
@@ -164,6 +173,7 @@ footer a:hover{color:var(--purple)}
   <p>Handle authentication properly at scale. Test multiple roles without logging in through the UI for every test. A suite that logs in through the browser for every authenticated test is slow, brittle, and unnecessary.</p>
 
   <h2 id="before-ui-login">1. Before: logging in through the UI in every test</h2>
+  <p>Most meaningful tests need a logged-in user, but the login itself is rarely what's being tested. Repeating it through the UI in every test adds time to every run, and gives each test one more place to fail for reasons unrelated to the feature it's checking:</p>
   <div class="ba-wrap">
     <div class="ba-block before">
       <div class="ba-label">Before: UI login in every test</div>
@@ -196,7 +206,7 @@ test('cart page loads for authenticated user', async ({ page }) => {
   </div>
 
   <h2 id="storage-state-works">2. storageState: how it works</h2>
-  <p>When a user logs in, the browser stores a session cookie (or a token in localStorage). <code>storageState</code> captures that storage: cookies and localStorage: and saves it to a JSON file. Tests that load this file start with the browser already in the logged-in state, without replaying the login steps.</p>
+  <p>When a user logs in, the browser stores a session cookie (or a token in localStorage). <code>storageState</code> captures that storage (cookies and localStorage) and saves it to a JSON file. Tests that load this file start with the browser already in the logged-in state, without replaying the login steps.</p>
   <pre><code>// Save state after a real login (in globalSetup):
 await page.context().storageState({ path: 'fixtures/auth-customer.json' });
 
@@ -205,8 +215,18 @@ const context = await browser.newContext({
   storageState: 'fixtures/auth-customer.json'
 });
 </code></pre>
-  <p><strong>What it captures:</strong> cookies (including session cookies) and localStorage keys for the origin the page was on when you called it. It can also capture IndexedDB, but only when you opt in explicitly (<code>indexedDB: true</code>).</p>
-  <p><strong>What it does not capture:</strong> sessionStorage (Playwright has no API to persist it, you'd need to read and replay it yourself via <code>page.evaluate()</code>), in-memory state, or auth tokens stored only in JavaScript variables. If your app stores the token in a cookie or localStorage, storageState works perfectly. If it stores the token only in memory or sessionStorage, you need a different approach.</p>
+  <p><strong>What it captures:</strong></p>
+  <ul>
+    <li>Cookies, including session cookies.</li>
+    <li>localStorage keys for the origin the page was on when you called it.</li>
+    <li>IndexedDB, but only if you opt in (<code>indexedDB: true</code>).</li>
+  </ul>
+  <p><strong>What it does not capture:</strong></p>
+  <ul>
+    <li>sessionStorage. Playwright has no API to save it, so you'd read and replay it yourself with <code>page.evaluate()</code>.</li>
+    <li>In-memory state, such as a token held only in a JavaScript variable.</li>
+  </ul>
+  <p>If your app keeps its token in a cookie or localStorage, as PeakAndPack does, storageState works. If it keeps it only in memory or sessionStorage, you need a different approach.</p>
 
   <h2 id="multi-role">3. Multi-role testing: customer and admin</h2>
   <div class="callout red">
@@ -321,8 +341,8 @@ page.on('response', response => {
 
   <h2 id="deliverables">7. Deliverables</h2>
   <ul>
-    <li><code>fixtures/auth.ts</code>: globalSetup that saves customer and admin sessions</li>
-    <li><code>tests/rbac.spec.ts</code>: role-based access tests for PeakAndPack</li>
+    <li><code>fixtures/auth.ts</code>: globalSetup that saves a customer session, with the admin half written and ready for an app that has that role</li>
+    <li><code>tests/rbac.spec.ts</code>: the role-based access pattern, written out. PeakAndPack has no admin role, so this is a template for your own app rather than a suite you can run here.</li>
     <li><code>tests/multi-user.spec.ts</code>: concurrent session test</li>
   </ul>
 
@@ -334,7 +354,7 @@ page.on('response', response => {
     <p>Write a globalSetup that logs in as a PeakAndPack customer and saves the session to <code>fixtures/customer.json</code>. Then write two tests using that saved session with zero UI login steps: one that verifies the logged-in customer can view their cart, and one that verifies an unauthenticated context (no storageState at all) gets turned away when it hits an endpoint that requires auth, such as <code>/api/orders</code>. That auth-vs-no-auth gap is real on PeakAndPack, per the API reference: use it in place of the illustrative customer/admin split above.</p>
 
   <details class="solution">
-    <summary>Show solution &mdash; try it yourself first</summary>
+    <summary>Show solution: try it yourself first</summary>
     <div class="solution-body">
       <h3>globalSetup, then a logged-in test and a logged-out test</h3>
       <pre><code>// fixtures/auth.ts
@@ -373,7 +393,7 @@ test('unauthenticated request to /api/orders is rejected', async ({ browser }) =
 });
 </code></pre>
       <p><strong>The helper function.</strong> <code>asCustomer(browser)</code> is a small helper that creates a context with the customer session. Extracting it means every test that needs a customer session calls one line instead of repeating the context setup.</p>
-      <p><strong>Why the second test uses a fresh context, not a page navigation.</strong> There is no UI gate to test against &mdash; the frontend does not redirect anonymous visitors away from any route. The real, documented gate is server-side: <code>/api/orders</code> requires auth (see the API reference), and a request with no session gets a 401. Testing at that layer confirms the thing that's actually enforced, instead of a UI behaviour that was never built.</p>
+      <p><strong>Why the second test uses a fresh context, not a page navigation.</strong> There is no UI gate to test against: the frontend does not redirect anonymous visitors away from any route. The real, documented gate is server-side: <code>/api/orders</code> requires auth (see the API reference), and a request with no session gets a 401. Testing at that layer confirms the thing that's actually enforced, instead of a UI behaviour that was never built.</p>
     </div>
   </details>
   </div>

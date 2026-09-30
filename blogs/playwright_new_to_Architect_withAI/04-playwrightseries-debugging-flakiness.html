@@ -108,6 +108,9 @@ footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;
 footer a{color:var(--text-3);text-decoration:none}
 footer a:hover{color:var(--purple)}
 @media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
+.blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
+.blog-tags .series-tag{margin-bottom:0}
+.tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
 </style>
 <meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
 <meta property="og:image:width" content="1200">
@@ -132,7 +135,13 @@ footer a:hover{color:var(--purple)}
     <span aria-hidden="true">&rsaquo;</span>
     <span aria-current="page">Phase 4 of 15</span>
   </nav>
-  <span class="series-tag">Phase 4 of 15 &middot; Debugging &amp; Flakiness</span>
+  <div class="blog-tags" aria-label="Blog categories" role="group">
+    <span class="series-tag">Phase 4 of 15 &middot; Debugging &amp; Flakiness</span>
+    <span class="tag">Trace Viewer</span>
+    <span class="tag">Flaky Tests</span>
+    <span class="tag">Root Cause</span>
+    <span class="tag">Retries</span>
+  </div>
   <h1>Debugging and Flakiness</h1>
   <p class="subtitle">Debug methodically with Trace Viewer. Diagnose flakiness by root cause. Retries hide problems; fixes solve them.</p>
   <div class="meta-row">
@@ -164,6 +173,7 @@ footer a:hover{color:var(--purple)}
   <p>Debug failing tests methodically. Diagnose flakiness by root cause rather than masking it with retries. A flaky test is not a Playwright problem: it is a signal about your test, your app, or your environment.</p>
 
   <h2 id="guessing-failures">1. Before: guessing at failures</h2>
+  <p>When a test fails only some of the time, the tempting fix is to rerun it until it passes. That clears the red, but the cause is still there, along with whatever bug or timing gap it was pointing at. Debugging well means finding out why a test failed before changing anything:</p>
   <div class="ba-wrap">
     <div class="ba-block before">
       <div class="ba-label">Before: adding retries to hide flakiness</div>
@@ -255,7 +265,12 @@ npx playwright test tests/cart.spec.ts --repeat-each=20</code></pre>
   <p>If it fails any of the 20 runs, it is flaky. Investigate the trace from the failing run before doing anything else.</p>
 
   <h2 id="legitimate-retries">6. When retries are legitimate</h2>
-  <p>Retries are not always wrong. They are legitimate when the cause is genuinely external and uncontrollable: a third-party API that is occasionally slow, a free-tier host that cold-starts. The rule is: retries for environmental noise, not for test or app problems. If a retry masks a real bug, you will never know the bug exists.</p>
+  <p>Retries are not always wrong. The rule: retries for environmental noise, not for test or app problems.</p>
+  <ul>
+    <li><strong>Legitimate:</strong> causes that are external and out of your control, such as a third-party API that is occasionally slow, or a free-tier host that cold-starts (PeakAndPack on Render does this).</li>
+    <li><strong>Not legitimate:</strong> anything in your own test or app, such as a sleep that's too short, two tests sharing data, or a real defect.</li>
+  </ul>
+  <p>If a retry masks a real bug, you will never know the bug exists.</p>
 
   <div class="callout amber">
     <p><strong>The flakiness register.</strong> Keep a markdown file listing every flaky test: its name, the root cause category, and whether it is fixed or being monitored. This turns an invisible problem into a tracked one. When flakiness rate exceeds 5% of your suite, it is a quality signal that something structural needs attention.</p>
@@ -285,7 +300,7 @@ npx playwright test tests/cart.spec.ts --repeat-each=20</code></pre>
     <p>Write a test for PeakAndPack that navigates to the product listing and asserts that a specific product card is visible. Introduce artificial flakiness by removing the <code>await</code> from the navigation call (<code>page.goto('https://peakandpack-ui.onrender.com/')</code> without <code>await</code>). Run it 10 times with <code>--repeat-each=10</code>. When it fails, open the trace. Find the exact step where it failed and explain in <code>flakiness-diagnosis.md</code> what the trace shows and why the missing <code>await</code> caused it.</p>
 
   <details class="solution">
-    <summary>Show solution &mdash; try it yourself first</summary>
+    <summary>Show solution: try it yourself first</summary>
     <div class="solution-body">
       <h3>What the trace shows</h3>
       <p>When <code>await</code> is removed from <code>page.goto('https://peakandpack-ui.onrender.com/')</code>, the test does not wait for the navigation to complete before moving to the next step. The trace shows the assertion firing while the page is still loading, often before any content has rendered. The screenshot in the trace will show a blank page or a loading state.</p>

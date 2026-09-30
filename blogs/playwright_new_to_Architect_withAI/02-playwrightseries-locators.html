@@ -108,6 +108,9 @@ footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;
 footer a{color:var(--text-3);text-decoration:none}
 footer a:hover{color:var(--purple)}
 @media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
+.blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
+.blog-tags .series-tag{margin-bottom:0}
+.tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
 </style>
 <meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
 <meta property="og:image:width" content="1200">
@@ -134,7 +137,13 @@ footer a:hover{color:var(--purple)}
     <span aria-current="page">Phase 2 of 15</span>
   </nav>
 
-  <span class="series-tag">Phase 2 of 15 &middot; Locators</span>
+  <div class="blog-tags" aria-label="Blog categories" role="group">
+    <span class="series-tag">Phase 2 of 15 &middot; Locators</span>
+    <span class="tag">Locators</span>
+    <span class="tag">Role Locators</span>
+    <span class="tag">Scoping</span>
+    <span class="tag">Test IDs</span>
+  </div>
 
   <h1>Locators: Resilient and Self-Healing</h1>
   <p class="subtitle">The locator you choose is the single biggest factor in whether your test survives a UI change or breaks the moment a developer renames a class.</p>
@@ -169,7 +178,7 @@ footer a:hover{color:var(--purple)}
   <p>Find elements the right way so tests survive UI changes without breaking. The locator you choose is the single biggest factor in whether your test is brittle or resilient.</p>
 
   <h2 id="fragile-locators">1. Before: the fragile locator problem</h2>
-  <p>A developer renames a CSS class during a refactor. Nothing breaks for the user ; the page looks and works the same. But three tests fail on CI. This is the fragile locator problem:</p>
+  <p>A developer renames a CSS class during a refactor. Nothing breaks for the user: the page looks and works the same. But three tests fail on CI. This is the fragile locator problem:</p>
 
   <div class="ba-wrap">
     <div class="ba-block before">
@@ -194,7 +203,7 @@ await page.getByRole('button', { name: /checkout/i }).click();
   </div>
 
   <h2 id="locator-priority">2. Locator priority</h2>
-  <p>Playwright gives you many ways to find an element. Use the highest one available ; use the highest available resilient to change:</p>
+  <p>Playwright gives you many ways to find the same element, and they aren't equally durable. The closer a locator is to what a user actually sees, such as a button's text or a field's label, the less likely a code change is to break it. Work down this list and use the first one that fits:</p>
   <div class="table-wrap">
     <table>
       <thead><tr><th>Priority</th><th>Locator</th><th>Why</th></tr></thead>
@@ -210,7 +219,13 @@ await page.getByRole('button', { name: /checkout/i }).click();
   </div>
 
   <h2 id="getbyrole">3. getByRole in depth</h2>
-  <p>The most important locator. It finds elements by their ARIA role and accessible name ; the same way a screen reader or assistive technology would. Every interactive element has a role: buttons are <code>button</code>, links are <code>link</code>, headings are <code>heading</code>, form fields are <code>textbox</code> or <code>combobox</code>.</p>
+  <p>The most important locator. It finds elements by their ARIA role and accessible name, the same way a screen reader or other assistive technology would. That's why it survives restyling: roles describe what an element is, not how it looks. Every interactive element has a role:</p>
+  <ul>
+    <li>Buttons: <code>button</code></li>
+    <li>Links: <code>link</code></li>
+    <li>Headings: <code>heading</code></li>
+    <li>Form fields: <code>textbox</code> or <code>combobox</code></li>
+  </ul>
   <pre><code>// Find the "Add to cart" button (role: button, name: the button text)
 page.getByRole('button', { name: /add to cart/i })
 
@@ -220,14 +235,20 @@ page.getByRole('heading', { level: 3, name: /trekking poles/i })
 // Find the search box (role: textbox, name from its placeholder)
 page.getByRole('textbox', { name: /search gear/i })
 </code></pre>
-  <p>The <code>name</code> option matches the element's accessible name ; usually its visible text, its <code>aria-label</code>, or the text of its associated <code>&lt;label&gt;</code>. Passing a regex (<code>/add to cart/i</code>) makes the match case-insensitive and partial, which is more resilient than an exact string.</p>
+  <p>The <code>name</code> option matches the element's accessible name: usually its visible text, its <code>aria-label</code>, or the text of its associated <code>&lt;label&gt;</code>. Passing a regex (<code>/add to cart/i</code>) makes the match case-insensitive and partial, which is more resilient than an exact string.</p>
 
   <div class="callout red">
-    <p><strong>PeakAndPack's login inputs have no accessible name at all.</strong> No <code>&lt;label&gt;</code>, no <code>aria-label</code>, not even a <code>placeholder</code> &mdash; confirmed by inspecting the live DOM. <code>getByLabel(/email/i)</code> and <code>getByRole('textbox', { name: /email/i })</code> both fail to find them, because there's nothing for either to match against. This is a real accessibility defect worth logging on its own (a screen reader user has no way to tell the two fields apart), and it's why every login example in this series uses <code>page.locator('input[type="email"]')</code> and <code>page.locator('input[type="password"]')</code> instead: an attribute selector, tier 6 on the table above, reached for only because tiers 1 through 5 genuinely have nothing to attach to here.</p>
+    <p><strong>PeakAndPack's login inputs have no accessible name at all.</strong></p>
+    <ul style="margin:.5rem 0 0 1.2rem;">
+      <li><strong>What's missing:</strong> the visible "Email" and "Password" labels aren't linked to their inputs, and there's no <code>aria-label</code> or <code>placeholder</code> either.</li>
+      <li><strong>What that breaks:</strong> <code>getByLabel(/email/i)</code> and <code>getByRole('textbox', { name: /email/i })</code> both find nothing, because there's no name to match against.</li>
+      <li><strong>Why it matters beyond tests:</strong> a screen reader user has no way to tell the two fields apart. That's a real accessibility defect, worth logging on its own.</li>
+      <li><strong>What this series does instead:</strong> every login example uses <code>page.locator('input[type="email"]')</code> and <code>page.locator('input[type="password"]')</code>. That's an attribute selector, tier 6 on the table above, used only because tiers 1 to 5 have nothing to attach to here.</li>
+    </ul>
   </div>
 
   <h2 id="scoping">4. Scoping: find inside a container</h2>
-  <p>PeakAndPack's product listing has multiple "Add to cart" buttons ; one per card. <code>getByRole('button', { name: /add to cart/i })</code> would match all of them and Playwright would not know which to click. Scope the locator to the specific card first:</p>
+  <p>PeakAndPack's product listing has multiple "Add to cart" buttons, one per card. <code>getByRole('button', { name: /add to cart/i })</code> would match all of them and Playwright would not know which to click. Scope the locator to the specific card first:</p>
   <pre><code>// Scope to the specific product card first, then find the button inside it
 const card = page.locator('div').filter({ has: page.getByRole('heading', { name: 'Trekking Poles (Pair)' }) }).first();
 await card.getByRole('button', { name: /add to cart/i }).click();
@@ -286,7 +307,7 @@ await expect(page.getByTestId('cart-item-count')).toHaveText('3');
     <p>Open PeakAndPack at <a href="https://peakandpack-ui.onrender.com" target="_blank" style="color:var(--purple)">peakandpack-ui.onrender.com</a>. Using the browser's inspector, find 5 interactive elements and write a locator for each using the highest priority available. Document your choice: why this locator type for this element? Add them all to a spec file and confirm each one resolves to exactly one element (Playwright will error if it matches more than one).</p>
 
   <details class="solution">
-    <summary>Show solution &mdash; try it yourself first</summary>
+    <summary>Show solution: try it yourself first</summary>
     <div class="solution-body">
       <h3>Example: 5 resilient locators for PeakAndPack</h3>
       <pre><code>import { test, expect } from '@playwright/test';

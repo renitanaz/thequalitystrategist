@@ -108,6 +108,9 @@ footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;
 footer a{color:var(--text-3);text-decoration:none}
 footer a:hover{color:var(--purple)}
 @media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
+.blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
+.blog-tags .series-tag{margin-bottom:0}
+.tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
 </style>
 <meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
 <meta property="og:image:width" content="1200">
@@ -134,7 +137,13 @@ footer a:hover{color:var(--purple)}
     <span aria-current="page">Phase 13 of 15</span>
   </nav>
 
-  <span class="series-tag">Phase 13 of 15 &middot; AI-Assisted Automation</span>
+  <div class="blog-tags" aria-label="Blog categories" role="group">
+    <span class="series-tag">Phase 13 of 15 &middot; AI-Assisted Automation</span>
+    <span class="tag">AI Review</span>
+    <span class="tag">Prompting</span>
+    <span class="tag">Test Generation</span>
+    <span class="tag">Guardrails</span>
+  </div>
 
   <h1>Using AI to Review and Extend Your Suite</h1>
   <p class="subtitle">By Phase 13 you can write a resilient test yourself. This phase is about using AI to go faster without lowering the bar every earlier phase set: as a reviewer of what already exists, and a generator of new tests you still own.</p>
@@ -198,7 +207,13 @@ test('add to cart updates the cart page', async ({ page }) => {
     </div>
   </div>
 
-  <p>The "before" version has three of the exact problems Phase 2 named: a structural CSS selector (<code>nth-child</code>), a fixed sleep instead of a real wait, and an assertion on a <code>.cart-badge</code> element that doesn't exist on the real app, PeakAndPack has no live cart-count indicator anywhere, confirmed back in Phase 3. It runs. It would have failed the first time someone actually added an item, because that badge is never there to find.</p>
+  <p>The "before" version has three problems Phases 2 and 3 already named:</p>
+  <ul>
+    <li><strong>A structural CSS selector</strong> (<code>nth-child</code>), which breaks on any layout change.</li>
+    <li><strong>A fixed sleep</strong> instead of a wait tied to a real signal.</li>
+    <li><strong>An assertion on <code>.cart-badge</code></strong>, an element that doesn't exist. PeakAndPack has no live cart-count indicator anywhere, as Phase 3 showed.</li>
+  </ul>
+  <p>It runs. It would have failed the first time someone actually added an item, because that badge is never there to find.</p>
 
   <h2 id="ai-as-reviewer">2. AI as a reviewer</h2>
   <p>Point AI at a spec file you already wrote and ask it to audit the locators and waits against a stated standard, not a generic "improve this code" prompt.</p>
@@ -217,7 +232,12 @@ and suggest a fix. Do not rewrite the whole file, list the findings.</code></pre
   <p>This is deliberately narrower than "review my code." A model asked to generally improve a test will restructure it, rename things, and bury the three violations you actually care about inside stylistic opinions. A model asked to check three named rules gives you a findings list you can act on in minutes.</p>
 
   <h2 id="ai-as-generator">3. AI as a generator, with guardrails</h2>
-  <p>Generating a new test from a requirement follows the same shape as the test-case agents from Phase 3: give it the constraint up front, generate, then review against the same three rules, every time, no exceptions for AI-authored code.</p>
+  <p>Generating a new test from a requirement follows the same three steps every time, with no exceptions for AI-authored code:</p>
+  <ol>
+    <li>Put the constraints in the prompt, up front.</li>
+    <li>Generate the test.</li>
+    <li>Review the result against the same three rules as the reviewer prompt.</li>
+  </ol>
   <pre><code>Write a Playwright test for: a logged-in user removes an item from their
 PeakAndPack cart and the total recalculates.
 
@@ -227,7 +247,7 @@ I will log in and add an item in a beforeEach, you only need the removal
 and the total-recalculation check.</code></pre>
 
   <div class="callout amber">
-    <p><strong>Why the constraints go in the prompt, not the review.</strong> It's tempting to just generate freely and clean up after. In practice, a model told the rules upfront produces far fewer violations than one corrected after the fact, the same reason the requirements document in Phase 1 works better than testing from memory. Put the standard in the prompt; use the review pass to catch what still slips through, not to do the whole job.</p>
+    <p><strong>Why the constraints go in the prompt, not the review.</strong> It's tempting to just generate freely and clean up after. In practice, a model told the rules upfront produces far fewer violations than one corrected after the fact. Put the standard in the prompt; use the review pass to catch what still slips through, not to do the whole job.</p>
   </div>
 
   <h2 id="what-ai-gets-wrong">4. What AI gets wrong by default, and why</h2>
@@ -267,12 +287,12 @@ and the total-recalculation check.</code></pre>
     <p>Take any spec file from an earlier phase (Phase 9's page objects are a good candidate) and run it through the reviewer prompt above. Document every finding, whether you agree with it, and whether you'd have caught it yourself without the prompt.</p>
 
   <details class="solution">
-    <summary>Show solution &mdash; try it yourself first</summary>
+    <summary>Show solution: try it yourself first</summary>
     <div class="solution-body">
       <h3>The reviewed cart-removal test</h3>
       <pre><code>import { test, expect } from '@playwright/test';
 
-test('removing an item recalculates the cart total', async ({ page }) => {
+test('removing an item takes it out of the cart', async ({ page }) => {
   // Log in. PeakAndPack's labels aren't linked to their inputs, so getByLabel
   // can't find them; the input type is the next most stable hook.
   await page.goto('https://peakandpack-ui.onrender.com/login');

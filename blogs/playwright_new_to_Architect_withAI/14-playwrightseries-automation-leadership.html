@@ -111,6 +111,13 @@ footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;
 footer a{color:var(--text-3);text-decoration:none}
 footer a:hover{color:var(--purple)}
 @media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
+.blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
+.blog-tags .series-tag{margin-bottom:0}
+.tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+.principle-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.2rem 1.4rem;margin:1.1rem 0}
+.principle-card p:last-child,.principle-card ul:last-child,.principle-card pre:last-child{margin-bottom:0}
+.principle-num{display:inline-flex;align-items:center;justify-content:center;width:1.7rem;height:1.7rem;border-radius:50%;background:var(--purple);color:#0d0d0d;font-family:var(--ff-serif);font-weight:700;font-size:.82rem;margin-right:.6rem;flex-shrink:0}
+.principle-title{display:flex;align-items:center;font-family:var(--ff-serif);font-size:1.05rem;font-weight:400;color:var(--text);margin:0 0 .7rem}
 </style>
 <meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
 <meta property="og:image:width" content="1200">
@@ -137,7 +144,13 @@ footer a:hover{color:var(--purple)}
     <span aria-current="page">Phase 14 of 15</span>
   </nav>
 
-  <span class="series-tag">Phase 14 of 15 &middot; Automation Leadership</span>
+  <div class="blog-tags" aria-label="Blog categories" role="group">
+    <span class="series-tag">Phase 14 of 15 &middot; Automation Leadership</span>
+    <span class="tag">Team Standards</span>
+    <span class="tag">PR Review</span>
+    <span class="tag">Suite Health</span>
+    <span class="tag">Test Pyramid</span>
+  </div>
 
   <h1>Leading a Test Automation Practice</h1>
   <p class="subtitle">Everything so far made you good at writing tests. This phase is about the suite as a shared asset: conventions other people follow, a review process that catches drift, and the judgment to say no to a test that shouldn't exist.</p>
@@ -204,17 +217,31 @@ test('checkout completes', async ({ page }) => {
   <p>The difference isn't that contributor B is careless, it's that the standard existed only as contributor A's personal habit. Writing it down is what makes it enforceable by anyone, including someone reviewing a PR from a person more senior than them.</p>
 
   <h2 id="suite-conventions">2. Suite-wide conventions worth writing down</h2>
-  <div class="table-wrap">
-    <table>
-      <thead><tr><th>Convention</th><th>Why it needs to be explicit</th></tr></thead>
-      <tbody>
-        <tr><td>Locator priority (Phase 2's table)</td><td>Without it written down, "resilient" means whatever each contributor was taught last</td></tr>
-        <tr><td>File and test naming</td><td>A test named <code>test1</code> or a file named <code>misc.spec.ts</code> is unfindable six months later</td></tr>
-        <tr><td>Tagging convention (<code>@critical</code>, <code>@regression</code>)</td><td>Phase 12's CI sharding and selective runs depend on tags being applied consistently, not just by whoever remembers</td></tr>
-        <tr><td>Where fixtures live and how they're shared</td><td>Phase 10 patterns only pay off if everyone uses the shared fixture instead of writing their own login flow per file</td></tr>
-        <tr><td>What earns a <code>data-testid</code> request</td><td>Without a rule, every missing role/label becomes a testid request, and the app fills up with test-only attributes</td></tr>
-      </tbody>
-    </table>
+  <p>Five conventions do most of the work. Each needs writing down for its own reason:</p>
+
+  <div class="principle-card">
+    <div class="principle-title"><span class="principle-num">1</span>Locator priority (Phase 2's table)</div>
+    <p>Without it written down, "resilient" means whatever each contributor was taught last.</p>
+  </div>
+
+  <div class="principle-card">
+    <div class="principle-title"><span class="principle-num">2</span>File and test naming</div>
+    <p>A test named <code>test1</code> or a file named <code>misc.spec.ts</code> is unfindable six months later.</p>
+  </div>
+
+  <div class="principle-card">
+    <div class="principle-title"><span class="principle-num">3</span>Tagging convention (<code>@critical</code>, <code>@regression</code>)</div>
+    <p>Phase 12's CI sharding and selective runs depend on tags being applied consistently, not just by whoever remembers.</p>
+  </div>
+
+  <div class="principle-card">
+    <div class="principle-title"><span class="principle-num">4</span>Where fixtures live and how they're shared</div>
+    <p>Phase 10 patterns only pay off if everyone uses the shared fixture instead of writing their own login flow per file.</p>
+  </div>
+
+  <div class="principle-card">
+    <div class="principle-title"><span class="principle-num">5</span>What earns a <code>data-testid</code> request</div>
+    <p>Without a rule, every missing role/label becomes a testid request, and the app fills up with test-only attributes.</p>
   </div>
 
   <h2 id="pr-review-checklist">3. A PR review checklist for new tests</h2>
@@ -234,11 +261,20 @@ test('checkout completes', async ({ page }) => {
 
   <h2 id="suite-health">4. Measuring suite health</h2>
   <p>"How's the suite doing" needs a real answer, not a feeling. Three numbers matter more than raw test count:</p>
-  <ul>
-    <li><strong>Flake rate.</strong> Tests that fail and pass on rerun with no code change, tracked per test, not suite-wide. A suite with a 2% overall flake rate can still have five tests that fail one run in three, and those five are where trust erodes fastest.</li>
-    <li><strong>Runtime, and its trend.</strong> Not just today's number, whether it is climbing. Phase 12's sharding buys you headroom, it doesn't fix a suite that adds five minutes every month with no offsetting cleanup.</li>
-    <li><strong>Coverage by user journey, not by line.</strong> "80% code coverage" says nothing about whether checkout, the highest-risk flow per Phase 1's risk ranking, actually has a test. Track coverage against the risk map from the requirements, not against a percentage a linter reports.</li>
-  </ul>
+  <div class="principle-card">
+    <div class="principle-title"><span class="principle-num">1</span>Flake rate</div>
+    <p>Tests that fail and then pass on rerun with no code change, tracked per test, not suite-wide. A suite with a 2% overall flake rate can still have five tests that fail one run in three, and those five are where trust erodes fastest.</p>
+  </div>
+
+  <div class="principle-card">
+    <div class="principle-title"><span class="principle-num">2</span>Runtime, and its trend</div>
+    <p>Not just today's number, but whether it's climbing. Phase 12's sharding buys you headroom, but it doesn't fix a suite that adds five minutes every month with no offsetting cleanup.</p>
+  </div>
+
+  <div class="principle-card">
+    <div class="principle-title"><span class="principle-num">3</span>Coverage by user journey, not by line</div>
+    <p>"80% code coverage" says nothing about whether checkout, the flow where a bug costs real money, actually has a test. Track coverage against a list of the user journeys that matter most, not against a percentage a linter reports.</p>
+  </div>
 
   <h2 id="when-to-say-no">5. When to say no to a new E2E test</h2>
   <p>Phase 1 introduced the test pyramid: put a test at the lowest layer that still gives confidence. Automation leadership means enforcing that at review time, not just knowing it. A PR that adds a full browser test for a pure calculation, exactly the "before" example from Phase 1, is a test the suite would be healthier without.</p>
@@ -260,7 +296,7 @@ test('checkout completes', async ({ page }) => {
   <ul>
     <li><code>CONTRIBUTING.md</code>: locator, wait, naming, and tagging conventions, written for a new contributor</li>
     <li><code>pr-checklist.md</code>: the review checklist, ready to paste into a PR template</li>
-    <li><code>suite-health.md</code>: current flake rate, runtime trend, and journey coverage against the Phase 1 risk map</li>
+    <li><code>suite-health.md</code>: current flake rate, runtime trend, and journey coverage against your list of critical journeys</li>
   </ul>
 
   <hr style="border:none;border-top:1px solid var(--border);margin:0">
@@ -271,7 +307,7 @@ test('checkout completes', async ({ page }) => {
     <p>Take any spec file you wrote in an earlier phase (before you knew this checklist existed) and review it as if it were a teammate's PR. List every checklist item it fails. Then fix it. This is the fastest way to feel how much the checklist changes what "good enough" means once it's written down.</p>
 
   <details class="solution">
-    <summary>Show solution &mdash; try it yourself first</summary>
+    <summary>Show solution: try it yourself first</summary>
     <div class="solution-body">
       <h3>Example PR checklist, as a template</h3>
       <pre><code>## New test checklist

@@ -108,6 +108,9 @@ footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;
 footer a{color:var(--text-3);text-decoration:none}
 footer a:hover{color:var(--purple)}
 @media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
+.blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
+.blog-tags .series-tag{margin-bottom:0}
+.tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
 </style>
 <meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
 <meta property="og:image:width" content="1200">
@@ -132,7 +135,13 @@ footer a:hover{color:var(--purple)}
     <span aria-hidden="true">&rsaquo;</span>
     <span aria-current="page">Phase 9 of 15</span>
   </nav>
-  <span class="series-tag">Phase 9 of 15 &middot; Page Object Model</span>
+  <div class="blog-tags" aria-label="Blog categories" role="group">
+    <span class="series-tag">Phase 9 of 15 &middot; Page Object Model</span>
+    <span class="tag">Page Object Model</span>
+    <span class="tag">Base Page</span>
+    <span class="tag">Folder Structure</span>
+    <span class="tag">Maintainability</span>
+  </div>
   <h1>Page Object Model &amp; Framework Design</h1>
   <p class="subtitle">One UI change should require one fix. Page objects separate test logic from page interaction so tests read like user journeys.</p>
   <div class="meta-row">
@@ -164,6 +173,7 @@ footer a:hover{color:var(--purple)}
   <p>Build a test suite that is maintainable at scale. One UI change should require one fix: not twenty. The Page Object Model (POM) separates test logic from page interaction logic so that when a page changes, only the page object changes.</p>
 
   <h2 id="before-scattered-locators">1. Before: locators scattered across every test</h2>
+  <p>Every locator written straight into a test is a copy. When the page changes, every copy has to be found and fixed, and any test that gets missed fails for a reason that has nothing to do with a real bug:</p>
   <div class="ba-wrap">
     <div class="ba-block before">
       <div class="ba-label">Before: locators in every test file</div>
@@ -199,7 +209,7 @@ test('checkout with discount', async ({ page }) => {
   await checkout.applyDiscount('SAVE10');
   await checkout.payWithTestCard();
   await checkout.placeOrder();
-  await checkout.assertOrderConfirmed();
+  expect(await checkout.isOrderConfirmed()).toBe(true);
 });
 
 test('checkout without discount', async ({ page }) => {
@@ -208,7 +218,7 @@ test('checkout without discount', async ({ page }) => {
   const checkout = await cart.proceedToCheckout(); // same method, no duplicated locator
   await checkout.payWithTestCard();
   await checkout.placeOrder();
-  await checkout.assertOrderConfirmed();
+  expect(await checkout.isOrderConfirmed()).toBe(true);
 });
 </code></pre>
     </div>
@@ -242,9 +252,15 @@ export class CartPage {
 </code></pre>
 
   <h2 id="checkoutpage">3. Building the CheckoutPage object</h2>
-  <p>Methods return new page objects when an action navigates to a new page: keeping the chain readable and typed. PeakAndPack's real checkout is three steps, not one: an optional discount code, card details inside a payment iframe, then the "Confirm Order" button, which only becomes clickable once the iframe payment succeeds. Each step gets its own method, matching the real flow instead of collapsing it into one:</p>
+  <p>Methods return a new page object when an action moves to a new page, which keeps the chain readable and typed.</p>
+  <p>PeakAndPack's real checkout is three steps, not one, so each gets its own method instead of being collapsed into one:</p>
+  <ol>
+    <li>An optional discount code</li>
+    <li>Card details inside a payment iframe</li>
+    <li>The "Confirm Order" button, which only becomes clickable once the iframe payment succeeds</li>
+  </ol>
   <pre><code>// pages/CheckoutPage.ts
-import { Page, expect } from '@playwright/test';
+import { Page } from '@playwright/test';
 
 export class CheckoutPage {
   // Every method works on the same browser tab the test passed in
@@ -276,11 +292,12 @@ export class CheckoutPage {
     await done;
   }
 
-  // Checks the confirmation heading appeared after the order went through
-  async assertOrderConfirmed() {
-    await expect(
-      this.page.getByRole('heading', { name: /order placed/i })
-    ).toBeVisible();
+  // Returns a result, not an assertion: the test decides what to expect
+  async isOrderConfirmed(): Promise&lt;boolean&gt; {
+    // waitFor retries until the heading appears, unlike a one-off isVisible()
+    return this.page.getByRole('heading', { name: /order placed/i })
+      .waitFor({ timeout: 5000 })
+      .then(() =&gt; true, () =&gt; false);
   }
 
   // Returns just the number from "Order ID: 42", for tests that look the order up later
@@ -292,7 +309,7 @@ export class CheckoutPage {
 </code></pre>
 
   <h2 id="basepage">4. BasePage: shared methods</h2>
-  <p>Behaviour common to all pages: navigation, header checks, loading states: belongs in a base class:</p>
+  <p>Behaviour common to all pages (navigation, header checks, loading states) belongs in a base class:</p>
   <pre><code>// pages/BasePage.ts
 import { Page } from '@playwright/test';
 
@@ -338,7 +355,12 @@ export class CartPage extends BasePage {
     auth.spec.ts
   playwright.config.ts
 </code></pre>
-  <p><strong>The rule:</strong> if something is a user action on a page, it belongs in a page object. If it is test logic (what to assert, what scenario to run), it belongs in a spec file. If it is reusable utility code, it belongs in helpers.</p>
+  <p><strong>The rule:</strong></p>
+  <ul>
+    <li><strong>A user action on a page</strong> belongs in a page object.</li>
+    <li><strong>Test logic</strong> (what to assert, what scenario to run) belongs in a spec file.</li>
+    <li><strong>Reusable utility code</strong> belongs in helpers.</li>
+  </ul>
 
   <h2 id="pom-overkill">6. When POM is overkill</h2>
   <p>POM has a cost: more files, more abstraction, more to maintain. It pays back on suites of 20 or more tests across stable pages. It is overkill for:</p>
@@ -350,7 +372,7 @@ export class CartPage extends BasePage {
   <p>The architect decides when the investment pays off. Phases 0 to 8 of this series deliberately used locators directly because the suite was small and the patterns were the point. Phase 9 introduces POM because you now have enough tests to see the problem it solves.</p>
 
   <div class="callout amber">
-    <p><strong>The test reads like a user journey, not a Playwright tutorial.</strong> When POM is working well, a non-technical stakeholder can read a test and understand what the user does. <code>const checkout = await cart.proceedToCheckout(); await checkout.applyDiscount('SAVE10'); await checkout.payWithTestCard(); await checkout.placeOrder(); await checkout.assertOrderConfirmed();</code> needs no explanation, including the payment step. That readability is the real payoff.</p>
+    <p><strong>The test reads like a user journey, not a Playwright tutorial.</strong> When POM is working well, a non-technical stakeholder can read a test and understand what the user does. <code>const checkout = await cart.proceedToCheckout(); await checkout.applyDiscount('SAVE10'); await checkout.payWithTestCard(); await checkout.placeOrder(); expect(await checkout.isOrderConfirmed()).toBe(true);</code> needs no explanation, including the payment step. That readability is the real payoff.</p>
   </div>
 
   <div class="callout red">
@@ -366,8 +388,8 @@ export class CartPage extends BasePage {
   <h2 id="deliverables">7. Deliverables</h2>
   <ul>
     <li><code>pages/BasePage.ts</code>: shared base class</li>
-    <li><code>pages/CartPage.ts</code>: cart page object with add, discount, checkout methods</li>
-    <li><code>pages/CheckoutPage.ts</code>: checkout page object with order confirmation methods</li>
+    <li><code>pages/CartPage.ts</code>: cart page object with goto, item count, and proceed-to-checkout methods</li>
+    <li><code>pages/CheckoutPage.ts</code>: checkout page object with discount, payment, place-order, and confirmation methods</li>
     <li><code>tests/pom.spec.ts</code>: existing tests refactored to use page objects</li>
     <li><code>framework-design.md</code>: folder structure decisions and when to use POM</li>
   </ul>
@@ -380,7 +402,7 @@ export class CartPage extends BasePage {
     <p>Create <code>pages/LoginPage.ts</code> with two methods: <code>loginAs(email, password)</code> which fills the form and clicks log in, and <code>assertLoggedIn()</code> which asserts the user is on the home page. Then refactor the auth tests from Phase 6 to use the LoginPage object. No locators should appear in the test file after the refactor.</p>
 
   <details class="solution">
-    <summary>Show solution &mdash; try it yourself first</summary>
+    <summary>Show solution: try it yourself first</summary>
     <div class="solution-body">
       <h3>LoginPage object</h3>
       <pre><code>// pages/LoginPage.ts
@@ -427,7 +449,7 @@ test('customer can log in', async ({ page }) => {
 
   <div class="bonus">
     <div class="b-label">Bonus challenge</div>
-    <p><strong>Add a ProductPage object and chain it.</strong> Create <code>pages/ProductPage.ts</code> with an <code>addToCart()</code> method that returns a <code>CartPage</code>. Update the CartPage to have a method <code>static visit(page)</code> that navigates to the cart and returns a <code>CartPage</code> instance. Write a test that chains: <code>const cart = await productPage.addToCart(); await cart.checkout(); await checkout.payWithTestCard(); await checkout.placeOrder(); await checkout.assertOrderConfirmed();</code>: the entire happy path in five lines.</p>
+    <p><strong>Add a ProductPage object and chain it.</strong> Create <code>pages/ProductPage.ts</code> with an <code>addToCart()</code> method that returns a <code>CartPage</code>. Update the CartPage to have a method <code>static visit(page)</code> that navigates to the cart and returns a <code>CartPage</code> instance. Write a test that chains: <code>const cart = await productPage.addToCart(); await cart.checkout(); await checkout.payWithTestCard(); await checkout.placeOrder(); expect(await checkout.isOrderConfirmed()).toBe(true);</code>: the entire happy path in five lines.</p>
   </div>
 
   <div class="series-nav">

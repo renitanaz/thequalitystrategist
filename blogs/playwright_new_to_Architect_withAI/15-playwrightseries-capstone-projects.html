@@ -97,6 +97,9 @@ footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;
 footer a{color:var(--text-3);text-decoration:none}
 footer a:hover{color:var(--purple)}
 @media(max-width:600px){h1{font-size:1.55rem}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
+.blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
+.blog-tags .series-tag{margin-bottom:0}
+.tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
 </style>
 <meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
 <meta property="og:image:width" content="1200">
@@ -123,7 +126,13 @@ footer a:hover{color:var(--purple)}
     <span aria-current="page">Phase 15 of 15</span>
   </nav>
 
-  <span class="series-tag">Phase 15 of 15 &middot; Capstone Projects</span>
+  <div class="blog-tags" aria-label="Blog categories" role="group">
+    <span class="series-tag">Phase 15 of 15 &middot; Capstone Projects</span>
+    <span class="tag">Capstone</span>
+    <span class="tag">Page Objects</span>
+    <span class="tag">CI Pipeline</span>
+    <span class="tag">Accessibility</span>
+  </div>
 
   <h1>Six Capstone Projects</h1>
   <p class="subtitle">No new concepts in this phase, only application. Six independent projects against PeakAndPack, each one drawing on a different stretch of Phases 0 through 14. Do as many as are relevant to where you want to go next: automation engineer, SDET, or automation lead.</p>
@@ -155,19 +164,26 @@ footer a:hover{color:var(--purple)}
   </div>
 
   <h2 id="how-to-use">How to use this phase</h2>
-  <p>Each project below names what to build, what "done" looks like, and which earlier phases it draws on most. None of them have a single correct solution the way earlier phases' assignments did, there's a suggested approach in each collapsible solution, but the point is applying judgment across a full project, not matching a reference answer.</p>
+  <p>Each earlier phase practised one skill on its own. A real suite needs them working together, and the gaps only show up where they meet. These projects are where that happens.</p>
+  <p>Each project names three things:</p>
+  <ul>
+    <li>What to build</li>
+    <li>What "done" looks like</li>
+    <li>Which earlier phases it draws on most</li>
+  </ul>
+  <p>None of them has a single correct answer the way earlier assignments did. There are approach notes for all six after the projects, but the point is applying judgment across a full project, not matching a reference answer.</p>
 
   <div class="project-card">
     <div class="project-title"><span class="project-num">1</span>Full page-object-model rebuild</div>
     <div class="project-meta">Draws on: Phase 9, Phase 2, Phase 1</div>
-    <p>Take every test you've written across the series and rebuild it on top of a proper page object layer: one class per PeakAndPack page (Product listing, Cart, Checkout, Login), each exposing actions and locators, no test file touching a raw locator directly.</p>
+    <p>Take every test you've written across the series and rebuild it on top of a proper page object layer: one class per PeakAndPack page (Product listing, Cart, Checkout, Login), each exposing actions and results while keeping its locators inside, so no test file touches a raw locator directly.</p>
     <p><strong>Done looks like:</strong> every spec file reads as user actions and assertions only, page objects hold all the locators, and adding a new test for an existing page needs zero new locator work.</p>
   </div>
 
   <div class="project-card">
     <div class="project-title"><span class="project-num">2</span>Visual regression coverage</div>
     <div class="project-meta">Draws on: Phase 11, Phase 4</div>
-    <p>Add baseline screenshots for the product listing, cart, and checkout pages, at both desktop and mobile width. Capture the real, current state of the negative-price and unnamed-product bugs as part of the baseline, don't wait for them to be fixed to start tracking visual regressions elsewhere on the page.</p>
+    <p>Add baseline screenshots for the product listing, cart, and checkout pages, at both desktop and mobile width. Capture the current state of the negative-price and unnamed-product bugs as part of the baseline. Don't wait for them to be fixed before tracking visual regressions elsewhere on the page.</p>
     <p><strong>Done looks like:</strong> a visual regression suite that fails on an unintended layout change and stays quiet on the two known, already-tracked bugs.</p>
   </div>
 
@@ -200,7 +216,7 @@ footer a:hover{color:var(--purple)}
   </div>
 
   <details class="solution">
-    <summary>Show approach notes for all six &mdash; try them yourself first</summary>
+    <summary>Show approach notes for all six: try them yourself first</summary>
     <div class="solution-body">
       <h3>What tends to go wrong in each</h3>
       <p><strong>Project 1:</strong> the most common mistake is a page object that just wraps locators one-to-one with no real actions (<code>getEmailField()</code> instead of <code>login(email, password)</code>). A good page object hides the steps, not just the selectors.</p>

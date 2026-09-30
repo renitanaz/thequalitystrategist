@@ -108,6 +108,9 @@ footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;
 footer a{color:var(--text-3);text-decoration:none}
 footer a:hover{color:var(--purple)}
 @media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
+.blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
+.blog-tags .series-tag{margin-bottom:0}
+.tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
 </style>
 <meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
 <meta property="og:image:width" content="1200">
@@ -132,7 +135,13 @@ footer a:hover{color:var(--purple)}
     <span aria-hidden="true">&rsaquo;</span>
     <span aria-current="page">Phase 12 of 15</span>
   </nav>
-  <span class="series-tag">Phase 12 of 15 &middot; CI/CD &amp; Flaky Tests</span>
+  <div class="blog-tags" aria-label="Blog categories" role="group">
+    <span class="series-tag">Phase 12 of 15 &middot; CI/CD &amp; Flaky Tests</span>
+    <span class="tag">CI/CD</span>
+    <span class="tag">Test Tagging</span>
+    <span class="tag">Sharding</span>
+    <span class="tag">Flaky Tests</span>
+  </div>
   <h1>CI/CD, Reporting and Flaky Test Management</h1>
   <p class="subtitle">Fast feedback on every PR. Tag tests so the right ones run at the right time. Shard for speed. Track flaky tests as quality debt. Run an accessibility scan alongside everything else, and know what it doesn't catch.</p>
   <div class="meta-row">
@@ -164,6 +173,7 @@ footer a:hover{color:var(--purple)}
   <p>Build a CI pipeline that gives fast, reliable feedback on every pull request. Tag tests so the right tests run at the right time. Shard the suite for speed. Build a custom reporter for actionable failure output. Track and enforce flaky test health.</p>
 
   <h2 id="before-naive-pipeline">1. Before: a naive CI pipeline</h2>
+  <p>A pipeline only protects anything if people wait for it and trust what it says. When every PR takes fifteen minutes and a failure reads "Test failed at line 42", people start merging around it:</p>
   <div class="ba-wrap">
     <div class="ba-block before">
       <div class="ba-label">Before: slow, no tagging, poor failure output</div>
@@ -316,7 +326,7 @@ reporter: [
 | Test | File | Root cause | Status | Fixed date |
 |------|------|------------|--------|------------|
 | cart shows item count | cart.spec.ts | Missing await on goto | Fixed | 2026-01-15 |
-| checkout completes | checkout.spec.ts | Shared cart between workers | In progress |: |
+| checkout completes | checkout.spec.ts | Shared cart between workers | In progress |  |
 </code></pre>
   <p>Quality gate: if flaky rate exceeds 5% of the suite, block the merge. A 200-test suite with more than 10 flaky tests is not a test suite: it is noise.</p>
   <pre><code># playwright.config.ts
@@ -354,16 +364,20 @@ test('product listing has no critical a11y violations @a11y @critical', async ({
   expect(critical, JSON.stringify(critical, null, 2)).toHaveLength(0);
 });
 </code></pre>
-  <p>Tag it <code>@a11y</code> alongside <code>@critical</code> so it runs on every PR with the rest of the fast suite, no separate pipeline needed. Pa11y is worth adding as a second automated layer, since it doesn't always flag the same things as axe-core, the same "cross-check at least two tools" principle from testing color contrast applies here too.</p>
+  <p>Tag it <code>@a11y</code> alongside <code>@critical</code> so it runs on every PR with the rest of the fast suite, no separate pipeline needed. Pa11y is worth adding as a second automated layer. It doesn't always flag the same things as axe-core, so the "cross-check at least two tools" principle from testing color contrast applies here too.</p>
 
   <div class="callout amber">
-    <p><strong>Automated accessibility scans catch roughly 30-50% of real WCAG issues, not all of them.</strong> A green <code>@a11y</code> tag means "nothing obvious," not "accessible." Treat it as a floor, not a finish line, see the dedicated <a href="../accessibility/35-Automated-Tools-Only-Catch-30-50-Percent.html">Shift-Left Accessibility series' Blog 35</a> for the full case.</p>
+    <p><strong>Automated accessibility scans catch roughly 30-50% of real WCAG issues, not all of them.</strong> A green <code>@a11y</code> tag means "nothing obvious," not "accessible." Treat it as a floor, not a finish line. See the dedicated <a href="../accessibility/35-Automated-Tools-Only-Catch-30-50-Percent.html">Shift-Left Accessibility series' Blog 35</a> for the full case.</p>
   </div>
 
-  <p>The part CI can't do: a keyboard-only walkthrough of the core PeakAndPack flows (browse, add to cart, checkout) with the mouse disconnected, and one screen reader pass over the checkout form specifically, since forms are exactly where automated tools are weakest at catching whether a label actually makes sense out loud. Do this once by hand, document what you found, and re-run it whenever the checkout form changes.</p>
+  <p><strong>The part CI can't do.</strong> Do these once by hand, write down what you found, and repeat them whenever the checkout form changes:</p>
+  <ul>
+    <li>A keyboard-only walkthrough of the core PeakAndPack flows (browse, add to cart, checkout), with the mouse set aside.</li>
+    <li>One screen reader pass over the checkout form. Forms are where automated tools are weakest: they can't tell whether a label actually makes sense read aloud.</li>
+  </ul>
 
   <div class="callout blue">
-    <p><strong>Going deeper than PeakAndPack's CI check needs.</strong> This phase only covers enough accessibility testing to make the CI badge honest. For the full methodology, keyboard testing technique, screen reader setup, WCAG requirement reference, tool comparisons, see the site's dedicated <a href="../accessibility/00-Shift-Left-Accessibility-Series-Introduction.html">Shift-Left Accessibility series</a>, in particular <a href="../accessibility/10-Keyboard-Testing.html">Blog 10 on keyboard testing</a>, <a href="../accessibility/20-NVDA-on-Windows.html">Blog 20 on NVDA</a>, and <a href="../accessibility/32-Axe-Core-Cypress-Playwright.html">Blog 32 on axe-core in Playwright</a> specifically.</p>
+    <p><strong>Going deeper than PeakAndPack's CI check needs.</strong> This phase only covers enough accessibility testing to make the CI badge honest. For the full methodology (keyboard technique, screen reader setup, WCAG reference, tool comparisons), see the site's dedicated <a href="../accessibility/00-Shift-Left-Accessibility-Series-Introduction.html">Shift-Left Accessibility series</a>, in particular <a href="../accessibility/10-Keyboard-Testing.html">Blog 10 on keyboard testing</a>, <a href="../accessibility/20-NVDA-on-Windows.html">Blog 20 on NVDA</a>, and <a href="../accessibility/32-Axe-Core-Cypress-Playwright.html">Blog 32 on axe-core in Playwright</a> specifically.</p>
   </div>
 
   <h2 id="deliverables">7. Deliverables</h2>
@@ -384,7 +398,7 @@ test('product listing has no critical a11y violations @a11y @critical', async ({
     <p>Add <code>@critical</code> tags to the three most important PeakAndPack tests in your suite (login, add to cart, checkout). Write the GitHub Actions workflow that runs only <code>@critical</code> tests on pull requests and the full suite on a nightly schedule (use <code>on: schedule: - cron: '0 2 * * *'</code>). Confirm the workflow file is valid by pushing to a branch and checking the Actions tab.</p>
 
   <details class="solution">
-    <summary>Show solution &mdash; try it yourself first</summary>
+    <summary>Show solution: try it yourself first</summary>
     <div class="solution-body">
       <h3>PR pipeline with critical tag and nightly full run</h3>
       <pre><code>name: Playwright tests

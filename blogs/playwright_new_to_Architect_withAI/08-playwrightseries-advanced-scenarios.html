@@ -108,6 +108,9 @@ footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;
 footer a{color:var(--text-3);text-decoration:none}
 footer a:hover{color:var(--purple)}
 @media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
+.blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
+.blog-tags .series-tag{margin-bottom:0}
+.tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
 </style>
 <meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
 <meta property="og:image:width" content="1200">
@@ -132,7 +135,13 @@ footer a:hover{color:var(--purple)}
     <span aria-hidden="true">&rsaquo;</span>
     <span aria-current="page">Phase 8 of 15</span>
   </nav>
-  <span class="series-tag">Phase 8 of 15 &middot; Advanced Scenarios</span>
+  <div class="blog-tags" aria-label="Blog categories" role="group">
+    <span class="series-tag">Phase 8 of 15 &middot; Advanced Scenarios</span>
+    <span class="tag">File Upload</span>
+    <span class="tag">Dialogs</span>
+    <span class="tag">Iframes</span>
+    <span class="tag">Multiple Tabs</span>
+  </div>
   <h1>Advanced Scenarios</h1>
   <p class="subtitle">File uploads, multiple tabs, dialogs, iframes, drag and drop, and infinite scroll. The parts most automation engineers skip.</p>
   <div class="meta-row">
@@ -164,10 +173,17 @@ footer a:hover{color:var(--purple)}
   <p>Handle the parts of real applications that make most automation engineers give up. File uploads, multiple tabs, dialogs, iframes, drag and drop, and infinite scroll: each requires a specific Playwright pattern.</p>
 
   <div class="callout red">
-    <p><strong>One of these six scenarios is real, the other five are not.</strong> PeakAndPack's checkout genuinely has a payment iframe, confirmed against the live app: <code>&lt;iframe id="payment-iframe" src="/admin/payment-sandbox.html" title="Payment form"&gt;</code>, with labelled Card number, Expiry, CVV, and Cardholder name fields inside it and a "Pay now" button. The Iframes section below is accurate and runnable as written. There is no admin panel beyond that one payment sandbox page, no CSV import or export, no confirm dialog anywhere in the app, no drag-to-reorder list, and no infinite scroll: the catalog is a fixed 10 products, loaded in one page. The other five sections are written in PeakAndPack's voice for consistency but are illustrations of the Playwright API for each scenario, not code you can run against this demo &mdash; a realistic situation, since most real projects have some scenarios their primary app under test doesn't exercise yet, and the fix, shown in this phase's assignment, is a small local fixture, not a hunt for a feature that isn't there.</p>
+    <p><strong>One of these six scenarios is real, the other five are not.</strong></p>
+    <ul style="margin:.5rem 0 0 1.2rem;">
+      <li><strong>Real: the payment iframe.</strong> PeakAndPack's checkout has <code>&lt;iframe id="payment-iframe" src="/admin/payment-sandbox.html" title="Payment form"&gt;</code>, with labelled Card number, Expiry, CVV and Cardholder name fields and a "Pay now" button inside it. The Iframes section is accurate and runnable as written.</li>
+      <li><strong>Not in the app:</strong> an admin panel (beyond that payment sandbox page), CSV import or export, confirm dialogs, drag-to-reorder lists, and infinite scroll. The catalog is a fixed 10 products, loaded in one page.</li>
+      <li><strong>So those five sections are illustrations.</strong> They're written in PeakAndPack's voice for consistency, but they show the Playwright API for each scenario rather than code you can run against this demo.</li>
+    </ul>
+    <p style="margin-top:.6rem">That's a realistic situation: most projects have scenarios their main app doesn't exercise yet. The fix, shown in this phase's assignment, is a small local fixture, not a hunt for a feature that isn't there.</p>
   </div>
 
   <h2 id="before-skipping">1. Before: skipping or hardcoding workarounds</h2>
+  <p>The scenarios in this phase are the ones most often skipped with a TODO or papered over with a fixed wait. Each skip is a part of the product nobody is checking, and uploads, payments and confirmations are often exactly where the costly bugs live:</p>
   <div class="ba-wrap">
     <div class="ba-block before">
       <div class="ba-label">Before: skipping the hard part</div>
@@ -209,7 +225,7 @@ test('delete button removes product after confirmation', async ({ page }) => {
   </div>
 
   <h2 id="file-upload-download">2. File upload and download</h2>
-  <p><code>setInputFiles()</code> sets a file on a file input element without opening the OS file picker: the picker cannot be automated:</p>
+  <p><code>setInputFiles()</code> sets a file on a file input element without opening the OS file picker, which Playwright can't automate:</p>
   <pre><code>// Upload a file
 await page.getByLabel(/upload csv/i).setInputFiles('fixtures/products.csv');
 
@@ -310,8 +326,8 @@ await expect(
 
   <h2 id="deliverables">8. Deliverables</h2>
   <ul>
-    <li><code>tests/advanced.spec.ts</code>: one test per scenario: upload, download, tabs, dialog, iframe, drag, scroll</li>
-    <li><code>advanced-scenarios-guide.md</code>: which Playwright API to use for each scenario</li>
+    <li><code>tests/advanced.spec.ts</code>: a runnable payment-iframe test against PeakAndPack, plus the dialog tests against your local fixture from the assignment</li>
+    <li><code>advanced-scenarios-guide.md</code>: which Playwright API to use for each of the six scenarios, including the four you can't run here yet</li>
   </ul>
 
   <hr style="border:none;border-top:1px solid var(--border);margin:0">
@@ -322,7 +338,7 @@ await expect(
     <p>Create <code>fixtures/confirm-delete.html</code>: a bare page with one button wired to <code>onclick="if(confirm('Delete this item?')) document.body.innerHTML = 'Deleted'"</code>. Load it with <code>page.goto('file://' + path.resolve('fixtures/confirm-delete.html'))</code>. Write two tests: the first accepts the dialog and asserts the page now shows "Deleted", the second dismisses it and asserts the button is still there. Both must register the dialog handler before clicking. This is the realistic shape of the problem: your app doesn't have the scenario yet, so you prove the Playwright pattern against a fixture before the feature exists to test for real.</p>
 
   <details class="solution">
-    <summary>Show solution &mdash; try it yourself first</summary>
+    <summary>Show solution: try it yourself first</summary>
     <div class="solution-body">
       <h3>The fixture, and accept/dismiss dialog tests against it</h3>
       <pre><code>&lt;!-- fixtures/confirm-delete.html --&gt;
@@ -360,7 +376,7 @@ test('dismissing the dialog keeps the button', async ({ page }) => {
 
   <div class="bonus">
     <div class="b-label">Bonus challenge</div>
-    <p><strong>Test a download against a fixture, the same way.</strong> Build <code>fixtures/export.html</code> with a link that downloads a small inline CSV (a <code>data:</code> URL works, or serve one static file locally). Write a test that clicks the link, captures the download with <code>waitForEvent('download')</code>, reads the file from disk, and asserts it contains a header row with <code>id,name,price</code>. Once PeakAndPack (or your real project) ships an actual export feature, the pattern transfers directly &mdash; only the URL changes.</p>
+    <p><strong>Test a download against a fixture, the same way.</strong> Build <code>fixtures/export.html</code> with a link that downloads a small inline CSV (a <code>data:</code> URL works, or serve one static file locally). Write a test that clicks the link, captures the download with <code>waitForEvent('download')</code>, reads the file from disk, and asserts it contains a header row with <code>id,name,price</code>. Once PeakAndPack (or your real project) ships an actual export feature, the pattern transfers directly. Only the URL changes.</p>
   </div>
 
   <div class="series-nav">
