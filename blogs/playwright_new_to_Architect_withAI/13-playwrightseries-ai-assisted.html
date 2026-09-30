@@ -109,6 +109,11 @@ footer a{color:var(--text-3);text-decoration:none}
 footer a:hover{color:var(--purple)}
 @media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
 </style>
+<meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Playwright: Zero to Architect, by The Quality Strategist. A complete automation series: 16 phases in 4 stages, built against a real app, PeakAndPack.">
+<meta name="twitter:card" content="summary_large_image">
 </head>
 <body>
 
@@ -160,7 +165,7 @@ footer a:hover{color:var(--purple)}
     <a href="15-playwrightseries-capstone-projects.html" class="phase-pip" title="Phase 15: Capstone Projects">15</a>
   </div>
 
-  <h2>Goal for this phase</h2>
+  <h2>Goal</h2>
   <p>Use AI two ways against your existing PeakAndPack suite: as a reviewer that audits code you already wrote, and as a generator for new tests you review before they count. Leave with a documented review checklist and at least one AI-drafted test that passed your own bar, not the model's.</p>
 
   <h2 id="before-accepting-ai">1. Before: accepting AI output because it runs</h2>
@@ -254,16 +259,12 @@ and the total-recalculation check.</code></pre>
     <li><code>tests/cart-removal.spec.ts</code>: one AI-generated test, reviewed and corrected against the checklist</li>
   </ul>
 
+  <hr style="border:none;border-top:1px solid var(--border);margin:0">
+
   <div class="assignment">
     <div class="a-label">Assignment</div>
     <h3>Audit an existing spec file</h3>
     <p>Take any spec file from an earlier phase (Phase 9's page objects are a good candidate) and run it through the reviewer prompt above. Document every finding, whether you agree with it, and whether you'd have caught it yourself without the prompt.</p>
-  </div>
-
-  <div class="bonus">
-    <div class="b-label">Bonus challenge</div>
-    <p><strong>Generate a test for a feature you know is buggy.</strong> Ask AI to write a test for PeakAndPack's discount code behaviour without telling it about BUG-009. Does it generate a test that would catch the bug, or one that assumes the discount works correctly? What does that tell you about relying on AI to find bugs it doesn't know exist?</p>
-  </div>
 
   <details class="solution">
     <summary>Show solution &mdash; try it yourself first</summary>
@@ -272,15 +273,20 @@ and the total-recalculation check.</code></pre>
       <pre><code>import { test, expect } from '@playwright/test';
 
 test('removing an item recalculates the cart total', async ({ page }) => {
+  // Log in. PeakAndPack's labels aren't linked to their inputs, so getByLabel
+  // can't find them; the input type is the next most stable hook.
   await page.goto('https://peakandpack-ui.onrender.com/login');
   await page.locator('input[type="email"]').fill('test@peakandpack.com');
   await page.locator('input[type="password"]').fill('password123');
   await page.getByRole('button', { name: /log in/i }).click();
 
+  // Put one item in the cart, then remove it
   await page.getByRole('button', { name: /add to cart/i }).first().click();
   await page.goto('/cart');
   await page.getByRole('button', { name: /remove/i }).click();
 
+  // Still on the cart page, and the removed item is gone.
+  // No cart-total check: the AI's draft used a data-testid PeakAndPack doesn't have.
   await expect(page.getByText('Your Cart')).toBeVisible();
   await expect(page.getByText('Trekking Poles (Pair)')).not.toBeVisible();
 });
@@ -289,8 +295,15 @@ test('removing an item recalculates the cart total', async ({ page }) => {
       <p><strong>Why this still needs a human.</strong> Knowing PeakAndPack has no test IDs isn't something the model could know from the requirements text alone, it's something you know from having actually looked at the app. That gap, between what's written down and what's true of the running system, is exactly what the review pass exists to close.</p>
     </div>
   </details>
+  </div>
+
+  <div class="bonus">
+    <div class="b-label">Bonus challenge</div>
+    <p><strong>Generate a test for a feature you know is buggy.</strong> Ask AI to write a test for PeakAndPack's discount code behaviour without telling it about BUG-009. Does it generate a test that would catch the bug, or one that assumes the discount works correctly? What does that tell you about relying on AI to find bugs it doesn't know exist?</p>
+  </div>
 
   <div class="series-nav">
+    <span class="label">Navigate the series</span>
     <div class="nav-pair">
       <a href="12-playwrightseries-cicd-flaky-tests.html" class="nav-blog"><span class="nav-blog-arrow" aria-hidden="true">&larr;</span><div><div class="nav-blog-title">Phase 12: CI/CD &amp; Flaky Tests</div><div class="nav-blog-sub">Running the suite where it actually matters</div></div></a>
       <a href="14-playwrightseries-automation-leadership.html" class="nav-blog"><div><div class="nav-blog-title">Phase 14: Automation Leadership</div><div class="nav-blog-sub">Making the standard a team's, not just yours</div></div><span class="nav-blog-arrow" aria-hidden="true">&rarr;</span></a>

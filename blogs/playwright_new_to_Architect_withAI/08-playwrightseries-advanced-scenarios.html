@@ -109,6 +109,11 @@ footer a{color:var(--text-3);text-decoration:none}
 footer a:hover{color:var(--purple)}
 @media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
 </style>
+<meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Playwright: Zero to Architect, by The Quality Strategist. A complete automation series: 16 phases in 4 stages, built against a real app, PeakAndPack.">
+<meta name="twitter:card" content="summary_large_image">
 </head>
 <body>
 
@@ -327,20 +332,24 @@ await expect(
       <pre><code>import { test, expect } from '@playwright/test';
 import path from 'path';
 
+// A small local page with a confirm() dialog, since PeakAndPack doesn't have one
 const fixtureUrl = 'file://' + path.resolve('fixtures/confirm-delete.html');
 
 test('accepting the dialog deletes the item', async ({ page }) => {
   await page.goto(fixtureUrl);
-  // Register BEFORE clicking
+  // Register BEFORE clicking: the dialog opens the instant the button is pressed
   page.once('dialog', dialog => dialog.accept());
   await page.getByRole('button', { name: /delete/i }).click();
+  // Accepting confirms the delete, so the success message appears
   await expect(page.getByText('Deleted')).toBeVisible();
 });
 
 test('dismissing the dialog keeps the button', async ({ page }) => {
   await page.goto(fixtureUrl);
+  // Same setup, but press Cancel this time
   page.once('dialog', dialog => dialog.dismiss());
   await page.getByRole('button', { name: /delete/i }).click();
+  // Nothing was deleted, so the Delete button is still there
   await expect(page.getByRole('button', { name: /delete/i })).toBeVisible();
 });
 </code></pre>

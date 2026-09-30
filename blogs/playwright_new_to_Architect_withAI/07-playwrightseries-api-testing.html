@@ -109,6 +109,11 @@ footer a{color:var(--text-3);text-decoration:none}
 footer a:hover{color:var(--purple)}
 @media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
 </style>
+<meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Playwright: Zero to Architect, by The Quality Strategist. A complete automation series: 16 phases in 4 stages, built against a real app, PeakAndPack.">
+<meta name="twitter:card" content="summary_large_image">
 </head>
 <body>
 
@@ -222,9 +227,11 @@ test('cart page reflects API-seeded item', async ({ page, request }) => {
   <pre><code>import { test, expect } from '@playwright/test';
 
 test('GET /api/products returns a list', async ({ request }) => {
+  // No browser needed: the request fixture calls the API directly
   const res = await request.get('https://peakandpackshopdemo.onrender.com/api/products');
   expect(res.status()).toBe(200);
   const body = await res.json();
+  // The catalog changes, so check there's a list with something in it, not an exact count
   expect(Array.isArray(body.products)).toBe(true);
   expect(body.products.length).toBeGreaterThan(0);
   // Assert the shape, not the exact values
@@ -237,15 +244,17 @@ test('GET /api/products returns a list', async ({ request }) => {
   <h2 id="contract-tests">3. API contract tests for PeakAndPack</h2>
   <p>Test the key endpoints: status codes, response shapes, and the negative cases. Assert types and ranges rather than exact values so tests don't break when catalog data changes.</p>
   <pre><code>test('POST /api/cart adds item', async ({ request }) => {
+  // Log in through the API to get a token for the authenticated call
   const loginRes = await request.post('https://peakandpackshopdemo.onrender.com/api/auth/login', {
     data: { email: 'test@peakandpack.com', password: 'password123' }
   });
   const { token } = await loginRes.json();
   const res = await request.post('https://peakandpackshopdemo.onrender.com/api/cart', {
-    headers: { Authorization: `Bearer ${token}` },
+    headers: { Authorization: `Bearer ${token}` }, // PeakAndPack's session is a token, not a cookie
     data: { product_id: 1, quantity: 2 }
   });
   expect(res.status()).toBe(200);
+  // Check the shape: the cart comes back as a non-empty list
   const body = await res.json();
   expect(Array.isArray(body.cart)).toBe(true);
   expect(body.cart.length).toBeGreaterThan(0);
@@ -260,6 +269,7 @@ test('POST /api/cart without auth returns 401', async ({ request }) => {
 });
 
 test('GET /api/products/:id with invalid id returns 404', async ({ request }) => {
+  // An id that can't exist should get a clean 404, not a 500 or an empty 200
   const res = await request.get('https://peakandpackshopdemo.onrender.com/api/products/999999');
   expect(res.status()).toBe(404);
 });

@@ -109,6 +109,11 @@ footer a{color:var(--text-3);text-decoration:none}
 footer a:hover{color:var(--purple)}
 @media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
 </style>
+<meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Playwright: Zero to Architect, by The Quality Strategist. A complete automation series: 16 phases in 4 stages, built against a real app, PeakAndPack.">
+<meta name="twitter:card" content="summary_large_image">
 </head>
 <body>
 
@@ -216,16 +221,19 @@ import { Page } from '@playwright/test';
 import { CheckoutPage } from './CheckoutPage';
 
 export class CartPage {
+  // The test passes in its browser tab; every method below uses it
   constructor(private page: Page) {}
 
   async goto() {
     await this.page.goto('https://peakandpack-ui.onrender.com/cart');
   }
 
+  // Each cart row has one Remove button, so counting them counts the items
   async getItemCount(): Promise&lt;number&gt; {
     return await this.page.getByRole('button', { name: 'Remove' }).count();
   }
 
+  // Returns the next page object, so the test carries straight on with checkout
   async proceedToCheckout(): Promise&lt;CheckoutPage&gt; {
     await this.page.getByRole('button', { name: /proceed to checkout/i }).click();
     return new CheckoutPage(this.page);
@@ -239,22 +247,28 @@ export class CartPage {
 import { Page, expect } from '@playwright/test';
 
 export class CheckoutPage {
+  // Every method works on the same browser tab the test passed in
   constructor(private page: Page) {}
 
+  // Step 1 (optional): enter a discount code
   async applyDiscount(code: string) {
     await this.page.getByLabel(/discount code/i).fill(code);
   }
 
+  // Step 2: fill the payment form, which lives inside an iframe
   async payWithTestCard() {
+    // frameLocator steps inside the iframe; page-level locators can't see into it
     const frame = this.page.frameLocator('iframe[title="Payment form"]');
-    await frame.getByLabel(/card number/i).fill('4111111111111111');
+    await frame.getByLabel(/card number/i).fill('4111111111111111'); // standard test card number
     await frame.getByLabel(/expiry/i).fill('12/28');
     await frame.getByLabel(/cvv/i).fill('123');
     await frame.getByLabel(/cardholder name/i).fill('Test User');
     await frame.getByRole('button', { name: /pay now/i }).click();
   }
 
+  // Step 3: confirm the order and wait for the server to create it
   async placeOrder() {
+    // Start listening before the click so the response can't be missed
     const done = this.page.waitForResponse(
       r => r.url().includes('/api/orders/checkout') && r.status() === 201
     );
@@ -262,12 +276,14 @@ export class CheckoutPage {
     await done;
   }
 
+  // Checks the confirmation heading appeared after the order went through
   async assertOrderConfirmed() {
     await expect(
       this.page.getByRole('heading', { name: /order placed/i })
     ).toBeVisible();
   }
 
+  // Returns just the number from "Order ID: 42", for tests that look the order up later
   async getOrderId(): Promise&lt;string&gt; {
     const text = await this.page.getByText(/Order ID: \d+/).textContent();
     return text?.replace('Order ID: ', '') ?? '';

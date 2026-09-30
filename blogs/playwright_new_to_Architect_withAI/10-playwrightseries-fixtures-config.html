@@ -109,6 +109,11 @@ footer a{color:var(--text-3);text-decoration:none}
 footer a:hover{color:var(--purple)}
 @media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
 </style>
+<meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Playwright: Zero to Architect, by The Quality Strategist. A complete automation series: 16 phases in 4 stages, built against a real app, PeakAndPack.">
+<meta name="twitter:card" content="summary_large_image">
 </head>
 <body>
 
@@ -292,9 +297,11 @@ export const test = base.extend&lt;Fixtures&gt;({
   <pre><code>export const test = base.extend&lt;{}, { sharedToken: string }&gt;({
   // Worker scope: runs once per worker process, shared across all tests in that worker
   sharedToken: [async ({ request }, use) => {
+    // Log in once through the API
     const res = await request.post('https://peakandpackshopdemo.onrender.com/api/auth/login', {
       data: { email: 'shared@peakandpack.com', password: 'password123' }
     });
+    // Hand the token to every test in this worker
     await use((await res.json()).token);
   }, { scope: 'worker' }],
 });
@@ -310,14 +317,17 @@ export const test = base.extend&lt;Fixtures&gt;({
   <pre><code>// playwright.config.ts
 export default defineConfig({
   projects: [
+    // Desktop Chrome against production
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'], baseURL: 'https://peakandpack-ui.onrender.com' },
     },
+    // Same tests on an iPhone-sized screen and user agent
     {
       name: 'mobile',
       use: { ...devices['iPhone 13'], baseURL: 'https://peakandpack-ui.onrender.com' },
     },
+    // Staging only runs files named *.staging.spec.ts
     {
       name: 'staging',
       use: { browserName: 'chromium', baseURL: 'https://staging.peakandpack.com' },

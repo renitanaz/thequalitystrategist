@@ -109,6 +109,11 @@ footer a{color:var(--text-3);text-decoration:none}
 footer a:hover{color:var(--purple)}
 @media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
 </style>
+<meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Playwright: Zero to Architect, by The Quality Strategist. A complete automation series: 16 phases in 4 stages, built against a real app, PeakAndPack.">
+<meta name="twitter:card" content="summary_large_image">
 </head>
 <body>
 
@@ -189,7 +194,9 @@ test('product listing matches baseline', async ({ page }) => {
 
   <h2 id="capturing-baselines">2. Capturing baselines</h2>
   <p>The first time you run <code>toHaveScreenshot()</code>, there is no baseline yet. Playwright fails the test and creates the baseline file automatically. Run the update command to accept the current state as the baseline:</p>
-  <pre><code>npx playwright test --update-snapshots</code></pre>
+  <pre><code># Saves today's screenshots as the new baselines.
+# Only run it when the page currently looks the way it should.
+npx playwright test --update-snapshots</code></pre>
   <p>Baselines are stored in a <code>snapshots/</code> folder next to the spec file. Commit them to the repo. They are the ground truth every future run is compared against.</p>
   <pre><code>// tests/visual.spec.ts
 import { test, expect } from '@playwright/test';
@@ -221,12 +228,14 @@ test('mobile product listing matches baseline', async ({ page }) => {
   <h2 id="masking">3. Masking dynamic content</h2>
   <p>Timestamps, live prices, user avatars, and random content change between runs and cause false failures. Mask them so they are ignored in the comparison. PeakAndPack's order history page has exactly this problem: every order row prints the timestamp it was placed at, so a baseline captured today never matches a run captured tomorrow:</p>
   <pre><code>test('order history matches baseline', async ({ page }) => {
+  // Order history lists each order with the time it was placed
   await page.goto('/orders');
   await expect(page).toHaveScreenshot('order-history.png', {
+    // Masked areas are painted over in both images, so they never cause a diff
     mask: [
       page.getByText(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/),  // order timestamp, changes every run
     ],
-    maxDiffPixelRatio: 0.02,
+    maxDiffPixelRatio: 0.02, // allow up to 2% of pixels to differ
   });
 });
 </code></pre>
@@ -264,19 +273,19 @@ await expect(page).toHaveScreenshot('header.png', {
   <h2 id="visual-tests-ci">6. Visual tests in CI</h2>
   <pre><code># .github/workflows/visual.yml
 name: Visual regression
-on: [push, pull_request]
+on: [push, pull_request]  # run on every push and every pull request
 jobs:
   visual:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # same OS the baselines were captured on
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
-      - run: npm ci
-      - run: npx playwright install chromium
+      - run: npm ci  # install exact versions from package-lock.json
+      - run: npx playwright install chromium  # only the browser the visual tests use
       - run: npx playwright test tests/visual.spec.ts
       - uses: actions/upload-artifact@v4
-        if: failure()
+        if: failure()  # keep the diff images only when something changed
         with:
           name: visual-diff-report
           path: playwright-report/
@@ -316,10 +325,12 @@ jobs:
 
 test('product listing visual regression', async ({ page }) => {
   await page.goto('https://peakandpack-ui.onrender.com/');
+  // Wait for product images to finish loading, or the baseline captures placeholders
   await page.waitForLoadState('networkidle');
 
+  // Compare the full page against the saved baseline image
   await expect(page).toHaveScreenshot('product-listing.png', {
-    maxDiffPixelRatio: 0.02,
+    maxDiffPixelRatio: 0.02, // allow up to 2% of pixels to differ (font smoothing, etc.)
   });
 });
 </code></pre>

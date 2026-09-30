@@ -53,6 +53,9 @@ p{color:var(--text-2);margin-bottom:1.25rem;font-weight:300}
 strong{color:var(--text);font-weight:500}
 ul,ol{padding-left:1.4rem;margin-bottom:1.25rem;color:var(--text-2);font-weight:300}
 li{margin-bottom:.45rem}
+.goal-list{list-style:none;padding-left:1.4rem}
+.goal-list li{position:relative}
+.goal-list li::before{content:"";position:absolute;left:-1.3rem;top:.48em;width:.85rem;height:.85rem;border:1.5px solid var(--purple);border-radius:3px}
 code{background:var(--bg3);padding:1px 6px;border-radius:3px;font-size:.85em;color:var(--text-2);font-family:monospace}
 pre{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:1rem 1.1rem;font-family:monospace;font-size:.82rem;color:var(--text-2);line-height:1.65;overflow-x:auto;margin:1rem 0}
 pre code{background:none;padding:0;color:inherit}
@@ -108,6 +111,11 @@ footer a{color:var(--text-3);text-decoration:none}
 footer a:hover{color:var(--purple)}
 @media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
 </style>
+<meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Playwright: Zero to Architect, by The Quality Strategist. A complete automation series: 16 phases in 4 stages, built against a real app, PeakAndPack.">
+<meta name="twitter:card" content="summary_large_image">
 </head>
 <body>
 
@@ -161,8 +169,15 @@ footer a:hover{color:var(--purple)}
   <h2>What this series is</h2>
   <p>A complete Playwright series for anyone starting from zero. No prior automation experience needed. By Phase 15 you will have the skills to design, build, and lead a Playwright test suite at an architect level. Each phase teaches one concept, applies it to a real app (PeakAndPack), and leaves you with a working file. See the <a href="00-playwrightseries-landing.html" style="color:var(--purple)">series overview</a> for the full phase list and what PeakAndPack is.</p>
 
-  <h2>Goal for this phase</h2>
-  <p>Install Playwright, write two tests against PeakAndPack, run them, and understand every line of what you wrote. By the end of this phase the setup is done and the loop (write a test, run it, read the result) is familiar. Every later phase assumes this loop.</p>
+  <h2>Goal</h2>
+  <p>By the end of this phase you will have:</p>
+  <ul class="goal-list">
+    <li>Installed Playwright</li>
+    <li>Written two tests against PeakAndPack</li>
+    <li>Run them and read the result</li>
+    <li>Understood every line of what you wrote</li>
+  </ul>
+  <p>That loop (write a test, run it, read the result) is what every later phase builds on.</p>
 
   <h2>Before: what most people do first</h2>
   <p>Before learning the right way to set up a Playwright project, here is the most common wrong start: copying a test from the internet and running it against a hardcoded URL:</p>
@@ -203,14 +218,17 @@ test('product list loads', async ({ page }) => {
   <p>The "before" version works once. The "after" version works in CI, survives a restyle, and gives you a proper pass/fail report. The rest of this phase explains exactly why, and builds it step by step.</p>
 
   <h2>Step 1: check Node.js is installed</h2>
-  <p>Playwright runs on Node.js. Open a terminal and run:</p>
-  <pre><code>node --version</code></pre>
-  <p>You need version 18 or higher. If you get "command not found", install the LTS build from <a href="https://nodejs.org" target="_blank" style="color:var(--purple)">nodejs.org</a>, then close and reopen the terminal.</p>
-  <p>Already done this? The <a href="../Mind_On_QA_WithAI/Basics/playwright-basics.html" style="color:var(--purple)">Playwright Basics primer</a> has a more detailed walkthrough if you get stuck at this step.</p>
+  <p>Playwright runs on Node.js. Open a terminal (Mac: search "Terminal"; Windows: search "PowerShell") and run:</p>
+  <pre><code># Prints your Node.js version. Playwright needs 18 or higher.
+node --version</code></pre>
+  <p>If you see something like <code>v20.x.x</code> (anything 18 or higher), you're set. If you get "command not found", install the LTS build from <a href="https://nodejs.org" target="_blank" style="color:var(--purple)">nodejs.org</a>, then close and reopen the terminal.</p>
 
   <h2>Step 2: create your project and install Playwright</h2>
-  <pre><code>mkdir peakandpack-tests
+  <pre><code># Make a folder for the project and move into it
+mkdir peakandpack-tests
 cd peakandpack-tests
+
+# Set up Playwright: config file, example test, and the browsers it drives
 npm init playwright@latest</code></pre>
   <p>When it asks questions, choose: TypeScript <strong>yes</strong>, tests folder <strong>tests</strong>, add GitHub Actions <strong>no</strong> (Phase 12 covers that). Accept everything else. This installs Playwright and downloads the browsers it drives : give it a minute the first time.</p>
   <p>Before you write a single test, put this project under version control. Every later phase, especially Phase 12's CI setup, assumes your test code lives in a Git repo on GitHub. New to Git? The <a href="../Mind_On_QA_WithAI/Basics/git-for-qa.html" style="color:var(--purple)">Git for QA primer</a> covers <code>init</code>, committing, branching, and pushing to GitHub in one page.</p>
@@ -257,14 +275,18 @@ test('product search is available', async ({ page }) => {
   </div>
 
   <h2>Step 5: run the tests</h2>
-  <pre><code>npx playwright test</code></pre>
+  <pre><code># Runs every test in tests/ with no visible browser (headless)
+npx playwright test</code></pre>
   <p>Playwright opens the browser invisibly (headless), loads PeakAndPack, runs both tests, and prints the result. To watch it happen in a visible browser:</p>
-  <pre><code>npx playwright test --headed</code></pre>
+  <pre><code># Same run, but opens a visible browser so you can watch each step
+npx playwright test --headed</code></pre>
   <p>To run just one file:</p>
-  <pre><code>npx playwright test tests/first.spec.ts</code></pre>
+  <pre><code># Runs only this file, handy while you're still writing it
+npx playwright test tests/first.spec.ts</code></pre>
 
   <h2>Step 6: read the HTML report</h2>
-  <pre><code>npx playwright show-report</code></pre>
+  <pre><code># Opens the HTML report from the last run in your browser
+npx playwright show-report</code></pre>
   <p>This opens a browser tab with the full report. Learn to read it now; you will use it constantly. The key sections:</p>
   <ul>
     <li><strong>Summary bar at the top</strong>: total passed, failed, skipped, and total run time at a glance.</li>
@@ -294,10 +316,12 @@ test('product search is available', async ({ page }) => {
   <p>The same two tests in Python, for reference:</p>
   <pre><code>from playwright.sync_api import Page, expect
 
+# Test 1: the product list loads
 def test_product_list_heading_is_visible(page: Page):
-    page.goto("/")
+    page.goto("/")  # "/" is relative to the base URL, same as the TypeScript config
     expect(page.get_by_role("heading", name="peakandpack")).to_be_visible()
 
+# Test 2: the search box is available
 def test_product_search_is_available(page: Page):
     page.goto("/")
     expect(page.get_by_role("textbox", name="search gear")).to_be_visible()
@@ -341,6 +365,7 @@ def test_product_search_is_available(page: Page):
       <h3>Assignment solution</h3>
       <pre><code>test('page has a title', async ({ page }) => {
   await page.goto('/');
+  // Page-level assertion: checks the browser tab's &lt;title&gt;, so no locator needed
   await expect(page).toHaveTitle(/react app/i);
 });
 </code></pre>
