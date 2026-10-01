@@ -111,6 +111,16 @@ footer a:hover{color:var(--purple)}
 .blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
 .blog-tags .series-tag{margin-bottom:0}
 .tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+details.explain{margin:.5rem 0 1.5rem;border:1px solid var(--purple-border);border-radius:10px;background:var(--purple-bg)}
+details.explain summary{padding:.6rem 1rem;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--purple);list-style:none;display:flex;align-items:center;gap:.5rem}
+details.explain summary::-webkit-details-marker{display:none}
+details.explain summary::before{content:"\25B6";font-size:.65rem;transition:transform .2s}
+details.explain[open] summary::before{transform:rotate(90deg)}
+.explain-body{padding:.1rem 1.2rem 1rem;font-size:.92rem;line-height:1.7}
+.explain-body p{margin:.7rem 0}
+.explain-body ul{margin:.3rem 0 .7rem 1.2rem;padding-left:0}
+.explain-body li{margin-bottom:.35rem}
+.explain-body pre{margin:.6rem 0}
 </style>
 <meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
 <meta property="og:image:width" content="1200">
@@ -147,7 +157,7 @@ footer a:hover{color:var(--purple)}
   <div class="meta-row">
     <span><strong>Series: Playwright: Zero to Architect</strong></span>
     <span>Demo: PeakAndPack</span>
-    <span>9 min read</span>
+    <span>20 min read</span>
     <span>By: RN</span>
   </div>
   <div class="phase-strip" aria-label="Series progress">
@@ -172,6 +182,15 @@ footer a:hover{color:var(--purple)}
   <h2>Goal</h2>
   <p>Handle authentication properly at scale. Test multiple roles without logging in through the UI for every test. A suite that logs in through the browser for every authenticated test is slow, brittle, and unnecessary.</p>
 
+  <p>By the end of this phase you can:</p>
+  <ul>
+    <li>save a login once and start every test already signed in</li>
+    <li>build that with a setup project, and know why it beats a global setup file</li>
+    <li>keep a saved session fresh without going through the login page</li>
+    <li>test the customer and admin roles, in the page and at the API</li>
+    <li>check that one user cannot see another user's data</li>
+  </ul>
+
   <h2 id="before-ui-login">1. Before: logging in through the UI in every test</h2>
   <p>Most meaningful tests need a logged-in user, but the login itself is rarely what's being tested. Repeating it through the UI in every test adds time to every run, and gives each test one more place to fail for reasons unrelated to the feature it's checking:</p>
   <div class="ba-wrap">
@@ -181,13 +200,13 @@ footer a:hover{color:var(--purple)}
 // In a suite of 50 tests, this is 50 browser logins.
 // Each takes 2-4 seconds. Total: 100-200 seconds just on login.
 test('cart page requires auth', async ({ page }) => {
-  await page.goto('https://peakandpack-ui.onrender.com/login');
+  await page.goto('/login');
   await page.locator('input[type="email"]').fill('test@peakandpack.com');
   await page.locator('input[type="password"]').fill('password123');
   await page.getByRole('button', { name: /log in/i }).click();
-  await page.waitForURL('https://peakandpack-ui.onrender.com/');
+  await page.waitForURL('/');
   // Now actually test the thing
-  await page.goto('https://peakandpack-ui.onrender.com/cart');
+  await page.goto('/cart');
   await expect(page.getByRole('heading', { name: /cart/i })).toBeVisible();
 });
 </code></pre>
@@ -198,7 +217,7 @@ test('cart page requires auth', async ({ page }) => {
 // Every test starts already logged in.
 // Zero login steps in the test itself.
 test('cart page loads for authenticated user', async ({ page }) => {
-  await page.goto('https://peakandpack-ui.onrender.com/cart');
+  await page.goto('/cart');
   await expect(page.getByRole('heading', { name: /cart/i })).toBeVisible();
 });
 </code></pre>
@@ -232,7 +251,128 @@ const context = await browser.newContext({
     <li><strong>The admin panel</strong> keeps its token in a JavaScript variable, so a saved session can't carry it. Every admin-panel test signs in through the panel's own form, as you'll see in Phase 8.</li>
   </ul>
 
-  <h2 id="multi-role">3. Multi-role testing: customer and admin</h2>
+  <h2 id="setup-project">3. Saving the session with a setup project</h2>
+  <p>The usual way to create the saved file is a <strong>setup project</strong>, the pattern in Playwright's own documentation. A setup project is a group of tests that runs first, logs in, and saves the session. Everything else depends on it. First the setup test, in a file ending in <code>.setup.ts</code>:</p>
+<pre><code>// tests/auth.setup.ts: log in once and save the session
+import { test as setup, expect } from '@playwright/test';
+
+const customerFile = 'playwright/.auth/customer.json';
+
+setup('log in as the customer', async ({ page }) =&gt; {
+  await page.goto('/login');
+  // The labels aren't linked to their inputs, so the input type is the hook
+  await page.locator('input[type="email"]').fill('test@peakandpack.com');
+  await page.locator('input[type="password"]').fill('password123');
+  await page.getByRole('button', { name: /log in/i }).click();
+  await page.waitForURL('/');
+  await expect(page.getByText('Hi, Test User')).toBeVisible();   // prove the login worked before saving
+  await page.context().storageState({ path: customerFile });
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <p><strong>In plain words:</strong> a test whose only job is to log in and save the session.</p>
+      <ul>
+        <li><code>import { test as setup, expect }</code> imports <code>test</code> under the name <code>setup</code>. It is the same tool; the new name makes the file read as setup, and the report shows it that way.</li>
+        <li><code>customerFile</code> is where the session is saved. Playwright's documentation uses <code>playwright/.auth/</code>, a folder that is easy to git-ignore (below). Playwright creates the folder if it is missing.</li>
+        <li>The steps are the login steps from Phase 3. This is an ordinary test, not a special file: it can use <code>page</code>, locators and assertions.</li>
+        <li><code>await expect(page.getByText('Hi, Test User')).toBeVisible()</code> checks the login really worked <em>before</em> saving. Without it, a failed login would quietly save a logged-out session, and every test after it would fail somewhere else.</li>
+        <li><code>page.context().storageState({ path: customerFile })</code> saves everything the browser remembers for the site (PeakAndPack's login lives in <code>localStorage</code>) into that file.</li>
+      </ul>
+    </div>
+  </details>
+
+  <p>Then the config, which makes the real tests wait for setup and start from its file:</p>
+<pre><code>  // playwright.config.ts: the projects part
+  projects: [
+    // 1. The setup project: runs first, and runs only the setup file
+    { name: 'setup', testMatch: /.*\.setup\.ts/ },
+
+    // 2. The real tests: start logged in, and only after setup has passed
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'], storageState: 'playwright/.auth/customer.json' },
+      dependencies: ['setup'],
+    },
+  ],</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>projects</code> is the list of groups the config runs. Phase 0 had a list of browsers; here the first entry is a different kind of project.</li>
+        <li><code>testMatch: /.*\.setup\.ts/</code> gives the <code>setup</code> project its files: those whose names end in <code>.setup.ts</code>. The pattern is a regular expression, like the ones in Phase 0's locators. Test files matching your normal pattern (<code>.spec.ts</code>) are not picked up by it.</li>
+        <li><code>...devices['Desktop Chrome']</code> copies the settings for a desktop Chrome browser into this project. The three dots mean "put everything from this list here".</li>
+        <li><code>storageState: 'playwright/.auth/customer.json'</code> under <code>use</code> starts every test in this project with the saved session.</li>
+        <li><code>dependencies: ['setup']</code> says the <code>chromium</code> project must wait for <code>setup</code> to pass. Playwright runs setup first, then the tests. If setup fails, the tests don't run at all, and the report says <strong>did not run</strong> rather than showing a pile of confusing failures.</li>
+        <li><strong>Why this beats the <code>globalSetup</code> file of section 5:</strong> a setup project is a real test. It appears in the report, keeps its trace and screenshots, and a failure points at the exact step. An error inside <code>globalSetup</code> doesn't show up in the report that way.</li>
+      </ul>
+    </div>
+  </details>
+
+  <p>Now a test needs no login steps at all:</p>
+<pre><code>// tests/cart.spec.ts: no login steps anywhere in the test
+test('cart page loads for the logged-in customer', async ({ page }) =&gt; {
+  await page.goto('/cart');
+  await expect(page.getByRole('heading', { name: 'Your Cart' })).toBeVisible();
+});</code></pre>
+  <p>Run <code>npx playwright test</code> and the report lists the setup test first, then the cart test. The file holds a session token, so keep it out of Git:</p>
+<pre><code># .gitignore
+playwright/.auth</code></pre>
+  <p>Section 5 saves two roles with <code>globalSetup</code> and sections 6 to 8 use those files. The setup-project version of the same two sessions is shown in section 5 too. The tests don't care which one made the file.</p>
+
+  <h2 id="refresh-session">4. Refreshing a saved session without the login page</h2>
+  <p>A saved session goes stale: PeakAndPack's tokens last 24 hours. Logging in through the page on every run wastes time, and never refreshing means a file that quietly expires. The fix is to refresh the file through the API, and to keep the login page only as the fallback for the first run:</p>
+<pre><code>// tests/auth.setup.ts: reuse the saved file, and refresh it through the API
+import { test as setup, expect } from '@playwright/test';
+import fs from 'fs';
+
+const API = 'https://peakandpackshopdemo.onrender.com';
+const customerFile = 'playwright/.auth/customer.json';
+
+setup('get a logged-in customer session', async ({ page, request }) =&gt; {
+  if (fs.existsSync(customerFile)) {
+    // A saved session exists: ask the API for a fresh token and write it into the file
+    const res = await request.post(`${API}/api/auth/login`, {
+      data: { email: 'test@peakandpack.com', password: 'password123' },
+    });
+    expect(res.status()).toBe(200);
+    const { token, user } = await res.json();
+
+    const state = JSON.parse(fs.readFileSync(customerFile, 'utf-8'));
+    const items: { name: string; value: string }[] = state.origins[0].localStorage;
+    items.find((i) =&gt; i.name === 'token')!.value = token;
+    items.find((i) =&gt; i.name === 'user')!.value = JSON.stringify(user);
+    fs.writeFileSync(customerFile, JSON.stringify(state, null, 2));
+    return;
+  }
+
+  // First run, no file yet: log in through the page and save the session
+  await page.goto('/login');
+  await page.locator('input[type="email"]').fill('test@peakandpack.com');
+  await page.locator('input[type="password"]').fill('password123');
+  await page.getByRole('button', { name: /log in/i }).click();
+  await page.waitForURL('/');
+  await expect(page.getByText('Hi, Test User')).toBeVisible();
+  await page.context().storageState({ path: customerFile });
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>import fs from 'fs'</code> brings in Node's file tools, built into Node.js. <code>fs.existsSync(file)</code> answers yes or no: does the file exist?</li>
+        <li>If the file exists, the first branch runs. <code>request.post(.../api/auth/login)</code> asks the API for a brand-new token without opening a page, which is much faster than logging in through the form. <code>expect(res.status()).toBe(200)</code> checks the login worked.</li>
+        <li><code>JSON.parse(fs.readFileSync(customerFile, 'utf-8'))</code> reads the saved file and turns its text into an object you can change. <code>state.origins[0].localStorage</code> is the list of saved <code>localStorage</code> entries for the site.</li>
+        <li><code>items.find((i) => i.name === 'token')!.value = token</code> finds the entry called <code>token</code> and replaces its value with the new one. The <code>!</code> tells TypeScript "I know this entry exists"; without it TypeScript warns that <code>find</code> might return nothing. The same line for <code>user</code> keeps the saved name and email up to date.</li>
+        <li><code>fs.writeFileSync(...)</code> writes the changed object back to the file, and <code>return</code> ends the setup there.</li>
+        <li>If the file does not exist, the code skips the first branch and does the full login through the page, the same steps as section 3, then saves the file. That slow path is the <strong>fallback</strong>, kept so the very first run, and any run after you delete the file, still works.</li>
+        <li><strong>What this buys you:</strong> a token lasts 24 hours. With this setup the file never goes stale, and after the first run each setup costs one quick API call instead of a login page.</li>
+      </ul>
+    </div>
+  </details>
+
+  <p>On my run, the first run went through the login page and the second went through the API, and the token saved in the file changed between them. The cart test passed on both, so the refreshed token worked. The API path took well under half the time of the login page (about 350 ms against 925 ms).</p>
+
+  <h2 id="multi-role">5. Multi-role testing: customer and admin</h2>
   <p>Role bugs are some of the most expensive a store can ship: a customer who can reach admin data is a security incident, not a display glitch. PeakAndPack has two roles to test:</p>
   <ul>
     <li><strong>Customer:</strong> <code>test@peakandpack.com</code> (password <code>password123</code>), and anyone who registers.</li>
@@ -266,8 +406,57 @@ async function globalSetup() {
 
 export default globalSetup;
 </code></pre>
+  <p><strong>The same two sessions as a setup project.</strong> If you set up the project as in section 3, the two roles are two setup tests:</p>
+<pre><code>// tests/auth.setup.ts: one session per role
+import { test as setup, expect, Page } from '@playwright/test';
 
-  <h2 id="role-based-access">4. Role-based access tests</h2>
+async function loginAndSave(page: Page, email: string, password: string, greeting: string, file: string) {
+  await page.goto('/login');
+  await page.locator('input[type="email"]').fill(email);
+  await page.locator('input[type="password"]').fill(password);
+  await page.getByRole('button', { name: /log in/i }).click();
+  await page.waitForURL('/');
+  await expect(page.getByText(greeting)).toBeVisible();
+  await page.context().storageState({ path: file });
+}
+
+setup('customer session', async ({ page }) =&gt; {
+  await loginAndSave(page, 'test@peakandpack.com', 'password123', 'Hi, Test User', 'playwright/.auth/customer.json');
+});
+
+setup('admin session', async ({ page }) =&gt; {
+  await loginAndSave(page, 'admin@peakandpack.com', 'adminpass123', 'Hi, Admin', 'playwright/.auth/admin.json');
+});</code></pre>
+<pre><code>// tests/roles.spec.ts: the project's default is the customer; a group can switch to the admin
+test('the customer does not see the Admin link', async ({ page }) =&gt; {
+  await page.goto('/');
+  await expect(page.getByText('Hi, Test User')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Admin' })).toHaveCount(0);
+});
+
+test.describe('as an admin', () =&gt; {
+  test.use({ storageState: 'playwright/.auth/admin.json' });
+
+  test('sees the Admin link', async ({ page }) =&gt; {
+    await page.goto('/');
+    await expect(page.getByText('Hi, Admin')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Admin' })).toBeVisible();
+  });
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>loginAndSave(...)</code> holds the login steps once, taking the email, password, the greeting that proves the login worked, and the file to save to.</li>
+        <li>Each <code>setup(...)</code> block is one role. They run in the <code>setup</code> project before anything that depends on it, and each saves its own file, so a customer test can never pick up the admin's session by accident.</li>
+        <li>In <code>roles.spec.ts</code>, the project's <code>storageState</code> makes every test a customer by default. <code>test.use({ storageState: ... })</code> inside a group switches that group to the admin file, as in section 6.</li>
+        <li>The assertions on the greeting come first, as in section 6: "no Admin link" would also be true on a logged-out page.</li>
+      </ul>
+    </div>
+  </details>
+
+
+  <h2 id="role-based-access">6. Role-based access tests</h2>
   <p>A role test has two layers, and only one of them is security. Hiding the Admin link from customers is a convenience. The server refusing a customer's token is the actual control. Test both, and don't mistake the first for the second:</p>
   <pre><code>// tests/rbac.spec.ts
 import { test, expect, APIRequestContext } from '@playwright/test';
@@ -329,7 +518,7 @@ test('admin API accepts an admin token', async ({ request }) => {
     <p><strong>Where the Admin link goes.</strong> The link points to <code>/admin/</code> on the store's own address. The admin panel that Phase 8 tests is on the API server, at <code>https://peakandpackshopdemo.onrender.com/admin/</code>. Following the store's link as the admin and trying to sign in is a worthwhile exploratory check of its own: note what happens.</p>
   </div>
 
-  <h2 id="session-expiry">5. Session expiry: handling mid-test logouts</h2>
+  <h2 id="session-expiry">7. Session expiry: handling mid-test logouts</h2>
   <p>PeakAndPack's tokens last 24 hours. If one expires while a long test is running, the next request is refused and the test fails somewhere confusing, often on an assertion that has nothing to do with login. Handle it explicitly:</p>
   <pre><code>// Fail with a clear message the moment a request is refused.
 // PeakAndPack answers an expired token with 403 on most routes, and 401 on admin routes.
@@ -341,7 +530,7 @@ page.on('response', response => {
 </code></pre>
   <p>Leave this listener out of tests that expect a refusal, like the 401 and 403 checks above, or it will fail them for doing their job.</p>
 
-  <h2 id="concurrent-sessions">6. Two users at once: can one see the other's data?</h2>
+  <h2 id="concurrent-sessions">8. Two users at once: can one see the other's data?</h2>
   <p>Some bugs only show up with two people: one user's data appearing for another. Each browser context, and each API request context, is a separate session, so one test can act as two users:</p>
   <pre><code>// tests/multi-user.spec.ts
 import { test, expect } from '@playwright/test';
@@ -394,7 +583,7 @@ test("a customer's order list shows only their own orders", async ({ playwright 
     </ul>
   </div>
 
-  <h2 id="deliverables">7. Deliverables</h2>
+  <h2 id="deliverables">9. Deliverables</h2>
   <ul>
     <li><code>fixtures/auth.ts</code>: globalSetup that saves a customer session and an admin session</li>
     <li><code>tests/rbac.spec.ts</code>: the Admin link checks for both roles, plus the admin API's 401, 403 and 200 checks</li>
@@ -404,9 +593,9 @@ test("a customer's order list shows only their own orders", async ({ playwright 
   <hr style="border:none;border-top:1px solid var(--border);margin:0">
 
   <div class="assignment">
-    <div class="a-label">Assignment</div>
+    <div class="a-label">Assignment, part 1</div>
     <h3>Save and reuse a real session</h3>
-    <p>Write a globalSetup that logs in as a PeakAndPack customer and saves the session to <code>fixtures/customer.json</code>. Then write two tests using that saved session with zero UI login steps: one that verifies the logged-in customer can view their cart, and one that verifies an unauthenticated context (no storageState at all) gets turned away when it hits an endpoint that requires auth, such as <code>/api/orders</code>. It's the same kind of 401 check as the admin API test in section 4, on a route every customer uses.</p>
+    <p>Write a globalSetup that logs in as a PeakAndPack customer and saves the session to <code>fixtures/customer.json</code>. Then write two tests using that saved session with zero UI login steps: one that verifies the logged-in customer can view their cart, and one that verifies an unauthenticated context (no storageState at all) gets turned away when it hits an endpoint that requires auth, such as <code>/api/orders</code>. It's the same kind of 401 check as the admin API test in section 6, on a route every customer uses.</p>
 
   <details class="solution">
     <summary>Show solution: try it yourself first</summary>
@@ -449,6 +638,89 @@ test('unauthenticated request to /api/orders is rejected', async ({ browser }) =
 </code></pre>
       <p><strong>The helper function.</strong> <code>asCustomer(browser)</code> is a small helper that creates a context with the customer session. Extracting it means every test that needs a customer session calls one line instead of repeating the context setup.</p>
       <p><strong>Why the second test uses a fresh context, not a page navigation.</strong> There is no UI gate to test against: the frontend does not redirect anonymous visitors away from any route. The real, documented gate is server-side: <code>/api/orders</code> requires auth (see the API reference), and a request with no session gets a 401. Testing at that layer confirms the thing that's actually enforced, instead of a UI behaviour that was never built.</p>
+    </div>
+  </details>
+  </div>
+
+  <div class="assignment" style="margin-top:2rem">
+    <div class="a-label">Assignment, part 2</div>
+    <h3>A setup project with a refresh</h3>
+    <p>Use everything from sections 3 and 4.</p>
+    <ol>
+      <li>Replace your <code>globalSetup</code> with a setup project: a <code>.setup.ts</code> file, a <code>setup</code> project in the config, and the real project depending on it. Git-ignore the saved files.</li>
+      <li>Make the setup log in through the page only when the file does not exist yet, and refresh it through the API when it does.</li>
+      <li>Run the suite twice. Prove from the output that the second run used the API path, and from the file that the token changed.</li>
+      <li>Break the setup on purpose (a wrong password) with the file deleted. What does the run say about the tests that depend on setup, and why is that better than a pile of failures?</li>
+      <li>Add an admin session as a second setup test, and write one test group that uses it.</li>
+    </ol>
+
+  <details class="solution">
+    <summary>Show solution: try it yourself first</summary>
+    <div class="solution-body">
+      <h3>The setup file for both roles</h3>
+<pre><code>// tests/auth.setup.ts
+import { test as setup, expect, APIRequestContext, Page } from '@playwright/test';
+import fs from 'fs';
+
+const API = 'https://peakandpackshopdemo.onrender.com';
+
+type Who = { email: string; password: string; greeting: string; file: string };
+
+// Refresh a saved session through the API, or log in through the page the first time
+async function getSession(page: Page, request: APIRequestContext, who: Who) {
+  if (fs.existsSync(who.file)) {
+    console.log(`refreshing ${who.file} through the API`);
+    const res = await request.post(`${API}/api/auth/login`, {
+      data: { email: who.email, password: who.password },
+    });
+    expect(res.status()).toBe(200);
+    const { token, user } = await res.json();
+
+    const state = JSON.parse(fs.readFileSync(who.file, 'utf-8'));
+    const items: { name: string; value: string }[] = state.origins[0].localStorage;
+    items.find((i) =&gt; i.name === 'token')!.value = token;
+    items.find((i) =&gt; i.name === 'user')!.value = JSON.stringify(user);
+    fs.writeFileSync(who.file, JSON.stringify(state, null, 2));
+    return;
+  }
+
+  console.log(`logging in through the page for ${who.file}`);
+  await page.goto('/login');
+  await page.locator('input[type="email"]').fill(who.email);
+  await page.locator('input[type="password"]').fill(who.password);
+  await page.getByRole('button', { name: /log in/i }).click();
+  await page.waitForURL('/');
+  await expect(page.getByText(who.greeting)).toBeVisible();
+  await page.context().storageState({ path: who.file });
+}
+
+setup('customer session', async ({ page, request }) =&gt; {
+  await getSession(page, request, {
+    email: 'test@peakandpack.com', password: 'password123',
+    greeting: 'Hi, Test User', file: 'playwright/.auth/customer.json',
+  });
+});
+
+setup('admin session', async ({ page, request }) =&gt; {
+  await getSession(page, request, {
+    email: 'admin@peakandpack.com', password: 'adminpass123',
+    greeting: 'Hi, Admin', file: 'playwright/.auth/admin.json',
+  });
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>type Who = { ... }</code> names the shape of the details one role needs, so <code>getSession</code> can take them as a single input. It is a TypeScript label, like the ones in Part 5 of JavaScript for Testers.</li>
+        <li><code>getSession</code> is section 4's code made reusable: refresh through the API if the file exists, log in through the page if not.</li>
+        <li>The two <code>setup(...)</code> blocks only say who to get a session for. Adding a third role would be six more lines.</li>
+        <li>The <code>console.log</code> lines make it visible which path ran. On the first run you see "logging in through the page" twice, and on later runs "refreshing ... through the API".</li>
+      </ul>
+    </div>
+  </details>
+      <p>The config is the one from section 3 with the same two lines: the <code>setup</code> project, and <code>chromium</code> with <code>dependencies: ['setup']</code> and the customer file as its default <code>storageState</code>. The test group for the admin is the one from section 5.</p>
+      <p><strong>Step 3.</strong> The first run prints "logging in through the page" for each role. The second prints "refreshing ... through the API", and the <code>token</code> value inside each file differs from before.</p>
+      <p><strong>Step 4.</strong> The summary shows the setup test failed and the real tests as <strong>did not run</strong>. A failure in setup is one clear failure with its own trace, instead of every test failing in its own confusing way because nobody was logged in.</p>
     </div>
   </details>
   </div>

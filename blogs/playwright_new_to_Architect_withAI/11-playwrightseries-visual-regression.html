@@ -111,6 +111,16 @@ footer a:hover{color:var(--purple)}
 .blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
 .blog-tags .series-tag{margin-bottom:0}
 .tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+details.explain{margin:.5rem 0 1.5rem;border:1px solid var(--purple-border);border-radius:10px;background:var(--purple-bg)}
+details.explain summary{padding:.6rem 1rem;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--purple);list-style:none;display:flex;align-items:center;gap:.5rem}
+details.explain summary::-webkit-details-marker{display:none}
+details.explain summary::before{content:"\25B6";font-size:.65rem;transition:transform .2s}
+details.explain[open] summary::before{transform:rotate(90deg)}
+.explain-body{padding:.1rem 1.2rem 1rem;font-size:.92rem;line-height:1.7}
+.explain-body p{margin:.7rem 0}
+.explain-body ul{margin:.3rem 0 .7rem 1.2rem;padding-left:0}
+.explain-body li{margin-bottom:.35rem}
+.explain-body pre{margin:.6rem 0}
 </style>
 <meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
 <meta property="og:image:width" content="1200">
@@ -147,7 +157,7 @@ footer a:hover{color:var(--purple)}
   <div class="meta-row">
     <span><strong>Series: Playwright: Zero to Architect</strong></span>
     <span>Demo: PeakAndPack</span>
-    <span>9 min read</span>
+    <span>26 min read</span>
     <span>By: RN</span>
   </div>
   <div class="phase-strip" aria-label="Series progress">
@@ -171,6 +181,15 @@ footer a:hover{color:var(--purple)}
 
   <h2>Goal</h2>
   <p>Catch visual changes that no assertion catches. A button that moves 10 pixels, a price that overflows its container on mobile, a card that renders blank: none of these trigger a functional test failure. Screenshot comparison catches all of them.</p>
+  <p>By the end of this phase you can:</p>
+  <ul>
+    <li>capture a baseline, and know where it is saved and why its name includes the browser and the system</li>
+    <li>read a failed comparison, and find the expected, actual and diff pictures</li>
+    <li>choose a tolerance without hiding real changes</li>
+    <li>keep third-party images and changing text from breaking your baselines</li>
+    <li>compare one component instead of a whole page, and run on a phone-sized window</li>
+    <li>decide whether a difference is a bug or a reason to re-baseline</li>
+  </ul>
 
   <h2 id="before-invisible-bugs">1. Before: visual bugs invisible to functional tests</h2>
   <p>Functional tests check that the right things are on the page, not how the page looks. A user who can't read a clipped price, or can't reach a button pushed off-screen, is still stuck, even when every assertion passes:</p>
@@ -180,95 +199,229 @@ footer a:hover{color:var(--purple)}
 <pre><code>// This test passes even if the product card is completely broken visually.
 // The heading text is correct, so the assertion passes.
 // A missing image, an overflowing price, a misaligned button -- all invisible.
-test('product listing loads', async ({ page }) => {
-  await page.goto('https://peakandpack-ui.onrender.com/');
+test('product listing loads', async ({ page }) =&gt; {
+  await page.goto('/');
   await expect(
     page.getByRole('heading', { name: /peakandpack gear/i })
   ).toBeVisible(); // passes regardless of how the card looks
-});
-</code></pre>
+});</code></pre>
     </div>
     <div class="ba-block after">
       <div class="ba-label">After: visual regression catches layout bugs</div>
-<pre><code>// toHaveScreenshot compares against a saved baseline pixel by pixel.
+<pre><code>// toHaveScreenshot compares against a saved baseline, pixel by pixel.
 // A moved button, a broken layout, an overflowing price -- all caught.
-test('product listing matches baseline', async ({ page }) => {
-  await page.goto('https://peakandpack-ui.onrender.com/');
-  await expect(page).toHaveScreenshot('product-listing.png', {
-    maxDiffPixelRatio: 0.02, // allow 2% pixel difference (font rendering)
-  });
-});
-</code></pre>
+test('product listing matches baseline', async ({ page }) =&gt; {
+  await page.goto('/');
+  await expect(page.getByTestId('product-card').first()).toBeVisible();
+  await expect(page).toHaveScreenshot('product-listing.png', { fullPage: true });
+});</code></pre>
     </div>
   </div>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>toHaveScreenshot('product-listing.png')</code> takes a picture of the page and compares it with a saved picture, the <strong>baseline</strong>, with that name. If they differ, the check fails.</li>
+        <li><code>fullPage: true</code> pictures the whole scrollable page. Without it, the picture is only what fits in the browser window (1,280 by 720 pixels in my run, against 1,201 pixels tall for the whole page), so anything lower down is not checked.</li>
+        <li><code>await expect(...first()).toBeVisible()</code> comes first so the picture is taken after the list has loaded, not while it still says "Loading gear...".</li>
+      </ul>
+    </div>
+  </details>
 
   <h2 id="capturing-baselines">2. Capturing baselines</h2>
-  <p>The first time you run <code>toHaveScreenshot()</code>, there is no baseline yet. Playwright fails the test and creates the baseline file automatically. Run the update command to accept the current state as the baseline:</p>
-  <pre><code># Saves today's screenshots as the new baselines.
+  <p>The first time you run <code>toHaveScreenshot()</code>, there is no baseline yet. Playwright fails the test, with a message that says so, and writes the picture it took as the baseline. Run the test again and it compares against that picture:</p>
+<pre><code># Run the visual tests. The first run has no baseline, so it fails and writes one.
+npx playwright test tests/visual.spec.ts
+
+# Run again: now it compares against the baseline, and passes
+npx playwright test tests/visual.spec.ts
+
+# Replace baselines with what the page looks like right now.
 # Only run it when the page currently looks the way it should.
-npx playwright test --update-snapshots</code></pre>
-  <p>Baselines are stored in a <code>snapshots/</code> folder next to the spec file. Commit them to the repo. They are the ground truth every future run is compared against.</p>
-  <pre><code>// tests/visual.spec.ts
+npx playwright test tests/visual.spec.ts --update-snapshots</code></pre>
+<pre><code>Error: A snapshot doesn't exist at .../tests/visual.spec.ts-snapshots/product-listing-chromium-win32.png, writing actual.</code></pre>
+  <p>That first message is not a bug. Read the picture it wrote, and if the page looks right, you have your baseline. I ran this twice: the first run failed and wrote the file, the second passed.</p>
+  <p><strong>Where the baselines go.</strong> Playwright saves them in a folder next to the test file, named after it, and puts the browser project and the operating system in each file's name:</p>
+<pre><code>tests/
+  visual.spec.ts
+  visual.spec.ts-snapshots/
+    product-listing-chromium-win32.png    &lt;- name, then the browser project, then the operating system
+    product-card-chromium-win32.png</code></pre>
+  <p>A baseline belongs to a test <em>file</em> and a name: the same name in another test file looks in that file's own folder, finds nothing, and creates a new baseline. Commit these pictures to the repo: they are the reference every future run compares against. The system in the name matters, and it is the reason this phase says to make baselines where they will be compared. A baseline named <code>...-win32.png</code> belongs to Windows. A run on a Linux server looks for <code>...-linux.png</code>, finds none, and fails the way a first run does. Fonts and anti-aliasing really do differ between systems, which is why Playwright keeps them apart (section 8 covers CI).</p>
+
+  <h2 id="reading-a-failure">3. Reading a failed comparison</h2>
+  <p>To see a failure, hide every image on the page and compare against the baseline (the extra test in part 1 of the assignment). The terminal says what differed, in numbers:</p>
+<pre><code>Error: expect(page).toHaveScreenshot(expected) failed
+
+  Expected an image 1280px by 1201px, received 1280px by 913px. 245572 pixels (ratio 0.16 of all image pixels) are different.</code></pre>
+  <p>Two things are worth reading. The size: the baseline was 1,201 pixels tall and the new picture 913, because hiding the images shortened every card. And the count: 245,572 pixels differ, 16% of the picture. A small change reads very differently:</p>
+<pre><code>  1178 pixels (ratio 0.01 of all image pixels) are different.</code></pre>
+  <p>That is what changing one card's border colour from grey to red produces: 1,178 pixels, under 1% of the picture. The numbers tell you at a glance whether you are looking at a broken page or a one-element change.</p>
+  <p>Playwright also saves three pictures for the failed test, in <code>test-results/</code>: <code>...-expected.png</code> (the baseline), <code>...-actual.png</code> (what the page looks like now) and <code>...-diff.png</code> (the pixels that differ, highlighted). The HTML report lists them with the failed test, so you can compare them side by side. When a comparison fails, Playwright keeps retrying until the timeout in case the page was still settling, which is why a failing visual test takes a few seconds to fail.</p>
+
+  <h2 id="thresholds">4. How much difference is fine</h2>
+  <p>By default, not one pixel may differ. Three options loosen that:</p>
+<pre><code>// Three ways to say "a little difference is fine"
+await expect(page).toHaveScreenshot('product-listing.png', {
+  fullPage: true,
+  maxDiffPixels: 100,        // at most 100 pixels may differ, in total
+  // maxDiffPixelRatio: 0.001, // or: at most 0.1% of all pixels
+  // threshold: 0.2,           // how different one pixel's colour must be to count (0 to 1)
+});</code></pre>
+  <p><code>maxDiffPixels</code> is a count, <code>maxDiffPixelRatio</code> is a share of the whole picture, and <code>threshold</code> is how different one pixel's colour must be before it counts at all. They solve different problems, and the choice matters:</p>
+  <div class="callout amber">
+    <p><strong>A percentage on a big picture hides real changes.</strong> This phase used to recommend <code>maxDiffPixelRatio: 0.02</code>, two percent. I tested it: with that setting, the red-bordered card above <em>passes</em>, because 1,178 pixels is far below two percent of a full-page picture. A visible change got through. Prefer a small count of pixels, tuned to your page: run the test on an unchanged page, see how many pixels differ (often none), and allow only a little more. Use the ratio only for pictures where tiny differences are spread everywhere.</p>
+  </div>
+
+  <h2 id="stabilising">5. Making the page hold still</h2>
+  <p>A baseline is only useful if the page looks the same every time it is untouched. Two things in PeakAndPack would break that:</p>
+<pre><code>// helpers/visual.ts
+import { Page } from '@playwright/test';
+
+// A one-pixel grey picture, so product images never depend on the image host
+const GREY_PIXEL = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+  'base64'
+);
+
+/** Replace every product image with the same grey picture. Call it before page.goto. */
+export async function stubImages(page: Page) {
+  await page.route('**/picsum.photos/**', (route) =&gt;
+    route.fulfill({ body: GREY_PIXEL, contentType: 'image/png' })
+  );
+}</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <p><strong>In plain words:</strong> replace the product images with a plain grey picture, so the host cannot change the baseline.</p>
+      <ul>
+        <li>PeakAndPack's product pictures come from an outside host, <code>picsum.photos</code>. That is a risk for a visual test: if the host is slow, or changes a picture, your page looks different with nothing wrong in your app.</li>
+        <li><code>Buffer.from('...', 'base64')</code> turns a short piece of text into the bytes of a tiny grey picture, a single pixel.</li>
+        <li><code>page.route('**/picsum.photos/**', ...)</code> catches every request to that host (Phase 7), and <code>route.fulfill(...)</code> answers it with the grey pixel. The browser stretches it to fill each card's picture area.</li>
+        <li>Call <code>stubImages(page)</code> before <code>page.goto</code>, because a route only catches requests made after it exists.</li>
+        <li><strong>The trade-off:</strong> the baseline no longer shows the real pictures, so a broken image would not be caught. Use this when you are testing layout, and keep one separate check, outside the visual tests, that the images load.</li>
+      </ul>
+    </div>
+  </details>
+<pre><code>// tests/visual.spec.ts
 import { test, expect } from '@playwright/test';
+import { stubImages } from '../helpers/visual';
 
-test('product listing matches baseline', async ({ page }) => {
-  await page.goto('https://peakandpack-ui.onrender.com/');
-  await page.waitForLoadState('networkidle'); // wait for all images to load
+test('product listing matches baseline', async ({ page }) =&gt; {
+  await stubImages(page);
+  await page.goto('/');
+  await expect(page.getByTestId('product-card').first()).toBeVisible();   // the list has loaded
+
   await expect(page).toHaveScreenshot('product-listing.png', {
-    maxDiffPixelRatio: 0.02,
+    fullPage: true,           // the whole scrollable page, not just what fits the window
+    maxDiffPixels: 100,
   });
 });
 
-test('cart page matches baseline', async ({ page }) => {
-  await page.goto('https://peakandpack-ui.onrender.com/cart');
-  await expect(page).toHaveScreenshot('cart.png', {
-    maxDiffPixelRatio: 0.02,
-  });
-});
+test('a product card matches its baseline', async ({ page }) =&gt; {
+  await stubImages(page);
+  await page.goto('/');
+  const card = page.getByTestId('product-card').filter({ hasText: 'Headlamp' });
+  await expect(card).toBeVisible();
 
-test('mobile product listing matches baseline', async ({ page }) => {
-  await page.setViewportSize({ width: 375, height: 812 });
-  await page.goto('https://peakandpack-ui.onrender.com/');
-  await expect(page).toHaveScreenshot('product-listing-mobile.png', {
-    maxDiffPixelRatio: 0.02,
-  });
-});
-</code></pre>
+  await expect(card).toHaveScreenshot('headlamp-card.png');    // only this card is compared
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li>Both tests stub the images and wait for the list, so the page is the same every time.</li>
+        <li><code>maxDiffPixels: 100</code> allows up to 100 pixels to differ, as a small allowance for rendering noise. Section 4 explains how to choose the number.</li>
+        <li><code>getByTestId('product-card').filter({ hasText: 'Headlamp' })</code> finds one card, as in Phase 2. <code>expect(card).toHaveScreenshot(...)</code> then pictures <strong>only that card</strong>.</li>
+        <li>A card picture fails only if that card changes. A full-page picture fails if anything on the page changes, such as a new product, a different count line or a footer.</li>
+      </ul>
+    </div>
+  </details>
 
-  <h2 id="masking">3. Masking dynamic content</h2>
-  <p>Timestamps, live prices, user avatars, and random content change between runs and cause false failures. Mask them so they are ignored in the comparison. PeakAndPack's order history page has exactly this problem: every order row prints the timestamp it was placed at, so a baseline captured today never matches a run captured tomorrow:</p>
-  <pre><code>test('order history matches baseline', async ({ page }) => {
-  // Order history lists each order with the time it was placed.
-  // Needs a logged-in session (Phase 5's storageState setup)
-  await page.goto('/orders');
-  await expect(page).toHaveScreenshot('order-history.png', {
-    // Masked areas are painted over in both images, so they never cause a diff
-    mask: [
-      page.getByText(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/),  // order timestamp, changes every run
-    ],
-    maxDiffPixelRatio: 0.02, // allow up to 2% of pixels to differ
-  });
-});
-</code></pre>
-  <p>Masked areas are replaced with a solid colour in the comparison. The rest of the page is still compared pixel by pixel. An app with per-user avatars or live-updating prices would mask those the same way, once the frontend team adds a stable <code>data-testid</code> to them (PeakAndPack itself has none yet, see Phase 2).</p>
+  <h2 id="masking">6. Masking dynamic content</h2>
+  <p>Timestamps, counters, user avatars and ids change between runs and cause false failures. Mask them so they are ignored in the comparison. PeakAndPack's order confirmation page shows an order id that is different every time:</p>
+<pre><code>// tests/visual-checkout.spec.ts
+import { test, expect } from '@playwright/test';
+import { stubImages } from '../helpers/visual';
+import { signInWithItemInCart } from '../helpers/session';   // Phase 9
+import { CartPage } from '../pages/CartPage';                // Phase 9
 
-  <h2 id="component-vs-full-page">4. Component screenshots vs full-page screenshots</h2>
+test('order confirmation matches baseline', async ({ page, request }) =&gt; {
+  await stubImages(page);
+  await signInWithItemInCart(page, request);
+  const cart = new CartPage(page);
+  await cart.goto();
+  const checkout = await cart.proceedToCheckout();
+  await checkout.payWithTestCard();
+  await checkout.placeOrder();
+  await expect(page.getByRole('heading', { name: 'Order placed!' })).toBeVisible();
+
+  await expect(page).toHaveScreenshot('order-confirmation.png', {
+    // The order id is different on every run. Masked areas are painted over
+    // in both pictures, so they never cause a difference.
+    mask: [page.getByText(/^Order ID: \d+$/)],
+  });
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>signInWithItemInCart</code> and the page objects are from Phase 9. The test goes through checkout and lands on the confirmation page.</li>
+        <li><code>await expect(page.getByRole('heading', { name: 'Order placed!' })).toBeVisible()</code> waits for that page before the picture is taken.</li>
+        <li><code>mask: [ ... ]</code> takes a list of locators. Playwright paints each one over with a solid colour in both the baseline and the new picture, so what is inside never causes a difference. Here that is the line "Order ID: 17": the number is different on every run.</li>
+        <li><code>/^Order ID: \d+$/</code> is a pattern: the words "Order ID: " followed by digits, and nothing else.</li>
+        <li>The rest of the page, the heading, the total and the delivery line, is still compared pixel by pixel.</li>
+      </ul>
+    </div>
+  </details>
+  <p>I ran it three ways. With the mask, a later run with a new order id passed. Without the mask, the same later run failed with 52 pixels different: just the digits of the id. The mask removes that difference and nothing else.</p>
+  <p><strong>Why not the order history page?</strong> It looks like the natural choice, since it prints a timestamp for every order. But PeakAndPack's <code>/api/orders</code> returns every customer's orders (BUG-010, Phase 6), so that page grows each time anyone places an order, and no mask can make it hold still. A baseline needs data you control.</p>
+
+  <h2 id="component-vs-full-page">7. Component screenshots vs full-page screenshots</h2>
   <p>What you capture decides how often a visual test fails, and how much each failure tells you. There are three options:</p>
-  <pre><code>// Full page (default): captures the entire scrollable page
-await expect(page).toHaveScreenshot('full-page.png');
+  <pre><code>// The window only (the default): just what fits on the screen
+await expect(page).toHaveScreenshot('window.png');
 
-// Specific element: captures only the product card
-const card = page.getByTestId('product-card').first(); // the first card only
+// The whole scrollable page
+await expect(page).toHaveScreenshot('full-page.png', { fullPage: true });
+
+// One element: only the product card
+const card = page.getByTestId('product-card').first();
 await expect(card).toHaveScreenshot('product-card.png');
-
-// Clipped region: captures a specific area
-await expect(page).toHaveScreenshot('header.png', {
-  clip: { x: 0, y: 0, width: 1280, height: 80 }
-});
 </code></pre>
-  <p>Component screenshots are faster and more stable than full-page ones. A full-page screenshot fails if anything on the page changes. A card screenshot only fails if that card changes.</p>
+<pre><code>// A fixed area of the page, such as the header bar
+await expect(page).toHaveScreenshot('header.png', {
+  clip: { x: 0, y: 0, width: 1280, height: 60 },
+});</code></pre>
+  <p>Component pictures are faster and more stable than full-page ones. A full-page picture fails if anything on the page changes: a new product, a changed footer, a different count line. A card picture only fails if that card changes. Keep full-page pictures for a few key layouts, and use component pictures for the rest.</p>
 
-  <h2 id="when-to-rebaseline">5. When to re-baseline vs when the diff is a real bug</h2>
+  <h3 id="phone">The same test on a phone</h3>
+<pre><code>// playwright.config.ts
+import { defineConfig, devices } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './tests',
+  use: { baseURL: 'https://peakandpack-ui.onrender.com' },
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'mobile', use: { ...devices['iPhone 13'] } },     // a phone-sized window, touch, WebKit
+  ],
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li>A project (Phase 10) with <code>devices['iPhone 13']</code> runs every test in an emulated phone: a narrow window, touch, and the WebKit browser engine.</li>
+        <li>The baseline file name includes the project name, so the same test keeps one baseline for the desktop and another for the phone. They never get compared with each other.</li>
+      </ul>
+    </div>
+  </details>
+<pre><code>tests/visual.spec.ts-snapshots/
+  product-listing-chromium-win32.png    &lt;- desktop
+  product-listing-mobile-win32.png      &lt;- phone: same test, its own baseline</code></pre>
+  <p>Run the same visual tests and each project makes its own baselines. On a narrow window the product cards stack in one column (Phase 10), so the phone's page is much taller than the desktop's. That is what a visual test on the phone is for.</p>
+
+  <h2 id="when-to-rebaseline">8. When to re-baseline vs when the diff is a real bug</h2>
   <p>This is the judgment call no tool makes for you. The rule: re-baseline when the change is intentional, file a bug when it is not.</p>
   <div class="table-wrap">
     <table>
@@ -276,84 +429,182 @@ await expect(page).toHaveScreenshot('header.png', {
       <tbody>
         <tr><td>Designer changed the button colour intentionally</td><td>Re-baseline. The old screenshot is no longer the correct reference.</td></tr>
         <tr><td>A price is clipped on mobile after a font change</td><td>File a bug. This is a real visual regression.</td></tr>
-        <tr><td>Font rendering differs between your machine and CI</td><td>Increase <code>maxDiffPixelRatio</code> slightly, or run baselines in CI so they always match CI rendering.</td></tr>
+        <tr><td>Font rendering differs between your machine and CI</td><td>The baselines were made on a different system. Make them on the system that compares them (below).</td></tr>
         <tr><td>A dynamic element was not masked and keeps changing</td><td>Add it to the mask. Do not re-baseline every run.</td></tr>
+        <tr><td>A page gets taller because a product was added</td><td>If intended, re-baseline. If the test should not care, compare a component instead of the full page.</td></tr>
       </tbody>
     </table>
   </div>
+  <p>The re-baseline step is <code>--update-snapshots</code>, and it accepts whatever the page looks like right now, bugs included. So the order is: look at the diff picture, decide, and only then update. After updating, look at which baseline files changed in Git: they should be exactly the ones you expected.</p>
 
-  <h2 id="visual-tests-ci">6. Visual tests in CI</h2>
-  <pre><code># .github/workflows/visual.yml
+  <h2 id="visual-tests-ci">9. Visual tests in CI</h2>
+  <p>Because a baseline belongs to one operating system, the safest place to make baselines is the place that compares them. A Linux build server needs Linux baselines. One way: a second workflow that you start by hand, which runs the update and hands you the new pictures to commit:</p>
+<pre><code># .github/workflows/visual.yml
 name: Visual regression
 on: [push, pull_request]  # run on every push and every pull request
 jobs:
   visual:
-    runs-on: ubuntu-latest  # same OS the baselines were captured on
+    runs-on: ubuntu-latest  # the baselines for 'linux' are made on this system
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
       - run: npm ci  # install exact versions from package-lock.json
-      - run: npx playwright install chromium  # only the browser the visual tests use
+      - run: npx playwright install --with-deps chromium  # only the browser the visual tests use
       - run: npx playwright test tests/visual.spec.ts
       - uses: actions/upload-artifact@v4
-        if: failure()  # keep the diff images only when something changed
+        if: always()  # keep the report and the diff images, pass or fail
         with:
           name: visual-diff-report
-          path: playwright-report/
-</code></pre>
-  <p>On failure, the uploaded artifact contains the diff images: the baseline on the left, the actual screenshot on the right, and the pixel diff highlighted in the middle. This is the evidence for whether the diff is a bug or needs a re-baseline.</p>
+          path: |
+            playwright-report/
+            test-results/</code></pre>
+<pre><code># .github/workflows/update-baselines.yml
+name: Update visual baselines
+on: workflow_dispatch   # runs only when you press the button in GitHub
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test tests/visual.spec.ts --update-snapshots
+      - uses: actions/upload-artifact@v4
+        with:
+          name: new-baselines
+          path: tests/**/*-snapshots/</code></pre>
+  <p>On a failed run, the uploaded artifact holds the report and <code>test-results/</code> with the expected, actual and diff pictures, which is the evidence for whether the difference is a bug or needs a re-baseline.</p>
+  <div class="callout blue">
+    <p><strong>I haven't run these two workflows.</strong> They follow the pattern above, but nothing here has run on GitHub. <a href="12-playwrightseries-cicd-flaky-tests.html" style="color:var(--purple)">Phase 12</a> has the full pipeline workflows (pull request, nightly, sharded). Treat this YAML as a sketch until you have run it in your own repository.</p>
+  </div>
 
   <div class="callout red">
     <p><strong>Common mistakes in Phase 11.</strong></p>
     <ul style="margin:.5rem 0 0 1.2rem;">
-      <li><strong>Capturing baselines on your local machine.</strong> Font rendering, anti-aliasing, and GPU differences mean local baselines fail in CI. Capture baselines in CI (on the same Ubuntu runner) and commit those.</li>
-      <li><strong>Not masking dynamic content.</strong> Any content that changes between runs (timestamps, prices, session data) will cause false failures on every run. Mask it immediately.</li>
-      <li><strong>Re-baselining without reviewing the diff.</strong> Running <code>--update-snapshots</code> without looking at what changed accepts any visual regression as the new baseline. Always review the diff report before updating.</li>
+      <li><strong>Capturing baselines on a different system than the one that compares them.</strong> The file names carry the system (<code>win32</code>, <code>linux</code>), so a Windows baseline is never used on Linux and the first run there fails. Make baselines where they will be compared.</li>
+      <li><strong>Using a percentage tolerance on a full-page picture.</strong> Two percent of a page is thousands of pixels. A whole card can change colour and still pass. Use a small pixel count.</li>
+      <li><strong>Letting a third-party host decide what your baseline looks like.</strong> Images from another site change, or load late. Stub them, or compare components that don't contain them.</li>
+      <li><strong>Not masking dynamic content.</strong> Anything that changes between runs (ids, timestamps, counters) will cause false failures. Mask it immediately.</li>
+      <li><strong>Re-baselining without reviewing the diff.</strong> Running <code>--update-snapshots</code> without looking at what changed accepts any visual regression as the new baseline. Look at the diff picture first.</li>
       <li><strong>Full-page screenshots for everything.</strong> A footer change breaks every full-page test. Prefer component screenshots for specific areas and reserve full-page for key layout tests.</li>
+      <li><strong>Forgetting <code>fullPage: true</code>.</strong> Without it, only the top of the page is compared, and a change lower down is not seen.</li>
+      <li><strong>Baselining a page with data you don't control.</strong> The order history grows when anyone orders. Pick pages whose content you set up yourself.</li>
     </ul>
   </div>
 
-  <h2 id="deliverables">7. Deliverables</h2>
+  <h2 id="deliverables">10. Deliverables</h2>
   <ul>
-    <li><code>tests/visual.spec.ts</code>: baseline captures for product listing, cart, checkout (desktop and mobile)</li>
-    <li><code>snapshots/</code>: committed baseline images</li>
-    <li><code>.github/workflows/visual.yml</code>: CI pipeline for visual tests</li>
-    <li><code>visual-guide.md</code>: re-baseline decisions and masking strategy</li>
+    <li><code>tests/visual.spec.ts</code>: baselines for the product listing and a product card, on desktop and phone</li>
+    <li><code>tests/visual-checkout.spec.ts</code>: the order confirmation, with the order id masked</li>
+    <li><code>helpers/visual.ts</code>: the image stub</li>
+    <li><code>tests/*-snapshots/</code>: committed baseline pictures</li>
+    <li><code>.github/workflows/visual.yml</code> and <code>update-baselines.yml</code>: the CI sketch</li>
+    <li><code>visual-guide.md</code>: re-baseline decisions, tolerance and masking strategy</li>
   </ul>
 
   <hr style="border:none;border-top:1px solid var(--border);margin:0">
 
   <div class="assignment">
-    <div class="a-label">Assignment</div>
+    <div class="a-label">Assignment, part 1</div>
     <h3>Catch a visual regression deliberately introduced</h3>
-    <p>Capture a baseline for the PeakAndPack product listing. Then open the PeakAndPack URL in a browser, use the developer tools to temporarily hide the product card images (add <code>display:none</code> to the img elements). Run the visual test without updating the baseline. Confirm the test fails and the diff report shows the missing images. Then remove the CSS change and confirm the test passes again.</p>
+    <p>Capture a baseline for the PeakAndPack product listing with the test from section 5. Then add a second test to the same file that hides every product image with <code>page.addStyleTag</code> and uses the same baseline name, and run it without updating the baseline. Confirm the test fails, read the numbers, and open the diff picture. Then delete the extra test and confirm the real test still passes.</p>
 
   <details class="solution">
     <summary>Show solution: try it yourself first</summary>
     <div class="solution-body">
-      <h3>Visual regression test with masking</h3>
-      <pre><code>import { test, expect } from '@playwright/test';
+      <h3>The extra test that hides the images</h3>
+<pre><code>// Add this test to tests/visual.spec.ts, next to the real one
+test('product listing, images hidden', async ({ page }) =&gt; {
+  await stubImages(page);
+  await page.goto('/');
+  await expect(page.getByTestId('product-card').first()).toBeVisible();
 
-test('product listing visual regression', async ({ page }) => {
-  await page.goto('https://peakandpack-ui.onrender.com/');
-  // Wait for product images to finish loading, or the baseline captures placeholders
-  await page.waitForLoadState('networkidle');
+  // Simulate the bug: hide every image, as a broken stylesheet might
+  await page.addStyleTag({ content: 'img { display: none !important; }' });
 
-  // Compare the full page against the saved baseline image
-  await expect(page).toHaveScreenshot('product-listing.png', {
-    maxDiffPixelRatio: 0.02, // allow up to 2% of pixels to differ (font smoothing, etc.)
-  });
-});
-</code></pre>
-      <p><strong>Why waitForLoadState('networkidle') matters.</strong> Images load asynchronously. If you capture the screenshot before all images have loaded, you get a baseline with placeholder images. Then the next run, when images have loaded, every card fails the comparison. <code>networkidle</code> waits until there have been no network requests for 500ms, which means all images are loaded.</p>
+  // The same file and the same name as the real test, so it is compared against the real baseline
+  await expect(page).toHaveScreenshot('product-listing.png', { fullPage: true, maxDiffPixels: 100 });
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <p><strong>In plain words:</strong> a test that breaks the page on purpose and is compared against the real baseline.</p>
+      <ul>
+        <li><code>page.addStyleTag({ content: '...' })</code> adds a piece of CSS to the page. <code>img { display: none !important; }</code> hides every image.</li>
+        <li>A baseline belongs to a test file and a name. This test sits in the same file as the real one and asks for the same <code>product-listing.png</code>, so it is compared against the real baseline. In a different file it would find no baseline and just create one.</li>
+        <li>With the images hidden, the page is also a different height, and the failure message says so.</li>
+        <li>It is a test written to fail, to prove the visual check works. Delete it once you have seen the failure, as in Phase 10's timeout demo.</li>
+      </ul>
+    </div>
+  </details>
+      <p><strong>What you will see.</strong> The comparison fails with a message like <code>Expected an image 1280px by 1201px, received 1280px by 913px. 245572 pixels (ratio 0.16 of all image pixels) are different.</code> The diff picture shows every card shorter and every image area gone. With the extra test deleted, the real test passes again, because the baseline was never touched.</p>
+    </div>
+  </details>
+  </div>
+
+  <div class="assignment" style="margin-top:2rem">
+    <div class="a-label">Assignment, part 2</div>
+    <h3>Baselines for a component, with two states</h3>
+    <p>Use everything from sections 3 to 8.</p>
+    <ol>
+      <li>Write a test for the cart total heading that captures it with one item, then with two. Use a new customer, so the cart starts empty.</li>
+      <li>Run it twice: once to create the baselines, once to confirm it passes.</li>
+      <li>Change the heading's style in a copy of the test (for example, set its colour to red with <code>addStyleTag</code>), run it, and read how many pixels differ.</li>
+      <li>Say why a <code>maxDiffPixelRatio</code> of 0.02 would be the wrong choice for a picture this small, and which number you would use instead.</li>
+      <li>Run the product listing test on the <code>mobile</code> project and find its baseline file.</li>
+    </ol>
+
+  <details class="solution">
+    <summary>Show solution: try it yourself first</summary>
+    <div class="solution-body">
+      <h3>The cart total test</h3>
+<pre><code>// tests/visual-cart.spec.ts
+import { test, expect } from '@playwright/test';
+import { stubImages } from '../helpers/visual';
+import { signInAsNewCustomer } from '../helpers/session';   // Phase 9
+
+const API = 'https://peakandpackshopdemo.onrender.com';
+
+test('the cart total in its two key states', async ({ page, request }) =&gt; {
+  await stubImages(page);
+  const token = await signInAsNewCustomer(page, request);
+  const auth = { Authorization: `Bearer ${token}` };
+  const total = page.getByRole('heading', { name: /^Total:/ });     // "Total: $34.99"
+
+  await request.post(`${API}/api/cart`, { headers: auth, data: { product_id: 1, quantity: 1 } });
+  await page.goto('/cart');
+  await expect(total).toHaveText('Total: $34.99');                  // wait for the cart to load
+  await expect(total).toHaveScreenshot('cart-total-one-item.png');
+
+  await request.post(`${API}/api/cart`, { headers: auth, data: { product_id: 3, quantity: 1 } });
+  await page.reload();
+  await expect(total).toHaveText('Total: $80.98');
+  await expect(total).toHaveScreenshot('cart-total-two-items.png');
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>signInAsNewCustomer</code> (Phase 9) gives a new customer an empty cart and returns the token for the API calls.</li>
+        <li><code>page.getByRole('heading', { name: /^Total:/ })</code> finds the "Total: $34.99" heading. A locator describes it, so the same one is used for both states.</li>
+        <li><code>await expect(total).toHaveText('Total: $34.99')</code> waits for the cart to load, then <code>toHaveScreenshot</code> pictures only that heading.</li>
+        <li>Adding a second product and reloading gives the second state, <code>Total: $80.98</code>. The two baselines document the component's two key states, and the tiny pictures make a clear, cheap check.</li>
+      </ul>
+    </div>
+  </details>
+      <p><strong>Step 3.</strong> I turned the heading's text red and the comparison failed with <code>653 pixels (ratio 0.02 of all image pixels) are different</code>. A small <code>maxDiffPixels</code> catches that.</p>
+      <p><strong>Step 4.</strong> The heading's picture is 1,240 by 33 pixels, 40,920 in all. Two percent of that is 818 pixels, and the red text differs by only 653, so a 2% ratio lets the whole text change colour and still pass. I ran it to check. For a component, use a count close to zero, or none at all.</p>
+      <p><strong>Step 5.</strong> The phone's baseline is saved as <code>product-listing-mobile-win32.png</code> (on Windows), next to the desktop's <code>product-listing-chromium-win32.png</code>.</p>
     </div>
   </details>
   </div>
 
   <div class="bonus">
     <div class="b-label">Bonus challenge</div>
-    <p><strong>Write a component screenshot test for the cart total.</strong> The <code>Total: $X.XX</code> heading on the cart page is a small, specific component. Write a visual test that captures just that heading using <code>expect(element).toHaveScreenshot()</code>. Add an item to the cart via API first, capture the one-item total, then add a second item and capture the two-item total. Now you have two baselines that document the component's two key states.</p>
+    <p><strong>Review a diff like a pull request.</strong> Make a change to your test page that you think is intentional, such as a different heading colour, run the visual tests, and open the diff pictures. Decide, in writing, whether each failure is a bug or a re-baseline, then run <code>--update-snapshots</code> and check in Git that only the baselines you expected changed.</p>
   </div>
 
   <div class="series-nav">

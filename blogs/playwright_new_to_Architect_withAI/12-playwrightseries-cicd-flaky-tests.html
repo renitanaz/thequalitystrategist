@@ -111,6 +111,16 @@ footer a:hover{color:var(--purple)}
 .blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
 .blog-tags .series-tag{margin-bottom:0}
 .tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+details.explain{margin:.5rem 0 1.5rem;border:1px solid var(--purple-border);border-radius:10px;background:var(--purple-bg)}
+details.explain summary{padding:.6rem 1rem;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--purple);list-style:none;display:flex;align-items:center;gap:.5rem}
+details.explain summary::-webkit-details-marker{display:none}
+details.explain summary::before{content:"\25B6";font-size:.65rem;transition:transform .2s}
+details.explain[open] summary::before{transform:rotate(90deg)}
+.explain-body{padding:.1rem 1.2rem 1rem;font-size:.92rem;line-height:1.7}
+.explain-body p{margin:.7rem 0}
+.explain-body ul{margin:.3rem 0 .7rem 1.2rem;padding-left:0}
+.explain-body li{margin-bottom:.35rem}
+.explain-body pre{margin:.6rem 0}
 </style>
 <meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
 <meta property="og:image:width" content="1200">
@@ -147,7 +157,7 @@ footer a:hover{color:var(--purple)}
   <div class="meta-row">
     <span><strong>Series: Playwright: Zero to Architect</strong></span>
     <span>Demo: PeakAndPack</span>
-    <span>9 min read</span>
+    <span>30 min read</span>
     <span>By: RN</span>
   </div>
   <div class="phase-strip" aria-label="Series progress">
@@ -171,6 +181,15 @@ footer a:hover{color:var(--purple)}
 
   <h2>Goal</h2>
   <p>Build a CI pipeline that gives fast, reliable feedback on every pull request. Tag tests so the right tests run at the right time. Shard the suite for speed. Build a custom reporter for actionable failure output. Track and enforce flaky test health.</p>
+  <p>By the end of this phase you can:</p>
+  <ul>
+    <li>decide where the tests live, and what that lets a failure block</li>
+    <li>tag tests and run just the group you need, in any terminal</li>
+    <li>choose reporters for your computer and for CI, and write your own</li>
+    <li>split a run across machines and merge one report</li>
+    <li>measure the flaky rate, gate on it, and quarantine repeat offenders</li>
+    <li>run an accessibility scan in the same pipeline, and know what it misses</li>
+  </ul>
 
   <h2 id="before-naive-pipeline">1. Before: a naive CI pipeline</h2>
   <p>A pipeline only protects anything if people wait for it and trust what it says. When every PR takes fifteen minutes and a failure reads "Test failed at line 42", people start merging around it:</p>
@@ -190,15 +209,13 @@ jobs:
       - uses: actions/checkout@v4
       - run: npm ci
       - run: npx playwright install
-      - run: npx playwright test
-</code></pre>
+      - run: npx playwright test</code></pre>
     </div>
     <div class="ba-block after">
-      <div class="ba-label">After: tagged, sharded, fast feedback</div>
+      <div class="ba-label">After: tagged, fast feedback</div>
 <pre><code># PRs run only @critical tests (fast feedback).
 # Full suite runs nightly (complete coverage).
-# Sharded across 4 machines (4x faster).
-# Failure output includes screenshot link and expected vs actual.
+# Failure output includes the report, with traces and screenshots.
 
 name: PR checks
 on: pull_request
@@ -210,15 +227,25 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
       - run: npm ci
-      - run: npx playwright install chromium
-      - run: npx playwright test --grep @critical
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:critical     # a short name for: playwright test --grep @critical
       - uses: actions/upload-artifact@v4
-        if: failure()
+        if: always()
         with:
           name: report
-          path: playwright-report/
-</code></pre>
+          path: playwright-report/</code></pre>
     </div>
+  </div>
+  <p>Sharding (section 4) is the next speed-up. The fast-feedback version needs two things the next sections build: tags to choose the critical tests, and an npm script, <code>test:critical</code>, that holds the command (Phase 10):</p>
+<pre><code>{
+  "scripts": {
+    "test": "playwright test",
+    "test:critical": "playwright test --grep @critical",
+    "test:gate": "playwright test --project=gate"
+  }
+}</code></pre>
+  <div class="callout blue">
+    <p><strong>What has and hasn't run.</strong> I can't run GitHub Actions from here, so none of the workflows on this page has run on GitHub yet. I parsed each one as YAML, checked the artifact names, and ran the commands inside them locally against PeakAndPack: the tag filters, the reporters, the shards and the merge, the flaky gate and the quarantine projects. The first real run on GitHub is the final check, and the page says so where it matters.</p>
   </div>
 
   <h2 id="where-tests-live">2. Where the tests live: the app's repo or their own</h2>
@@ -243,21 +270,74 @@ jobs:
   <p>This series uses a separate repo, <code>peakandpack-tests</code>, because that's the setup most QA teams work in. The workflows below run on the test repo's own pull requests and on a nightly schedule, which works in either setup. Running the tests after every app deploy is the one extra piece a separate repo needs: the app's pipeline sends a <code>repository_dispatch</code> event once the deploy finishes, and the test workflow listens for it with <code>on: repository_dispatch</code>. Usually that's a small request to the team that owns the deploy pipeline.</p>
 
   <h2 id="tagging-strategy">3. Test tagging strategy</h2>
-  <p>Tags control which tests run when. Add them directly to test names and filter with <code>--grep</code>:</p>
-  <pre><code>// Tag in the test name
-test('checkout completes @critical', async ({ page }) => { ... });
-test('discount code applies correctly @critical @regression', async ({ page }) => { ... });
-test('admin CSV export @admin', async ({ page }) => { ... });
+  <p>Tags control which tests run when. Put them on tests, or on whole groups, and choose them from the command line:</p>
+<pre><code>// tests/tagged.spec.ts
+import { test, expect } from '@playwright/test';
 
-// Run only critical tests (on PR)
-// npx playwright test --grep @critical
+// A tag in the test's details: it shows in reports, and --grep finds it
+test('the store lists products', { tag: '@critical' }, async ({ page }) =&gt; {
+  await page.goto('/');
+  await expect(page.getByTestId('product-card').first()).toBeVisible();
+});
 
-// Run critical and regression (extended PR check)
-// npx playwright test --grep "@critical|@regression"
+// Several tags: an array
+test('search finds a tent', { tag: ['@critical', '@search'] }, async ({ page }) =&gt; {
+  await page.goto('/');
+  await page.getByPlaceholder('Search gear...').fill('tent');
+  await page.getByRole('button', { name: 'Search', exact: true }).click();
+  await expect(page.getByTestId('product-card')).toHaveCount(1);
+});
 
-// Exclude admin tests
-// npx playwright test --grep-invert @admin
-</code></pre>
+// A tag on a group: every test inside carries it
+test.describe('filters', { tag: '@regression' }, () =&gt; {
+  test('the in-stock filter hides sold-out products', async ({ page }) =&gt; {
+    await page.goto('/');
+    await page.getByRole('checkbox', { name: 'In stock only' }).check({ force: true });
+    await expect(page.getByTestId('result-count')).toHaveText('Showing 9 of 10 products');
+  });
+});
+
+// The older style: the tag is part of the title. --grep finds it the same way
+test('the cart asks you to log in @regression', async ({ page }) =&gt; {
+  await page.goto('/cart');
+  await expect(page.getByText('You need to log in to view your cart.')).toBeVisible();
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>test('name', { tag: '@critical' }, async ({ page }) =&gt; ...)</code> puts a <strong>tag</strong> in the test's details, the second argument. It shows in the reports, and <code>--grep</code> finds it. An array, <code>['@critical', '@search']</code>, gives several tags.</li>
+        <li><code>test.describe('filters', { tag: '@regression' }, () =&gt; ...)</code> puts the tag on a group, so every test inside carries it without repeating it.</li>
+        <li>The last test shows the older way: the tag is simply part of the title. <code>--grep</code> matches the title text, so it finds that too. Both styles work. The <code>tag</code> option keeps the title clean and makes the tags show up as data in a report.</li>
+        <li>Tags start with <code>@</code> by convention. Pick a small set and write down what each means (the table below).</li>
+        <li><code>check({ force: true })</code> is the fix from Phase 8's recipes for the checkbox hidden under a styled box.</li>
+      </ul>
+    </div>
+  </details>
+<pre><code># Only the critical tests
+npx playwright test --grep @critical
+
+# Critical or regression: | means "or" inside the pattern, so quote it
+npx playwright test --grep "@critical|@regression"
+
+# Everything except one tag
+npx playwright test --grep-invert @regression</code></pre>
+  <p>I ran these. <code>--grep @critical</code> chose 3 tests: the two tagged above, and the accessibility test from section 8. <code>--grep @regression</code> chose 2: the test inside the tagged group, and the one with the tag in its title. <code>"@critical|@regression"</code> chose 5, and <code>--grep-invert @regression</code> left the rest.</p>
+  <div class="callout amber">
+    <p><strong>PowerShell and the "or" bar.</strong> The <code>|</code> in <code>"@critical|@regression"</code> means "or" to Playwright, but on Windows it is easy to lose on the way. I tried three ways in PowerShell:</p>
+<pre><code># Windows PowerShell, three attempts at "critical or regression":
+
+npx playwright test --grep @critical|@regression
+#   fails at once: PowerShell reads | as a pipeline, and @regression as something it can't use
+
+npx playwright test --grep "@critical|@regression"
+#   still fails: npx hands the text to cmd.exe, which splits it at the bar
+#   ('regression' is not recognized as an internal or external command)
+
+npx playwright test --grep '"@critical|@regression"'
+#   works: single quotes for PowerShell, with double quotes inside for cmd.exe</code></pre>
+    <p style="margin-top:.6rem">The simplest fix is to stop typing it. Put the command in an npm script, as in section 1: <code>"test:pr": "playwright test --grep "@critical|@regression""</code> in <code>package.json</code>. I ran that through <code>npm run</code> from PowerShell and it worked, and the same script works on macOS and Linux.</p>
+  </div>
   <div class="table-wrap">
     <table>
       <thead><tr><th>Tag</th><th>When it runs</th><th>What it covers</th></tr></thead>
@@ -265,99 +345,266 @@ test('admin CSV export @admin', async ({ page }) => { ... });
         <tr><td><code>@critical</code></td><td>Every PR</td><td>Core user journeys: login, add to cart, checkout</td></tr>
         <tr><td><code>@regression</code></td><td>Pre-release</td><td>Full coverage of all known bug fixes</td></tr>
         <tr><td><code>@visual</code></td><td>Nightly</td><td>Screenshot comparisons (slow, stable)</td></tr>
+        <tr><td><code>@a11y</code></td><td>Every PR</td><td>The automated accessibility scan (section 8)</td></tr>
         <tr><td><code>@admin</code></td><td>On demand</td><td>Admin panel features</td></tr>
       </tbody>
     </table>
   </div>
 
-  <h2 id="sharding">4. Sharding: run faster with multiple machines</h2>
-  <p>Sharding splits the test suite across multiple CI workers. Each worker runs a subset:</p>
-  <pre><code># .github/workflows/playwright.yml -- sharded across 4 machines
+  <h2 id="reporters">4. Reporters: what a run tells you, and who reads it</h2>
+  <p>A <strong>reporter</strong> decides how a run's results are shown. You have used <code>list</code> in the terminal and <code>html</code> for the report. The ones worth knowing:</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Reporter</th><th>What it gives you</th><th>Use it for</th></tr></thead>
+      <tbody>
+        <tr><td><code>list</code>, <code>line</code>, <code>dot</code></td><td>A line per test, a single updating line, or a dot per test</td><td>The terminal, from most to least detail</td></tr>
+        <tr><td><code>html</code></td><td>A report you open in a browser, with steps, traces and screenshots</td><td>Reading a run, locally and from a CI artifact</td></tr>
+        <tr><td><code>json</code></td><td>The whole run as data</td><td>Your own scripts, such as the flaky gate (section 6)</td></tr>
+        <tr><td><code>junit</code></td><td>The results as JUnit XML</td><td>CI dashboards and other tools: it is the common language</td></tr>
+        <tr><td><code>blob</code></td><td>A partial report</td><td>Sharded runs, merged afterwards (section 5)</td></tr>
+        <tr><td><code>github</code></td><td>Annotations on the pull request</td><td>GitHub Actions only</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>A config can use several at once:</p>
+<pre><code>// playwright.config.ts -- reporters
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './tests',
+  use: { baseURL: 'https://peakandpack-ui.onrender.com' },
+  reporter: [
+    ['list'],                                       // one line per test, in the terminal
+    ['html', { open: 'never' }],                      // the report you open in a browser
+    ['json', { outputFile: 'results.json' }],         // the whole run as data
+    ['junit', { outputFile: 'results.xml' }],         // the same, in the format CI dashboards read
+  ],
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>reporter: [ [...], [...] ]</code> takes a list, and every reporter in it runs at once. Each entry is the reporter's name, and sometimes a second item with its options.</li>
+        <li><code>['html', { open: 'never' }]</code> writes the HTML report and never opens it by itself. The default opens it in a browser when a test fails, which would hang a CI machine waiting for someone to close it.</li>
+        <li><code>['json', { outputFile: 'results.json' }]</code> writes the whole run as data: every test, its status and its time, and totals. A script can read it, as the gate in section 6 does.</li>
+        <li><code>['junit', { outputFile: 'results.xml' }]</code> writes the same results as <strong>JUnit XML</strong>, a format almost every CI system and test dashboard can read, which is why it is the common language between tools.</li>
+      </ul>
+    </div>
+  </details>
+  <p>I ran it: the run printed the list, and wrote <code>playwright-report/</code>, <code>results.json</code> and <code>results.xml</code>. There are also reporters made by others: <a href="https://allurereport.org" target="_blank" rel="noopener" style="color:var(--purple)">Allure</a> is a free, open-source report with a lot of detail. I haven't used it here.</p>
+  <p>The default reporters tell you a test failed. A custom one can tell you what to look at, and find the flaky tests for you. It goes in its own file, and the config lists its path:</p>
+<pre><code>// playwright.config.ts -- one config for your computer and for CI
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './tests',
+  fullyParallel: true,
+  retries: process.env.CI ? 1 : 0,
+  workers: process.env.CI ? 2 : undefined,
+  reporter: process.env.CI
+    ? [['blob'], ['github'], ['./reporters/actionable-reporter.ts']]   // for CI: shard-friendly
+    : [['list'], ['html', { open: 'never' }]],                          // for you: readable
+  use: {
+    baseURL: 'https://peakandpack-ui.onrender.com',
+    trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+  },
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>process.env.CI</code> is set on CI servers and not on your computer (Phase 0). The config uses it to choose settings for each place.</li>
+        <li><code>reporter: process.env.CI ? [...] : [...]</code> picks a list of reporters: on CI, <code>blob</code> (a partial report that sharding needs), <code>github</code> and our custom one. On your computer, the list and the HTML report.</li>
+        <li><code>['github']</code> prints failures as annotations that GitHub shows on the pull request. It does nothing useful outside GitHub Actions.</li>
+        <li><code>['./reporters/actionable-reporter.ts']</code> is the path to the custom reporter below.</li>
+        <li><code>workers: process.env.CI ? 2 : undefined</code> is how many tests run at once on one machine (Phase 4). <strong>Workers and shards are different things:</strong> workers are parallel tests on one computer, shards split the run across several computers.</li>
+        <li><code>screenshot: 'only-on-failure'</code> takes the picture the custom reporter looks for (Phase 4).</li>
+      </ul>
+    </div>
+  </details>
+<pre><code>// reporters/actionable-reporter.ts
+import type { FullResult, Reporter, TestCase, TestResult } from '@playwright/test/reporter';
+
+// Error messages contain colour codes meant for a terminal; remove them
+const plain = (text: string) =&gt; text.replace(/\u001b\[[0-9;]*m/g, '');
+
+class ActionableReporter implements Reporter {
+  private passedOnRetry: string[] = [];
+
+  onTestEnd(test: TestCase, result: TestResult) {
+    if (result.status === 'failed' || result.status === 'timedOut') {
+      console.log(`\nFAILED: ${test.title} (attempt ${result.retry + 1})`);
+      // The first error, cut down to its first few lines: what was expected, what happened
+      const message = plain(result.errors[0]?.message ?? '').replace(/^Error: /, '');
+      const firstLines = message.split('\n').filter((line) =&gt; line.trim() !== '').slice(0, 3);
+      console.log('  Error:', firstLines.join(' | '));
+      // The screenshot, if one was taken
+      const screenshot = result.attachments.find((a) =&gt; a.name === 'screenshot');
+      if (screenshot?.path) console.log('  Screenshot:', screenshot.path);
+    }
+    // A test that passed, but only after a retry, is flaky
+    if (result.status === 'passed' &amp;&amp; result.retry &gt; 0) {
+      this.passedOnRetry.push(test.title);
+    }
+  }
+
+  onEnd(_result: FullResult) {
+    if (this.passedOnRetry.length &gt; 0) {
+      console.log(`\nPassed only on retry (add these to the flaky register):`);
+      this.passedOnRetry.forEach((title) =&gt; console.log(`  - ${title}`));
+    }
+  }
+}
+
+export default ActionableReporter;</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <p><strong>In plain words:</strong> a small reporter that prints, for each failure, what to look at, and lists the tests that passed only on a retry.</p>
+      <ul>
+        <li>A custom reporter is a class with methods that Playwright calls at certain moments. <code>implements Reporter</code> tells TypeScript which methods are allowed.</li>
+        <li><code>onTestEnd(test, result)</code> runs after every attempt of every test. <code>result.status</code> says how that attempt ended, and <code>result.retry</code> is the attempt number, 0 for the first.</li>
+        <li><code>plain(...)</code> strips the colour codes. Playwright's error messages include codes that make colours in a terminal and look like <code>[31m</code> junk in a log.</li>
+        <li><code>result.errors[0]?.message ?? ''</code> is the first error's message, or an empty string if there is none. The code removes a leading <code>Error: </code>, drops blank lines, keeps the first three lines and joins them with <code> | </code>: what was expected and what was found, on one line.</li>
+        <li><code>result.attachments.find((a) =&gt; a.name === 'screenshot')</code> looks for the failure screenshot, which exists because the config sets <code>screenshot: 'only-on-failure'</code>.</li>
+        <li><code>result.status === 'passed' &amp;&amp; result.retry &gt; 0</code> catches a test that failed once and then passed: the definition of flaky from Phase 4. The reporter remembers its title.</li>
+        <li><code>onEnd</code> runs once at the end of the run, and prints the list of flaky tests: the entries for the register.</li>
+      </ul>
+    </div>
+  </details>
+<pre><code>// tests/demo-failures.spec.ts: a failing test and a flaky one, to see the reporter work
+import { test, expect } from '@playwright/test';
+
+test('a test that fails', async ({ page }) =&gt; {
+  await page.goto('/');
+  await expect(page.getByText('this text is not on the page')).toBeVisible({ timeout: 1500 });
+});
+
+test('a test that passes only on the second attempt', async ({ page }, testInfo) =&gt; {
+  await page.goto('/');
+  await expect(page.getByTestId('result-count')).toHaveText(
+    testInfo.retry === 0 ? 'Showing 0 of 0 products' : 'Showing 10 of 10 products',
+    { timeout: 1500 }
+  );
+});</code></pre>
+  <p>With those two tests, one failing and one passing only on the second attempt, the reporter printed this (trimmed):</p>
+<pre><code>FAILED: a test that fails (attempt 1)
+  Error: expect(locator).toBeVisible() failed | Locator: getByText('this text is not on the page') | Expected: visible
+  Screenshot: .../test-results/demo-failures-a-test-that-fails/test-failed-1.png
+FAILED: a test that passes only on the second attempt (attempt 1)
+  Error: expect(locator).toHaveText(expected) failed | Locator:  getByTestId('result-count') | Expected: "Showing 0 of 0 products"
+  Screenshot: .../test-results/demo-failures-a-test-that-passes-only-on-the-second-attempt/test-failed-1.png
+FAILED: a test that fails (attempt 2)
+  Error: expect(locator).toBeVisible() failed | Locator: getByText('this text is not on the page') | Expected: visible
+  Screenshot: .../test-results/demo-failures-a-test-that-fails-retry1/test-failed-1.png
+Passed only on retry (add these to the flaky register):
+  - a test that passes only on the second attempt</code></pre>
+
+  <h2 id="sharding">5. Sharding: run faster with multiple machines</h2>
+  <p>Sharding splits the test suite across multiple CI machines. Each machine runs one part, and a last job merges their reports into one:</p>
+<pre><code># .github/workflows/playwright.yml -- sharded across 4 machines
+name: Playwright tests
+on: pull_request
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false             # let the other shards finish even if one fails
       matrix:
-        shard: [1/4, 2/4, 3/4, 4/4]  # four copies of this job, each running a quarter of the tests
+        shardIndex: [1, 2, 3, 4]   # four copies of this job
+        shardTotal: [4]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
       - run: npm ci
-      - run: npx playwright install chromium
-      # blob = a partial report that can be merged with the other shards' reports later
-      - run: npx playwright test --shard=${{ matrix.shard }} --reporter=blob
+      - run: npx playwright install --with-deps chromium
+      # CI=true makes the config use the blob reporter: a partial report for this shard
+      - run: npx playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+        env: { CI: true }
       - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
         with:
-          name: blob-report-${{ matrix.shard }}
+          name: blob-report-${{ matrix.shardIndex }}     # no slash: artifact names can't contain one
           path: blob-report/
+          retention-days: 1
 
-  # Runs after all four shards finish and combines them into one HTML report
+  # Runs after all four shards finish and combines them into one report
   merge-reports:
     needs: test
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
+        with: { node-version: 20 }
       - run: npm ci
       - uses: actions/download-artifact@v4
-        with: { path: all-blob-reports, pattern: blob-report-* }
+        with:
+          path: all-blob-reports
+          pattern: blob-report-*
+          merge-multiple: true      # put every shard's files in one folder
       - run: npx playwright merge-reports --reporter html ./all-blob-reports
       - uses: actions/upload-artifact@v4
         with:
           name: html-report
-          path: playwright-report/
-</code></pre>
-
-  <h2 id="custom-reporter">5. Custom reporter: actionable failure output</h2>
-  <p>The default reporter tells you a test failed. A custom reporter tells you exactly what to look at:</p>
-  <pre><code>// reporters/custom-reporter.ts
-import { Reporter, TestCase, TestResult } from '@playwright/test/reporter';
-
-class ActionableReporter implements Reporter {
-  onTestEnd(test: TestCase, result: TestResult) {
-    if (result.status === 'failed') {
-      console.log('\n FAILED:', test.title);
-      // Print the first error with expected vs actual
-      const error = result.errors[0];
-      if (error?.message) {
-        console.log('  Error:', error.message.split('\n').slice(0,3).join(' | '));
-      }
-      // Print screenshot path if captured
-      const screenshot = result.attachments.find(a => a.name === 'screenshot');
-      if (screenshot?.path) {
-        console.log('  Screenshot:', screenshot.path);
-      }
-    }
-  }
-}
-
-export default ActionableReporter;
-</code></pre>
-  <pre><code>// playwright.config.ts
-reporter: [
-  ['html'],
-  ['./reporters/custom-reporter.ts'],
-],
-</code></pre>
+          path: playwright-report/</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>matrix</code> makes one job per combination. With <code>shardIndex: [1, 2, 3, 4]</code> and <code>shardTotal: [4]</code> you get four jobs, each told its own number.</li>
+        <li><code>--shard=1/4</code> means "run the first of four parts of the suite". The parts are equal only if the config has <code>fullyParallel: true</code>; otherwise a whole file is the smallest piece. The slash is in the <em>command</em>, which is fine. The artifact name is another matter: <strong>artifact names can't contain a slash</strong>, which is why this uses the index alone, <code>blob-report-1</code>. Using <code>matrix.shard</code> with values like <code>1/4</code> in the name would fail.</li>
+        <li><code>fail-fast: false</code> lets the other shards finish when one fails, so you get a complete report.</li>
+        <li><code>if: ${{ !cancelled() }}</code> uploads each shard's partial report even when its tests failed.</li>
+        <li>The <code>merge-reports</code> job waits for all four (<code>needs: test</code>), downloads every blob, and runs <code>playwright merge-reports</code> to make one HTML report. <code>merge-multiple: true</code> matters: without it each artifact lands in its own sub-folder and the merge finds nothing to combine.</li>
+      </ul>
+    </div>
+  </details>
+  <p>I can't run GitHub Actions from here, but I ran the same steps locally. With <code>fullyParallel: true</code>, <code>--shard=1/2</code> took 3 of my 6 tests and <code>--shard=2/2</code> took the other 3. Each run with the blob reporter wrote a partial report (<code>report-...-1.zip</code> and <code>...-2.zip</code>). Copying both into one folder and running <code>npx playwright merge-reports --reporter html</code> made a single report, and the JSON version counted both parts together: 5 tests, 4 passed and 1 failed, as the two shards had run them.</p>
+  <div class="callout amber">
+    <p><strong>Sharding splits by file unless <code>fullyParallel</code> is on.</strong> I tried it without: my 6 tests sit in 2 files, and <code>--shard=1/2</code> got all 6 while <code>--shard=2/2</code> got none. With <code>fullyParallel: true</code> a single test is the unit and the split was 3 and 3. If you have a few big files, turn on <code>fullyParallel</code> (and keep your tests independent, Phase 5) or the extra machines sit idle.</p>
+  </div>
+  <p>The bigger point is the rule in the mistakes list: every shard writes its own blob, and without the merge step you have four partial reports and no overview.</p>
 
   <h2 id="flaky-management">6. Flaky test management</h2>
-  <p>A flaky test is a quality debt that compounds. Track every flaky test in a register and enforce a health gate:</p>
-  <pre><code># flaky-register.md
+  <p>A flaky test is a quality debt that compounds. Track every flaky test in a register, and enforce a health gate:</p>
+<pre><code># flaky-register.md
 | Test | File | Root cause | Status | Fixed date |
 |------|------|------------|--------|------------|
-| cart shows item count | cart.spec.ts | Missing await on goto | Fixed | 2026-01-15 |
-| checkout completes | checkout.spec.ts | Shared cart between workers | In progress |  |
-</code></pre>
-  <p>Quality gate: if flaky rate exceeds 5% of the suite, block the merge. A 200-test suite with more than 10 flaky tests is not a test suite: it is noise.</p>
-  <pre><code># playwright.config.ts
-retries: process.env.CI ? 1 : 0, // one retry in CI to catch genuine intermittency
-// Track: if a test passes only on retry, it is flaky. Add to the register.
-</code></pre>
+| cart shows item count | cart.spec.ts | Shared cart between workers | Fixed | 2026-01-15 |
+| checkout completes | checkout.spec.ts | Fixed 1 s sleep, slow server | In progress |  |</code></pre>
+  <p>The register is only useful if the list is accurate, and the custom reporter above already finds the entries: its list of "passed only on retry" is what you add. To make the gate real, a short script reads the JSON results and fails when the flaky share is too high:</p>
+<pre><code>// scripts/flaky-gate.js
+// Reads the run's results.json and fails if too many tests were flaky
+const fs = require('fs');
 
+const { stats } = JSON.parse(fs.readFileSync('results.json', 'utf8'));
+const total = stats.expected + stats.unexpected + stats.flaky + stats.skipped;
+const rate = total === 0 ? 0 : stats.flaky / total;
+
+console.log(`Flaky tests: ${stats.flaky} of ${total} (${(rate * 100).toFixed(1)}%)`);
+if (rate &gt; 0.05) {
+  console.error('The flaky rate is over 5%. Fix or quarantine the flaky tests before merging.');
+  process.exit(1);
+}</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li>The JSON reporter's file has a <code>stats</code> section with four counts: <code>expected</code> (passed), <code>unexpected</code> (failed), <code>flaky</code> (passed only on a retry) and <code>skipped</code>.</li>
+        <li><code>rate</code> is the flaky share of the whole suite.</li>
+        <li><code>process.exit(1)</code> ends the script with a failing code. A CI step that runs it fails, so the check blocks the merge until someone deals with the flaky tests.</li>
+        <li>Wire it in after the tests, as <code>node scripts/flaky-gate.js</code>.</li>
+      </ul>
+    </div>
+  </details>
+  <p>I ran it on a run with one flaky test out of five: it printed <code>Flaky tests: 1 of 5 (20.0%)</code> and exited with a failing code. On a small suite one flaky test is a big share, which is also the honest picture. A 200-test suite with more than 10 flaky tests is not a test suite: it is noise.</p>
   <div class="callout amber">
     <p><strong>The flaky rate is a quality metric.</strong> Report it alongside test pass rate in your sprint review. "95 tests passing, 3 flaky (1.5%)" is honest. "98 tests passing" when 3 of them only pass on retry is not. The flaky register makes invisible quality debt visible.</p>
   </div>
+  <p>One retry in CI, <code>retries: process.env.CI ? 1 : 0</code>, is enough to catch genuine intermittency. A pass on retry is not a pass to ignore: it is the signal that marks the test as flaky.</p>
 
   <h2 id="auto-quarantine">7. Auto-quarantine: take repeat offenders out of the gate</h2>
   <p>A register only helps if someone acts on it. In the meantime, a test that fails one run in three blocks merges for no reason, and people learn to rerun until it's green, which trains them to shrug at real failures too. Auto-quarantine deals with the repeat offenders automatically. After a test has been flaky a set number of times, it:</p>
@@ -367,19 +614,21 @@ retries: process.env.CI ? 1 : 0, // one retry in CI to catch genuine intermitten
     <li>gets an issue, so a person owns the fix.</li>
   </ul>
   <p>The list itself is simple. Two projects in the config split the suite: <code>gate</code> runs everything except quarantined tests, and <code>quarantine</code> runs only those.</p>
-  <pre><code>// playwright.config.ts
+<pre><code>["a test that passes only on the second attempt"]</code></pre>
+<pre><code>// playwright.config.ts
 import { defineConfig } from '@playwright/test';
 import fs from 'fs';
 
 // Titles of the tests currently in quarantine, listed in quarantine.json
 const quarantined: string[] = JSON.parse(fs.readFileSync('quarantine.json', 'utf8'));
 // Turn the titles into one regex, escaping characters that have a meaning in regex
-const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&amp;');
+const escape = (s: string) =&gt; s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&amp;');
 // /$^/ matches nothing, so an empty quarantine list excludes nothing
 const quarantine = quarantined.length ? new RegExp(quarantined.map(escape).join('|')) : /$^/;
 
 export default defineConfig({
   testDir: './tests',
+  use: { baseURL: 'https://peakandpack-ui.onrender.com' },
   retries: process.env.CI ? 1 : 0, // a pass on retry is what marks a test as flaky
   projects: [
     // The required check: every test except the quarantined ones
@@ -387,9 +636,20 @@ export default defineConfig({
     // Quarantined tests still run, in a job that can't block a merge
     { name: 'quarantine', grep: quarantine },
   ],
-});
-</code></pre>
-  <p>In the pull request workflow, run <code>npx playwright test --project=gate</code> as the required check, and <code>--project=quarantine</code> in a separate job with <code>continue-on-error: true</code>. Quarantined tests still run and report, but they can't block a merge.</p>
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>JSON.parse(fs.readFileSync('quarantine.json', 'utf8'))</code> reads the list of quarantined test titles from the file.</li>
+        <li><code>escape</code> puts a backslash in front of characters that mean something in a pattern, such as <code>(</code> or <code>.</code>, so a title is matched as plain text.</li>
+        <li><code>new RegExp(titles.join('|'))</code> joins the titles into one pattern meaning "this title or that title". With no titles it uses <code>/$^/</code>, a pattern that matches nothing.</li>
+        <li><code>grepInvert</code> on <code>gate</code> means "everything except", and <code>grep</code> on <code>quarantine</code> means "only". Together they split the suite in two.</li>
+      </ul>
+    </div>
+  </details>
+  <p>I ran both projects with the flaky demo test listed in <code>quarantine.json</code>: <code>--project=gate</code> left it out, and <code>--project=quarantine</code> ran only it.</p>
+  <p>In the pull request workflow, run <code>npm run test:gate</code> as the required check, and <code>--project=quarantine</code> in a separate job with <code>continue-on-error: true</code>. Quarantined tests still run and report, but they can't block a merge.</p>
   <p>What makes it automatic is a nightly job that counts how often each test was flaky and adds it to <code>quarantine.json</code> on its third time. You'll build that job in <a href="15-playwrightseries-capstone-projects.html" style="color:var(--purple)">Phase 15, Project 3</a>.</p>
   <div class="callout blue">
     <p><strong>This runs unattended, and that's deliberate.</strong> Quarantine doesn't change what any test checks: the test keeps running, and undoing it means deleting one line from the list. Fixing the test is different. An AI that proposes a code change needs a person to approve it before it merges, which is what <a href="13-playwrightseries-ai-assisted.html" style="color:var(--purple)">Phase 13</a> covers.</p>
@@ -399,29 +659,51 @@ export default defineConfig({
     <p><strong>Common mistakes in Phase 12.</strong></p>
     <ul style="margin:.5rem 0 0 1.2rem;">
       <li><strong>Running the full suite on every PR.</strong> A 200-test suite at 10 seconds per test is 33 minutes. Tag and run only critical tests on PRs. Run the full suite nightly.</li>
-      <li><strong>Sharding without merging reports.</strong> Each shard writes its own blob report. Without the merge step, you get 4 partial HTML reports and no unified view of what passed and failed.</li>
+      <li><strong>Sharding without merging reports.</strong> Each shard writes its own blob report. Without the merge step, you get 4 partial reports and no unified view of what passed and failed.</li>
+      <li><strong>A slash in an artifact name.</strong> <code>blob-report-1/4</code> is refused. Name shards by their index alone.</li>
+      <li><strong>Downloading shard artifacts without <code>merge-multiple</code>.</strong> Each lands in its own sub-folder, and the merge finds nothing to combine.</li>
       <li><strong>Not uploading artifacts on failure.</strong> If CI fails and you have no artifact, you have no trace, no screenshot, and no way to debug remotely. Always upload the report.</li>
       <li><strong>Treating retries as a fix.</strong> A retry that makes a flaky test pass hides the problem. Track every test that passes only on retry in the flaky register.</li>
+      <li><strong>Typing a tag pattern with <code>|</code> in PowerShell.</strong> Unquoted, the bar is a pipeline; in plain double quotes, <code>npx</code> still splits it. Use <code>'"a|b"'</code>, or put it in an npm script.</li>
+      <li><strong>Letting the HTML report open on CI.</strong> The default opens a browser after a failure. Use <code>['html', { open: 'never' }]</code>.</li>
     </ul>
   </div>
 
   <h2 id="accessibility-in-pipeline">8. Accessibility in the pipeline: automated, plus a manual pass</h2>
   <p>The same pipeline that runs your functional suite can run an accessibility scan on every PR. Add <code>@axe-core/playwright</code> and assert against it like any other test:</p>
-  <pre><code>// tests/accessibility.spec.ts
+<pre><code>// tests/accessibility.spec.ts
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
-test('product listing has no critical a11y violations @a11y @critical', async ({ page }) => {
+test('product listing has no serious a11y violations', { tag: ['@a11y', '@critical'] }, async ({ page }) =&gt; {
+  // PeakAndPack's grey "category / stock" line is too faint (3.54:1, 4.5:1 needed), so this
+  // fails today. test.fail() keeps the run green until someone fixes it, then turns red.
+  test.fail();
   await page.goto('/');
+  await expect(page.getByTestId('product-card').first()).toBeVisible();
+
   // Run the axe accessibility scan on the loaded page
   const results = await new AxeBuilder({ page }).analyze();
+
   // Fail only on critical and serious issues; minor ones go on the backlog
-  const critical = results.violations.filter(v => v.impact === 'critical' || v.impact === 'serious');
-  // The second argument prints the violations in the report if this fails
-  expect(critical, JSON.stringify(critical, null, 2)).toHaveLength(0);
-});
-</code></pre>
-  <p>Tag it <code>@a11y</code> alongside <code>@critical</code> so it runs on every PR with the rest of the fast suite, no separate pipeline needed. Pa11y is worth adding as a second automated layer. It doesn't always flag the same things as axe-core, so the "cross-check at least two tools" principle from testing color contrast applies here too.</p>
+  const serious = results.violations.filter((v) =&gt; v.impact === 'critical' || v.impact === 'serious');
+  // The second argument prints the rule names in the report if this fails
+  expect(serious.map((v) =&gt; `${v.id} (${v.impact}): ${v.nodes.length} element(s)`), 'serious accessibility violations').toEqual([]);
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>@axe-core/playwright</code> adds the axe accessibility scanner to Playwright. Install it with <code>npm install --save-dev @axe-core/playwright</code>.</li>
+        <li><code>new AxeBuilder({ page }).analyze()</code> scans the page as it is now and returns the results. <code>results.violations</code> is the list of rules the page broke.</li>
+        <li><code>v.impact</code> says how serious each is: minor, moderate, serious or critical. The test keeps only serious and critical ones.</li>
+        <li><code>expect(list, message).toEqual([])</code> is a generic assertion (Phase 3) that the list is empty. It is written to print the rule names, so a failure tells you what to fix.</li>
+        <li><code>{ tag: ['@a11y', '@critical'] }</code> tags it so it runs with the fast suite on every pull request.</li>
+      </ul>
+    </div>
+  </details>
+  <p>I ran this on PeakAndPack's product list, and it found a real problem. Axe reports one <strong>serious</strong> violation, <code>color-contrast</code>, on 9 elements: the grey line under each product card ("category, Stock: N") is <code>#888888</code> on white, a contrast ratio of 3.54, where WCAG asks for 4.5 for normal-size text. It also lists three <em>moderate</em> issues (a skipped heading level, no <code>main</code> landmark, and 44 pieces of content outside any landmark), which the test ignores on purpose and which go on the backlog.</p>
+  <p>Because the contrast problem is real and still there, the test is marked <code>test.fail()</code>: the pipeline stays green while it exists, and the test turns red the day someone fixes the grey text, which is your cue to remove that line. Fix the finding rather than loosening the test.</p>
 
   <div class="callout amber">
     <p><strong>Automated accessibility scans catch roughly 30-50% of real WCAG issues, not all of them.</strong> A green <code>@a11y</code> tag means "nothing obvious," not "accessible." Treat it as a floor, not a finish line. See the dedicated <a href="../accessibility/35-Automated-Tools-Only-Catch-30-50-Percent.html">Shift-Left Accessibility series' Blog 35</a> for the full case.</p>
@@ -439,8 +721,9 @@ test('product listing has no critical a11y violations @a11y @critical', async ({
 
   <h2 id="deliverables">9. Deliverables</h2>
   <ul>
-    <li><code>.github/workflows/playwright.yml</code>: full sharded CI pipeline with tagging</li>
-    <li><code>reporters/custom-reporter.ts</code>: actionable failure output</li>
+    <li><code>.github/workflows/playwright.yml</code>: the pull request and nightly workflow, and the sharded version with its merge job</li>
+    <li><code>reporters/actionable-reporter.ts</code>: actionable failure output, and the list of tests that passed only on retry</li>
+    <li><code>scripts/flaky-gate.js</code>: fails the run when more than 5% of tests are flaky</li>
     <li><code>flaky-register.md</code>: tracked flaky tests with root cause and status</li>
     <li><code>quarantine.json</code> and the <code>gate</code> and <code>quarantine</code> projects in <code>playwright.config.ts</code>: quarantined tests still run, but can't block a merge</li>
     <li><code>ci-guide.md</code>: when each tag runs, how sharding works, how to read the merged report</li>
@@ -451,15 +734,15 @@ test('product listing has no critical a11y violations @a11y @critical', async ({
   <hr style="border:none;border-top:1px solid var(--border);margin:0">
 
   <div class="assignment">
-    <div class="a-label">Assignment</div>
+    <div class="a-label">Assignment, part 1</div>
     <h3>Tag your tests and build the PR pipeline</h3>
-    <p>Add <code>@critical</code> tags to the three most important PeakAndPack tests in your suite (login, add to cart, checkout). Write the GitHub Actions workflow that runs only <code>@critical</code> tests on pull requests and the full suite on a nightly schedule (use <code>on: schedule: - cron: '0 2 * * *'</code>). Confirm the workflow file is valid by pushing to a branch and checking the Actions tab.</p>
+    <p>Add <code>@critical</code> tags to the three most important PeakAndPack tests in your suite (login, add to cart, checkout). Add a <code>test:critical</code> script to <code>package.json</code>. Write the GitHub Actions workflow that runs only <code>@critical</code> tests on pull requests and the full suite on a nightly schedule (use <code>on: schedule: - cron: '0 2 * * *'</code>). Confirm the workflow file is valid by pushing to a branch and checking the Actions tab.</p>
 
   <details class="solution">
     <summary>Show solution: try it yourself first</summary>
     <div class="solution-body">
       <h3>PR pipeline with critical tag and nightly full run</h3>
-      <pre><code>name: Playwright tests
+<pre><code>name: Playwright tests
 on:
   pull_request:  # every PR
   schedule:
@@ -473,15 +756,15 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
       - run: npm ci  # install exact versions from package-lock.json
-      - run: npx playwright install chromium
+      - run: npx playwright install --with-deps chromium
 
       # On PRs: only critical. On nightly: everything.
       - name: Run tests
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            npx playwright test --grep @critical
+            npm run test:critical
           else
-            npx playwright test
+            npm test
           fi
 
       - uses: actions/upload-artifact@v4
@@ -489,9 +772,62 @@ jobs:
         with:
           name: playwright-report
           path: playwright-report/
-          retention-days: 7  # delete old reports after a week
-</code></pre>
+          retention-days: 7  # delete old reports after a week</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>on: pull_request</code> runs the workflow when a pull request is opened or updated. <code>schedule</code> with <code>cron</code> runs it on a timetable: <code>0 2 * * *</code> is 2 a.m. every day, in UTC.</li>
+        <li><code>run: npm run test:critical</code> calls the npm script from Phase 10, so the workflow holds a short name instead of a long command.</li>
+        <li><code>${{ github.event_name }}</code> is what started the run. The script picks the fast tests for a pull request and the whole suite for the nightly run.</li>
+        <li><code>if: always()</code> uploads the report whether the tests passed or failed. <code>retention-days: 7</code> deletes old reports after a week.</li>
+      </ul>
+    </div>
+  </details>
       <p><strong>Why upload on always(), not only on failure.</strong> Uploading only on failure means you never have a passing run's report to compare against. Uploading always (with a short retention) means you can look at any run's report, passing or failing.</p>
+      <p><strong>What I checked.</strong> I couldn't push this to GitHub from here. I parsed the file as YAML, and ran the two commands it chooses between against the local app: <code>npm run test:critical</code> ran only the tagged tests, and <code>npm test</code> ran everything. The first real run on GitHub is the final check.</p>
+    </div>
+  </details>
+  </div>
+
+  <div class="assignment" style="margin-top:2rem">
+    <div class="a-label">Assignment, part 2</div>
+    <h3>Reporters, a flaky gate and a quarantine</h3>
+    <p>Use everything from sections 3 to 7.</p>
+    <ol>
+      <li>Tag one test with the <code>tag</code> option and one inside a tagged group, and run each by its tag.</li>
+      <li>Configure the <code>list</code>, <code>html</code> (never opening), <code>json</code> and <code>junit</code> reporters and find all four outputs.</li>
+      <li>Add the custom reporter, run a test that passes only on retry, and read what it prints.</li>
+      <li>Run the flaky gate against that run's <code>results.json</code>. Does it pass or fail, and why?</li>
+      <li>Put the flaky test in <code>quarantine.json</code> and run each project. What changes?</li>
+      <li>Split the suite into two shards, run both with the blob reporter, and merge them into one report.</li>
+    </ol>
+
+  <details class="solution">
+    <summary>Show solution: try it yourself first</summary>
+    <div class="solution-body">
+      <p>The solution is the files in sections 3 to 7, put together. These are the commands and what they show:</p>
+<pre><code># 1. A tag on a test and on a group, run by tag
+npx playwright test --grep @critical          # 3 tests (the two tagged above, plus the a11y scan)
+npx playwright test --grep @regression        # 2 tests: the group's test, and the one with the tag in its title
+
+# 2. Four reporters at once (the config from section 4)
+npx playwright test tests/tagged.spec.ts      # writes playwright-report/, results.json and results.xml
+
+# 3 and 4. A run with one flaky test out of five, then the gate
+npx playwright test tests/tagged.spec.ts tests/demo-failures.spec.ts --grep-invert "a test that fails" --retries=1
+node scripts/flaky-gate.js                    # Flaky tests: 1 of 5 (20.0%)   and exit code 1
+
+# 5. With the flaky test listed in quarantine.json
+npx playwright test --project=gate            # 5 of the 6 tests: the quarantined one is left out
+npx playwright test --project=quarantine      # 1 test: only the quarantined one
+
+# 6. Two shards, merged (fullyParallel on)
+npx playwright test --shard=1/2 --reporter=blob
+npx playwright test --shard=2/2 --reporter=blob
+npx playwright merge-reports --reporter html ./all-blob-reports   # after copying both blob files into that folder</code></pre>
+      <p><strong>Step 4.</strong> With one flaky test in five, the rate is 20%, over the 5% line, so the gate fails. That is correct for a small suite, and it is why a quarantine exists: move the flaky test out of the gate and the gate passes.</p>
+      <p><strong>Step 5.</strong> <code>--project=gate</code> runs every test except the quarantined one. <code>--project=quarantine</code> runs only it.</p>
     </div>
   </details>
   </div>

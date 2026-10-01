@@ -111,6 +111,16 @@ footer a:hover{color:var(--purple)}
 .blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
 .blog-tags .series-tag{margin-bottom:0}
 .tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+details.explain{margin:.5rem 0 1.5rem;border:1px solid var(--purple-border);border-radius:10px;background:var(--purple-bg)}
+details.explain summary{padding:.6rem 1rem;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--purple);list-style:none;display:flex;align-items:center;gap:.5rem}
+details.explain summary::-webkit-details-marker{display:none}
+details.explain summary::before{content:"\25B6";font-size:.65rem;transition:transform .2s}
+details.explain[open] summary::before{transform:rotate(90deg)}
+.explain-body{padding:.1rem 1.2rem 1rem;font-size:.92rem;line-height:1.7}
+.explain-body p{margin:.7rem 0}
+.explain-body ul{margin:.3rem 0 .7rem 1.2rem;padding-left:0}
+.explain-body li{margin-bottom:.35rem}
+.explain-body pre{margin:.6rem 0}
 </style>
 <meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
 <meta property="og:image:width" content="1200">
@@ -147,7 +157,7 @@ footer a:hover{color:var(--purple)}
   <div class="meta-row">
     <span><strong>Series: Playwright: Zero to Architect</strong></span>
     <span>Demo: PeakAndPack</span>
-    <span>9 min read</span>
+    <span>22 min read</span>
     <span>By: RN</span>
   </div>
   <div class="phase-strip" aria-label="Series progress">
@@ -171,65 +181,105 @@ footer a:hover{color:var(--purple)}
 
   <h2>Goal</h2>
   <p>Debug failing tests methodically. Diagnose flakiness by root cause rather than masking it with retries. A flaky test is not a Playwright problem: it is a signal about your test, your app, or your environment.</p>
+  <p>By the end of this phase you can:</p>
+  <ul>
+    <li>choose the right tool to find out why a test failed: trace, Inspector, a breakpoint, or UI mode</li>
+    <li>make a flaky test fail on demand, and show how often it fails</li>
+    <li>explain how retries work, and when they are and are not acceptable</li>
+    <li>keep a screenshot or a video when a trace cannot show what you need</li>
+  </ul>
 
   <h2 id="guessing-failures">1. Before: guessing at failures</h2>
-  <p>When a test fails only some of the time, the tempting fix is to rerun it until it passes. That clears the red, but the cause is still there, along with whatever bug or timing gap it was pointing at. Debugging well means finding out why a test failed before changing anything:</p>
+  <p>When a test fails only some of the time, the tempting fix is to rerun it until it passes. That clears the red, but the cause is still there, along with whatever bug or timing gap it was pointing at. Debugging well means finding out why a test failed before changing anything.</p>
+  <p>The examples in this phase add something to PeakAndPack's cart, and they need a cart that starts empty. The shared demo account keeps its cart between runs (PeakAndPack holds carts in the server's memory, so they last until the server restarts), so after the first run "the poles are in the cart" is already true and a test can pass without the add working. Both versions below use this helper, which signs up a new user for each test:</p>
+<pre><code>import { Page } from '@playwright/test';
+
+// Gives the test a brand-new user, so its cart always starts empty.
+async function registerNewUser(page: Page) {
+  await page.goto('/register');
+  await page.locator('input[type="text"]').fill('QA Tester');
+  await page.locator('input[type="email"]').fill(`qa-${Date.now()}-${Math.floor(Math.random() * 1000)}@peakandpack.test`);
+  await page.locator('input[type="password"]').fill('password123');
+  await page.getByRole('button', { name: 'Register', exact: true }).click();
+  await page.waitForURL('/');   // registering also logs you in and returns you to the product list
+}</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <p><strong>In plain words:</strong> a small helper that signs up a new user, so every test starts with an empty cart.</p>
+      <ul>
+        <li><code>async function registerNewUser(page: Page)</code> is a helper: steps written once and used by several tests. <code>page: Page</code> says it expects the browser tab. The <code>import</code> line brings in the <code>Page</code> label.</li>
+        <li><code>page.goto('/register')</code> opens the registration page. The form's labels aren't linked to its fields, so each field is found by its type: <code>input[type="text"]</code> is the name, <code>email</code> and <code>password</code> are what they say (CSS selectors from Phase 2).</li>
+        <li><code>`qa-${Date.now()}-${Math.floor(Math.random() * 1000)}@peakandpack.test`</code> builds a different email address every time. The backticks let you drop values into text with <code>${...}</code>. <code>Date.now()</code> is the current time as a number of milliseconds, and <code>Math.random()</code> gives a number between 0 and 1, so <code>Math.floor(Math.random() * 1000)</code> is a whole number from 0 to 999. PeakAndPack refuses an email it has seen before, so each run needs a new one.</li>
+        <li><code>getByRole('button', { name: 'Register', exact: true })</code> clicks the Register button. The menu also has a Register <em>link</em>, but a link is a different role.</li>
+        <li><code>waitForURL('/')</code> waits until the app has taken you back to the product list, which means registering worked. It also logged you in, so the next steps can add to a cart.</li>
+        <li><strong>Why a new user?</strong> The shared demo account keeps its cart between runs, so after the first run "the trekking poles are in the cart" is already true, and a test can pass without the add doing anything. A fresh user has an empty cart, so the check means something. (Each run adds a user to PeakAndPack. Phase 5 covers tidying up.)</li>
+      </ul>
+    </div>
+  </details>
+
   <div class="ba-wrap">
     <div class="ba-block before">
       <div class="ba-label">Before: adding retries to hide flakiness</div>
-<pre><code>// Test fails sometimes. Solution: add retries and hope.
-// This masks the problem. The flakiness is still there.
-// retries: 3 in playwright.config.ts means this test
-// can fail 3 times silently before it counts.
-
+<pre><code>// Test fails sometimes. "Solution": retries and a sleep.
+// The failures are still happening. You just stop seeing them.
 test.describe.configure({ retries: 3 });
-test('add to cart works', async ({ page }) => {
-  await page.goto('https://peakandpack-ui.onrender.com/');
-  await page.locator('.add-btn').first().click();
+
+test('add to cart works', async ({ page }) =&gt; {
+  await registerNewUser(page);
+  await page.getByRole('button', { name: /add to cart/i }).first().click();
   await page.waitForTimeout(500);
-  expect(await page.locator('.cart-count').textContent()).toBe('1');
-});
-</code></pre>
+  await page.goto('/cart');
+  await expect(page.getByText('Trekking Poles (Pair)')).toBeVisible();
+});</code></pre>
     </div>
     <div class="ba-block after">
       <div class="ba-label">After: root cause found and fixed</div>
-<pre><code>// Root cause: CSS locator matched wrong element on slow renders.
-// Fixed with a scoped locator + waitForResponse. Zero retries needed.
-
-test('add to cart works', async ({ page }) => {
-  // Adding to the cart needs a logged-in user
-  await page.goto('https://peakandpack-ui.onrender.com/login');
-  await page.locator('input[type="email"]').fill('test@peakandpack.com');
-  await page.locator('input[type="password"]').fill('password123');
-  await page.getByRole('button', { name: /log in/i }).click();
+<pre><code>// Root cause: a fixed 500 ms guess at how long the server takes,
+// and nothing that checks the add actually finished.
+// Fixed by waiting for the server's answer. Zero retries needed.
+test('add to cart works', async ({ page }) =&gt; {
+  await registerNewUser(page);
 
   // One named card, not the whole grid
   const card = page.getByTestId('product-card')
     .filter({ has: page.getByRole('heading', { name: 'Trekking Poles (Pair)' }) });
   // Listen BEFORE the click for the server confirming the add
   const cartUpdated = page.waitForResponse(
-    r => r.url().includes('/api/cart') &amp;&amp; r.request().method() === 'POST' &amp;&amp; r.status() === 200
+    (r) =&gt; r.url().includes('/api/cart') &amp;&amp; r.request().method() === 'POST' &amp;&amp; r.status() === 200
   );
   await card.getByRole('button', { name: /add to cart/i }).click();
   await cartUpdated;
 
-  await page.goto('https://peakandpack-ui.onrender.com/cart');
-  // Check the item by name: the demo account is shared, so other items may be there too
+  await page.goto('/cart');
   await expect(page.getByText('Trekking Poles (Pair)')).toBeVisible();
-});
-</code></pre>
+});</code></pre>
     </div>
   </div>
 
-  <h2 id="trace-viewer">2. The Trace Viewer: your primary debugging tool</h2>
+  <h2 id="trace-viewer">2. The Trace Viewer, and the other ways to debug</h2>
   <p>When a test fails, the first thing to open is not the terminal output: it is the Trace Viewer. It shows every action the test took, a screenshot at each step, the DOM state, console logs, and network requests, all in a timeline you can scrub through.</p>
   <p>Enable tracing for failed tests in <code>playwright.config.ts</code>:</p>
-  <pre><code>use: {
-  trace: 'on-first-retry', // record trace when a test fails and retries
+<pre><code>use: {
+  trace: 'on-first-retry', // record a trace when a test fails and retries
 },</code></pre>
-  <p>After a failure, open the report and click the trace link:</p>
-  <pre><code># Opens the last run's report; each failed test links to its trace
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>use: { ... }</code> holds settings every test shares, as in Phase 0.</li>
+        <li><code>trace: 'on-first-retry'</code> records a trace only when a failed test is run again. With retries switched off, as they are on your own computer by default, <strong>no trace is recorded at all</strong>. That's why the next command exists.</li>
+      </ul>
+    </div>
+  </details>
+
+  <p>That setting records a trace only when a failed test is retried, and on your own computer retries are off. When you want a trace of a failure you have just seen, ask for one on the command line:</p>
+<pre><code># Record a trace for every test, pass or fail (useful when retries are off)
+npx playwright test --trace on
+
+# Open the last run's report; each recorded test links to its trace
 npx playwright show-report</code></pre>
+  <p><code>--trace on</code> records every test, so it overrides the config for that run. Each recorded test links to its trace from the report.</p>
   <p>In the Trace Viewer, look for:</p>
   <ul>
     <li><strong>The red step</strong>: the exact action that failed, with a screenshot of the page at that moment.</li>
@@ -237,6 +287,34 @@ npx playwright show-report</code></pre>
     <li><strong>Network tab</strong>: if the test was waiting for a response, check whether the request was made, what it returned, and when.</li>
     <li><strong>Console tab</strong>: JavaScript errors in the app that do not surface in the test output.</li>
   </ul>
+  <p>The trace is a recording you read after the run. Three other tools let you step through a test while it runs:</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Tool</th><th>How to start it</th><th>Use it when</th></tr></thead>
+      <tbody>
+        <tr><td>Trace Viewer</td><td><code>--trace on</code>, or the config's <code>trace</code></td><td>A test has failed and you want to know why, including on CI where nobody was watching</td></tr>
+        <tr><td>UI mode</td><td><code>npx playwright test --ui</code> (Phase 0)</td><td>You are writing or fixing a test and want to run it and see each step</td></tr>
+        <tr><td>Playwright Inspector</td><td><code>npx playwright test --debug</code></td><td>You want to pause before the first step and move one step at a time, watching the real browser</td></tr>
+        <tr><td>A breakpoint in VS Code</td><td>Click in the margin left of a line number, then run the test with the debug option</td><td>You want the test to stop at one particular line, then look around and carry on</td></tr>
+      </tbody>
+    </table>
+  </div>
+<pre><code># Open Playwright Inspector: the test runs one step at a time, and you press Resume or Step over
+npx playwright test tests/cart.spec.ts --debug</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>--debug</code> runs the test with Playwright Inspector, a small window that shows your code and runs it one step at a time. It also opens the browser visibly, and runs with one worker.</li>
+        <li>Resume runs on to the end, and Step over runs one line at a time, so you can watch the browser change after each action.</li>
+        <li>A <strong>breakpoint</strong> in VS Code does the same job from your editor: click in the margin so a red dot appears, run the test with <strong>Debug Test</strong>, and it stops on that line.</li>
+      </ul>
+    </div>
+  </details>
+
+  <div class="callout blue">
+    <p><strong>Which one first?</strong> Start with the trace: it needs no setup once you have asked for one, it works for failures that happened on a server, and it shows the step before the failure. Use Inspector or a breakpoint when a trace is not enough, because you need to stop the test at a moment and look.</p>
+  </div>
 
   <h2 id="app-vs-test">3. App failure vs test failure</h2>
   <p>The most important diagnostic question: is the product broken, or is the test wrong? The answer changes everything about what you do next.</p>
@@ -259,27 +337,197 @@ npx playwright show-report</code></pre>
       <thead><tr><th>Flaky pattern</th><th>Root cause</th><th>Fix</th></tr></thead>
       <tbody>
         <tr><td>Passes locally, fails in CI</td><td>Headless rendering is faster; elements not ready</td><td>Replace sleeps with <code>waitForResponse</code> or element assertions</td></tr>
-        <tr><td>Fails when run in parallel</td><td>Tests share data (same user, same cart)</td><td>Use isolated test data per worker (Phase 5)</td></tr>
+        <tr><td>Fails when run in parallel</td><td>Tests share data (same user, same cart), or the machine is too weak for that many workers</td><td>Isolated test data per test or worker (Phase 5); check the machine's load</td></tr>
         <tr><td>Fails intermittently with "strict mode violation"</td><td>Dynamic content makes a locator match multiple elements briefly</td><td>Scope the locator to a stable container</td></tr>
-        <tr><td>Fails on first run, passes on retry</td><td>Cold-start latency (Render free tier waking up)</td><td>Add a <code>waitForLoadState('networkidle')</code> on the first navigation only</td></tr>
+        <tr><td>Fails on first run, passes on retry</td><td>Cold-start latency (Render free tier waking up)</td><td>On the first navigation only, give the first real element a longer wait: <code>toBeVisible({ timeout: 60000 })</code></td></tr>
         <tr><td>Fails with "element not found" on fast machines</td><td>Test runs faster than the animation or transition</td><td>Assert the element is visible, not just present</td></tr>
       </tbody>
     </table>
   </div>
+  <p><strong>Switching on parallel runs often reveals flakiness that was always there.</strong> When tests that passed one at a time start failing together, there are two usual causes. The first is a machine too weak for the load: too many workers for the processor and memory, so pages load slowly and waits time out. Check the machine's load and lower <code>workers</code> before blaming a test. The second, and the bigger one, is shared test data. Every test using PeakAndPack's one demo account shares one cart, so tests step on each other. The cure is data each test owns, which is Phase 5.</p>
 
   <h2 id="surface-flakiness">5. Surface intermittent failures deliberately</h2>
   <p>A test that fails 1 in 10 runs will not show up in normal CI. Run it repeatedly to surface the flakiness before shipping:</p>
   <pre><code># Runs every test in this file 20 times. One failure in 20 means it's flaky.
 npx playwright test tests/cart.spec.ts --repeat-each=20</code></pre>
   <p>If it fails any of the 20 runs, it is flaky. Investigate the trace from the failing run before doing anything else.</p>
+  <p>To practise that on demand, you can make PeakAndPack slow in a controlled way. Add this helper next to <code>registerNewUser</code> (it uses the same <code>Page</code> import):</p>
+<pre><code>// Makes the add-to-cart request take anywhere from 0 to 2 seconds,
+// the way a slow server or a cold start would.
+async function slowDownAddToCart(page: Page) {
+  await page.route('**/api/cart', async (route) =&gt; {
+    if (route.request().method() === 'POST') {
+      await new Promise((resolve) =&gt; setTimeout(resolve, Math.random() * 2000));
+    }
+    await route.continue();
+  });
+}</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <p><strong>In plain words:</strong> makes the add-to-cart request randomly slow, so you can watch a flaky test happen on demand.</p>
+      <ul>
+        <li><code>page.route('**/api/cart', handler)</code> catches every request whose address matches the pattern, before it leaves the browser, and hands it to your function. <code>**</code> means "anything", so this matches the cart address on any host. Phase 7 covers routing properly.</li>
+        <li><code>route.request().method() === 'POST'</code> checks the kind of request. Adding to the cart is a POST, while viewing the cart is a GET, so only the add is slowed.</li>
+        <li><code>new Promise((resolve) =&gt; setTimeout(resolve, Math.random() * 2000))</code> waits a random time up to 2000 milliseconds. <code>setTimeout</code> calls a function after a delay, and wrapping it in a promise lets <code>await</code> wait for it. This is a wait you <em>want</em>: it fakes a slow server.</li>
+        <li><code>route.continue()</code> lets the request go on to the server, now that the delay is over. Skipping it would leave the request hanging for good.</li>
+        <li>Between 0 and 2 seconds is deliberate: some runs are fast and some are slow, which is exactly what makes a test flaky.</li>
+      </ul>
+    </div>
+  </details>
 
-  <h2 id="legitimate-retries">6. When retries are legitimate</h2>
+  <p>Now write the kind of test that most often turns out flaky, one that sleeps for a fixed time, and its fixed twin that waits for the response:</p>
+<pre><code>test('add to cart with a sleep (flaky when the server is slow)', async ({ page }) =&gt; {
+  await slowDownAddToCart(page);
+  await registerNewUser(page);
+  await page.getByRole('button', { name: /add to cart/i }).first().click();
+  await page.waitForTimeout(1000);          // hope the server is done by now
+  await page.goto('/cart');
+  await expect(page.getByText('Trekking Poles (Pair)')).toBeVisible();
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>await slowDownAddToCart(page)</code> must come before the page loads so the route is in place when the click happens.</li>
+        <li><code>registerNewUser(page)</code> starts with an empty cart.</li>
+        <li><code>.first().click()</code> adds the first product, Trekking Poles, to the cart.</li>
+        <li><code>waitForTimeout(1000)</code> is the sleep: it waits exactly one second whatever happens. When the slowed request takes under a second, the add is done and the test passes. When it takes more, <code>goto('/cart')</code> leaves the page before the add finishes, the cart is empty, and the check fails.</li>
+        <li>The failure message, "element(s) not found", is true but tells you nothing about the cause. The trace does.</li>
+      </ul>
+    </div>
+  </details>
+
+<pre><code>test('add to cart waits for the response (reliable)', async ({ page }) =&gt; {
+  await slowDownAddToCart(page);
+  await registerNewUser(page);
+  const added = page.waitForResponse(
+    (res) =&gt; res.url().includes('/api/cart') &amp;&amp; res.request().method() === 'POST' &amp;&amp; res.status() === 200
+  );
+  await page.getByRole('button', { name: /add to cart/i }).first().click();
+  await added;                               // however long the server takes
+  await page.goto('/cart');
+  await expect(page.getByText('Trekking Poles (Pair)')).toBeVisible();
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>waitForResponse(...)</code> is set up <em>before</em> the click, as in Phase 3, and matches the add's response: the cart address, a POST, status 200.</li>
+        <li><code>await added</code> pauses for as long as the server needs, one second or two or ten.</li>
+        <li>Then <code>goto('/cart')</code> runs only after the item is really in the cart, so the check can no longer fail because of timing.</li>
+      </ul>
+    </div>
+  </details>
+
+  <p>Run both repeatedly and keep a trace of every run:</p>
+<pre><code># Run the file's tests 20 times each, and keep a trace of every run
+npx playwright test tests/flaky.spec.ts --repeat-each=20 --trace on</code></pre>
+  <p>On my two runs, the sleeping version failed 11 times and then 7 times out of 20, and the response version passed all 20 both times. Your number will differ, because the delay is random, but the sleeping version should fail some of the time and the other should never fail. Open the report, open the trace of a failed run, and look at the Network tab: the add-to-cart request is there with how long it took. Whenever it took longer than a second, the test had already moved on. That is the diagnosis, and it is a specific one: not "the test is flaky" but "the test guesses one second, the server sometimes takes up to two".</p>
+
+  <h2 id="how-retries-work">6. How retries work</h2>
+  <p>A <strong>retry</strong> runs a failed test again. Playwright runs tests inside a <strong>worker</strong>, which is one browser session. When a test fails, Playwright shuts that worker down and starts a fresh one, so the retry, and the next test, begin with a clean browser and no leftovers from the failure. You set retries in two places:</p>
+<pre><code>// playwright.config.ts: the default for every test
+retries: process.env.CI ? 2 : 0,
+
+// From the terminal, for one run
+// npx playwright test --retries=2</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>retries: process.env.CI ? 2 : 0</code> is the line from Phase 0's config: two retries on a CI server, none on your own computer.</li>
+        <li><code>--retries=2</code> overrides the config for one run from the terminal.</li>
+        <li>A retry setting applies to runs started from the terminal. According to the course lecture, runs started from the VS Code extension do not retry, so a test that passes on retry in the terminal can fail once in the extension.</li>
+      </ul>
+    </div>
+  </details>
+
+  <p>Here is a test written to pass only on its second attempt, so you can see what a retry looks like:</p>
+<pre><code>import { test, expect } from '@playwright/test';
+
+test.describe.configure({ retries: 2 });   // for the tests in this file only
+
+test('passes on its second attempt', async ({ page }, testInfo) =&gt; {
+  console.log('attempt', testInfo.retry, 'worker', testInfo.workerIndex);
+  await page.goto('/');
+  // Made to fail on the first attempt only, to show what a retry looks like
+  await expect(page.getByTestId('result-count')).toHaveText(
+    testInfo.retry === 0 ? 'Showing 0 of 0 products' : 'Showing 10 of 10 products',
+    { timeout: 1500 }
+  );
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>test.describe.configure({ retries: 2 })</code> sets the retries for the tests in this file only. The config's <code>retries</code> still applies to other files. A failed test is run again up to 2 more times.</li>
+        <li><code>({ page }, testInfo)</code> adds a second thing for the test to receive: <code>testInfo</code>, facts about the test that is running right now.</li>
+        <li><code>testInfo.retry</code> is the attempt number: 0 on the first run, 1 on the first retry. A test can read it to behave differently, for example to clear out leftover data before a retry.</li>
+        <li><code>testInfo.workerIndex</code> is the number of the worker running the test. Printing it shows that the retry runs in a different worker: when a test fails, Playwright closes that worker and starts a fresh one, so the retry begins with a clean browser.</li>
+        <li>The expected text depends on <code>testInfo.retry</code>: wrong on the first attempt, right on the second. That is only here to make a test that passes on the second try. <code>{ timeout: 1500 }</code> shortens the wait so the failing attempt ends quickly.</li>
+        <li><strong>What you see:</strong> the terminal prints the failed attempt, then <code>(retry #1)</code> passing, and the summary says <code>1 flaky</code>, not <code>1 passed</code>. Playwright calls a test that failed and then passed <strong>flaky</strong>, and the report lists every attempt.</li>
+      </ul>
+    </div>
+  </details>
+
+  <p>In the HTML report, a flaky test shows each attempt as its own section, with its own error, steps and trace. With <code>trace: 'on-first-retry'</code>, the trace is the one recorded during the retry, so you see the passing attempt and the failing one is described by its error. If you need the failing attempt's trace as well, record every attempt with <code>--trace on</code>.</p>
+
+  <h2 id="legitimate-retries">7. When retries are legitimate</h2>
   <p>Retries are not always wrong. The rule: retries for environmental noise, not for test or app problems.</p>
   <ul>
     <li><strong>Legitimate:</strong> causes that are external and out of your control, such as a third-party API that is occasionally slow, or a free-tier host that cold-starts (PeakAndPack on Render does this).</li>
     <li><strong>Not legitimate:</strong> anything in your own test or app, such as a sleep that's too short, two tests sharing data, or a real defect.</li>
   </ul>
-  <p>If a retry masks a real bug, you will never know the bug exists.</p>
+  <p>If a retry masks a real bug, you will never know the bug exists. The word <strong>flaky</strong> in the summary is your reminder: a test that needed a retry did not pass cleanly, so count those and look at them.</p>
+
+  <h2 id="evidence">8. Evidence beyond the trace</h2>
+  <p>The trace should be your first stop, because it records a snapshot at every step. Screenshots and video are for what a trace can't show well: an animation, or evidence you must hand to someone outside the test run, such as a bug report.</p>
+<pre><code>test('screenshots: a page, an element, and in memory', async ({ page }) =&gt; {
+  await page.goto('/');
+  const firstCard = page.getByTestId('product-card').first();
+  await expect(firstCard).toBeVisible();             // let the list finish loading first
+
+  await page.screenshot({ path: 'screenshots/home.png' });          // the whole visible page
+  await firstCard.screenshot({ path: 'screenshots/first-card.png' }); // just one element
+
+  const buffer = await page.screenshot();            // no file: the picture as bytes in memory
+  const asText = buffer.toString('base64');          // the same picture as text, for sending elsewhere
+  expect(buffer.length).toBeGreaterThan(1000);
+  expect(asText.length).toBeGreaterThan(buffer.length);
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>await expect(firstCard).toBeVisible()</code> makes sure the page has finished loading before the picture is taken. A screenshot taken during a load shows a half-drawn page.</li>
+        <li><code>page.screenshot({ path: 'screenshots/home.png' })</code> saves a picture of what the tab shows to that file. The folder is created for you.</li>
+        <li><code>firstCard.screenshot({ path: ... })</code> pictures just that one element. It is how you capture one section instead of the whole page.</li>
+        <li><code>const buffer = await page.screenshot()</code>, with no path, saves nothing. It hands you the picture as raw data in memory, called a <strong>buffer</strong>.</li>
+        <li><code>buffer.toString('base64')</code> turns that data into plain text that can be sent to another system, such as a bug tracker's API.</li>
+        <li>The two <code>expect</code> lines are generic assertions: the buffer holds something, and the text form is longer than the raw data, which is how base64 works.</li>
+      </ul>
+    </div>
+  </details>
+
+  <p>To keep pictures and recordings of failures automatically, without writing code in each test, set them in the config:</p>
+<pre><code>use: {
+  trace: 'on-first-retry',
+  screenshot: 'only-on-failure',   // a picture of the page at the moment a test fails
+  video: 'retain-on-failure',      // record every test, keep the video only if it failed
+},</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>screenshot: 'only-on-failure'</code> takes a picture automatically, at the moment a test fails, and attaches it to the report.</li>
+        <li><code>video: 'retain-on-failure'</code> records every test, then deletes the video of any test that passed. Other values are <code>'on'</code> (keep all), <code>'off'</code>, and <code>'on-first-retry'</code>.</li>
+        <li>Videos use disk space, so keeping only failures is a sensible default. They are recorded when you run from the terminal, and the VS Code extension's runs don't produce them.</li>
+      </ul>
+    </div>
+  </details>
+
+  <p>Add <code>screenshots/</code> to your <code>.gitignore</code>: pictures taken by your own tests are output, not source code.</p>
 
   <div class="callout amber">
     <p><strong>The flakiness register.</strong> Keep a markdown file listing every flaky test: its name, the root cause category, and whether it is fixed or being monitored. This turns an invisible problem into a tracked one. When flakiness rate exceeds 5% of your suite, it is a quality signal that something structural needs attention.</p>
@@ -290,12 +538,15 @@ npx playwright test tests/cart.spec.ts --repeat-each=20</code></pre>
     <ul style="margin:.5rem 0 0 1.2rem;">
       <li><strong>Adding retries as the first response to flakiness.</strong> Retries hide the problem. The test will still fail 1 in 3 runs silently, and you will not know about the underlying issue.</li>
       <li><strong>Debugging from terminal output alone.</strong> The terminal tells you what failed. The Trace Viewer tells you why. Always open the trace before changing any code.</li>
+      <li><strong>Expecting a trace you never asked for.</strong> With <code>on-first-retry</code> and retries off, nothing is recorded. Use <code>--trace on</code>.</li>
       <li><strong>Not reproducing CI failures locally.</strong> Run with <code>--headed</code>, reduce workers to 1 with <code>--workers=1</code>, and if possible use the same Node version as CI.</li>
       <li><strong>Fixing the symptom not the cause.</strong> Adding a sleep after a flaky step makes it pass today. It will fail again when the environment is slower. Fix the wait strategy.</li>
+      <li><strong>Blaming a missing <code>await</code> for flakiness.</strong> I tried it: a missing <code>await</code> on <code>goto</code> followed by an <code>expect</code> passed 20 times out of 20, because the <code>expect</code> keeps checking until the page arrives. A missing <code>await</code> on a click, or on a read such as <code>textContent()</code>, failed 20 times out of 20. Mistakes like that fail every time, so they are easy to find. Intermittent failures come from timing and shared data.</li>
+      <li><strong>Taking a screenshot too early.</strong> A picture taken while the page is still loading shows a half-drawn page. Wait for something on the page first.</li>
     </ul>
   </div>
 
-  <h2 id="deliverables">7. Deliverables</h2>
+  <h2 id="deliverables">9. Deliverables</h2>
   <ul>
     <li><code>tests/debug-examples.spec.ts</code>: intentionally flaky versions of tests alongside their fixed versions</li>
     <li><code>flakiness-diagnosis.md</code>: the root cause table and your personal flakiness register</li>
@@ -305,31 +556,41 @@ npx playwright test tests/cart.spec.ts --repeat-each=20</code></pre>
 
   <div class="assignment">
     <div class="a-label">Assignment</div>
-    <h3>Diagnose a flaky test using the Trace Viewer</h3>
-    <p>Write a test for PeakAndPack that navigates to the product listing and asserts that a specific product card is visible. Introduce artificial flakiness by removing the <code>await</code> from the navigation call (<code>page.goto('https://peakandpack-ui.onrender.com/')</code> without <code>await</code>). Run it 10 times with <code>--repeat-each=10</code>. When it fails, open the trace. Find the exact step where it failed and explain in <code>flakiness-diagnosis.md</code> what the trace shows and why the missing <code>await</code> caused it.</p>
+    <h3>Make a test flaky on purpose, then diagnose and fix it</h3>
+    <p>Use the support code from sections 1 and 5 and the sleeping test, and work through these steps. Record each result in <code>flakiness-diagnosis.md</code>.</p>
+    <ol>
+      <li>Run the sleeping test 20 times with a trace: <code>npx playwright test tests/flaky.spec.ts --repeat-each=20 --trace on</code>. How many runs failed?</li>
+      <li>Open the report and the trace of one failed run. Find the add-to-cart request in the Network tab and note how long it took. Compare it with the trace of a run that passed.</li>
+      <li>Write a sentence of diagnosis that names the cause precisely.</li>
+      <li>Replace the sleep with <code>waitForResponse</code>, and run 20 times again. What changed?</li>
+      <li>Put <code>test.describe.configure({ retries: 2 })</code> on the sleeping version and run it. What does the summary call a test that failed and then passed? Why is that not a fix?</li>
+      <li>Add <code>video: 'retain-on-failure'</code> and <code>screenshot: 'only-on-failure'</code> to the config, run the sleeping version again, and find the video and the screenshot of a failure.</li>
+      <li>In the fixed test, save a screenshot of the cart page after the check passes.</li>
+    </ol>
 
   <details class="solution">
     <summary>Show solution: try it yourself first</summary>
     <div class="solution-body">
-      <h3>What the trace shows</h3>
-      <p>When <code>await</code> is removed from <code>page.goto('https://peakandpack-ui.onrender.com/')</code>, the test does not wait for the navigation to complete before moving to the next step. The trace shows the assertion firing while the page is still loading, often before any content has rendered. The screenshot in the trace will show a blank page or a loading state.</p>
-      <pre><code>// FLAKY: no await on goto
-test('product card is visible (flaky)', async ({ page }) => {
-  page.goto('https://peakandpack-ui.onrender.com/'); // missing await -- does not wait for load
-  await expect(
-    page.getByTestId('product-card').first()
-  ).toBeVisible(); // fires before the page has loaded
-});
-
-// FIXED: await the navigation
-test('product card is visible', async ({ page }) => {
-  await page.goto('https://peakandpack-ui.onrender.com/'); // waits for load
-  await expect(
-    page.getByTestId('product-card').first()
-  ).toBeVisible();
-});
-</code></pre>
-      <p><strong>Why it is intermittent.</strong> On a fast machine the navigation completes quickly and the assertion sometimes passes before the race condition bites. On a slow machine or in CI, the gap between the unwaited goto and the assertion is wide enough that the page is visibly empty when the assertion runs.</p>
+      <h3>The fixed test, with a screenshot</h3>
+<pre><code>test('add to cart waits for the response (reliable)', async ({ page }) =&gt; {
+  await slowDownAddToCart(page);
+  await registerNewUser(page);
+  const added = page.waitForResponse(
+    (res) =&gt; res.url().includes('/api/cart') &amp;&amp; res.request().method() === 'POST' &amp;&amp; res.status() === 200
+  );
+  await page.getByRole('button', { name: /add to cart/i }).first().click();
+  await added;
+  await page.goto('/cart');
+  await expect(page.getByText('Trekking Poles (Pair)')).toBeVisible();
+  await page.screenshot({ path: 'screenshots/cart-after-add.png' });   // evidence of the passing state
+});</code></pre>
+      <p><strong>Step 1.</strong> On my two runs, 11 and then 7 of the 20 sleeping runs failed. Because the delay is random, your count will differ, but expect somewhere between a quarter and a half to fail.</p>
+      <p><strong>Step 2.</strong> In a failed run, the request took longer than a second (the delay was random up to two). The trace shows the test already on <code>/cart</code>, with an empty cart, before the request finished. In a passing run, the request finished in under a second.</p>
+      <p><strong>Step 3.</strong> "The test waits a fixed one second after clicking, but the add-to-cart request sometimes takes up to two, so the cart page loads before the item has been added."</p>
+      <p><strong>Step 4.</strong> The fixed version passed 20 of 20, because it waits for the actual response, however long it takes.</p>
+      <p><strong>Step 5.</strong> The summary calls it <code>flaky</code>. Retries can turn a failure into a pass without changing why it failed, so the underlying problem stays, and the pass rate looks better than the truth.</p>
+      <p><strong>Step 6.</strong> With these settings, a failed attempt leaves a <code>test-failed-1.png</code> and a <code>video.webm</code> in that test's folder inside <code>test-results/</code>, and the report links to them. Passing attempts leave neither.</p>
+      <p><strong>Step 7.</strong> The screenshot line at the end of the solution does it: <code>page.screenshot({ path: ... })</code> after the last check.</p>
     </div>
   </details>
   </div>

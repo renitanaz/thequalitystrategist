@@ -168,7 +168,7 @@ details.explain[open] summary::before{transform:rotate(90deg)}
   <div class="meta-row">
     <span><strong>Series: Playwright: Zero to Architect</strong></span>
     <span>Demo: PeakAndPack</span>
-    <span>9 min read</span>
+    <span>13 min read</span>
     <span>By: RN</span>
   </div>
 
@@ -200,6 +200,7 @@ details.explain[open] summary::before{transform:rotate(90deg)}
     <li>Installed Playwright</li>
     <li>Written two tests against PeakAndPack</li>
     <li>Run them and read the result</li>
+    <li>Run just the tests you want, instead of all of them</li>
     <li>Understood every line of what you wrote</li>
   </ul>
   <p>That loop (write a test, run it, read the result) is what every later phase builds on.</p>
@@ -327,11 +328,11 @@ npm init playwright@latest</code></pre>
       <ul>
         <li><code>package.json</code>: the project's ID card. It holds the project's name and the list of packages it needs.</li>
         <li><code>package-lock.json</code>: the exact version of every package installed, so the project installs identically on another computer.</li>
-        <li><code>node_modules/</code>: the downloaded packages themselves. It's large and can be rebuilt from <code>package.json</code> at any time, so it never goes into Git.</li>
+        <li><code>node_modules/</code>: the downloaded packages themselves. It's large and can be rebuilt from <code>package.json</code> at any time, so it never goes into Git. Playwright lives in here, so every project has its own copy, and two projects can use different versions. If you ever clone a project from GitHub, this folder won't be there: run <code>npm install</code> inside the project to rebuild it.</li>
         <li><code>playwright.config.ts</code>: Playwright's settings (step 4).</li>
         <li><code>tests/example.spec.ts</code>: a demo test, which you'll delete in step 5.</li>
         <li><code>.gitignore</code>: a list of files Git should leave out, such as <code>node_modules</code> and old reports.</li>
-        <li>The browsers: Chromium, Firefox and WebKit. They're downloaded to a shared folder on your computer, not into the project.</li>
+        <li>The browsers: Chromium, Firefox and WebKit. They're downloaded once, to a shared folder on your computer, and every project uses them. That's why a second project installs much faster than the first.</li>
       </ul>
     </div>
   </details>
@@ -481,7 +482,7 @@ export default defineConfig({
         <li><code>import { defineConfig } from '@playwright/test';</code>: <code>import</code> borrows a tool from a package, here <code>'@playwright/test'</code>, the Playwright package the installer added. <code>defineConfig</code> wraps your settings so VS Code can suggest valid ones and flag mistakes as you type.</li>
         <li><code>export default defineConfig({ ... });</code>: <code>export default</code> hands these settings to whatever loads the file, which is Playwright. Everything between <code>{</code> and <code>}</code> is one group of settings, each written <code>name: value,</code>.</li>
         <li><code>testDir: './tests'</code>: the folder to look in for tests. <code>./</code> means "starting from this project's folder".</li>
-        <li><code>fullyParallel: true</code>: run tests at the same time instead of one after another. <code>true</code> and <code>false</code> are yes/no values, written without quotes.</li>
+        <li><code>fullyParallel: true</code>: run tests at the same time instead of one after another. <code>true</code> and <code>false</code> are yes/no values, written without quotes. With <code>false</code>, different files still run side by side, but the tests inside one file run one after another, top to bottom.</li>
         <li><code>retries: process.env.CI ? 2 : 0</code>: how many times to rerun a failed test. Read it as "on a CI server, 2, otherwise 0".
           <ul>
             <li><code>process.env</code> holds <strong>environment variables</strong>: settings the computer passes to a program when it starts it.</li>
@@ -567,6 +568,7 @@ test('product search is available', async ({ page }) => {
         <li>The line breaks are only for readability. Written on one line, the code does exactly the same thing. Each opening bracket has a closing partner.</li>
       </ul>
       <p><strong>Test 2</strong> has the same shape, with one difference: <code>getByRole('textbox', { name: /search gear/i })</code>. A textbox is anything you can type into. The search box has no visible label, so its grey hint text, "Search gear..." (called a <strong>placeholder</strong>), becomes its name.</p>
+      <p><strong>Which lines have <code>await</code>, and which don't.</strong> <code>page.goto(...)</code> and <code>expect(...).toBeVisible()</code> start with <code>await</code>: they do something on the page, which takes time. <code>page.getByRole(...)</code> has none, because it does nothing yet. It only builds the description of what to look for, and the search happens when the check uses it. A handy rule: put <code>await</code> on the lines that act on the page or check it, not on the lines that only describe where to look.</p>
       <p><strong>What happens when the check runs:</strong> Playwright builds the description, searches the page, finds only "Loading gear..." at first, waits and searches again, then finds "PeakAndPack Gear" and confirms it's visible. Pass. In the report, that's the "Expect toBeVisible" step and its time.</p>
     </div>
   </details>
@@ -588,6 +590,7 @@ npx playwright test</code></pre>
   </details>
   <p><code>npx</code> runs a tool installed in this project, here Playwright. <code>playwright test</code> finds every file in <code>tests/</code> ending in <code>.spec.ts</code> and runs the tests inside it.</p>
   <p>Playwright opens the browser invisibly (headless), loads PeakAndPack, runs both tests, and prints the result. Expect to see <strong>6 passed</strong>, not 2. The generated config has a <code>projects</code> list that runs every test in three browsers: Chromium (Chrome's engine), Firefox and WebKit (Safari's engine). That's useful later. Phase 10 covers when to keep all three.</p>
+  <p>All six ran at the same time because Playwright runs tests in parallel. The number of <strong>workers</strong> (the separate processes that run tests) is normally half the number of cores in your computer's processor, so a bigger machine runs more at once. To run one test at a time, which is easier to watch, add <code>--workers=1</code>.</p>
   <figure class="term-shot">
     <img src="phase0-six-passed.png" width="1200" height="169" loading="lazy" alt="PowerShell after npx playwright test: Running 6 tests using 6 workers, 6 passed in 17.2 seconds">
     <figcaption>A passing run: 2 tests in 3 browsers. "6 workers" means Playwright ran all six at the same time, each in its own process, which is why it finishes in seconds.</figcaption>
@@ -621,6 +624,91 @@ npx playwright test tests/first.spec.ts</code></pre>
     </div>
   </details>
 
+  <h3 id="choose-tests">Choose which tests run</h3>
+  <p>With six tests, running everything is fine. With sixty, you want to run just the one you are working on. First, give the tests a group: <code>test.describe</code> wraps related tests together, so the report shows them under one name. Change <code>tests/first.spec.ts</code> to this (the tests inside are the same two as before):</p>
+<pre><code>import { test, expect } from '@playwright/test';
+
+// A group: everything inside belongs together in the report
+test.describe('PeakAndPack home page', () =&gt; {
+  test('product list heading is visible', async ({ page }) =&gt; {
+    await page.goto('/');
+    await expect(page.getByRole('heading', { name: /peakandpack/i })).toBeVisible();
+  });
+
+  test('product search is available', async ({ page }) =&gt; {
+    await page.goto('/');
+    await expect(page.getByRole('textbox', { name: /search gear/i })).toBeVisible();
+  });
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <p><strong>In plain words:</strong> put the two tests in a named group. Nothing about what they check has changed.</p>
+      <ul>
+        <li><code>test.describe('PeakAndPack home page', () =&gt; { ... });</code> creates a <strong>group</strong>. The text in quotes is the group's name, and everything between the curly braces belongs to it.</li>
+        <li><code>() =&gt;</code> is an empty function: a block of steps that takes no input. A group is only a container, so unlike a test it is not handed a <code>page</code>.</li>
+        <li>The two <code>test(...)</code> blocks are unchanged. They are indented one level to show they sit inside the group.</li>
+        <li>The group's name is added in front of each test's name wherever tests are listed: <code>PeakAndPack home page › product search is available</code>. That makes a failure easier to place.</li>
+      </ul>
+    </div>
+  </details>
+
+  <p>Now you can pick which tests to run from the terminal:</p>
+<pre><code># Only the Chromium runs, not Firefox and WebKit
+npx playwright test --project=chromium
+
+# Only tests whose full name contains "search"
+npx playwright test -g "search"
+
+# Show what would run, without running it
+npx playwright test --list</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>--project=chromium</code> keeps only the runs for one project from the config's <code>projects</code> list. With the generated config, that is the three browsers, so this runs 2 tests instead of 6.</li>
+        <li><code>-g "search"</code> (short for <code>--grep</code>) keeps only tests whose full name contains that text. The full name includes the file name and the group name, so <code>-g "search"</code> matches the search test in all three browsers (3 runs), while <code>-g "home page"</code> matches the group name and so keeps every test in it.</li>
+        <li><code>--list</code> prints the tests that would run and stops. It is a quick way to check that a filter selects what you meant before you wait for a run.</li>
+        <li>You can combine them: <code>npx playwright test --project=chromium -g "search"</code> runs one test in one browser.</li>
+      </ul>
+    </div>
+  </details>
+
+  <p>Two more choices live in the test file itself:</p>
+<pre><code>// Run only this test. Every other test in the whole run is ignored.
+test.only('product search is available', async ({ page }) =&gt; { /* ... */ });
+
+// Skip this test. It stays in the file and shows as "skipped" in the report.
+test.skip('product search is available', async ({ page }) =&gt; { /* ... */ });</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>test.only(...)</code> marks one test as the only one to run. Playwright then ignores every other test, in every file, until you remove the <code>.only</code>.</li>
+        <li><code>test.skip(...)</code> turns a test off without deleting it. The run counts it as skipped, so a skipped test stays visible in the results and cannot be forgotten quietly.</li>
+        <li><code>/* ... */</code> is another kind of comment, one that can sit inside a line. Here it stands for the test's steps, left out to keep the example short.</li>
+      </ul>
+    </div>
+  </details>
+
+  <div class="callout amber">
+    <p><strong>Never commit a <code>test.only</code>.</strong> It is handy while you work, but if it stays in a file, the whole suite silently runs one test and reports a pass. That is what the <code>forbidOnly</code> line in your config guards against: on CI, a leftover <code>.only</code> fails the run instead.</p>
+  </div>
+  <p>One more way to run tests is Playwright's <strong>UI mode</strong>, which gives you a window for running and inspecting tests:</p>
+<pre><code># Opens Playwright's UI mode, a window for running and inspecting tests
+npx playwright test --ui</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>--ui</code> opens a window that lists your tests. Click the &#9654; next to a test, a file or a group to run it.</li>
+        <li>Select a run and it shows each step with a picture of the page <strong>before</strong> and <strong>after</strong> that step, plus the network calls and the browser's console messages. It's the Trace Viewer from Phase 4, on tap while you work.</li>
+        <li>The pictures are snapshots, not the live page: you can look at them, but clicking on them does nothing.</li>
+      </ul>
+    </div>
+  </details>
+
+
   <p><strong>Running tests from VS Code.</strong> Microsoft's <strong>Playwright Test for VS Code</strong> extension lets you run tests with a click. In VS Code, open Extensions (the four-squares icon on the left), search for it, and click Install. A green &#9654; button then appears next to every test, and a Testing panel (the flask icon) lists them all. Keep using the terminal while you learn: it shows what's really happening, and it's exactly what a CI pipeline runs.</p>
   <details class="explain">
     <summary>What the extension adds, and when to use it</summary>
@@ -629,7 +717,10 @@ npx playwright test tests/first.spec.ts</code></pre>
       <ul>
         <li><strong>A &#9654; button next to every test</strong>, in the code file. Click it to run that one test, and see a tick or a cross right there.</li>
         <li><strong>The Testing panel</strong> lists every file and test. Run all of them, one file, or one test, and see which passed.</li>
-        <li><strong>Show browser</strong>: watch the test run in a visible browser, the same as <code>--headed</code>.</li>
+        <li><strong>Show browser</strong>: watch the test run in a visible browser, the same as <code>--headed</code>. The browser stays open after the test ends, so you can look around, and you close it yourself.</li>
+        <li><strong>Project checkboxes</strong>: choose which projects, meaning which browsers, the buttons run. Tick only Chromium while you work and your clicks run one browser, not three.</li>
+        <li><strong>Refresh button</strong>: if a new test file does not appear in the list, click it.</li>
+        <li><strong>Show trace viewer</strong>: an option that opens a recording of the run, step by step, when the test ends.</li>
         <li><strong>Pick locator</strong>: point at something on the real page, and it suggests a locator, such as <code>getByRole('button', { name: 'Add to cart' })</code>. Useful in Phase 2.</li>
         <li><strong>Record new</strong>: click through the site, and it writes test code for you. It's good for seeing how actions become code, but always review what it writes (Phase 13).</li>
         <li><strong>Debugging</strong>: pause a test on a line and step through it, watching the browser at each step (Phase 4).</li>
@@ -723,6 +814,7 @@ def test_product_search_is_available(page: Page):
       <li><strong>Forgetting <code>await</code>.</strong> Every Playwright call is async. Skip <code>await</code> and the test races ahead before the browser responds. The error message is confusing; the fix is always adding the missing <code>await</code>.</li>
       <li><strong>Using the wrong locator from the start.</strong> The generated example test uses <code>page.locator('.some-class')</code>. Copying that pattern means every test is fragile from day one. Phase 2 covers this in depth. For now, use <code>getByRole</code> and <code>getByText</code>.</li>
       <li><strong>Not setting <code>baseURL</code>.</strong> Pasting the full URL into <code>page.goto()</code> works but means you have to update every test if the URL ever changes. Set it once in the config.</li>
+      <li><strong>Leaving <code>test.only</code> in a file.</strong> One leftover <code>.only</code> makes the run ignore every other test, and the run still reports a pass. Search the project for <code>.only</code> before you commit.</li>
       <li><strong>Running tests before the install finishes.</strong> <code>npm init playwright@latest</code> downloads browsers in the background. If you run <code>npx playwright test</code> before it completes, you get a confusing error about missing browsers.</li>
     </ul>
   </div>
@@ -767,6 +859,56 @@ def test_product_search_is_available(page: Page):
   </details>
   </div>
 
+  <div class="assignment" style="margin-top:2rem">
+    <div class="a-label">Assignment, part 2</div>
+    <h3>Run the right tests</h3>
+    <p>Use the three tests from part 1 and the commands from "Choose which tests run". Write down the number the terminal reports each time, and say why it is that number.</p>
+    <ol>
+      <li>Put all three tests in the <code>PeakAndPack home page</code> group, and run everything. How many tests run, and why?</li>
+      <li>Run only Chromium. How many now?</li>
+      <li>Run only the test whose name contains "title", in all browsers, using <code>-g</code>. How many?</li>
+      <li>Run <code>--list</code> with that same <code>-g</code> and check it lists what you expected, without running anything.</li>
+      <li>Put <code>test.skip</code> on the title test and run only Chromium. What does the summary say?</li>
+      <li>Put <code>test.only</code> on the search test instead (and remove the skip), run everything, and see what is left of the other tests. Then remove the <code>.only</code>.</li>
+      <li>Run everything with <code>--workers=1</code>, then without. What changes?</li>
+    </ol>
+
+  <details class="solution">
+    <summary>Show solution: try it yourself first</summary>
+    <div class="solution-body">
+      <h3>The grouped file</h3>
+<pre><code>import { test, expect } from '@playwright/test';
+
+test.describe('PeakAndPack home page', () =&gt; {
+  test('product list heading is visible', async ({ page }) =&gt; {
+    await page.goto('/');
+    await expect(page.getByRole('heading', { name: /peakandpack/i })).toBeVisible();
+  });
+
+  test('product search is available', async ({ page }) =&gt; {
+    await page.goto('/');
+    await expect(page.getByRole('textbox', { name: /search gear/i })).toBeVisible();
+  });
+
+  test('page has a title', async ({ page }) =&gt; {
+    await page.goto('/');
+    await expect(page).toHaveTitle(/react app/i);
+  });
+});</code></pre>
+      <p><strong>The numbers.</strong></p>
+      <ol>
+        <li><strong>9 tests.</strong> Three tests, each run in the three browsers from the config's <code>projects</code> list.</li>
+        <li><strong>3 tests.</strong> <code>--project=chromium</code> keeps one browser.</li>
+        <li><strong>3 tests.</strong> The title test, once per browser: <code>npx playwright test -g "title"</code>.</li>
+        <li><code>npx playwright test --list -g "title"</code> prints the title test three times, once per browser, and then stops without running anything.</li>
+        <li><strong>1 skipped, 2 passed.</strong> The skipped test is still counted, which is the point of skipping instead of deleting.</li>
+        <li><strong>Only the search test runs</strong>, 3 times (one per browser). The other tests are not skipped, they are not even selected, which is why a leftover <code>.only</code> is dangerous.</li>
+        <li>Without <code>--workers=1</code>, tests run side by side and finish faster. With it, one at a time: the same results, a longer run.</li>
+      </ol>
+    </div>
+  </details>
+  </div>
+
   <div class="bonus">
     <div class="b-label">Bonus challenge</div>
     <p><strong>Run the tests in headed mode and open the trace viewer.</strong> The goal is to get comfortable with the trace viewer before you need it for a real failure.</p>
@@ -774,7 +916,7 @@ def test_product_search_is_available(page: Page):
     <ol style="margin-bottom:0">
       <li>Temporarily change the config to <code>retries: 1</code>.</li>
       <li>Break one test on purpose: change the expected text so it can't match.</li>
-      <li>Run with <code>--headed</code> and let it retry.</li>
+      <li>Run with <code>--headed</code> and let it retry, or try <code>npx playwright test --ui</code> and open the failed run from there.</li>
       <li>Open the trace, find the step where the assertion failed, and read the screenshot Playwright captured at that moment.</li>
       <li>Fix the test, set <code>retries</code> back to <code>process.env.CI ? 2 : 0</code>, and confirm it passes again.</li>
     </ol>

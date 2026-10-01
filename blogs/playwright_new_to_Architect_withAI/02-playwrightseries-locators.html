@@ -111,6 +111,16 @@ footer a:hover{color:var(--purple)}
 .blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
 .blog-tags .series-tag{margin-bottom:0}
 .tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+details.explain{margin:.5rem 0 1.5rem;border:1px solid var(--purple-border);border-radius:10px;background:var(--purple-bg)}
+details.explain summary{padding:.6rem 1rem;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--purple);list-style:none;display:flex;align-items:center;gap:.5rem}
+details.explain summary::-webkit-details-marker{display:none}
+details.explain summary::before{content:"\25B6";font-size:.65rem;transition:transform .2s}
+details.explain[open] summary::before{transform:rotate(90deg)}
+.explain-body{padding:.1rem 1.2rem 1rem;font-size:.92rem;line-height:1.7}
+.explain-body p{margin:.7rem 0}
+.explain-body ul{margin:.3rem 0 .7rem 1.2rem;padding-left:0}
+.explain-body li{margin-bottom:.35rem}
+.explain-body pre{margin:.6rem 0}
 </style>
 <meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
 <meta property="og:image:width" content="1200">
@@ -151,7 +161,7 @@ footer a:hover{color:var(--purple)}
   <div class="meta-row">
     <span><strong>Series: Playwright: Zero to Architect</strong></span>
     <span>Demo: PeakAndPack</span>
-    <span>9 min read</span>
+    <span>18 min read</span>
     <span>By: RN</span>
   </div>
 
@@ -176,8 +186,40 @@ footer a:hover{color:var(--purple)}
 
   <h2>Goal</h2>
   <p>Find elements the right way so tests survive UI changes without breaking. The locator you choose is the single biggest factor in whether your test is brittle or resilient.</p>
+  <ul class="goal-list">
+    <li>Read a page's structure: tags, attributes, <code>id</code> and <code>class</code>, parents and children</li>
+    <li>Pick the most durable locator from the priority list, and know which role a tag has</li>
+    <li>Use the everyday family: <code>getByRole</code>, <code>getByLabel</code>, <code>getByPlaceholder</code>, <code>getByText</code>, <code>getByTitle</code>, <code>getByAltText</code>, <code>getByTestId</code></li>
+    <li>Read and write simple CSS selectors for the cases nothing else covers</li>
+    <li>Narrow a locator by chaining, <code>filter</code>, the parent step and position, and know when position is a bad idea</li>
+    <li>Let Playwright suggest a locator, then review it</li>
+  </ul>
 
-  <h2 id="fragile-locators">1. Before: the fragile locator problem</h2>
+  <h2 id="page-structure">1. What a locator is looking at</h2>
+  <p>A locator points at an element on the page, so it helps to know how a page is built. A web page is a tree of <strong>elements</strong>. Each element has a <strong>tag</strong> that says what it is (<code>button</code>, <code>input</code>, <code>h3</code>), may have <strong>attributes</strong> that add detail (<code>type="email"</code>), and usually holds text or other elements. This is PeakAndPack's login form, trimmed down:</p>
+  <pre><code>&lt;form&gt;
+  &lt;label&gt;Email&lt;/label&gt;
+  &lt;input type="email"&gt;
+  &lt;label&gt;Password&lt;/label&gt;
+  &lt;input type="password"&gt;
+  &lt;button type="submit"&gt;Log in&lt;/button&gt;
+&lt;/form&gt;
+</code></pre>
+  <ul>
+    <li><code>input</code> is the <strong>tag</strong>: a field you type into. <code>type="email"</code> is an <strong>attribute</strong> on it.</li>
+    <li>The <code>form</code> is the <strong>parent</strong> of everything inside it. Those elements are its <strong>children</strong>, and next to each other they are <strong>siblings</strong>.</li>
+    <li>Locators often describe an element by these relationships: "the button inside this card" is a child-of-parent description.</li>
+  </ul>
+  <p>Two attributes come up constantly. An <code>id</code> is meant to be unique on the page, so it names one element. A <code>class</code> is shared by many elements of the same kind, usually to style them. PeakAndPack's admin panel (Phase 8) has both:</p>
+  <pre><code>&lt;tbody id="products-tbody"&gt; ... &lt;/tbody&gt;                      &lt;!-- one table body: an id --&gt;
+&lt;button class="btn btn-danger"&gt;Delete&lt;/button&gt;             &lt;!-- every Delete button shares btn-danger --&gt;
+</code></pre>
+  <p>Some apps also switch classes on and off to show state, such as <code>selected</code> or <code>disabled</code>, so a class can change while the page is open. Ids and classes are chosen by developers for styling and scripts, and they change in refactors. That is the fragile locator problem in the next section.</p>
+  <div class="callout blue">
+    <p><strong>See it yourself.</strong> Open PeakAndPack, right-click any element and choose <em>Inspect</em>. Chrome's Elements panel opens with that element's HTML highlighted. Hover over lines in the panel and the matching part of the page lights up. Use this whenever you need to know what an element is called.</p>
+  </div>
+
+  <h2 id="fragile-locators">2. Before: the fragile locator problem</h2>
   <p>A developer renames a CSS class during a refactor. Nothing breaks for the user: the page looks and works the same. But three tests fail on CI. This is the fragile locator problem:</p>
 
   <div class="ba-wrap">
@@ -202,7 +244,7 @@ await page.getByRole('button', { name: /checkout/i }).click();
     </div>
   </div>
 
-  <h2 id="locator-priority">2. Locator priority</h2>
+  <h2 id="locator-priority">3. Locator priority</h2>
   <p>Playwright gives you many ways to find the same element, and they aren't equally durable. The closer a locator is to what a user actually sees, such as a button's text or a field's label, the less likely a code change is to break it. Work down this list and use the first one that fits:</p>
   <div class="table-wrap">
     <table>
@@ -218,7 +260,7 @@ await page.getByRole('button', { name: /checkout/i }).click();
     </table>
   </div>
 
-  <h2 id="getbyrole">3. getByRole in depth</h2>
+  <h2 id="getbyrole">4. getByRole in depth</h2>
   <p>The most important locator. It finds elements by their ARIA role and accessible name, the same way a screen reader or other assistive technology would. That's why it survives restyling: roles describe what an element is, not how it looks. Every interactive element has a role:</p>
   <ul>
     <li>Buttons: <code>button</code></li>
@@ -247,7 +289,154 @@ page.getByRole('textbox', { name: /search gear/i })
     </ul>
   </div>
 
-  <h2 id="scoping">4. Scoping: find inside a container</h2>
+  <p><strong>Which role does an element have?</strong> Most roles come straight from the tag, so you rarely have to guess:</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Tag</th><th>Role</th><th>On PeakAndPack</th></tr></thead>
+      <tbody>
+        <tr><td><code>&lt;a href&gt;</code></td><td><code>link</code></td><td>The "Cart" link in the top bar</td></tr>
+        <tr><td><code>&lt;button&gt;</code></td><td><code>button</code></td><td>"Add to cart"</td></tr>
+        <tr><td><code>&lt;h1&gt;</code> to <code>&lt;h6&gt;</code></td><td><code>heading</code> (with a level)</td><td>"PeakAndPack Gear" (level 1)</td></tr>
+        <tr><td><code>&lt;input type="text"&gt;</code>, <code>email</code>, <code>password</code></td><td><code>textbox</code></td><td>The search box</td></tr>
+        <tr><td><code>&lt;input type="checkbox"&gt;</code></td><td><code>checkbox</code></td><td>The "Camping" filter</td></tr>
+        <tr><td><code>&lt;input type="radio"&gt;</code></td><td><code>radio</code></td><td>The delivery choices at checkout</td></tr>
+        <tr><td><code>&lt;select&gt;</code></td><td><code>combobox</code></td><td>"Sort by"</td></tr>
+        <tr><td>Range slider</td><td><code>slider</code></td><td>"Maximum price"</td></tr>
+        <tr><td><code>&lt;img alt&gt;</code></td><td><code>img</code></td><td>Each product picture</td></tr>
+        <tr><td><code>&lt;nav&gt;</code></td><td><code>navigation</code></td><td>The top bar</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre><code>import { test, expect } from '@playwright/test';
+
+test('roles come from the tag', async ({ page }) => {
+  await page.goto('https://peakandpack-ui.onrender.com');
+
+  await expect(page.getByRole('navigation')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Cart' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'PeakAndPack Gear', level: 1 })).toBeVisible();
+  await expect(page.getByRole('textbox', { name: 'Search gear...' })).toBeVisible();
+  await expect(page.getByRole('checkbox', { name: 'Camping' })).toBeVisible();
+  await expect(page.getByRole('combobox', { name: 'Sort by' })).toBeVisible();
+  await expect(page.getByRole('slider', { name: 'Maximum price' })).toBeVisible();
+  // An image counts as found even if the picture itself is still loading
+  await expect(page.getByRole('img', { name: 'Trekking Poles (Pair)' })).toHaveCount(1);
+});
+</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>getByRole('navigation')</code>: finds the top bar by what it is. Nothing in the test depends on its colour, position or class.</li>
+        <li><code>{ name: 'Cart' }</code>: narrows the role to the one whose accessible name (its visible text) is "Cart". Without it, <code>getByRole('link')</code> would match every link on the page.</li>
+        <li><code>level: 1</code>: a heading's size. <code>PeakAndPack Gear</code> is the page title, so it is level 1; product names are level 3.</li>
+        <li><code>toBeVisible()</code> waits up to 5 seconds for the element to appear and be seen, then passes. It fails if the locator finds nothing.</li>
+        <li><code>toHaveCount(1)</code> checks that exactly one element matches, which is the useful check for an image whose picture may still be downloading.</li>
+      </ul>
+      <p>If a role you expect isn't found, the element probably has no accessible name (like PeakAndPack's login inputs above) or isn't the tag you assumed. Inspect it, as in section 1.</p>
+    </div>
+  </details>
+
+  <h2 id="other-locators">5. The everyday family: label, placeholder, text, title, alt</h2>
+  <p>Roles are the first choice, but the priority list has more entries. Each of these exists for a situation where a role alone doesn't point at the right element:</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Locator</th><th>Finds</th><th>Use it when</th></tr></thead>
+      <tbody>
+        <tr><td><code>getByLabel('Camping')</code></td><td>A form field by the text of its <code>&lt;label&gt;</code></td><td>The field has a linked label. Reads exactly like the form does.</td></tr>
+        <tr><td><code>getByPlaceholder('Search gear...')</code></td><td>An input by its grey hint text</td><td>The input has no label, only a placeholder.</td></tr>
+        <tr><td><code>getByText('Showing 10 of 10 products')</code></td><td>Any element by the text it shows</td><td>Plain text such as a message or a status line, with no role.</td></tr>
+        <tr><td><code>getByTitle('Open in new tab')</code></td><td>An element by its <code>title</code> attribute, the small pop-up on hover</td><td>An icon or arrow with no text, such as the &#8599; link.</td></tr>
+        <tr><td><code>getByAltText('Trekking Poles (Pair)')</code></td><td>An image by its <code>alt</code> text</td><td>You need the image itself, not just a role.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre><code>import { test, expect } from '@playwright/test';
+
+test('the everyday locators on the product list', async ({ page }) => {
+  await page.goto('https://peakandpack-ui.onrender.com');
+  await expect(page.getByTestId('product-card').first()).toBeVisible();
+
+  // Placeholder: the search box has hint text but no label
+  const search = page.getByPlaceholder('Search gear...');
+  await search.fill('headlamp');
+  await expect(search).toHaveValue('headlamp');
+
+  // Label: the filter checkboxes are linked to their labels
+  await expect(page.getByLabel('In stock only')).toBeVisible();
+
+  // Text: the results line has no role, only words
+  await expect(page.getByText('Showing 10 of 10 products')).toBeVisible();
+
+  // Title: the arrow link has no text, only a hover title
+  await expect(page.getByTitle('Open in new tab').first()).toHaveAttribute('href', '/product?id=1');
+
+  // Alt text: the first product picture
+  await expect(page.getByAltText('Trekking Poles (Pair)')).toHaveAttribute('src', /trekkingpoles/);
+});
+</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>const search = page.getByPlaceholder('Search gear...')</code>: saves the locator in a variable so it can be used twice. Making a locator does not touch the page and does not need <code>await</code>; it is only a description of how to find the element later.</li>
+        <li><code>search.fill('headlamp')</code> types into the box. This one does need <code>await</code>, because it is an action: it really happens on the page.</li>
+        <li><code>toHaveValue('headlamp')</code> checks what is now in the box. Together the two lines prove the field was found and accepts text.</li>
+        <li><code>getByLabel('In stock only')</code> works here because the checkbox and its words are linked in the HTML. PeakAndPack's login form is the opposite: its labels aren't linked, so <code>getByLabel</code> finds nothing there (see the red callout in section 4).</li>
+        <li><code>.first()</code> on the title locator: every card has the same arrow with the same title, so ten elements match. <code>first()</code> keeps the first. Section 7 explains why picking by position needs care.</li>
+        <li><code>toHaveAttribute('href', '/product?id=1')</code> checks an attribute's value. <code>/trekkingpoles/</code> is a regular expression, used when only part of the value matters.</li>
+      </ul>
+    </div>
+  </details>
+  <p>A plain string in <code>getByText</code> and <code>getByLabel</code> matches part of the text and ignores capital letters, so <code>getByText('showing 10')</code> would find the results line too. Add <code>{ exact: true }</code> only when a partial match would hit the wrong element, as the mistakes list at the end of this phase explains.</p>
+
+  <h2 id="css-selectors">6. CSS selectors: the last resort, but worth reading</h2>
+  <p>The bottom of the priority list is <code>locator('css')</code>. You should avoid it when you can, but you will read it in other people's tests and in AI output, and some elements need it, so the syntax is worth knowing. A CSS selector describes an element by its tag, id, class or attributes:</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Selector</th><th>Means</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td>a tag name</td><td>Every element with that tag</td><td><code>h1</code></td></tr>
+        <tr><td><code>#</code> and an id</td><td>The element with that id</td><td><code>#store-link</code></td></tr>
+        <tr><td><code>.</code> and a class</td><td>Every element with that class</td><td><code>.btn-danger</code></td></tr>
+        <tr><td><code>[attribute="value"]</code></td><td>Elements whose attribute has that value</td><td><code>[download="products.csv"]</code></td></tr>
+        <tr><td>Joined with no space</td><td>One element that matches all the parts</td><td><code>button.btn-danger</code>, <code>a[download]</code></td></tr>
+        <tr><td>Joined with a space</td><td>An element <em>inside</em> another</td><td><code>#products-tbody button</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre><code>import { test, expect } from '@playwright/test';
+
+test('CSS selectors, from simple to combined', async ({ page }) => {
+  // The admin panel signs in through its own form (Phase 8 turns these lines into a helper)
+  await page.goto('https://peakandpackshopdemo.onrender.com/admin/');
+  await page.getByPlaceholder('admin@peakandpack.com').fill('admin@peakandpack.com');
+  await page.getByPlaceholder('Password').fill('adminpass123');
+  await page.getByRole('button', { name: 'Sign in as admin' }).click();
+  await expect(page.getByRole('heading', { name: 'Products' })).toBeVisible();
+
+  await expect(page.locator('h1')).toHaveText('PeakAndPack Admin');                       // tag
+  await expect(page.locator('#store-link')).toHaveText('Back to store');                 // id
+  await expect(page.locator('.btn-danger').first()).toHaveText('Delete');                // class
+  await expect(page.locator('a[download="products.csv"]')).toHaveText('Export CSV');     // tag + attribute
+  await expect(page.locator('#products-tbody button').first()).toHaveText('Delete');     // inside the table body
+});
+</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>page.locator('h1')</code>: <code>locator()</code> takes a CSS selector. A bare tag matches every <code>h1</code>; the admin page has exactly one, so the check is safe.</li>
+        <li><code>'#store-link'</code>: the <code>#</code> means "id". An id names one element, so this is exact.</li>
+        <li><code>'.btn-danger'</code>: the <code>.</code> means "class". All the Delete buttons share it, so <code>.first()</code> keeps one. If you left it off, Playwright would refuse to continue, because a check on several elements at once is ambiguous (a "strict mode violation").</li>
+        <li><code>'a[download="products.csv"]'</code>: the tag <code>a</code> and the attribute written without a space, so both must be true of the same element.</li>
+        <li><code>'#products-tbody button'</code>: the space means "inside". It finds buttons anywhere inside the table body and nowhere else.</li>
+      </ul>
+      <p>Each line above works today and breaks the day a developer renames a class or id. That is why the roles and labels in sections 4 and 5 come first. XPath, another way of writing selectors, is harder to read and even more fragile, so this series doesn't use it.</p>
+    </div>
+  </details>
+
+  <h2 id="scoping">7. Scoping: find inside a container</h2>
   <p>PeakAndPack's product listing has multiple "Add to cart" buttons, one per card. <code>getByRole('button', { name: /add to cart/i })</code> would match all of them and Playwright would not know which to click. Scope the locator to the specific card first:</p>
   <pre><code>// Each product card carries data-testid="product-card".
 // Keep only the card whose heading names the product you want...
@@ -263,12 +452,56 @@ await card.getByRole('button', { name: /add to cart/i }).click();
       <li><code>.first()</code> picks the outermost of those, the React root, which holds all eight "Add to cart" buttons. The click then fails with the same strict mode error scoping was meant to prevent.</li>
       <li>The cards aren't semantic <code>&lt;article&gt;</code> elements either, so the textbook <code>getByRole('article')</code> isn't available.</li>
     </ul>
-    <p style="margin-top:.6rem">The <code>product-card</code> test ID is the one stable handle on the card itself. This is exactly the situation section 5 describes: a container with no role of its own.</p>
+    <p style="margin-top:.6rem">The <code>product-card</code> test ID is the one stable handle on the card itself. This is exactly the situation section 8 describes: a container with no role of its own.</p>
   </div>
 
-  <h2 id="data-testid">5. When to use data-testid</h2>
+  <h3 id="narrowing">More ways to narrow a locator</h3>
+  <p>The card example is one case of a general idea: start wide, then narrow until exactly one element is left. Playwright has a few narrowing tools, and they stack:</p>
+  <pre><code>import { test, expect } from '@playwright/test';
+
+test('narrowing a locator', async ({ page }) => {
+  await page.goto('https://peakandpack-ui.onrender.com');
+  const cards = page.getByTestId('product-card');
+  await expect(cards.first()).toBeVisible();
+
+  // Chaining: a link, but only inside the top navigation bar
+  const cartLink = page.getByRole('navigation').getByRole('link', { name: 'Cart' });
+  await expect(cartLink).toHaveAttribute('href', '/cart');
+
+  // filter + hasText: keep only the card that mentions the stove
+  const stoveCard = cards.filter({ hasText: 'Camping Stove' });
+  await expect(stoveCard).toHaveCount(1);
+
+  // Stacked filters: the stove card that also has an Add to cart button
+  const stoveWithButton = stoveCard.filter({ has: page.getByRole('button', { name: 'Add to cart' }) });
+  await expect(stoveWithButton).toHaveCount(1);
+
+  // The parent step: from the heading up to the card that contains it
+  const sameCard = page.getByRole('heading', { name: 'Camping Stove' }).locator('..');
+  await expect(sameCard).toContainText('$45.99');
+
+  // By position: works today, breaks when the order changes
+  await expect(cards.nth(1)).toContainText('4-Season Tent');
+});
+</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>page.getByRole('navigation').getByRole('link', ...)</code>: chaining one locator onto another means "inside". Here, a link inside the top bar. The "Cart" word could also appear in the page body, and this keeps the match to the nav.</li>
+        <li><code>cards.filter({ hasText: 'Camping Stove' })</code>: <code>filter</code> keeps only the elements of the locator that pass the test. <code>hasText</code> checks the card's visible text, ignoring capitals.</li>
+        <li><code>filter({ has: ... })</code>: keeps only elements that contain the given locator somewhere inside. It is how section 7's card example found the card by its heading.</li>
+        <li>Stacking <code>.filter()</code> calls applies both tests, one after the other. Only a card that passes both is left.</li>
+        <li><code>.locator('..')</code>: the two dots mean "the parent of this". The heading sits directly inside the card, so its parent is the card, and <code>toContainText</code> can see the price in the same card.</li>
+        <li><code>cards.nth(1)</code>: counts from zero, so <code>1</code> is the second card. <code>first()</code> and <code>last()</code> are the same idea for the ends.</li>
+      </ul>
+      <p>Position is the weakest of these. PeakAndPack now has a "Sort by" menu: sort by price and the second card is a different product, and the test fails with no bug in the app. Prefer a filter on what the element says. Keep position for cases where the order itself is what you're testing.</p>
+    </div>
+  </details>
+
+  <h2 id="data-testid">8. When to use data-testid</h2>
   <p>Some elements have no stable role or visible text: dynamic icons, status indicators, custom components. For these, add a <code>data-testid</code> attribute to the HTML and use <code>getByTestId()</code>. This is a controlled contract between you and the frontend developer: the test ID is there for testing and must not be removed.</p>
-  <p>PeakAndPack has exactly one: <code>data-testid="product-card"</code> on each product card, used in section 4. A card is a plain <code>&lt;div&gt;</code> with no role, so the test ID is the only stable way to point at it. When you need one that doesn't exist yet, ask for it:</p>
+  <p>PeakAndPack has exactly two. The first is <code>data-testid="product-card"</code> on each product card, used in section 7. A card is a plain <code>&lt;div&gt;</code> with no role, so the test ID is the only stable way to point at it. The second is <code>data-testid="result-count"</code> on the line above the products that reads "Showing 10 of 10 products". That line is a plain paragraph with no role, and its text changes whenever a filter is applied, so a test ID gives it a steady name (the <a href="playwrightseries-ui-recipes.html">UI component recipes</a> use it). When you need one that doesn't exist yet, ask for it:</p>
   <pre><code>// In the HTML (ask the developer to add this):
 &lt;div data-testid="cart-item-count"&gt;3&lt;/div&gt;
 
@@ -276,7 +509,17 @@ await card.getByRole('button', { name: /add to cart/i }).click();
 await expect(page.getByTestId('cart-item-count')).toHaveText('3');
 </code></pre>
 
-  <h2 id="ai-locator-mistakes">6. AI-generated locator mistakes</h2>
+  <h2 id="codegen">9. Let Playwright suggest a locator</h2>
+  <p>You don't have to work every locator out by hand. Playwright can look at an element and propose a locator for it, and it picks from the same priority list: role first, then label, text and so on. There are two ways to use that:</p>
+  <ul>
+    <li><strong>Pick locator</strong> (VS Code extension, Testing sidebar). Click it, then click an element in the browser that opens. The suggested locator appears, ready to copy. Use this when you already know what you need to point at.</li>
+    <li><strong>Codegen.</strong> Run <code>npx playwright codegen https://peakandpack-ui.onrender.com</code> and a browser opens with a recording panel. Click and type on the site and Playwright writes the matching test lines as you go. The VS Code extension has the same thing as <em>Record new</em> (a new test file) and <em>Record at cursor</em> (adds steps to the test you're editing).</li>
+  </ul>
+  <div class="callout amber">
+    <p><strong>Always review what it gives you.</strong> A generator picks something that works right now, not always the best choice. It may add a position (<code>nth</code>) where a filter would be safer, or a CSS selector where the page has a label you could use. Check each line against the priority list before it goes into your suite, the same as with AI-generated locators in the next section.</p>
+  </div>
+
+  <h2 id="ai-locator-mistakes">10. AI-generated locator mistakes</h2>
   <p>When you use AI to generate Playwright tests, the locators are the most likely thing to get wrong. AI tools default to CSS classes because they are the most visible pattern in HTML. Know the signs:</p>
   <div class="callout red">
     <p><strong>Red flags in AI-generated locators.</strong></p>
@@ -288,12 +531,12 @@ await expect(page.getByTestId('cart-item-count')).toHaveText('3');
     </ul>
   </div>
 
-  <h2 id="resilient-suite">7. After: a resilient test suite</h2>
+  <h2 id="resilient-suite">11. After: a resilient test suite</h2>
   <div class="callout green">
     <p><strong>The test that survives a redesign.</strong> When the PeakAndPack design team rebrands next quarter, changes every colour, renames every CSS class, and restructures the product cards, a test suite built on <code>getByRole</code> and <code>getByLabel</code> keeps passing. A suite built on CSS selectors needs to be rewritten. The locator decision made in Phase 2 is the single biggest factor in how much maintenance your suite requires six months from now.</p>
   </div>
 
-  <h2 id="self-healing">8. "Self-healing": two techniques, one name</h2>
+  <h2 id="self-healing">12. "Self-healing": two techniques, one name</h2>
   <p>Vendors, job ads and your own team will use "self-healing" for two different things. Only one of them is what this phase teaches, and the difference decides whether anyone has to check the result.</p>
   <div class="table-wrap">
     <table>
@@ -315,11 +558,12 @@ await expect(page.getByTestId('cart-item-count')).toHaveText('3');
       <li><strong>Using CSS classes by default.</strong> The most common mistake, especially when copying AI output. Always ask: is there a role or label I can use instead?</li>
       <li><strong>Not scoping duplicate roles.</strong> If getByRole matches more than one element, Playwright will throw a "strict mode violation". Scope the locator to a container first.</li>
       <li><strong>Overusing data-testid.</strong> Adding a testid to every element creates maintenance burden on both sides (test and code). Reserve it for elements that genuinely have no stable role or text.</li>
+      <li><strong>Picking by position.</strong> <code>nth(2)</code> or <code>first()</code> are fine when the order is what you're testing. Otherwise they break when the data or the sort order changes. Filter on what the element says instead.</li>
       <li><strong>Adding <code>exact: true</code> by default.</strong> A plain string name already ignores case and matches part of the text, so <code>{ name: 'Add to cart' }</code> still finds "Add to Cart". <code>exact: true</code> turns that off and breaks on any wording change. Use it only when a partial match would hit the wrong element.</li>
     </ul>
   </div>
 
-  <h2 id="deliverables">9. Deliverables</h2>
+  <h2 id="deliverables">13. Deliverables</h2>
   <ul>
     <li><code>tests/locators.spec.ts</code>: a test using 5 resilient locators across PeakAndPack</li>
     <li><code>locator-guide.md</code>: the priority table and when-to-use-each rules</li>
@@ -348,7 +592,7 @@ test('resilient locators across PeakAndPack', async ({ page }) => {
   // 2. Log in button - getByRole, it has visible text
   await page.getByRole('button', { name: /log in/i }).click();
 
-  // 3. Specific product card - the card's test ID, narrowed by its heading (see section 4).
+  // 3. Specific product card - the card's test ID, narrowed by its heading (see section 7).
   //    Logging in lands you back on the product list
   const card = page.getByTestId('product-card')
     .filter({ has: page.getByRole('heading', { name: 'Trekking Poles (Pair)' }) });
@@ -366,9 +610,82 @@ test('resilient locators across PeakAndPack', async ({ page }) => {
 });
 </code></pre>
       <p><strong>Why scoping for the button matters.</strong> Without the <code>card</code> scope, <code>getByRole('button', { name: /add to cart/i })</code> matches every product card's button and Playwright throws a strict mode error. Scoping to the card first means the locator is both resilient (role-based) and precise (scoped).</p>
-      <p><strong>Why step 5 doesn't use <code>getByTestId</code>.</strong> PeakAndPack only has a test ID where nothing else works: the product card, a <code>&lt;div&gt;</code> with no role. Reach for one when you hit an element with no role or stable text, not by default. Here, the cart total already has a role and readable text, so <code>getByRole</code> covers it with nothing to add.</p>
+      <p><strong>Why step 5 doesn't use <code>getByTestId</code>.</strong> PeakAndPack only has test IDs where nothing else works: the product card, a <code>&lt;div&gt;</code> with no role, and the results line, a paragraph with no role. Reach for one when you hit an element with no role or stable text, not by default. Here, the cart total already has a role and readable text, so <code>getByRole</code> covers it with nothing to add.</p>
     </div>
   </details>
+  </div>
+
+  <div class="assignment">
+    <div class="a-label">Assignment, part 2</div>
+    <h3>The locator workout: one of everything</h3>
+    <p>This one covers every tool in the phase. On PeakAndPack's product list, write one test that finds each of the following and checks it. Save each locator in a <code>const</code> first. Don't use a CSS class.</p>
+    <ol>
+      <li>The search box, by its placeholder. Type "tent" and check the value.</li>
+      <li>The "In stock only" checkbox, by its label.</li>
+      <li>The "Showing 10 of 10 products" line, by its text.</li>
+      <li>The first product's &#8599; link, by its title. Check its <code>href</code>.</li>
+      <li>The "Orders" link, by chaining from the navigation bar.</li>
+      <li>The Headlamp card, by filtering the cards on its text, then its "Add to cart" button inside that card.</li>
+      <li>The card that contains the "Camping Stove" heading, using the parent step. Check it shows <code>$45.99</code>.</li>
+      <li>The third card, by position. Then write one sentence about why position is risky here.</li>
+      <li>One element by CSS, using an attribute: the "Cart" link, <code>a[href="/cart"]</code>.</li>
+    </ol>
+    <p>Before you start, open DevTools (right-click, Inspect) on the search box and write down its tag and one attribute. Then, on the admin page, find the <code>id</code> of the table that lists the products.</p>
+
+    <details class="solution">
+      <summary>Show solution: try it yourself first</summary>
+      <div class="solution-body">
+        <pre><code>import { test, expect } from '@playwright/test';
+
+test('locator workout', async ({ page }) => {
+  await page.goto('https://peakandpack-ui.onrender.com');
+  const cards = page.getByTestId('product-card');
+  await expect(cards.first()).toBeVisible();
+
+  // 1. Placeholder
+  const search = page.getByPlaceholder('Search gear...');
+  await search.fill('tent');
+  await expect(search).toHaveValue('tent');
+
+  // 2. Label
+  const inStock = page.getByLabel('In stock only');
+  await expect(inStock).toBeVisible();
+
+  // 3. Text
+  const results = page.getByText('Showing 10 of 10 products');
+  await expect(results).toBeVisible();
+
+  // 4. Title
+  const firstArrow = page.getByTitle('Open in new tab').first();
+  await expect(firstArrow).toHaveAttribute('href', '/product?id=1');
+
+  // 5. Chaining
+  const ordersLink = page.getByRole('navigation').getByRole('link', { name: 'Orders' });
+  await expect(ordersLink).toHaveAttribute('href', '/orders');
+
+  // 6. filter, then a locator inside the result
+  const headlampCard = cards.filter({ hasText: 'Headlamp' });
+  const headlampButton = headlampCard.getByRole('button', { name: 'Add to cart' });
+  await expect(headlampButton).toBeVisible();
+
+  // 7. Parent step
+  const stoveCard = page.getByRole('heading', { name: 'Camping Stove' }).locator('..');
+  await expect(stoveCard).toContainText('$45.99');
+
+  // 8. Position (risky: the Sort by menu changes the order)
+  const thirdCard = cards.nth(2);
+  await expect(thirdCard).toContainText('Camping Stove');
+
+  // 9. CSS attribute selector
+  const cartLink = page.locator('a[href="/cart"]');
+  await expect(cartLink).toHaveText('Cart');
+});
+</code></pre>
+        <p><strong>Answers to the DevTools questions.</strong> The search box is an <code>input</code> with attributes such as <code>placeholder="Search gear..."</code>. On the admin page, the products table has <code>id="products-table"</code> and its body <code>id="products-tbody"</code>.</p>
+        <p><strong>Why position is risky in step 8.</strong> The "Sort by" menu reorders the cards, so "the third card" is a different product after sorting by price, and the test fails with nothing broken in the app. Filtering on the product's name keeps working in any order.</p>
+        <p><strong>Why every locator is a <code>const</code>.</strong> A locator is only a description, so naming it costs nothing and makes the check lines read like sentences. It also lets you reuse one locator in several lines without retyping it.</p>
+      </div>
+    </details>
   </div>
 
   <div class="bonus">

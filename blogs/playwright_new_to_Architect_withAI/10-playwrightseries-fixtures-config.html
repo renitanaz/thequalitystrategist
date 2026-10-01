@@ -111,6 +111,16 @@ footer a:hover{color:var(--purple)}
 .blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
 .blog-tags .series-tag{margin-bottom:0}
 .tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+details.explain{margin:.5rem 0 1.5rem;border:1px solid var(--purple-border);border-radius:10px;background:var(--purple-bg)}
+details.explain summary{padding:.6rem 1rem;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--purple);list-style:none;display:flex;align-items:center;gap:.5rem}
+details.explain summary::-webkit-details-marker{display:none}
+details.explain summary::before{content:"\25B6";font-size:.65rem;transition:transform .2s}
+details.explain[open] summary::before{transform:rotate(90deg)}
+.explain-body{padding:.1rem 1.2rem 1rem;font-size:.92rem;line-height:1.7}
+.explain-body p{margin:.7rem 0}
+.explain-body ul{margin:.3rem 0 .7rem 1.2rem;padding-left:0}
+.explain-body li{margin-bottom:.35rem}
+.explain-body pre{margin:.6rem 0}
 </style>
 <meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
 <meta property="og:image:width" content="1200">
@@ -147,7 +157,7 @@ footer a:hover{color:var(--purple)}
   <div class="meta-row">
     <span><strong>Series: Playwright: Zero to Architect</strong></span>
     <span>Demo: PeakAndPack</span>
-    <span>9 min read</span>
+    <span>34 min read</span>
     <span>By: RN</span>
   </div>
   <div class="phase-strip" aria-label="Series progress">
@@ -171,6 +181,15 @@ footer a:hover{color:var(--purple)}
 
   <h2>Goal</h2>
   <p>Stop repeating setup code. Fixtures compose and are typed. <code>beforeEach</code> is a workaround. Configuration controls every aspect of how Playwright runs. Once you understand all three, the suite becomes significantly easier to maintain.</p>
+  <p>By the end of this phase you can:</p>
+  <ul>
+    <li>write fixtures with setup and teardown, build them on each other, and choose test or worker scope</li>
+    <li>read the timeout layers and change the right one</li>
+    <li>give long commands short names with npm scripts</li>
+    <li>run the same tests against different environments with environment variables</li>
+    <li>split a run into phases (smoke, then regression), and run it in an emulated phone</li>
+    <li>know what a global setup is for, and why to prefer the alternatives</li>
+  </ul>
 
   <h2 id="before-beforeeach">1. Before: beforeEach doing too much</h2>
   <p>Setup code copied into each file's <code>beforeEach</code> drifts apart: one copy gets a fix and the others don't. A variable shared between tests can also be overwritten when they run in parallel. Fixtures give that setup one home:</p>
@@ -179,125 +198,198 @@ footer a:hover{color:var(--purple)}
       <div class="ba-label">Before: setup scattered in beforeEach</div>
 <pre><code>// beforeEach repeats setup that other tests also need.
 // Not composable, not typed, not reusable outside this file.
-let authToken: string;
+let token: string;
 
-test.beforeEach(async ({ request }) => {
-  const res = await request.post('https://peakandpackshopdemo.onrender.com/api/auth/login', {
-    data: { email: 'test@peakandpack.com', password: 'password123' }
+test.beforeEach(async ({ request }) =&gt; {
+  const email = `test-${Date.now()}-${Math.floor(Math.random() * 1000)}@peakandpack.test`;
+  const res = await request.post('https://peakandpackshopdemo.onrender.com/api/auth/register', {
+    data: { name: 'QA Tester', email, password: 'password123' },
   });
-  const body = await res.json();
-  authToken = body.token; // global variable, fragile in parallel
+  token = (await res.json()).token;   // a shared variable: fragile when tests run in parallel
 });
 
-test('cart requires auth', async ({ request }) => {
+test('cart accepts an item', async ({ request }) =&gt; {
   const res = await request.post('https://peakandpackshopdemo.onrender.com/api/cart', {
-    headers: { Authorization: `Bearer ${authToken}` },
-    data: { product_id: 1, quantity: 1 }
+    headers: { Authorization: `Bearer ${token}` },
+    data: { product_id: 1, quantity: 1 },
   });
   expect(res.status()).toBe(200);
-});
-</code></pre>
+});</code></pre>
     </div>
     <div class="ba-block after">
       <div class="ba-label">After: typed fixture, composable, reusable</div>
 <pre><code>// fixtures/index.ts -- defined once, used anywhere
-import { test as base } from '@playwright/test';
+import { test as base, expect } from '@playwright/test';
 
-type Fixtures = { authToken: string };
+const API = 'https://peakandpackshopdemo.onrender.com';
 
-export const test = base.extend&lt;Fixtures&gt;({
-  authToken: async ({ request }, use) => {
-    const res = await request.post('https://peakandpackshopdemo.onrender.com/api/auth/login', {
-      data: { email: 'test@peakandpack.com', password: 'password123' }
+type Customer = { email: string; token: string; user: object };
+
+export const test = base.extend&lt;{ customer: Customer }&gt;({
+  // A brand-new customer, created through the API for each test that asks for one
+  customer: async ({ request }, use) =&gt; {
+    const email = `test-${Date.now()}-${Math.floor(Math.random() * 1000)}@peakandpack.test`;
+    const res = await request.post(`${API}/api/auth/register`, {
+      data: { name: 'QA Tester', email, password: 'password123' },
     });
-    const { token } = await res.json();
-    await use(token); // hand the token to the test
+    expect(res.status()).toBe(201);
+    const { token, user } = await res.json();
+
+    await use({ email, token, user });   // hand the customer to the test
   },
 });
 
-// tests/cart.spec.ts -- clean, no setup code
-import { test } from '../fixtures';
-import { expect } from '@playwright/test';
+export { expect };</code></pre>
+<pre><code>// tests/cart.spec.ts -- clean, no setup code
+import { test, expect } from '../fixtures';
 
-test('cart requires auth', async ({ request, authToken }) => {
-  const res = await request.post('https://peakandpackshopdemo.onrender.com/api/cart', {
-    headers: { Authorization: `Bearer ${authToken}` },
-    data: { product_id: 1, quantity: 1 }
+const API = 'https://peakandpackshopdemo.onrender.com';
+
+test('cart accepts an item', async ({ request, customer }) =&gt; {
+  const res = await request.post(`${API}/api/cart`, {
+    headers: { Authorization: `Bearer ${customer.token}` },
+    data: { product_id: 1, quantity: 1 },
   });
   expect(res.status()).toBe(200);
-});
-</code></pre>
+});</code></pre>
     </div>
   </div>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <p><strong>In plain words:</strong> the setup moves into a fixture, a named, typed piece of setup that a test asks for.</p>
+      <ul>
+        <li><code>base.extend&lt;{ customer: Customer }&gt;({ ... })</code> makes a new <code>test</code> that knows one extra thing: a <strong>fixture</strong> called <code>customer</code>. The part in angle brackets is a TypeScript label saying what type the fixture hands to a test.</li>
+        <li><code>customer: async ({ request }, use) =&gt; { ... }</code> is the fixture. It receives other fixtures it needs (here <code>request</code>), and a function called <code>use</code>.</li>
+        <li>Everything <strong>before</strong> <code>await use(...)</code> is setup. Here it registers a new customer through the API and checks the status.</li>
+        <li><code>await use({ email, token, user })</code> hands the customer to the test, and the test runs at this point. Anything written after this line is teardown, and runs after the test (section 3).</li>
+        <li><code>export { expect }</code> re-exports <code>expect</code>, so a test file can take both <code>test</code> and <code>expect</code> from <code>'../fixtures'</code> in one import.</li>
+        <li>A fixture only runs for tests that ask for it by name, in the test's brackets: <code>async ({ request, customer }) =&gt; ...</code>. <code>beforeEach</code> runs for every test whether it needs it or not.</li>
+      </ul>
+    </div>
+  </details>
 
   <h2 id="fixtures-vs-beforeeach">2. Fixtures vs beforeEach: the real difference</h2>
   <div class="table-wrap">
     <table>
       <thead><tr><th></th><th>Fixtures</th><th>beforeEach</th></tr></thead>
       <tbody>
+        <tr><td><strong>Runs for</strong></td><td>Only the tests that ask for it by name</td><td>Every test in its group</td></tr>
         <tr><td><strong>Composable</strong></td><td>Yes. Fixtures can depend on other fixtures.</td><td>No. You nest or repeat them.</td></tr>
         <tr><td><strong>Typed</strong></td><td>Yes. TypeScript knows the fixture type.</td><td>No. Variables are manual and error-prone.</td></tr>
         <tr><td><strong>Reusable across files</strong></td><td>Yes. Export from fixtures/index.ts.</td><td>No. Copy-paste or import a setup function.</td></tr>
         <tr><td><strong>Scope control</strong></td><td>Yes. Test scope or worker scope per fixture.</td><td>No. Always runs before every test in the describe.</td></tr>
-        <tr><td><strong>Teardown</strong></td><td>Code after <code>await use()</code> runs after the test.</td><td>Requires afterEach paired with beforeEach.</td></tr>
+        <tr><td><strong>Teardown</strong></td><td>Code after <code>await use()</code>, next to the setup it undoes</td><td>Requires afterEach paired with beforeEach.</td></tr>
       </tbody>
     </table>
   </div>
 
   <h2 id="composable-fixtures">3. Building composable fixtures</h2>
-  <p>Fixtures can depend on each other, so each one does a single job and a test asks for exactly what it needs. Here, a seeded cart needs a logged-in page, which in turn needs an auth token:</p>
-  <pre><code>// fixtures/index.ts
-import { test as base, Page } from '@playwright/test';
+  <p>Fixtures can depend on each other, so each one does a single job and a test asks for exactly what it needs. Here a cart seeded for a customer needs a signed-in browser, which needs the customer:</p>
+<pre><code>// fixtures/index.ts
+import { test as base, expect, Page } from '@playwright/test';
 import { CartPage } from '../pages/CartPage';
+import { PageManager } from '../pages/PageManager';
+
+const API = 'https://peakandpackshopdemo.onrender.com';
+
+type Customer = { email: string; token: string; user: object };
 
 type Fixtures = {
-  authToken: string;
-  seededCart: CartPage;
+  customer: Customer;
   loggedInPage: Page;
+  seededCart: CartPage;
+  pm: PageManager;
 };
 
 export const test = base.extend&lt;Fixtures&gt;({
-  // Fixture 1: auth token
-  authToken: async ({ request }, use) => {
-    const res = await request.post('https://peakandpackshopdemo.onrender.com/api/auth/login', {
-      data: { email: 'test@peakandpack.com', password: 'password123' }
+  // Fixture 1: a brand-new customer, created through the API
+  customer: async ({ request }, use) =&gt; {
+    const email = `test-${Date.now()}-${Math.floor(Math.random() * 1000)}@peakandpack.test`;
+    const res = await request.post(`${API}/api/auth/register`, {
+      data: { name: 'QA Tester', email, password: 'password123' },
     });
-    await use((await res.json()).token);
-  },
-
-  // Fixture 2: cart pre-seeded with one item (depends on authToken AND
-  // loggedInPage -- seeding the cart for a user the browser isn't logged in
-  // as would leave the UI showing "you need to log in", not the seeded item)
-  seededCart: async ({ request, authToken, loggedInPage }, use) => {
-    await request.post('https://peakandpackshopdemo.onrender.com/api/cart', {
-      headers: { Authorization: `Bearer ${authToken}` },
-      data: { product_id: 1, quantity: 1 }
-    });
-    await use(new CartPage(loggedInPage));
-    // Teardown: clean up the cart after the test
-    await request.delete('https://peakandpackshopdemo.onrender.com/api/cart/1', {
-      headers: { Authorization: `Bearer ${authToken}` }
-    });
-  },
-
-  // Fixture 3: page already logged in. PeakAndPack's UI reads its session
-  // from localStorage (token + user), not a cookie, so the request fixture's
-  // token has to be injected before the app boots -- page.goto alone will
-  // not make the browser "see" a session created through the API.
-  loggedInPage: async ({ page, request }, use) => {
-    const res = await request.post('https://peakandpackshopdemo.onrender.com/api/auth/login', {
-      data: { email: 'test@peakandpack.com', password: 'password123' }
-    });
+    expect(res.status()).toBe(201);
     const { token, user } = await res.json();
-    await page.addInitScript(([t, u]) => {
+    await use({ email, token, user });
+  },
+
+  // Fixture 2: the browser, signed in as that customer. PeakAndPack keeps its
+  // login in localStorage, so the token is placed there before the app boots.
+  loggedInPage: async ({ page, customer }, use) =&gt; {
+    await page.addInitScript(([t, u]) =&gt; {
       localStorage.setItem('token', t);
       localStorage.setItem('user', u);
-    }, [token, JSON.stringify(user)]);
-    await page.goto('https://peakandpack-ui.onrender.com/');
+    }, [customer.token, JSON.stringify(customer.user)]);
+    await page.goto('/');
     await use(page);
   },
+
+  // Fixture 3: a cart holding one item, with cleanup afterwards. It asks for
+  // loggedInPage too, so the browser is the same user whose cart gets seeded.
+  seededCart: async ({ request, customer, loggedInPage }, use) =&gt; {
+    const auth = { Authorization: `Bearer ${customer.token}` };
+    const added = await request.post(`${API}/api/cart`, { headers: auth, data: { product_id: 1, quantity: 1 } });
+    expect(added.status()).toBe(200);
+
+    await use(new CartPage(loggedInPage));       // the test runs here
+
+    // Teardown: everything after use() runs when the test is over, even if it failed
+    await request.delete(`${API}/api/cart/1`, { headers: auth });
+  },
+
+  // Fixture 4: the page manager from Phase 9, already on the home page
+  pm: async ({ page }, use) =&gt; {
+    await page.goto('/');
+    await use(new PageManager(page));
+  },
 });
-</code></pre>
+
+export { expect };</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>type Fixtures = { ... }</code> lists every fixture this file adds, and the type of what each one hands over. It is how the test's editor knows <code>seededCart</code> is a <code>CartPage</code>.</li>
+        <li><code>customer</code> is built on the built-in <code>request</code> fixture. <code>loggedInPage</code> asks for <code>page</code> and <code>customer</code>, so Playwright runs <code>customer</code> first and passes it in. That is what <strong>composable</strong> means: fixtures can depend on each other.</li>
+        <li><code>loggedInPage</code> puts the token in <code>localStorage</code> before the app starts (Phase 5), opens the home page, and hands over the signed-in <code>page</code>.</li>
+        <li><code>seededCart</code> adds one item, then <code>await use(new CartPage(loggedInPage))</code> hands the test a ready <code>CartPage</code> from Phase 9. It asks for <code>loggedInPage</code> as well, so the cart it seeds belongs to the user the browser is signed in as.</li>
+        <li>Everything after <code>use()</code> in <code>seededCart</code> is <strong>teardown</strong>: it removes the item when the test is over. It runs even when the test fails.</li>
+        <li><code>pm</code> opens the home page and hands over a <code>PageManager</code>. A test that asks for <code>pm</code> starts on the store, ready to go.</li>
+        <li><strong>Fixtures that ask for <code>page</code> share one page.</strong> If a test asks for both <code>pm</code> and <code>loggedInPage</code>, both use the same browser tab, so the page manager's pages are signed in.</li>
+      </ul>
+    </div>
+  </details>
+<pre><code>// tests/cart.spec.ts
+import { test, expect } from '../fixtures';
+
+test('the cart starts with one item', async ({ seededCart }) =&gt; {
+  await seededCart.goto();
+  expect(await seededCart.getItemCount()).toBe(1);
+});
+
+test('checkout from a seeded cart', async ({ seededCart }) =&gt; {
+  await seededCart.goto();
+  const checkout = await seededCart.proceedToCheckout();
+  await checkout.payWithTestCard();
+  await checkout.placeOrder();
+  expect(await checkout.isOrderConfirmed()).toBe(true);
+});
+
+test('the search box needs only the page manager', async ({ pm }) =&gt; {
+  await pm.onProductList().search('tent');
+  expect(await pm.onProductList().getProductNames()).toEqual(['4-Season Tent']);
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>async ({ seededCart })</code> is all a test has to say to get a signed-in browser and a cart with one item. No setup lines appear in the test.</li>
+        <li>The first test checks the cart really starts with one item. The second continues into checkout with the Phase 9 page objects.</li>
+        <li>The third asks only for <code>pm</code>, so it never creates a customer or a cart. A fixture runs only when a test asks for it.</li>
+      </ul>
+    </div>
+  </details>
 
   <div class="callout blue">
     <p><strong>Why <code>addInitScript</code>, not just <code>page.goto</code>.</strong></p>
@@ -308,34 +400,182 @@ export const test = base.extend&lt;Fixtures&gt;({
       <li>Set both keys: the app treats a missing <code>user</code> object as logged out, even with a valid <code>token</code>.</li>
     </ul>
   </div>
+  <div class="callout amber">
+    <p><strong>What teardown does, and does not, do.</strong> I ran this to check. Code after <code>await use()</code> runs when a test fails, as well as when it passes. It is also real test code: an error thrown in teardown <strong>fails the test</strong>, even if the test itself passed. Keep teardown simple, and make it safe to run when setup only half finished.</p>
+  </div>
+  <p><strong>Don't turn everything into a fixture.</strong> A fixture is for setup and teardown. Making every page object a fixture ends with twenty or thirty of them to keep track of, and each test's brackets full of names. Keep page objects as classes, and use a fixture, like <code>pm</code> above, only when there is setup to do before the test.</p>
 
   <h2 id="fixture-scope">4. Fixture scope: test vs worker</h2>
-  <p>By default fixtures run fresh for every test. For expensive setup that can safely be shared, use worker scope:</p>
-  <pre><code>export const test = base.extend&lt;{}, { sharedToken: string }&gt;({
-  // Worker scope: runs once per worker process, shared across all tests in that worker
-  // A worker fixture can't use the built-in request fixture, which is created
-  // per test, so it opens its own API context from the playwright fixture
-  sharedToken: [async ({ playwright }, use) => {
+  <p>By default fixtures run fresh for every test. For setup that is costly and can safely be shared, use worker scope: it runs once per worker, and every test in that worker reuses it.</p>
+<pre><code>// fixtures/worker.ts
+import { test as base, expect } from '@playwright/test';
+
+const API = 'https://peakandpackshopdemo.onrender.com';
+
+type Customer = { email: string; token: string; user: object };
+
+export const test = base.extend&lt;{}, { workerCustomer: Customer }&gt;({
+  // Worker scope: made once per worker process, and shared by every test that worker runs.
+  // A worker fixture can't use the per-test request fixture, so it opens its own API context.
+  workerCustomer: [async ({ playwright }, use, workerInfo) =&gt; {
     const api = await playwright.request.newContext();
-    // Log in once through the API
-    const res = await api.post('https://peakandpackshopdemo.onrender.com/api/auth/login', {
-      data: { email: 'shared@peakandpack.com', password: 'password123' }
+    const email = `worker${workerInfo.workerIndex}-${Date.now()}@peakandpack.test`;
+    const res = await api.post(`${API}/api/auth/register`, {
+      data: { name: `Worker ${workerInfo.workerIndex}`, email, password: 'password123' },
     });
-    // Hand the token to every test in this worker
-    await use((await res.json()).token);
-    await api.dispose(); // runs when the worker shuts down
+    expect(res.status()).toBe(201);
+    const { token, user } = await res.json();
+
+    await use({ email, token, user });
+    await api.dispose();                  // runs when the worker shuts down
   }, { scope: 'worker' }],
 });
-</code></pre>
-  <p><strong>Use worker scope carefully.</strong> If tests in the same worker modify the shared resource (empty the cart, change the user's email), they corrupt each other. Worker scope works for read-only resources like a token. Use test scope for anything that changes.</p>
 
-  <div class="callout blue">
-    <p><strong>The <code>shared@peakandpack.com</code> account above is illustrative</strong>, not a real seeded account on PeakAndPack. It shows the worker-scope pattern; swap in a real test account (<code>test@peakandpack.com</code>) or a dedicated one you create for shared, read-only fixtures.</p>
+export { expect };</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>base.extend&lt;{}, { workerCustomer: Customer }&gt;</code> has two lists: test fixtures (none here, hence <code>{}</code>) and worker fixtures.</li>
+        <li><code>[async (...) =&gt; { ... }, { scope: 'worker' }]</code> wraps the fixture in a pair: the function, and options saying it is worker-scoped. It is created <strong>once per worker</strong> and reused by every test that worker runs.</li>
+        <li><code>playwright.request.newContext()</code> opens an API client of its own, because the per-test <code>request</code> fixture does not exist at worker level. <code>api.dispose()</code> closes it when the worker shuts down.</li>
+        <li><code>workerInfo.workerIndex</code> is this worker's number. It goes in the email so every worker's customer is different.</li>
+        <li><strong>Why a customer per worker?</strong> It is cheaper than one per test, and tests in different workers never share a customer, so they cannot clash. Tests in the <em>same</em> worker do share, so clean up what a test changes.</li>
+      </ul>
+    </div>
+  </details>
+<pre><code>// tests/worker.spec.ts
+import { test, expect } from '../fixtures/worker';
+
+// Let this file's tests run in parallel, so more than one worker takes part
+test.describe.configure({ mode: 'parallel' });
+
+for (const n of [1, 2, 3, 4]) {
+  test(`test ${n} uses its worker's customer`, async ({ workerCustomer }, testInfo) =&gt; {
+    console.log(`worker ${testInfo.workerIndex}: test ${n} uses ${workerCustomer.email}`);
+    expect(workerCustomer.email).toContain(`worker${testInfo.workerIndex}-`);
+  });
+}</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>test.describe.configure({ mode: 'parallel' })</code> lets the tests in this file run at the same time. Without it, the tests of one file run one after another in the same worker (Phase 0), and you would never see a second worker.</li>
+        <li>The <code>for</code> loop defines four tests. Each prints which worker runs it and which customer it got.</li>
+        <li><code>expect(workerCustomer.email).toContain(...)</code> checks the customer was made by this test's own worker.</li>
+        <li>Run with <code>--workers=2</code> and you see two different emails, and tests that share a worker print the same one.</li>
+      </ul>
+    </div>
+  </details>
+  <p><strong>Use worker scope carefully.</strong> Tests in the same worker run one after another and share the worker's fixture. If they modify the shared resource (fill the cart, change the user's email), they leave it for the next. Worker scope fits read-only resources like a token, or a customer whose changes each test cleans up. Use test scope for anything else.</p>
+
+  <h2 id="timeouts">5. Timeouts: which clock is running</h2>
+  <p>Playwright has several timeouts, one inside the next, and a failure message names the one that ran out. Knowing the layers tells you which to change:</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Layer</th><th>Default</th><th>What it limits</th></tr></thead>
+      <tbody>
+        <tr><td>Test timeout</td><td>30 seconds</td><td>One whole test, setup included</td></tr>
+        <tr><td><code>expect</code> timeout</td><td>5 seconds</td><td>One <code>expect(...)</code> check</td></tr>
+        <tr><td>Action timeout</td><td>None</td><td>One click, fill or check</td></tr>
+        <tr><td>Navigation timeout</td><td>None</td><td>One <code>goto</code> or navigation</td></tr>
+        <tr><td>Global timeout</td><td>None</td><td>The whole run</td></tr>
+      </tbody>
+    </table>
   </div>
+<pre><code>// playwright.config.ts -- the timeout layers, with their defaults written out
+import { defineConfig } from '@playwright/test';
 
-  <h2 id="projects">5. Playwright projects: one config, multiple environments</h2>
-  <p>Projects let you run the same tests against different environments or browsers from one config file:</p>
-  <pre><code>// playwright.config.ts
+export default defineConfig({
+  testDir: './tests',
+  timeout: 30_000,                 // one whole test: 30 seconds
+  expect: { timeout: 5_000 },      // one expect(...) check: 5 seconds
+  use: {
+    baseURL: 'https://peakandpack-ui.onrender.com',
+    actionTimeout: 10_000,         // one click, fill or check (no limit unless you set one)
+    navigationTimeout: 30_000,     // one page.goto or navigation (no limit unless you set one)
+  },
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>timeout: 30_000</code> is the time one whole test may take. The underscores are only for reading: <code>30_000</code> is thirty thousand milliseconds, 30 seconds.</li>
+        <li><code>expect: { timeout: 5_000 }</code> is how long one <code>expect(...)</code> check keeps retrying (Phase 3).</li>
+        <li><code>actionTimeout</code> limits one action such as a click or a fill. <code>navigationTimeout</code> limits one <code>page.goto</code>. Neither has a limit unless you set one, so by default only the test timeout stops a stuck click.</li>
+        <li><strong>Inner limits cannot outlast the outer one.</strong> A 10-second <code>actionTimeout</code> inside a 5-second test is cut off at 5 seconds, because the test as a whole is over.</li>
+      </ul>
+    </div>
+  </details>
+  <p>You can also change the limit for one test:</p>
+<pre><code>// tests/timeouts.spec.ts
+import { test, expect } from '@playwright/test';
+
+test('this test is allowed 60 seconds', async ({ page }) =&gt; {
+  test.setTimeout(60_000);                       // this test only
+  await page.goto('/');
+  await expect(page.getByTestId('product-card').first()).toBeVisible();
+});
+
+test('a cold-starting server: triple the time', async ({ page }, testInfo) =&gt; {
+  test.slow();                                   // marks the test slow: three times the timeout
+  console.log('this test now has', testInfo.timeout, 'ms');
+  await page.goto('/');
+  await expect(page.getByTestId('product-card').first()).toBeVisible({ timeout: 60_000 });   // one slow check
+});
+
+// Run this one on purpose to see the message, then delete it: it is meant to fail
+test('an inner timeout cannot outlast the test', async ({ page }) =&gt; {
+  test.setTimeout(3_000);
+  await page.goto('/');
+  await expect(page.getByText('this text never appears')).toBeVisible({ timeout: 10_000 });
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>test.setTimeout(60_000)</code> gives this test alone 60 seconds. It overrides the config for that test.</li>
+        <li><code>test.slow()</code> triples the test timeout, and a failing check is reported as slow. It is a quick way to say "this one is slower, and that is expected", such as a test that meets the server's cold start. The test's <code>testInfo.timeout</code> shows the new limit: 90,000 ms.</li>
+        <li><code>toBeVisible({ timeout: 60_000 })</code> gives one check a longer wait, as in Phase 4.</li>
+        <li>The last test shows the rule: it is allowed only 3 seconds, and its check asks for 10. It fails at 3 seconds with <code>Test timeout of 3000ms exceeded</code>. Run it once to see the message, then delete it, because a test that fails on purpose does not belong in a suite. (Marking it <code>test.fail()</code> does not help: a test that times out is still reported as a failure.)</li>
+        <li><code>testInfo.setTimeout(ms)</code> does the same as <code>test.setTimeout</code> from inside a fixture or a hook, where you have <code>testInfo</code>.</li>
+      </ul>
+    </div>
+  </details>
+  <p>I ran these. The slow test's limit goes from 30,000 to 90,000 ms. The last one fails with <code>Test timeout of 3000ms exceeded</code>, and the message also says the check was waiting with a 10-second limit, which never got the chance.</p>
+
+  <h2 id="npm-scripts">6. npm scripts: short names for long commands</h2>
+  <p>As your suite grows, so do the commands: a file, a project, a tag. An npm script saves a long command under a short name in <code>package.json</code>:</p>
+<pre><code>{
+  "scripts": {
+    "test": "playwright test",
+    "test:chromium": "playwright test --project=chromium",
+    "test:cart": "playwright test tests/cart.spec.ts --project=chromium",
+    "test:ci": "npm run test:cart &amp;&amp; npm run test:chromium"
+  }
+}</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>package.json</code> is the project's ID card (Phase 0). Its <code>scripts</code> section gives short names to long commands.</li>
+        <li><code>"test:cart": "playwright test tests/cart.spec.ts --project=chromium"</code> saves the command on the right under the name on the left. The colon in the name is only a naming habit that groups related scripts.</li>
+        <li><code>npm run test:cart</code> runs it. Use <code>npm run</code> for scripts, not <code>npx</code>, which runs tools directly.</li>
+        <li><code>npm run test:cart &amp;&amp; npm run test:chromium</code> chains two scripts. <code>&amp;&amp;</code> means "then": the second runs only if the first succeeded. If the cart tests fail, the rest never starts.</li>
+        <li>Why bother: the continuous integration setup in Phase 12, and your teammates, call <code>npm run test:ci</code> instead of remembering a long command.</li>
+      </ul>
+    </div>
+  </details>
+<pre><code># Run a script by its name (npm, not npx)
+npm run test:cart
+
+# Add extra options after --, and npm passes them on to Playwright
+npm run test:cart -- --headed</code></pre>
+  <p>I ran these, including the chain: with <code>&amp;&amp;</code>, a failing first script stops the second from starting.</p>
+
+  <h2 id="projects">7. Playwright projects: environments, phases and phones</h2>
+  <p>Projects let you run the same tests, or different groups of tests, with different settings from one config file. The first use is different browsers or environments:</p>
+<pre><code>// playwright.config.ts
 export default defineConfig({
   projects: [
     // Desktop Chrome against production
@@ -348,100 +588,426 @@ export default defineConfig({
       name: 'mobile',
       use: { ...devices['iPhone 13'], baseURL: 'https://peakandpack-ui.onrender.com' },
     },
-    // Staging only runs files named *.staging.spec.ts
+    // A second environment runs only files named *.local.spec.ts
     {
-      name: 'staging',
-      use: { browserName: 'chromium', baseURL: 'https://staging.peakandpack.com' },
-      testMatch: '**/*.staging.spec.ts',
+      name: 'local',
+      use: { browserName: 'chromium', baseURL: 'http://localhost:3000' },
+      testMatch: '**/*.local.spec.ts',
     },
   ],
-});
-</code></pre>
+});</code></pre>
+
   <p>Run a specific project: <code>npx playwright test --project=mobile</code></p>
 
-  <h2 id="config-reference">6. Full configuration reference</h2>
-  <pre><code>export default defineConfig({
+  <h3 id="phases">Projects as phases: smoke, then regression</h3>
+  <p>Projects can also depend on each other, as in Phase 6's setup project. That lets you run a quick set of checks first and the long set only if the quick set passes:</p>
+<pre><code>// playwright.config.ts -- smoke first, then regression
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './tests',
+  use: { baseURL: 'https://peakandpack-ui.onrender.com' },
+  projects: [
+    // Phase 1: the quick checks that the store works at all
+    { name: 'smoke', testMatch: /.*\.smoke\.spec\.ts/ },
+
+    // Phase 2: everything else, only if smoke passed
+    {
+      name: 'regression',
+      testIgnore: /.*\.smoke\.spec\.ts/,
+      dependencies: ['smoke'],
+    },
+  ],
+});</code></pre>
+<pre><code>// tests/store.smoke.spec.ts
+import { test, expect } from '@playwright/test';
+
+test('the store opens and lists products', async ({ page }) =&gt; {
+  await page.goto('/');
+  await expect(page.getByTestId('product-card').first()).toBeVisible();
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li>Each entry in <code>projects</code> is a group of tests with its own settings. These two are not different browsers: they are different <strong>phases</strong> of the run.</li>
+        <li><code>testMatch: /.*\.smoke\.spec\.ts/</code> gives the <code>smoke</code> project only the files ending in <code>.smoke.spec.ts</code>. <code>testIgnore</code> keeps those same files out of <code>regression</code>.</li>
+        <li><code>dependencies: ['smoke']</code> makes <code>regression</code> wait for <code>smoke</code> to pass. If a smoke test fails, the regression tests are not run at all, and the summary says <strong>did not run</strong>.</li>
+        <li><strong>Why this helps:</strong> when the store is down, you get one clear failure in seconds instead of two hundred failures after twenty minutes.</li>
+      </ul>
+    </div>
+  </details>
+  <p>A project can also have a <strong>teardown</strong> project that runs after the others:</p>
+<pre><code>// playwright.config.ts -- a project that runs after another one
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './tests',
+  use: { baseURL: 'https://peakandpack-ui.onrender.com' },
+  projects: [
+    { name: 'setup', testMatch: /.*\.setup\.ts/, teardown: 'cleanup' },   // 'cleanup' runs after everything that depends on setup
+    { name: 'cleanup', testMatch: /.*\.teardown\.ts/ },
+    { name: 'chromium', testIgnore: /.*\.(setup|teardown)\.ts/, dependencies: ['setup'] },
+  ],
+});</code></pre>
+<pre><code>// tests/prepare.setup.ts
+import { test as setup } from '@playwright/test';
+setup('prepare', async () =&gt; { console.log('SETUP ran'); });
+
+// tests/tidy.teardown.ts
+import { test as teardown } from '@playwright/test';
+teardown('tidy up', async () =&gt; { console.log('TEARDOWN ran'); });</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>teardown: 'cleanup'</code> on the <code>setup</code> project names another project to run <strong>after</strong> everything that depends on <code>setup</code> has finished, whether the tests passed or not.</li>
+        <li>The <code>cleanup</code> project holds the cleanup tests, in files ending <code>.teardown.ts</code>.</li>
+        <li>The output shows <code>SETUP ran</code>, then the tests, then <code>TEARDOWN ran</code>.</li>
+        <li>This is the same mechanism as Phase 6's setup project, with a cleanup end. It is not common: a fixture's teardown (section 3) is usually simpler, because it sits next to the setup it undoes.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h3 id="mobile">Running on an emulated phone</h3>
+<pre><code>// playwright.config.ts -- the same tests on a desktop browser and on an emulated phone
+import { defineConfig, devices } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './tests',
+  use: { baseURL: 'https://peakandpack-ui.onrender.com' },
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'mobile', use: { ...devices['iPhone 13'] } },
+  ],
+});</code></pre>
+<pre><code>// tests/layout.spec.ts
+import { test, expect } from '@playwright/test';
+
+test('product cards sit side by side on a desktop and stack on a phone', async ({ page }, testInfo) =&gt; {
+  await page.goto('/');
+  const cards = page.getByTestId('product-card');
+  await expect(cards.first()).toBeVisible();
+
+  const first = await cards.nth(0).boundingBox();     // the card's position and size on screen
+  const second = await cards.nth(1).boundingBox();
+
+  if (testInfo.project.name === 'mobile') {
+    expect(second!.y).toBeGreaterThan(first!.y);      // stacked: the second card is lower down
+  } else {
+    expect(second!.y).toBe(first!.y);                 // side by side: same row
+  }
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>devices['iPhone 13']</code> is a ready-made bundle of settings: the screen size, the pixel density, a phone's user agent, touch support and the WebKit browser engine. Playwright ships dozens, such as <code>devices['Pixel 7']</code>.</li>
+        <li>The <code>mobile</code> project runs the same tests in that emulated phone. This is <strong>emulation</strong>: it tests the web app in a browser that behaves like a phone's. It cannot test a native app installed on a phone.</li>
+        <li><code>testInfo.project.name</code> is the name of the project running the test, which lets one test adapt. Here the expectation differs: on a desktop two cards share a row, on a phone they stack.</li>
+        <li><code>cards.nth(0).boundingBox()</code> returns the card's position and size on the screen, or <code>null</code> if it is not visible. The <code>!</code> after <code>second</code> tells TypeScript "I know this is not null", because the check just above made sure the card is on the page.</li>
+        <li><code>second!.y</code> is the card's distance from the top of the page. Same value means same row. A bigger value means lower down.</li>
+        <li><strong>Responsive pages hide things on small screens.</strong> Many sites replace their menu with a menu button on a phone, so a test on the mobile project must click that button first. PeakAndPack has no menu button: its header stays as it is, and its product grid reflows.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2 id="env-vars">8. Environment variables: one suite, many environments</h2>
+  <p>Hardcoding the address in the config means a copy of the suite for each environment. Keep the address, and other things that change per environment, in a file, and let the config read it. PeakAndPack gives you two environments: the live store, and a copy running on your own machine.</p>
+<pre><code># .env  -- the default: the live store
+URL=https://peakandpack-ui.onrender.com
+TEST_EMAIL=test@peakandpack.com
+TEST_PASSWORD=password123
+
+# .env.local  -- a copy of the store running on your own machine
+URL=http://localhost:3000
+TEST_EMAIL=test@peakandpack.com
+TEST_PASSWORD=password123</code></pre>
+<pre><code>// playwright.config.ts -- the address and the credentials come from a file
+import { defineConfig } from '@playwright/test';
+import dotenv from 'dotenv';
+import path from 'path';
+
+// TEST_ENV=local reads .env.local. With no TEST_ENV, it reads .env
+dotenv.config({
+  path: path.resolve(__dirname, process.env.TEST_ENV ? `.env.${process.env.TEST_ENV}` : '.env'),
+});
+
+export default defineConfig({
+  testDir: './tests',
+  use: { baseURL: process.env.URL },
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>import dotenv from 'dotenv'</code> brings in a small package that reads a file of settings and puts them in <code>process.env</code>. Add it with <code>npm install --save-dev dotenv</code>.</li>
+        <li><code>process.env.TEST_ENV ? `.env.${process.env.TEST_ENV}` : '.env'</code> chooses the file: with <code>TEST_ENV=local</code> it is <code>.env.local</code>, and with nothing set it is <code>.env</code>. <code>? :</code> is the one-line if-then-else from Phase 0.</li>
+        <li><code>path.resolve(__dirname, ...)</code> turns that file name into a full path next to the config file, so it works whichever folder you run from.</li>
+        <li><code>use: { baseURL: process.env.URL }</code> takes the address from the file, so every test's <code>page.goto('/')</code> goes to the right place.</li>
+        <li>The address lives in one place, and switching environments is a matter of choosing a file.</li>
+      </ul>
+    </div>
+  </details>
+<pre><code>// tests/env.spec.ts
+import { test, expect } from '@playwright/test';
+
+test('log in with the credentials from the environment', async ({ page, baseURL }) =&gt; {
+  console.log('testing against', baseURL);
+  await page.goto('/login');
+  await page.locator('input[type="email"]').fill(process.env.TEST_EMAIL!);
+  await page.locator('input[type="password"]').fill(process.env.TEST_PASSWORD!);
+  await page.getByRole('button', { name: /log in/i }).click();
+  await expect(page.getByRole('button', { name: /log out/i })).toBeVisible();
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>process.env.TEST_EMAIL!</code> reads the email from the environment. TypeScript warns that it might be missing, since it can't know the file was read. The <code>!</code> says "I know it is set".</li>
+        <li><code>baseURL</code> is a fixture Playwright provides: the address from the config. The test prints it so you can see which environment ran.</li>
+        <li>A real password must never be written into a test file or a repository. These are a public demo's credentials, shown here only to make the pattern concrete.</li>
+      </ul>
+    </div>
+  </details>
+<pre><code>{
+  "scripts": {
+    "test": "playwright test",
+    "test:local": "cross-env TEST_ENV=local playwright test"
+  }
+}</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>cross-env</code> sets an environment variable in a way that works on Windows, macOS and Linux. Add it with <code>npm install --save-dev cross-env</code>.</li>
+        <li><strong>Why it is needed:</strong> a script written as <code>TEST_ENV=local playwright test</code> works on macOS and Linux, but on Windows the same script fails with "'TEST_ENV' is not recognized as an internal or external command". I ran it and that is what happens.</li>
+        <li><code>npm run test:local</code> now runs the suite against <code>.env.local</code> on any computer.</li>
+      </ul>
+    </div>
+  </details>
+  <p>With this, <code>npm test</code> uses <code>.env</code>, and <code>npm run test:local</code> uses <code>.env.local</code>. I ran both: the test printed the live address the first time and <code>http://localhost:3000</code> the second.</p>
+  <p>You can also override a value for one run, from the command line:</p>
+<pre><code># macOS and Linux: set a variable for one run
+URL=http://localhost:3000 npx playwright test
+
+# Windows PowerShell: set it, then run
+$env:URL='http://localhost:3000'; npx playwright test</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li>You can also set a variable for a single run. A value set this way beats a value read from a file, so it overrides it.</li>
+        <li>On macOS and Linux, put the assignment in front of the command. In Windows PowerShell, set <code>$env:NAME</code> first and run the command after a semicolon.</li>
+        <li>Runs from the VS Code extension read only the default <code>.env</code>, so use the terminal when you want another environment.</li>
+      </ul>
+    </div>
+  </details>
+  <div class="callout red">
+    <p><strong>Always git-ignore your <code>.env</code> files.</strong> They hold addresses and, in a real project, passwords and keys. Add them to <code>.gitignore</code> before the first commit:</p>
+<pre><code># .gitignore
+.env*</code></pre>
+    <p style="margin-top:.6rem">A continuous integration server has its own place to keep secrets, and sets the same variables for the run (Phase 12). A secret in Git history is exposed for good, even after you delete the file.</p>
+  </div>
+
+  <h2 id="config-reference">9. A tour of the config</h2>
+  <p>Here is a fuller config with the usual settings. Delete what you don't use: a config you can read in one go is easier to trust.</p>
+<pre><code>export default defineConfig({
   testDir: './tests',
   fullyParallel: true,       // run all tests simultaneously
   retries: process.env.CI ? 2 : 0, // retry only in CI
   workers: process.env.CI ? 4 : undefined, // 4 workers in CI, auto locally
   reporter: [['html'], ['github']], // HTML report + GitHub Actions annotations
   use: {
-    baseURL: 'https://peakandpack-ui.onrender.com',
+    baseURL: process.env.URL,
     trace: 'on-first-retry',    // trace on retry
     screenshot: 'only-on-failure', // screenshot on failure
     video: 'retain-on-failure',    // video on failure
     actionTimeout: 10_000,         // each action has 10s before failing
     navigationTimeout: 30_000,     // navigation has 30s
   },
-});
-</code></pre>
+});</code></pre>
+
+  <p>Settings sit at two levels, and a project can override the top level for its own tests:</p>
+<pre><code>// playwright.config.ts -- global settings, with one project overriding them
+import { defineConfig, devices } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './tests',
+  retries: 0,                       // the default for every project...
+  use: { baseURL: 'https://peakandpack-ui.onrender.com', trace: 'on-first-retry' },
+
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    {
+      name: 'slow-network-checks',
+      testMatch: /.*\.slow\.spec\.ts/,             // only these files
+      retries: 2,                                  // ...overridden for this project
+      timeout: 90_000,
+      use: {
+        viewport: { width: 1440, height: 900 },    // the browser window size
+        timezoneId: 'Europe/London',               // the browser's time zone
+        permissions: ['geolocation'],              // allow the browser to share its location
+      },
+    },
+  ],
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li>Settings at the top level apply to every project. A project can override most of them: here <code>retries: 2</code> and <code>timeout: 90_000</code> apply only to <code>slow-network-checks</code>.</li>
+        <li><code>testMatch</code> and <code>testIgnore</code> choose which files a project runs, as in section 7.</li>
+        <li><code>use</code> holds options that change the browser: <code>viewport</code> is the window size, <code>timezoneId</code> the time zone it reports, and <code>permissions</code> what the page may ask for, such as the location.</li>
+        <li>Other common <code>use</code> options are <code>headless: false</code> to always show the browser, <code>storageState</code> (Phase 6) and <code>locale</code>.</li>
+        <li>The Playwright documentation splits these into <strong>test options</strong> (retries, timeout, projects) and <strong>use options</strong> (the browser's settings).</li>
+        <li>A second config file is possible with <code>--config=playwright-prod.config.ts</code>. It is rarely worth it: projects and environment variables cover most needs with one file.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2 id="global-setup">10. Global setup and teardown</h2>
+  <p>A <strong>global setup</strong> is a function that runs once before the whole suite, outside any test and with no browser. A <strong>global teardown</strong> runs once after. PeakAndPack has a good use for one: its free-tier server sleeps, and the first test pays for waking it.</p>
+<pre><code>// global-setup.ts -- runs once, before any test, with no browser
+const API = 'https://peakandpackshopdemo.onrender.com';
+
+export default async function globalSetup() {
+  // Wake the free-tier server before the first test pays for the cold start
+  const res = await fetch(`${API}/health`);
+  if (!res.ok) throw new Error(`PeakAndPack is not healthy: ${res.status}`);
+  console.log('PeakAndPack is awake:', res.status);
+}</code></pre>
+<pre><code>// global-teardown.ts -- runs once, after the last test
+export default async function globalTeardown() {
+  console.log('Suite finished at', new Date().toISOString());
+}</code></pre>
+<pre><code>// playwright.config.ts
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './tests',
+  globalSetup: require.resolve('./global-setup'),
+  globalTeardown: require.resolve('./global-teardown'),
+  use: { baseURL: 'https://peakandpack-ui.onrender.com' },
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li>A global setup is a plain function that runs once before any test, with no browser. It is a place for work like preparing a database or, here, waking a sleeping server.</li>
+        <li><code>fetch(...)</code> sends a request from Node itself. <code>res.ok</code> is true for any 2xx status. Throwing an error stops the whole run before it starts.</li>
+        <li><code>require.resolve('./global-setup')</code> gives the config the full path of the file.</li>
+        <li>The global teardown is the same idea after the last test.</li>
+        <li><strong>The cost:</strong> a global setup runs outside the test framework. It has no <code>page</code>, no trace and no entry in the report, and an error in it stops the run with output only in the terminal. Prefer a setup project (Phase 6) or a fixture whenever you can, and keep a global setup for the few jobs that need to happen once.</li>
+      </ul>
+    </div>
+  </details>
+  <p>I ran this: the setup's message and the teardown's message printed in the terminal, and when I made the setup throw, the run stopped before any test with the error in the terminal and no test results at all. That is the cost in action.</p>
 
   <div class="callout red">
     <p><strong>Common mistakes in Phase 10.</strong></p>
     <ul style="margin:.5rem 0 0 1.2rem;">
-      <li><strong>Using worker scope for fixtures that mutate state.</strong> Two tests in the same worker sharing a cart will corrupt each other. Only use worker scope for truly read-only resources.</li>
-      <li><strong>Forgetting teardown after use().</strong> Code after <code>await use(value)</code> runs when the test finishes. This is the right place to clean up. If you skip it, leftover test data accumulates.</li>
+      <li><strong>Using worker scope for fixtures that mutate state.</strong> Two tests in the same worker sharing a cart leave it for each other. Only use worker scope for truly read-only resources, or clean up after each test.</li>
+      <li><strong>Forgetting teardown after use().</strong> Code after <code>await use(value)</code> runs when the test finishes. This is the right place to clean up. If you skip it, leftover test data accumulates. If teardown throws, the test fails, so keep it simple.</li>
+      <li><strong>Turning every page object into a fixture.</strong> You end up with dozens to track. Use fixtures for setup and teardown only.</li>
       <li><strong>Setting retries globally and forgetting about it.</strong> <code>retries: 2</code> in the config means every flaky test silently retries twice in CI. You stop seeing failures until the problem gets bad. Set retries consciously and track the flaky register.</li>
-      <li><strong>Not using environment variables for baseURL.</strong> Hardcoding the production URL means staging tests always hit production. Use <code>process.env.BASE_URL ?? 'https://peakandpack-ui.onrender.com'</code>.</li>
+      <li><strong>Hardcoding the address.</strong> The production URL in the config means staging tests always hit production. Read it from an environment file.</li>
+      <li><strong>Committing <code>.env</code> files.</strong> Git-ignore them first, and let the CI server supply secrets.</li>
+      <li><strong>Setting an environment variable the Unix way in an npm script.</strong> <code>TEST_ENV=local playwright test</code> fails on Windows. Use <code>cross-env</code>.</li>
+      <li><strong>Raising an inner timeout above the test timeout.</strong> It is cut off by the test timeout. Change the outer one first.</li>
+      <li><strong>Reaching for a global setup first.</strong> It has no trace and no report entry. A setup project or a fixture is easier to debug.</li>
     </ul>
   </div>
 
-  <h2 id="deliverables">7. Deliverables</h2>
+  <h2 id="deliverables">11. Deliverables</h2>
   <ul>
-    <li><code>fixtures/auth.ts</code>: authToken and loggedInPage fixtures</li>
-    <li><code>fixtures/cart.ts</code>: seededCart fixture with teardown</li>
-    <li><code>fixtures/index.ts</code>: combined export, the test object used everywhere</li>
-    <li><code>playwright.config.ts</code>: full config with projects, parallel settings, and all use options</li>
+    <li><code>fixtures/index.ts</code>: customer, loggedInPage, seededCart and pm fixtures with teardown</li>
+    <li><code>fixtures/worker.ts</code>: a worker-scoped customer</li>
+    <li><code>playwright.config.ts</code>: timeouts, projects (smoke, regression, mobile), and an environment-driven base URL</li>
+    <li><code>.env</code> and <code>.env.local</code>, both git-ignored</li>
+    <li><code>package.json</code> scripts for each phase</li>
   </ul>
 
   <hr style="border:none;border-top:1px solid var(--border);margin:0">
 
   <div class="assignment">
-    <div class="a-label">Assignment</div>
+    <div class="a-label">Assignment, part 1</div>
     <h3>Build and use the seededCart fixture</h3>
-    <p>Create the <code>seededCart</code> fixture from the example above. Write two tests that both use it: one that asserts the cart has one item, and one that checks out. Confirm both tests start with the cart already populated and that the teardown cleans the cart after each test (verify by checking the cart count is 0 at the start of the second test without any setup code).</p>
+    <p>Create the <code>customer</code>, <code>loggedInPage</code> and <code>seededCart</code> fixtures from section 3. Write two tests that both use <code>seededCart</code>: one that asserts the cart has one item, and one that checks out. Add a <code>console.log</code> to the teardown and confirm it prints after each test. Then make one test fail on purpose and confirm the teardown still runs.</p>
 
   <details class="solution">
     <summary>Show solution: try it yourself first</summary>
     <div class="solution-body">
-      <h3>seededCart fixture with teardown</h3>
-      <pre><code>// fixtures/cart.ts
-import { test as base } from '@playwright/test';
-import { CartPage } from '../pages/CartPage';
+      <h3>The fixtures and tests</h3>
+      <p>The solution is the <code>fixtures/index.ts</code> and <code>tests/cart.spec.ts</code> of section 3. Add <code>console.log('cleaning up the cart')</code> after the <code>request.delete(...)</code> line in <code>seededCart</code>.</p>
+      <p><strong>What you will see.</strong> Each test starts on its own, with its own customer and exactly one item, because <code>customer</code> registers someone new each time. The log line prints after each test, passed or failed.</p>
+      <p><strong>Why teardown belongs in the fixture, not afterEach.</strong> If you put cleanup in <code>afterEach</code>, it runs even for tests that never used the cart. The fixture's teardown only runs when the fixture was used, and it sits next to the setup it undoes.</p>
+    </div>
+  </details>
+  </div>
 
-export const test = base.extend&lt;{ seededCart: CartPage }&gt;({
-  seededCart: async ({ request, page }, use) => {
-    // Setup: get token and seed the cart
-    const loginRes = await request.post('https://peakandpackshopdemo.onrender.com/api/auth/login', {
-      data: { email: 'test@peakandpack.com', password: 'password123' }
-    });
-    const { token, user } = await loginRes.json();
+  <div class="assignment" style="margin-top:2rem">
+    <div class="a-label">Assignment, part 2</div>
+    <h3>Configure a suite for a team</h3>
+    <p>Use everything from sections 5 to 10.</p>
+    <ol>
+      <li>Set the test timeout to 45 seconds, and give one slow test <code>test.slow()</code>.</li>
+      <li>Move the base URL into <code>.env</code> and <code>.env.local</code>, and add a <code>test:local</code> script that works on Windows.</li>
+      <li>Make a <code>smoke</code> project and a <code>regression</code> project that depends on it. Break the smoke test on purpose and read what happens to regression.</li>
+      <li>Add a <code>mobile</code> project and run the layout test on it.</li>
+      <li>Add a global setup that wakes the server.</li>
+      <li>Add one npm script per phase.</li>
+    </ol>
 
-    await request.post('https://peakandpackshopdemo.onrender.com/api/cart', {
-      headers: { Authorization: `Bearer ${token}` },
-      data: { product_id: 1, quantity: 1 }
-    });
+  <details class="solution">
+    <summary>Show solution: try it yourself first</summary>
+    <div class="solution-body">
+      <h3>The config and the scripts</h3>
+<pre><code>// playwright.config.ts
+import { defineConfig, devices } from '@playwright/test';
+import dotenv from 'dotenv';
+import path from 'path';
 
-    // The UI reads its session from localStorage, not a cookie -- inject it
-    // before the app boots so the browser is logged in as the same user
-    // whose cart we just seeded
-    await page.addInitScript(([t, u]) => {
-      localStorage.setItem('token', t);
-      localStorage.setItem('user', u);
-    }, [token, JSON.stringify(user)]);
-
-    // Hand the CartPage to the test
-    await use(new CartPage(page));
-
-    // Teardown: runs after the test finishes
-    await request.delete('https://peakandpackshopdemo.onrender.com/api/cart/1', {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-  },
+dotenv.config({
+  path: path.resolve(__dirname, process.env.TEST_ENV ? `.env.${process.env.TEST_ENV}` : '.env'),
 });
-</code></pre>
-      <p><strong>Why teardown belongs in the fixture, not afterEach.</strong> If you put cleanup in <code>afterEach</code>, it runs even when the test didn't use the seeded cart. The fixture teardown only runs when the fixture was actually used, which is the correct behaviour.</p>
+
+export default defineConfig({
+  testDir: './tests',
+  timeout: 45_000,
+  globalSetup: require.resolve('./global-setup'),
+  use: { baseURL: process.env.URL },
+  projects: [
+    { name: 'smoke', testMatch: /.*\.smoke\.spec\.ts/, use: { ...devices['Desktop Chrome'] } },
+    {
+      name: 'regression',
+      testIgnore: /.*\.smoke\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['smoke'],
+    },
+    { name: 'mobile', testMatch: /.*layout\.spec\.ts/, use: { ...devices['iPhone 13'] } },
+  ],
+});</code></pre>
+<pre><code>{
+  "scripts": {
+    "test:smoke": "playwright test --project=smoke",
+    "test:regression": "playwright test --project=regression",
+    "test:mobile": "playwright test --project=mobile",
+    "test:local": "cross-env TEST_ENV=local playwright test"
+  }
+}</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>timeout: 45_000</code> raises the test timeout for every project, a modest budget for a server that cold-starts.</li>
+        <li><code>globalSetup</code> wakes the server once. <code>baseURL</code> comes from the environment file.</li>
+        <li><code>regression</code> depends on <code>smoke</code>. The <code>mobile</code> project runs only the layout file in an emulated phone.</li>
+        <li>The four scripts give the team short names: one per phase, plus <code>test:local</code>, which uses <code>cross-env</code> to choose <code>.env.local</code>.</li>
+      </ul>
+    </div>
+  </details>
+      <p><strong>Step 3.</strong> With the smoke test broken, the summary shows it failed and the regression tests as <strong>did not run</strong>. The mobile project is separate, so it still runs on its own.</p>
     </div>
   </details>
   </div>

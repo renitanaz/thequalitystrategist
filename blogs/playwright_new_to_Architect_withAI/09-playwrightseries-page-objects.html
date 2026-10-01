@@ -111,6 +111,16 @@ footer a:hover{color:var(--purple)}
 .blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
 .blog-tags .series-tag{margin-bottom:0}
 .tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+details.explain{margin:.5rem 0 1.5rem;border:1px solid var(--purple-border);border-radius:10px;background:var(--purple-bg)}
+details.explain summary{padding:.6rem 1rem;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--purple);list-style:none;display:flex;align-items:center;gap:.5rem}
+details.explain summary::-webkit-details-marker{display:none}
+details.explain summary::before{content:"\25B6";font-size:.65rem;transition:transform .2s}
+details.explain[open] summary::before{transform:rotate(90deg)}
+.explain-body{padding:.1rem 1.2rem 1rem;font-size:.92rem;line-height:1.7}
+.explain-body p{margin:.7rem 0}
+.explain-body ul{margin:.3rem 0 .7rem 1.2rem;padding-left:0}
+.explain-body li{margin-bottom:.35rem}
+.explain-body pre{margin:.6rem 0}
 </style>
 <meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
 <meta property="og:image:width" content="1200">
@@ -147,7 +157,7 @@ footer a:hover{color:var(--purple)}
   <div class="meta-row">
     <span><strong>Series: Playwright: Zero to Architect</strong></span>
     <span>Demo: PeakAndPack</span>
-    <span>9 min read</span>
+    <span>26 min read</span>
     <span>By: RN</span>
   </div>
   <div class="phase-strip" aria-label="Series progress">
@@ -171,40 +181,103 @@ footer a:hover{color:var(--purple)}
 
   <h2>Goal</h2>
   <p>Build a test suite that is maintainable at scale. One UI change should require one fix: not twenty. The Page Object Model (POM) separates test logic from page interaction logic so that when a page changes, only the page object changes.</p>
+  <p>By the end of this phase you can:</p>
+  <ul>
+    <li>move locators out of tests into page objects, so a UI change needs one fix</li>
+    <li>name methods after what a user does, and decide what is worth wrapping</li>
+    <li>share code with a base class, and describe one section of a page with its own object</li>
+    <li>write methods that take parameters, check the page's state, and use private helpers</li>
+    <li>get named steps in the report, and reach every page object from one manager</li>
+    <li>judge when page objects pay off, and when they do not</li>
+  </ul>
 
   <h2 id="before-scattered-locators">1. Before: locators scattered across every test</h2>
-  <p>Every locator written straight into a test is a copy. When the page changes, every copy has to be found and fixed, and any test that gets missed fails for a reason that has nothing to do with a real bug:</p>
+  <p>Every locator written straight into a test is a copy. When the page changes, every copy has to be found and fixed, and any test that gets missed fails for a reason that has nothing to do with a real bug. Both versions below start from a signed-in customer whose cart holds one item, set up through the API as in Phase 5. That setup lives in a helper file:</p>
+<pre><code>// helpers/session.ts
+import { expect, APIRequestContext, Page } from '@playwright/test';
+
+const API = 'https://peakandpackshopdemo.onrender.com';
+
+/** Signs the browser in as a brand-new customer, created through the API (Phase 5). */
+export async function signInAsNewCustomer(page: Page, request: APIRequestContext) {
+  const email = `test-${Date.now()}-${Math.floor(Math.random() * 1000)}@peakandpack.test`;
+  const register = await request.post(`${API}/api/auth/register`, {
+    data: { name: 'QA Tester', email, password: 'password123' },
+  });
+  expect(register.status()).toBe(201);
+  const { token, user } = await register.json();
+
+  await page.addInitScript(([t, u]) =&gt; {
+    localStorage.setItem('token', t);
+    localStorage.setItem('user', u);
+  }, [token, JSON.stringify(user)]);
+  return token as string;
+}
+
+/** The same, and the customer's cart already holds one item. */
+export async function signInWithItemInCart(page: Page, request: APIRequestContext) {
+  const token = await signInAsNewCustomer(page, request);
+  const added = await request.post(`${API}/api/cart`, {
+    headers: { Authorization: `Bearer ${token}` },
+    data: { product_id: 1, quantity: 1 },
+  });
+  expect(added.status()).toBe(200);
+}</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li>These are Phase 5's helpers, kept in a file of their own so every test can use them. <code>export</code> makes a function available to other files (Part 4 of JavaScript for Testers).</li>
+        <li><code>signInAsNewCustomer</code> registers a brand-new customer through the API and signs the browser in as them. <code>signInWithItemInCart</code> does that and then adds one item to the cart.</li>
+        <li><code>/** ... */</code> is a <strong>JSDoc</strong> comment. VS Code shows it when you hover over the function, so the next person can see what it does without opening the file.</li>
+        <li>Phase 10 turns this setup into a fixture. For now, a plain function is enough.</li>
+      </ul>
+    </div>
+  </details>
+
   <div class="ba-wrap">
     <div class="ba-block before">
       <div class="ba-label">Before: locators in every test file</div>
-<pre><code>// The same locator appears in 20 different test files.
-// PeakAndPack renames "Proceed to checkout" to "Go to checkout".
-// 20 tests break. 20 files to update. One afternoon wasted.
+<pre><code>// tests/checkout.spec.ts: the same locators, copied into every test
+import { signInWithItemInCart } from '../helpers/session';
 
-test('checkout with discount', async ({ page }) => {
-  await page.goto('https://peakandpack-ui.onrender.com/cart');
+test('checkout with discount', async ({ page, request }) =&gt; {
+  await signInWithItemInCart(page, request);
+  await page.goto('/cart');
   await page.getByRole('button', { name: /proceed to checkout/i }).click(); // in 20 files
   await page.getByPlaceholder('e.g. SAVE10').fill('SAVE10'); // the label isn't linked to the input
+  const payment = page.frameLocator('iframe[title="Payment form"]');
+  await payment.getByLabel(/card number/i).fill('4111111111111111');
+  await payment.getByLabel(/expiry/i).fill('12/28');
+  await payment.getByLabel(/cvv/i).fill('123');
+  await payment.getByLabel(/cardholder name/i).fill('Test User');
+  await payment.getByRole('button', { name: /pay now/i }).click();
   await page.getByRole('button', { name: /confirm order/i }).click();
   await expect(page.getByRole('heading', { name: /order placed/i })).toBeVisible();
 });
 
-test('checkout without discount', async ({ page }) => {
-  await page.goto('https://peakandpack-ui.onrender.com/cart');
+test('checkout without discount', async ({ page, request }) =&gt; {
+  await signInWithItemInCart(page, request);
+  await page.goto('/cart');
   await page.getByRole('button', { name: /proceed to checkout/i }).click(); // same locator again
+  const payment = page.frameLocator('iframe[title="Payment form"]');
+  await payment.getByLabel(/card number/i).fill('4111111111111111');
+  await payment.getByLabel(/expiry/i).fill('12/28');
+  await payment.getByLabel(/cvv/i).fill('123');
+  await payment.getByLabel(/cardholder name/i).fill('Test User');
+  await payment.getByRole('button', { name: /pay now/i }).click();
   await page.getByRole('button', { name: /confirm order/i }).click();
   await expect(page.getByRole('heading', { name: /order placed/i })).toBeVisible();
-});
-</code></pre>
+});</code></pre>
     </div>
     <div class="ba-block after">
       <div class="ba-label">After: locators in page objects, tests read like journeys</div>
-<pre><code>// The "proceed to checkout" locator lives in CartPage only.
-// PeakAndPack renames it: one file to update, all tests pass again.
-// (Both versions assume a logged-in customer with an item in the cart:
-// Phase 5's API setup, which Phase 10 turns into a fixture.)
+<pre><code>// tests/checkout.spec.ts: the locators live in the page objects
+import { signInWithItemInCart } from '../helpers/session';
+import { CartPage } from '../pages/CartPage';
 
-test('checkout with discount', async ({ page }) => {
+test('checkout with discount', async ({ page, request }) =&gt; {
+  await signInWithItemInCart(page, request);
   const cart = new CartPage(page);
   await cart.goto();
   const checkout = await cart.proceedToCheckout();
@@ -214,30 +287,43 @@ test('checkout with discount', async ({ page }) => {
   expect(await checkout.isOrderConfirmed()).toBe(true);
 });
 
-test('checkout without discount', async ({ page }) => {
+test('checkout without discount', async ({ page, request }) =&gt; {
+  await signInWithItemInCart(page, request);
   const cart = new CartPage(page);
   await cart.goto();
   const checkout = await cart.proceedToCheckout(); // same method, no duplicated locator
   await checkout.payWithTestCard();
   await checkout.placeOrder();
   expect(await checkout.isOrderConfirmed()).toBe(true);
-});
-</code></pre>
+});</code></pre>
     </div>
   </div>
+  <p>Say PeakAndPack renames "Proceed to checkout" to "Go to checkout". In the "before" version, every test that checks out has a copy of that locator, and each one breaks. In the "after" version, the locator lives in <code>CartPage</code> only: one file to update, and every test passes again.</p>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li>Both versions start with the same setup line, so the cart is ready and the customer is signed in. The difference is everything after it.</li>
+        <li>In the "before" tests, every locator is written out in the test. The payment lines alone are repeated in every checkout test you write.</li>
+        <li>In the "after" tests, each step is one method. A test now says what the customer does, and no locator appears.</li>
+        <li><code>const checkout = await cart.proceedToCheckout()</code> returns the next page object, so the test carries on from the checkout page with the same browser tab.</li>
+        <li><code>expect(await checkout.isOrderConfirmed()).toBe(true)</code> keeps the assertion in the test, where a reader expects to find it.</li>
+      </ul>
+    </div>
+  </details>
 
   <h2 id="cartpage">2. Building the CartPage object</h2>
   <p>A page object is a TypeScript class that wraps one page (or one section of a page). It exposes methods that represent user actions, not Playwright calls. No locators appear in test files.</p>
-  <pre><code>// pages/CartPage.ts
+<pre><code>// pages/CartPage.ts
 import { Page } from '@playwright/test';
 import { CheckoutPage } from './CheckoutPage';
 
 export class CartPage {
-  // The test passes in its browser tab; every method below uses it
-  constructor(private page: Page) {}
+  // "private readonly" makes page a field of the class: set once, never replaced
+  constructor(private readonly page: Page) {}
 
   async goto() {
-    await this.page.goto('https://peakandpack-ui.onrender.com/cart');
+    await this.page.goto('/cart');
   }
 
   // Each cart row has one Remove button, so counting them counts the items
@@ -253,8 +339,19 @@ export class CartPage {
     await this.page.getByRole('button', { name: /proceed to checkout/i }).click();
     return new CheckoutPage(this.page);
   }
-}
-</code></pre>
+}</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>export class CartPage</code> defines a class: a bundle of related actions about one page. <code>export</code> lets other files use it.</li>
+        <li><code>constructor(private readonly page: Page) {}</code> runs when you write <code>new CartPage(page)</code>. <code>private</code> means only this class can use <code>page</code>, and <code>readonly</code> means it is set once and never replaced. Writing it in the constructor's brackets creates the field for you.</li>
+        <li><code>async goto()</code> is a <strong>method</strong>: an action the class can do. <code>this.page</code> is the browser tab the test handed in.</li>
+        <li><code>Promise&lt;number&gt;</code> after <code>getItemCount()</code> is a TypeScript label: the method takes time and ends up with a number. <code>count()</code> doesn't wait (Phase 3), so the method waits for the heading first.</li>
+        <li><code>proceedToCheckout()</code> clicks, then returns <code>new CheckoutPage(this.page)</code>: the next page object, sharing the same tab.</li>
+      </ul>
+    </div>
+  </details>
 
   <h2 id="checkoutpage">3. Building the CheckoutPage object</h2>
   <p>Methods return a new page object when an action moves to a new page, which keeps the chain readable and typed.</p>
@@ -264,12 +361,12 @@ export class CartPage {
     <li>Card details inside a payment iframe</li>
     <li>The "Confirm Order" button, which only becomes clickable once the iframe payment succeeds</li>
   </ol>
-  <pre><code>// pages/CheckoutPage.ts
+<pre><code>// pages/CheckoutPage.ts
 import { Page } from '@playwright/test';
 
 export class CheckoutPage {
   // Every method works on the same browser tab the test passed in
-  constructor(private page: Page) {}
+  constructor(private readonly page: Page) {}
 
   // Step 1 (optional): enter a discount code
   async applyDiscount(code: string) {
@@ -292,7 +389,7 @@ export class CheckoutPage {
   async placeOrder() {
     // Start listening before the click so the response can't be missed
     const done = this.page.waitForResponse(
-      r => r.url().includes('/api/orders/checkout') && r.status() === 201
+      (r) =&gt; r.url().includes('/api/orders/checkout') &amp;&amp; r.status() === 201
     );
     await this.page.getByRole('button', { name: /confirm order/i }).click();
     await done;
@@ -311,50 +408,392 @@ export class CheckoutPage {
     const text = await this.page.getByText(/Order ID: \d+/).textContent();
     return text?.replace('Order ID: ', '') ?? '';
   }
-}
-</code></pre>
+}</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li>Each of the three checkout steps is its own method, because a test may use them in different combinations: with a discount or without, for example.</li>
+        <li><code>applyDiscount(code: string)</code> takes the code as a <strong>parameter</strong>, so one method serves every code. The label isn't linked to its input, so the placeholder is the hook.</li>
+        <li><code>payWithTestCard()</code> steps into the payment iframe with <code>frameLocator</code>. Page-level locators can't see inside it.</li>
+        <li><code>placeOrder()</code> starts <code>waitForResponse</code> before the click (Phase 3) and waits for the order to be created, so the next line only runs once the order exists.</li>
+        <li><code>isOrderConfirmed()</code> answers true or false instead of asserting. <code>.waitFor(...).then(() =&gt; true, () =&gt; false)</code> means "true if the heading appears, false if the wait runs out".</li>
+        <li><code>getOrderId()</code> returns the number from "Order ID: 42" as text, so a test can use it later. <code>text?.replace(...) ?? ''</code> says "if there is text, remove the label, and if there is none, use an empty string".</li>
+      </ul>
+    </div>
+  </details>
 
-  <h2 id="basepage">4. BasePage: shared methods</h2>
-  <p>Behaviour common to all pages (navigation, header checks, loading states) belongs in a base class:</p>
-  <pre><code>// pages/BasePage.ts
+  <h2 id="naming">4. Naming, and how much to wrap</h2>
+  <p>Two habits decide whether a page object helps or gets in the way: how you name methods, and what you bother to wrap.</p>
+  <p><strong>Name methods after what the user does.</strong> <code>applyDiscount('SAVE10')</code> says what the customer does. <code>fillDiscountInput('SAVE10')</code> describes the page's insides, and has to be renamed the day the page is redesigned. Methods that return something start with <code>get</code> (a value) or <code>is</code> (a yes or no), so a reader knows at once whether a method does something or answers something.</p>
+  <p><strong>Wrap what is worth naming.</strong> The two rules that pull against each other are DRY (don't repeat yourself) and KISS (keep it simple). A page object that wraps every single click is DRY, but it adds a file of one-line methods that hide very little:</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Wrap it in a method</th><th>Leave it in the test</th></tr></thead>
+      <tbody>
+        <tr><td>Steps that several tests repeat, such as paying with the test card</td><td>One click used by one test</td></tr>
+        <tr><td>A user step made of several actions, such as fill, wait and click</td><td>A line a reader understands at a glance</td></tr>
+        <tr><td>Anything that needs a wait or a fix you don't want copied</td><td>A method that only renames a Playwright call</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>The test for a method is simple: if it makes a test read like a user's journey, or saves copying something that would be painful to change, keep it. If it only renames one Playwright call, it is cost without payoff.</p>
+
+  <h2 id="basepage">5. BasePage: shared methods</h2>
+  <p>Behaviour common to all pages (navigation, the header) belongs in a base class that every page object extends:</p>
+<pre><code>// pages/BasePage.ts
 import { Page } from '@playwright/test';
 
 export class BasePage {
-  constructor(protected page: Page) {}
-
-  async waitForLoad() {
-    await this.page.waitForLoadState('networkidle');
-  }
-
-  async getPageTitle(): Promise&lt;string&gt; {
-    return this.page.title();
-  }
+  // protected: this class and every class that extends it can use page; tests can't
+  constructor(protected readonly page: Page) {}
 
   async navigate(path: string) {
     await this.page.goto(path);
   }
-}
 
-// CartPage now extends BasePage:
+  /** The greeting in the header, such as "Hi, Test User". */
+  async getGreeting(): Promise&lt;string&gt; {
+    return (await this.page.getByText(/^Hi, /).textContent()) ?? '';
+  }
+}</code></pre>
+<pre><code>// pages/CartPage.ts: now extends BasePage
+import { BasePage } from './BasePage';
+import { CheckoutPage } from './CheckoutPage';
+
 export class CartPage extends BasePage {
-  // ... inherits waitForLoad, getPageTitle, navigate
-}
-</code></pre>
+  // No constructor needed: it inherits BasePage's, which stores page
 
-  <h2 id="folder-structure">5. Folder structure for scale</h2>
+  async goto() {
+    await this.navigate('/cart');            // navigate() comes from BasePage
+  }
+
+  async getItemCount(): Promise&lt;number&gt; {
+    await this.page.getByRole('heading', { name: 'Your Cart' }).waitFor();
+    return await this.page.getByRole('button', { name: 'Remove' }).count();
+  }
+
+  async proceedToCheckout(): Promise&lt;CheckoutPage&gt; {
+    await this.page.getByRole('button', { name: /proceed to checkout/i }).click();
+    return new CheckoutPage(this.page);
+  }
+}</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <p><strong>In plain words:</strong> a base class holds what every page object shares, and each page object extends it.</p>
+      <ul>
+        <li><code>constructor(protected readonly page: Page) {}</code> is like <code>private</code>, with one change: <code>protected</code> also lets classes that <strong>extend</strong> this one use <code>page</code>. Tests still cannot reach it.</li>
+        <li><code>navigate(path)</code> and <code>getGreeting()</code> are methods every page needs, written once. <code>getGreeting</code> reads the header's "Hi, ..." text with <code>textContent()</code>, which waits for the element to exist.</li>
+        <li><code>/** ... */</code> above a method is a JSDoc comment. VS Code shows it when you hover over a call.</li>
+        <li>In <code>CartPage</code>, <code>extends BasePage</code> means "a CartPage is a BasePage, plus more". It gets <code>page</code>, <code>navigate</code> and <code>getGreeting</code> without repeating them.</li>
+        <li>A class that has no constructor of its own uses its parent's. A class that needs its own, as <code>CheckoutPage</code> will, must call <code>super(page)</code> on its first line. <code>super</code> means "the parent class": it hands <code>page</code> up so BasePage can store it.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2 id="section-objects">6. A section of a page: parameters, state and helpers</h2>
+  <p>A page object doesn't have to be a whole page. The checkout page has a delivery section with a choice of method and a custom time dropdown, which makes a good object of its own. It also shows four things a larger page object needs.</p>
+<pre><code>// pages/DeliveryOptions.ts: one section of the checkout page
+import { Locator, Page } from '@playwright/test';
+
+export type DeliveryMethod = 'standard' | 'express';
+
+// The visible text next to each option
+const LABELS: Record&lt;DeliveryMethod, string&gt; = {
+  standard: 'Standard (5 days)',
+  express: 'Express (2 days)',
+};
+
+export class DeliveryOptions {
+  // Locators as fields: built once in the constructor, named once, reused below
+  private readonly timeButton: Locator;
+
+  constructor(private readonly page: Page) {
+    this.timeButton = page.getByRole('button', { name: /delivery time/i });
+  }
+
+  /**
+   * Choose how the order is delivered.
+   * @param method 'standard' (5 days) or 'express' (2 days)
+   */
+  async chooseMethod(method: DeliveryMethod) {
+    // The real radio button is hidden under a styled circle, so click the visible text
+    await this.page.getByText(LABELS[method]).click();
+  }
+
+  /** True if this delivery method is the selected one. */
+  async isMethodChosen(method: DeliveryMethod): Promise&lt;boolean&gt; {
+    return this.page.getByRole('radio', { name: LABELS[method] }).isChecked();
+  }
+
+  /**
+   * Choose a delivery time, such as 'Evening (17-21)'.
+   * Opens the list only if it is closed, so it works from either state.
+   */
+  async chooseTime(slot: string) {
+    if (!(await this.isTimeListOpen())) {
+      await this.timeButton.click();
+    }
+    await this.page.getByRole('option', { name: slot }).click();
+  }
+
+  /** The text of the time button, such as "Delivery time: Evening (17-21)". */
+  async getTimeText(): Promise&lt;string&gt; {
+    return (await this.timeButton.textContent()) ?? '';
+  }
+
+  // A private helper: tests can't call it, and it answers a question for the methods above
+  private async isTimeListOpen(): Promise&lt;boolean&gt; {
+    return (await this.timeButton.getAttribute('aria-expanded')) === 'true';
+  }
+}</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <p><strong>In plain words:</strong> a small page object for one section of the checkout page, with a parameter, a state check and a helper.</p>
+      <ul>
+        <li><code>export type DeliveryMethod = 'standard' | 'express'</code> is a TypeScript label that allows only those two words. A test that writes <code>'fast'</code> gets a red underline before it runs.</li>
+        <li><code>private readonly timeButton: Locator</code> declares a <strong>locator as a field</strong>. The constructor builds it once, with <code>page.getByRole(...)</code>, and every method reuses it.</li>
+        <li><code>/** ... @param method ... */</code> is a JSDoc comment with a <code>@param</code> line describing a parameter. It shows in the pop-up when someone types <code>chooseMethod(</code>.</li>
+        <li><code>const LABELS: Record&lt;DeliveryMethod, string&gt;</code> is a lookup table from each method to the text the customer sees. <code>Record</code> is a TypeScript label for "an object with these keys and these kinds of values", and it makes sure no method is missing.</li>
+        <li><code>chooseMethod(method)</code> is a <strong>parameterised</strong> method: one method for both choices. It looks up the label for the parameter and clicks that text. The real radio button is hidden under a styled circle, so <code>check()</code> would be refused (the UI recipes page shows the error), and clicking what the user sees is the fix.</li>
+        <li><code>isMethodChosen(method)</code> starts with <code>is</code>, so a reader knows it answers yes or no. <code>isChecked()</code> reads the state right now, which is fine for a getter that the test then asserts on.</li>
+        <li><code>chooseTime(slot)</code> is <strong>state-aware</strong>: it opens the list only if it is closed. A button that toggles would otherwise close an open list, and the next line would fail.</li>
+        <li><code>isTimeListOpen()</code> is a <strong>private helper that returns a value</strong>. It reads the button's <code>aria-expanded</code> attribute, which the page sets to <code>true</code> while the list is open, and answers yes or no. <code>private</code> keeps it out of tests: they ask for outcomes, not for the page's internals.</li>
+        <li><code>getTimeText()</code> returns the button's text, so the test decides what to expect.</li>
+      </ul>
+    </div>
+  </details>
+<pre><code>// tests/delivery.spec.ts
+import { signInWithItemInCart } from '../helpers/session';
+import { CartPage } from '../pages/CartPage';
+
+test('delivery choices through the page objects', async ({ page, request }) =&gt; {
+  await signInWithItemInCart(page, request);
+  const cart = new CartPage(page);
+  await cart.goto();
+  const checkout = await cart.proceedToCheckout();
+
+  await checkout.delivery.chooseMethod('express');
+  expect(await checkout.delivery.isMethodChosen('express')).toBe(true);
+  expect(await checkout.delivery.isMethodChosen('standard')).toBe(false);
+
+  await checkout.delivery.chooseTime('Evening (17-21)');
+  expect(await checkout.delivery.getTimeText()).toBe('Delivery time: Evening (17-21)');
+
+  await checkout.payWithTestCard();
+  await checkout.placeOrder();
+  expect(await checkout.isOrderConfirmed()).toBe(true);
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>checkout.delivery</code> reaches the delivery section through the checkout page object. The test never sees a locator.</li>
+        <li><code>chooseMethod('express')</code> and <code>chooseTime('Evening (17-21)')</code> read as what a customer does. <code>isMethodChosen</code> lets the test check that choosing Express cleared Standard.</li>
+        <li>The assertion stays in the test: <code>getTimeText()</code> returns the text, and <code>toBe(...)</code> checks it.</li>
+      </ul>
+    </div>
+  </details>
+
+  <p><strong>Where the locators go.</strong> <code>DeliveryOptions</code> keeps one locator as a field, and <code>CheckoutPage</code> builds each locator inside its methods. Both are common, and each has a cost:</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th></th><th>Locators as fields</th><th>Locators inside methods</th></tr></thead>
+      <tbody>
+        <tr><td>Looks like</td><td><code>this.timeButton = page.getByRole(...)</code> in the constructor</td><td><code>this.page.getByRole(...)</code> where it is used</td></tr>
+        <tr><td>Good for</td><td>A locator used by several methods, named once</td><td>Reading a method top to bottom, with nothing to look up</td></tr>
+        <tr><td>Cost</td><td>The locator is defined away from where it is used; more to scroll through in a big class</td><td>A locator used twice is written twice</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Playwright's own documentation puts locators in fields. Some teams prefer them inside methods, for readability. Use fields when a locator is reused, and inside methods when it is not, and keep every field <code>private</code> either way, so locators don't leak into tests.</p>
+
+  <h2 id="steps">7. Named steps in the report</h2>
+  <p>When a test fails inside a page-object method, the report shows the raw Playwright lines. If each method were one named step, the report would read like the test does. Playwright's <code>test.step</code> does that, and a small <strong>decorator</strong> applies it to a method with one line:</p>
+<pre><code>// helpers/step.ts
+import { test } from '@playwright/test';
+
+// Wraps a page-object method in test.step, so the report shows it as one named step
+export function step(stepName?: string) {
+  return function decorator(target: Function, context: ClassMethodDecoratorContext) {
+    return function replacementMethod(this: any, ...args: any[]) {
+      const name = stepName || `${this.constructor.name}.${String(context.name)}`;
+      return test.step(name, async () =&gt; {
+        return await target.call(this, ...args);
+      });
+    };
+  };
+}</code></pre>
+<pre><code>// pages/CheckoutPage.ts: the final version
+import { Page } from '@playwright/test';
+import { BasePage } from './BasePage';
+import { DeliveryOptions } from './DeliveryOptions';
+import { step } from '../helpers/step';
+
+export class CheckoutPage extends BasePage {
+  /** The delivery section: method and time. */
+  readonly delivery: DeliveryOptions;
+
+  constructor(page: Page) {
+    super(page);                              // BasePage stores the page
+    this.delivery = new DeliveryOptions(page);
+  }
+
+  /** Enter a discount code (optional step). */
+  @step('Apply discount code')
+  async applyDiscount(code: string) {
+    await this.page.getByPlaceholder('e.g. SAVE10').fill(code);
+  }
+
+  /** Fill the payment form, which lives inside an iframe, and press Pay now. */
+  @step('Pay with the test card')
+  async payWithTestCard() {
+    const frame = this.page.frameLocator('iframe[title="Payment form"]');
+    await frame.getByLabel(/card number/i).fill('4111111111111111');
+    await frame.getByLabel(/expiry/i).fill('12/28');
+    await frame.getByLabel(/cvv/i).fill('123');
+    await frame.getByLabel(/cardholder name/i).fill('Test User');
+    await frame.getByRole('button', { name: /pay now/i }).click();
+  }
+
+  /** Confirm the order and wait for the server to create it. */
+  @step('Place the order')
+  async placeOrder() {
+    const done = this.page.waitForResponse(
+      (r) =&gt; r.url().includes('/api/orders/checkout') &amp;&amp; r.status() === 201
+    );
+    await this.page.getByRole('button', { name: /confirm order/i }).click();
+    await done;
+  }
+
+  async isOrderConfirmed(): Promise&lt;boolean&gt; {
+    return this.page.getByRole('heading', { name: /order placed/i })
+      .waitFor({ timeout: 5000 })
+      .then(() =&gt; true, () =&gt; false);
+  }
+
+  /** The number from "Order ID: 42", as text. */
+  async getOrderId(): Promise&lt;string&gt; {
+    return this.textAfter(/Order ID: \d+/, 'Order ID: ');
+  }
+
+  /** The amount from "Total charged: $54.99", as a number. */
+  async getTotalCharged(): Promise&lt;number&gt; {
+    return Number(await this.textAfter(/Total charged: \$[\d.]+/, 'Total charged: $'));
+  }
+
+  // A private helper that returns a value: "the text of this element, minus its label"
+  private async textAfter(pattern: RegExp, prefix: string): Promise&lt;string&gt; {
+    const text = await this.page.getByText(pattern).textContent();
+    return (text ?? '').replace(prefix, '');
+  }
+}</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>test.step(name, fn)</code> is Playwright's own way to group lines into one named step in the report. The helper wraps that around any method it is attached to.</li>
+        <li><code>export function step(stepName?: string)</code> builds a <strong>decorator</strong>: a function you put above a method with <code>@</code> to change how the method runs. The <code>?</code> makes the name optional. Without one, the step is named after the class and method, such as <code>CheckoutPage.placeOrder</code>.</li>
+        <li><code>target.call(this, ...args)</code> runs the original method with its original arguments, inside the step.</li>
+        <li>On <code>CheckoutPage</code>, <code>@step('Pay with the test card')</code> above a method wraps the method. The method's code does not change.</li>
+        <li><code>CheckoutPage extends BasePage</code>, and its constructor calls <code>super(page)</code> first, then builds <code>this.delivery</code> from the same <code>page</code>. <code>readonly delivery</code> is public so a test can write <code>checkout.delivery.chooseMethod(...)</code>.</li>
+        <li><code>getOrderId()</code> and <code>getTotalCharged()</code> both need "the text of an element, without its label". The private <code>textAfter</code> helper does that once and returns the text. <code>getTotalCharged</code> converts it to a number with <code>Number(...)</code>.</li>
+      </ul>
+    </div>
+  </details>
+<pre><code>// tests/steps.spec.ts: the same checkout as before; only the report changes
+import { signInWithItemInCart } from '../helpers/session';
+import { CartPage } from '../pages/CartPage';
+
+test('checkout, with named steps in the report', async ({ page, request }) =&gt; {
+  await signInWithItemInCart(page, request);
+  const cart = new CartPage(page);
+  await cart.goto();
+  const checkout = await cart.proceedToCheckout();
+  await checkout.applyDiscount('SAVE10');
+  await checkout.payWithTestCard();
+  await checkout.placeOrder();
+  expect(await checkout.isOrderConfirmed()).toBe(true);
+});</code></pre>
+  <p>Run it and open the report: the test shows <em>Apply discount code</em>, <em>Pay with the test card</em> and <em>Place the order</em> as steps, and the Playwright lines sit inside them. A failure now points at "Pay with the test card", not at line 14 of a file.</p>
+
+  <h2 id="pagemanager">8. PageManager: one way in</h2>
+  <p>With four or five page objects, each test starts by creating several of them. A <strong>PageManager</strong> creates them all once and hands them out by name:</p>
+<pre><code>// pages/PageManager.ts
+import { Page } from '@playwright/test';
+import { CartPage } from './CartPage';
+import { CheckoutPage } from './CheckoutPage';
+import { LoginPage } from './LoginPage';
+import { ProductListPage } from './ProductListPage';
+
+export class PageManager {
+  private readonly loginPage: LoginPage;
+  private readonly productListPage: ProductListPage;
+  private readonly cartPage: CartPage;
+  private readonly checkoutPage: CheckoutPage;
+
+  constructor(page: Page) {
+    // Every page object shares the one browser tab
+    this.loginPage = new LoginPage(page);
+    this.productListPage = new ProductListPage(page);
+    this.cartPage = new CartPage(page);
+    this.checkoutPage = new CheckoutPage(page);
+  }
+
+  onLoginPage() { return this.loginPage; }
+  onProductList() { return this.productListPage; }
+  onCartPage() { return this.cartPage; }
+  onCheckoutPage() { return this.checkoutPage; }
+}</code></pre>
+<pre><code>// tests/pagemanager.spec.ts
+import { signInAsNewCustomer } from '../helpers/session';
+import { PageManager } from '../pages/PageManager';
+
+test('the happy path through the PageManager', async ({ page, request }) =&gt; {
+  await signInAsNewCustomer(page, request);
+  const pm = new PageManager(page);        // one line; every page object is reachable from it
+
+  await pm.onProductList().goto();
+  await pm.onProductList().addToCart('Headlamp');
+  await pm.onProductList().openCart();
+  expect(await pm.onCartPage().getItemCount()).toBe(1);
+
+  await pm.onCartPage().proceedToCheckout();
+  await pm.onCheckoutPage().payWithTestCard();
+  await pm.onCheckoutPage().placeOrder();
+  expect(await pm.onCheckoutPage().isOrderConfirmed()).toBe(true);
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>PageManager</code> creates every page object once, from the same <code>page</code>, so they share one browser tab.</li>
+        <li><code>onCartPage()</code> and friends return the ready-made object. The names read like "on the cart page, do this".</li>
+        <li>A test makes one object, <code>new PageManager(page)</code>, instead of one per page. The test still reads like a journey: <code>pm.onCheckoutPage().payWithTestCard()</code>.</li>
+        <li><strong>Two ways to move between pages.</strong> Earlier, <code>proceedToCheckout()</code> returned the next page object, and the test chained from it. With a PageManager, a method does not need to return anything: the test asks the manager for the page it wants. Pick one style per suite, so tests read the same way.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2 id="folder-structure">9. Folder structure for scale</h2>
   <p>A well-organised framework separates concerns so any team member can find what they need without reading the whole codebase:</p>
   <pre><code>peakandpack-tests/
   pages/            # page objects -- one file per page or major section
     BasePage.ts
     CartPage.ts
     CheckoutPage.ts
-    ProductPage.ts
+    DeliveryOptions.ts
     LoginPage.ts
+    ProductListPage.ts
+    PageManager.ts
   fixtures/         # Playwright fixtures and global setup
     auth.ts
     index.ts
-  helpers/          # utility functions (date formatting, data generators)
-    testData.ts
+  helpers/          # utility functions (sessions, steps, data generators)
+    session.ts
+    step.ts
   tests/            # spec files -- test logic only, no locators
     cart.spec.ts
     checkout.spec.ts
@@ -368,7 +807,7 @@ export class CartPage extends BasePage {
     <li><strong>Reusable utility code</strong> belongs in helpers.</li>
   </ul>
 
-  <h2 id="pom-overkill">6. When POM is overkill</h2>
+  <h2 id="pom-overkill">10. When POM is overkill</h2>
   <p>POM has a cost: more files, more abstraction, more to maintain. It pays back on suites of 20 or more tests across stable pages. It is overkill for:</p>
   <ul>
     <li>A small suite of 5 to 10 tests on a fast-moving MVP where the UI changes every week</li>
@@ -376,6 +815,7 @@ export class CartPage extends BasePage {
     <li>A demo or learning project where the goal is to understand Playwright, not to build a framework</li>
   </ul>
   <p>The architect decides when the investment pays off. Phases 0 to 8 of this series deliberately used locators directly because the suite was small and the patterns were the point. Phase 9 introduces POM because you now have enough tests to see the problem it solves.</p>
+  <p><strong>Do page objects still pay off with AI assistants?</strong> An AI coding assistant can find the same locator in twenty files and change it in minutes. That weakens the "one fix instead of twenty" argument, and it is a fair reason to keep page objects thin. The rest of the case stands. A test that reads like a journey is still easier to review than one full of locators, a shared fix still beats twenty reviewed edits, and an assistant writes better tests when it has clear page objects to call than when it has to guess at locators. Decide by your suite's size and how often its pages change, not by habit.</p>
 
   <div class="callout amber">
     <p><strong>The test reads like a user journey, not a Playwright tutorial.</strong> When POM is working well, a non-technical stakeholder can read a test and understand what the user does. <code>const checkout = await cart.proceedToCheckout(); await checkout.applyDiscount('SAVE10'); await checkout.payWithTestCard(); await checkout.placeOrder(); expect(await checkout.isOrderConfirmed()).toBe(true);</code> needs no explanation, including the payment step. That readability is the real payoff.</p>
@@ -385,17 +825,21 @@ export class CartPage extends BasePage {
     <p><strong>Common mistakes in Phase 9.</strong></p>
     <ul style="margin:.5rem 0 0 1.2rem;">
       <li><strong>Putting assertions in page objects.</strong> Page objects should expose actions and getters, not assert. Assertions belong in the test. A page object that calls <code>expect()</code> hides test logic where no one expects to find it.</li>
-      <li><strong>One giant page object for the whole app.</strong> A <code>PeakAndPackPage</code> with 50 methods covering every page becomes unmaintainable fast. Split by page or major section.</li>
-      <li><strong>Returning locators from page objects.</strong> If a method returns a locator and the test calls <code>.click()</code> on it, the locator has leaked out of the page object. Return results (strings, numbers, booleans) or new page objects, not locators.</li>
+      <li><strong>One giant page object for the whole app.</strong> A <code>PeakAndPackPage</code> with 50 methods covering every page becomes unmaintainable fast. Split by page or major section, as <code>DeliveryOptions</code> does.</li>
+      <li><strong>Returning locators from page objects.</strong> If a method returns a locator and the test calls <code>.click()</code> on it, the locator has leaked out of the page object. Return results (strings, numbers, booleans) or new page objects, not locators. Locators kept as <code>private</code> fields are fine.</li>
+      <li><strong>Wrapping every click.</strong> A method that only renames one Playwright call adds a file to maintain and hides nothing. Wrap steps worth naming (section 4).</li>
+      <li><strong>Toggling blindly.</strong> A method that clicks a dropdown open assumes it is closed. If it is already open, the click closes it. Check the state first (section 6).</li>
       <li><strong>Applying POM to a three-test suite.</strong> The maintenance cost of POM only pays off at scale. For a small suite, direct locators are fine.</li>
     </ul>
   </div>
 
-  <h2 id="deliverables">7. Deliverables</h2>
+  <h2 id="deliverables">11. Deliverables</h2>
   <ul>
     <li><code>pages/BasePage.ts</code>: shared base class</li>
     <li><code>pages/CartPage.ts</code>: cart page object with goto, item count, and proceed-to-checkout methods</li>
     <li><code>pages/CheckoutPage.ts</code>: checkout page object with discount, payment, place-order, and confirmation methods</li>
+    <li><code>pages/DeliveryOptions.ts</code>: the delivery section, with a parameter, a state check and a private helper</li>
+    <li><code>pages/PageManager.ts</code> and <code>helpers/step.ts</code>: one way in, and named steps</li>
     <li><code>tests/pom.spec.ts</code>: existing tests refactored to use page objects</li>
     <li><code>framework-design.md</code>: folder structure decisions and when to use POM</li>
   </ul>
@@ -403,7 +847,7 @@ export class CartPage extends BasePage {
   <hr style="border:none;border-top:1px solid var(--border);margin:0">
 
   <div class="assignment">
-    <div class="a-label">Assignment</div>
+    <div class="a-label">Assignment, part 1</div>
     <h3>Build a LoginPage object and refactor the auth tests</h3>
     <p>Create <code>pages/LoginPage.ts</code> with two methods: <code>loginAs(email, password)</code> which fills the form and clicks log in, and <code>assertLoggedIn()</code> which asserts the user is on the home page. Then refactor the auth tests from Phase 6 to use the LoginPage object. No locators should appear in the test file after the refactor.</p>
 
@@ -411,21 +855,21 @@ export class CartPage extends BasePage {
     <summary>Show solution: try it yourself first</summary>
     <div class="solution-body">
       <h3>LoginPage object</h3>
-      <pre><code>// pages/LoginPage.ts
+<pre><code>// pages/LoginPage.ts
 import { Page, expect } from '@playwright/test';
 
 export class LoginPage {
-  constructor(private page: Page) {}
+  constructor(private readonly page: Page) {}
 
   async goto() {
-    await this.page.goto('https://peakandpack-ui.onrender.com/login');
+    await this.page.goto('/login');
   }
 
   async loginAs(email: string, password: string) {
     await this.page.locator('input[type="email"]').fill(email);
     await this.page.locator('input[type="password"]').fill(password);
     await this.page.getByRole('button', { name: /log in/i }).click();
-    await this.page.waitForURL('https://peakandpack-ui.onrender.com/');
+    await this.page.waitForURL('/');
   }
 
   async assertLoggedIn() {
@@ -434,28 +878,147 @@ export class LoginPage {
       this.page.getByRole('button', { name: /log out/i })
     ).toBeVisible();
   }
-}
-
-// tests/auth.spec.ts (refactored)
-import { test } from '@playwright/test';
+}</code></pre>
+<pre><code>// tests/auth.spec.ts (refactored)
 import { LoginPage } from '../pages/LoginPage';
 
-test('customer can log in', async ({ page }) => {
+test('customer can log in', async ({ page }) =&gt; {
   const login = new LoginPage(page);
   await login.goto();
   await login.loginAs('test@peakandpack.com', 'password123');
   await login.assertLoggedIn();
-});
-</code></pre>
+});</code></pre>
       <p><strong>Why "Log out" proves you're logged in, not "Log in" or "Register".</strong> Before login, the nav shows "Log in" and "Register" links. After login, both disappear and a "Log out" button takes their place, confirmed against the real app. Asserting on "Log out" is a direct check of the state that actually changed, rather than guessing at an "Account" or "Profile" link that PeakAndPack doesn't have.</p>
       <p><strong>Why no assertions in the page object.</strong> <code>assertLoggedIn()</code> is an exception to the "no assertions in page objects" rule in a narrow sense -- it is a named assertion helper, not a data action. Some teams prefer to call it <code>isLoggedIn()</code> and return a boolean, then assert in the test. Either is fine; the key is consistency across the whole suite.</p>
     </div>
   </details>
   </div>
 
+  <div class="assignment" style="margin-top:2rem">
+    <div class="a-label">Assignment, part 2</div>
+    <h3>A product list object, a manager and a discount check</h3>
+    <p>Use everything from sections 4 to 8.</p>
+    <ol>
+      <li>Make <code>ProductListPage</code>, extending <code>BasePage</code>, with <code>search(word)</code>, <code>getProductNames()</code> and <code>addToCart(productName)</code>. Write a JSDoc comment on each, and put <code>@step</code> on the ones that act.</li>
+      <li>Add a <code>PageManager</code> and write the checkout test through it, adding an item with <code>addToCart('Headlamp')</code> and choosing express delivery in the afternoon.</li>
+      <li>Add <code>getTotalCharged()</code> to <code>CheckoutPage</code>, using a private helper that you also use for <code>getOrderId()</code>.</li>
+      <li>Write a test that applies <code>SAVE10</code>, then checks the total is 90% of the price. It fails today: mark it with <code>test.fail()</code> and say which bug it is.</li>
+      <li>Open the report and find your steps.</li>
+    </ol>
+
+  <details class="solution">
+    <summary>Show solution: try it yourself first</summary>
+    <div class="solution-body">
+      <h3>ProductListPage</h3>
+<pre><code>// pages/ProductListPage.ts
+import { BasePage } from './BasePage';
+import { CartPage } from './CartPage';
+import { step } from '../helpers/step';
+
+export class ProductListPage extends BasePage {
+  async goto() {
+    await this.navigate('/');
+  }
+
+  /** Search for a word, and wait until the list has been updated. */
+  @step('Search the product list')
+  async search(word: string) {
+    await this.page.getByPlaceholder('Search gear...').fill(word);
+    const done = this.page.waitForResponse((r) =&gt; r.url().includes('/api/search'));
+    await this.page.getByRole('button', { name: 'Search', exact: true }).click();
+    await done;
+  }
+
+  /** The names of the products on screen. */
+  async getProductNames(): Promise&lt;string[]&gt; {
+    const titles = await this.page.getByTestId('product-card').getByRole('heading').allTextContents();
+    return titles.map((t) =&gt; t.replace('\u2197', '').trim());   // drop the small arrow link
+  }
+
+  /**
+   * Add one product to the cart, and wait for the server to accept it.
+   * @param productName the product's name, such as 'Headlamp'
+   */
+  @step('Add a product to the cart')
+  async addToCart(productName: string) {
+    const card = this.page.getByTestId('product-card')
+      .filter({ has: this.page.getByRole('heading', { name: productName }) });
+    const added = this.page.waitForResponse(
+      (r) =&gt; r.url().includes('/api/cart') &amp;&amp; r.request().method() === 'POST' &amp;&amp; r.status() === 200
+    );
+    await card.getByRole('button', { name: /add to cart/i }).click();
+    await added;
+  }
+
+  /** Go to the cart page through the header link. */
+  async openCart(): Promise&lt;CartPage&gt; {
+    await this.page.getByRole('link', { name: 'Cart' }).click();
+    return new CartPage(this.page);
+  }
+}</code></pre>
+      <h3>The tests</h3>
+<pre><code>// tests/workout.spec.ts
+import { signInAsNewCustomer } from '../helpers/session';
+import { PageManager } from '../pages/PageManager';
+
+test('workout: search through the page object', async ({ page }) =&gt; {
+  const pm = new PageManager(page);
+  await pm.onProductList().goto();
+  await pm.onProductList().search('tent');
+  expect(await pm.onProductList().getProductNames()).toEqual(['4-Season Tent']);
+});
+
+test('workout: add by name, then check out with a delivery choice', async ({ page, request }) =&gt; {
+  await signInAsNewCustomer(page, request);
+  const pm = new PageManager(page);
+
+  await pm.onProductList().goto();
+  await pm.onProductList().addToCart('Headlamp');
+  await pm.onProductList().openCart();
+  await pm.onCartPage().proceedToCheckout();
+
+  await pm.onCheckoutPage().delivery.chooseMethod('express');
+  await pm.onCheckoutPage().delivery.chooseTime('Afternoon (12-17)');
+  await pm.onCheckoutPage().payWithTestCard();
+  await pm.onCheckoutPage().placeOrder();
+  expect(await pm.onCheckoutPage().isOrderConfirmed()).toBe(true);
+  expect(await pm.onCheckoutPage().getTotalCharged()).toBe(24.99);   // the Headlamp's price
+});
+
+test('workout: a 10% discount takes 10% off (BUG-009)', async ({ page, request }) =&gt; {
+  test.fail();   // SAVE10 takes 100% off today, so the total is 0, not 90% of the price
+  await signInAsNewCustomer(page, request);
+  const pm = new PageManager(page);
+
+  await pm.onProductList().goto();
+  await pm.onProductList().addToCart('Headlamp');
+  await pm.onProductList().openCart();
+  await pm.onCartPage().proceedToCheckout();
+
+  await pm.onCheckoutPage().applyDiscount('SAVE10');
+  await pm.onCheckoutPage().payWithTestCard();
+  await pm.onCheckoutPage().placeOrder();
+  expect(await pm.onCheckoutPage().getTotalCharged()).toBeCloseTo(24.99 * 0.9, 2);
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>ProductListPage.search(word)</code> sets up <code>waitForResponse</code> before clicking Search, as in Phase 3, so the method returns only when the list has changed.</li>
+        <li><code>addToCart('Headlamp')</code> finds the right card by its heading, as in Phase 2, and waits for the server's 200.</li>
+        <li>The test with the discount ends with a total: <code>getTotalCharged()</code>. <code>test.fail()</code> marks it as a known failure (Phase 3), because <code>SAVE10</code> takes 100% off today, not 10%.</li>
+      </ul>
+    </div>
+  </details>
+      <p><strong>Step 5.</strong> Each <code>@step</code> shows as a named step in the report, with the Playwright lines inside it.</p>
+      <p><strong>The discount test.</strong> <code>SAVE10</code> takes the whole price off today (BUG-009 in the AI-Augmented QA series), so the total is 0 and the test fails. <code>test.fail()</code> keeps the suite green while the bug exists and goes red the day it is fixed.</p>
+    </div>
+  </details>
+  </div>
+
   <div class="bonus">
     <div class="b-label">Bonus challenge</div>
-    <p><strong>Add a ProductPage object and chain it.</strong> Create <code>pages/ProductPage.ts</code> with an <code>addToCart()</code> method that returns a <code>CartPage</code>. Update the CartPage to have a method <code>static visit(page)</code> that navigates to the cart and returns a <code>CartPage</code> instance. Write a test that chains: <code>const cart = await productPage.addToCart(); await cart.checkout(); await checkout.payWithTestCard(); await checkout.placeOrder(); expect(await checkout.isOrderConfirmed()).toBe(true);</code>: the entire happy path in five lines.</p>
+    <p><strong>Chain the whole happy path in five lines.</strong> Give <code>ProductListPage</code> an <code>openCart()</code> that returns a <code>CartPage</code>, as in the solution. Write a test that chains: <code>const cart = await products.openCart(); const checkout = await cart.proceedToCheckout(); await checkout.payWithTestCard(); await checkout.placeOrder(); expect(await checkout.isOrderConfirmed()).toBe(true);</code>: the entire happy path from the product list in five lines, using the page objects' return values instead of a manager.</p>
   </div>
 
   <div class="series-nav">

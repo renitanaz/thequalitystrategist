@@ -111,6 +111,16 @@ footer a:hover{color:var(--purple)}
 .blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
 .blog-tags .series-tag{margin-bottom:0}
 .tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+details.explain{margin:.5rem 0 1.5rem;border:1px solid var(--purple-border);border-radius:10px;background:var(--purple-bg)}
+details.explain summary{padding:.6rem 1rem;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--purple);list-style:none;display:flex;align-items:center;gap:.5rem}
+details.explain summary::-webkit-details-marker{display:none}
+details.explain summary::before{content:"\25B6";font-size:.65rem;transition:transform .2s}
+details.explain[open] summary::before{transform:rotate(90deg)}
+.explain-body{padding:.1rem 1.2rem 1rem;font-size:.92rem;line-height:1.7}
+.explain-body p{margin:.7rem 0}
+.explain-body ul{margin:.3rem 0 .7rem 1.2rem;padding-left:0}
+.explain-body li{margin-bottom:.35rem}
+.explain-body pre{margin:.6rem 0}
 </style>
 <meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
 <meta property="og:image:width" content="1200">
@@ -147,7 +157,7 @@ footer a:hover{color:var(--purple)}
   <div class="meta-row">
     <span><strong>Series: Playwright: Zero to Architect</strong></span>
     <span>Demo: PeakAndPack</span>
-    <span>9 min read</span>
+    <span>24 min read</span>
     <span>By: RN</span>
   </div>
   <div class="phase-strip" aria-label="Series progress">
@@ -172,6 +182,15 @@ footer a:hover{color:var(--purple)}
   <h2>Goal</h2>
   <p>Test the PeakAndPack API directly using Playwright's request context. No browser, no UI: just HTTP calls with the same tool you already know. Then chain API and UI together for the fastest and most reliable test pattern.</p>
 
+  <p>By the end of this phase you can:</p>
+  <ul>
+    <li>read an API call in the browser's DevTools and write it as a test</li>
+    <li>send requests with parameters, headers and a body, and check the status first</li>
+    <li>replace a response with your own, from a file, and edit a real one</li>
+    <li>avoid the traps: a mock set up too late, and a negative assertion that passes too early</li>
+    <li>read the page's own responses and use them to clean up</li>
+  </ul>
+
   <h2 id="before-separate-tools">1. Before: separate tools for API and UI testing</h2>
   <p>Setting up data through the UI makes every test pay for clicks it isn't testing. Keeping API checks in a separate tool means the two never share setup. When one tool can both call the API and drive the browser, a test can build its data in milliseconds and spend its time on what it's actually checking:</p>
   <div class="ba-wrap">
@@ -185,14 +204,14 @@ footer a:hover{color:var(--purple)}
 // In Playwright: navigate to cart and re-add via UI
 test('cart shows added item', async ({ page }) => {
   // Log in through the UI, again, in every test that needs a cart
-  await page.goto('https://peakandpack-ui.onrender.com/login');
+  await page.goto('/login');
   await page.locator('input[type="email"]').fill('test@peakandpack.com');
   await page.locator('input[type="password"]').fill('password123');
   await page.getByRole('button', { name: /log in/i }).click();
   // Repeat the UI add-to-cart flow just to set up state
   await page.getByRole('button', { name: /add to cart/i }).first().click();
   await page.waitForResponse(r => r.url().includes('/api/cart'));
-  await page.goto('https://peakandpack-ui.onrender.com/cart');
+  await page.goto('/cart');
   await expect(page.getByText('Trekking Poles (Pair)')).toBeVisible();
 });
 </code></pre>
@@ -224,7 +243,7 @@ test('cart page reflects API-seeded item', async ({ page, request }) => {
   }, [token, JSON.stringify(user)]);
 
   // Test via UI: this is what we're actually verifying
-  await page.goto('https://peakandpack-ui.onrender.com/cart');
+  await page.goto('/cart');
   // Check by name, not by counting rows: everyone shares this demo account,
   // so its cart may already hold other items
   await expect(page.getByText('Trekking Poles (Pair)')).toBeVisible();
@@ -237,7 +256,99 @@ test('cart page reflects API-seeded item', async ({ page, request }) => {
     <p><strong>Two logins, not one.</strong> The <code>request</code> fixture's login proves who the API call is acting as. <code>page.addInitScript</code> is a separate step that makes the browser believe it's logged in too, since PeakAndPack's UI checks <code>localStorage</code> (<code>token</code> and <code>user</code>), not a cookie. Skip it and the cart seeds correctly on the server, but the UI shows "you need to log in" instead of the item you just added.</p>
   </div>
 
-  <h2 id="request-context">2. Playwright request context</h2>
+  <h2 id="api-basics">2. API basics for testers</h2>
+  <p>An <strong>API</strong> is how the page talks to the server. When you press "Add to cart", the page sends a request to the API and the API answers. Testing the API directly means sending those requests yourself, with no page. A few ideas cover almost everything.</p>
+  <p><strong>The parts of an address.</strong> Take <code>https://peakandpackshopdemo.onrender.com/api/search?q=tent</code>:</p>
+  <ul>
+    <li><strong>Base URL:</strong> <code>https://peakandpackshopdemo.onrender.com</code>, the host the API lives on.</li>
+    <li><strong>Endpoint:</strong> <code>/api/search</code>, the particular thing you are asking for.</li>
+    <li><strong>Query parameters:</strong> <code>?q=tent</code>, extra details after the question mark, written as <code>name=value</code> and joined with <code>&amp;</code>.</li>
+  </ul>
+  <p><strong>The kind of request</strong> is its <strong>method</strong>. Four cover most work, often called CRUD (create, read, update, delete):</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Method</th><th>Means</th><th>On PeakAndPack</th></tr></thead>
+      <tbody>
+        <tr><td><code>GET</code></td><td>Read something</td><td><code>GET /api/products</code>, <code>GET /api/cart</code></td></tr>
+        <tr><td><code>POST</code></td><td>Create something, or send data</td><td><code>POST /api/cart</code> (add an item), <code>POST /api/auth/register</code></td></tr>
+        <tr><td><code>PUT</code> / <code>PATCH</code></td><td>Change something that exists</td><td>The shop's routes don't use these</td></tr>
+        <tr><td><code>DELETE</code></td><td>Remove something</td><td><code>DELETE /api/cart/1</code> (remove product 1 from the cart)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><strong>Headers</strong> are extra information sent with a request or a reply. The one you will use most is <code>Authorization: Bearer &lt;token&gt;</code>, which says who you are. PeakAndPack gives you a token when you log in, and the cart and order routes want it.</p>
+  <p><strong>Status codes</strong> are the server's one-number answer. The first digit tells you the story:</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Code</th><th>Meaning</th><th>Where you meet it on PeakAndPack</th></tr></thead>
+      <tbody>
+        <tr><td><code>200</code>, <code>201</code></td><td>Success, and "created"</td><td>Adding to the cart (200), registering (201)</td></tr>
+        <tr><td><code>400</code></td><td>The request was wrong</td><td>Registering without an email or password</td></tr>
+        <tr><td><code>401</code></td><td>Not logged in</td><td>The cart with no token</td></tr>
+        <tr><td><code>403</code></td><td>Logged in, but not allowed (or the token was rejected)</td><td>The admin API with a customer's token</td></tr>
+        <tr><td><code>404</code></td><td>Not found</td><td><code>/api/products/999999</code></td></tr>
+        <tr><td><code>409</code></td><td>Conflict</td><td>Registering an email that already exists</td></tr>
+        <tr><td><code>5xx</code></td><td>The server broke</td><td>Section 7 forces one with a mock</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><strong>Three kinds of test</strong> use the same tools, and it helps to know which one you are writing:</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Kind</th><th>What is real</th><th>Use it for</th><th>In this phase</th></tr></thead>
+      <tbody>
+        <tr><td>End to end</td><td>The page and the API</td><td>The whole journey, as a user lives it</td><td>The hybrid tests in section 1</td></tr>
+        <tr><td>Mocked</td><td>The page. The API's answer is made up</td><td>Errors and extreme data that are hard to produce for real</td><td>Sections 6 to 8</td></tr>
+        <tr><td>API only</td><td>The API. There is no page</td><td>Fast checks of rules and responses</td><td>Sections 4 and 5</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Put the API's address in one place, and here is a first API-only test with a query parameter:</p>
+<pre><code>// tests/api-helpers.ts (or the top of your spec file): the API's address, written once
+const API = 'https://peakandpackshopdemo.onrender.com';</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>const API = '...'</code> gives the API's address a name, so the tests below write <code>${API}/api/search</code> instead of the full address each time. It is the part of the address before the endpoint, called the <strong>base URL</strong>.</li>
+        <li>PeakAndPack's pages and its API live on two different hosts (Phase 3). The <code>baseURL</code> in your config points at the pages, so API tests need their own constant.</li>
+      </ul>
+    </div>
+  </details>
+<pre><code>test('GET /api/search sends the search word as a query parameter', async ({ request }) =&gt; {
+  const res = await request.get(`${API}/api/search`, { params: { q: 'tent' } });
+  expect(res.status()).toBe(200);
+  expect(res.url()).toContain('/api/search?q=tent');       // Playwright built the ?q=tent part
+
+  const body = await res.json();
+  expect(body.query).toBe('tent');
+  expect(body.results.map((p: { name: string }) =&gt; p.name)).toContain('4-Season Tent');
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <p><strong>In plain words:</strong> send a search with a query parameter, and check what comes back.</p>
+      <ul>
+        <li><code>request.get(url, { params: { q: 'tent' } })</code> sends a GET request. <code>params</code> is the list of <strong>query parameters</strong>, the <code>?q=tent</code> at the end of an address. Playwright builds that part for you and takes care of special characters, so you never join the pieces by hand.</li>
+        <li><code>res.url()</code> is the address that was actually requested. Checking it contains <code>/api/search?q=tent</code> confirms the parameter was sent as intended.</li>
+        <li><code>await res.json()</code> reads the reply's body as data. PeakAndPack answers a search with <code>{ results: [...], query: 'tent' }</code>, so the test checks <code>body.query</code> and the list of names in <code>body.results</code>.</li>
+        <li><code>(p: { name: string }) =&gt; p.name</code> turns each product into just its name. The part after the colon is a TypeScript label saying each product has a <code>name</code> that is text.</li>
+        <li><code>toContain('4-Season Tent')</code> checks the list of names includes that one, without caring about the rest of the catalogue.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2 id="explore-api">3. Explore the API before you code it</h2>
+  <p>Writing a test against an API you have not looked at is guessing. Look first. The browser already shows you everything the page sends:</p>
+  <ol>
+    <li>Open the store, and open the browser's DevTools (F12) on the <strong>Network</strong> tab.</li>
+    <li>Filter to <strong>Fetch/XHR</strong>, so only API calls show.</li>
+    <li>Do the thing on the page: log in, then press "Add to cart" on a product.</li>
+    <li>Click the request that appears (<code>cart</code>). Its <strong>Headers</strong> tab shows the address, the method, the status and the <code>Authorization</code> header. The <strong>Payload</strong> tab shows what was sent (<code>product_id</code> and <code>quantity</code>), and the <strong>Response</strong> tab shows the reply (<code>message</code> and the <code>cart</code> list).</li>
+  </ol>
+  <p>That is the whole contract for one call. Anything that takes several calls, such as <em>log in, take the token, add to the cart</em>, is best tried by hand in order before you code it: an API tool such as Postman, or your own browser's console, lets you send each call yourself and see each answer. When the sequence works by hand, turning it into a test is a matter of copying the same three pieces: the address, the headers and the body.</p>
+
+  <h2 id="request-context">4. Playwright request context</h2>
   <p>The <code>request</code> fixture gives you a full HTTP client inside a Playwright test, separate from any browser page. How it handles login depends on which one you use:</p>
   <ul>
     <li><strong><code>request</code></strong> starts logged out, unless you configure <code>storageState</code> for the test.</li>
@@ -260,8 +371,19 @@ test('GET /api/products returns a list', async ({ request }) => {
   expect(body.products[0].price).toBeGreaterThanOrEqual(0);
 });
 </code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>async ({ request }) =&gt; ...</code> asks Playwright for the <code>request</code> tool, an HTTP client with no browser.</li>
+        <li><code>request.get(url)</code> sends a GET request. <code>res.status()</code> is the number the server replied with, and <code>200</code> means success.</li>
+        <li><code>await res.json()</code> reads the body as data. <code>Array.isArray(body.products)</code> checks that <code>products</code> is a list, and <code>.length &gt; 0</code> that it has something in it.</li>
+        <li><code>typeof body.products[0].id</code> asks what kind of value it is: <code>'number'</code> or <code>'string'</code>. The checks look at the <strong>shape</strong> of the data, not exact values, so they survive catalogue changes.</li>
+      </ul>
+    </div>
+  </details>
 
-  <h2 id="contract-tests">3. API contract tests for PeakAndPack</h2>
+  <h2 id="contract-tests">5. API contract tests for PeakAndPack</h2>
   <p>Test the key endpoints: status codes, response shapes, and the negative cases. Assert types and ranges rather than exact values so tests don't break when catalog data changes.</p>
   <pre><code>test('POST /api/cart adds item', async ({ request }) => {
   // Log in through the API to get a token for the authenticated call
@@ -294,11 +416,119 @@ test('GET /api/products/:id with invalid id returns 404', async ({ request }) =>
   expect(res.status()).toBe(404);
 });
 </code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li>The first test logs in through the API to get a token, then sends it as <code>headers: { Authorization: `Bearer ${token}` }</code>. <strong>Headers</strong> are extra information sent along with a request, and <code>Authorization</code> is the one that carries who you are.</li>
+        <li><code>data: { product_id: 1, quantity: 2 }</code> is the request's body. <code>expect(res.status()).toBe(200)</code> checks the call worked, and the next lines check the shape of the reply.</li>
+        <li>The second test sends the same call with no token. The server answers <code>401</code> ("who are you?"), which is the correct refusal. Negative cases like this are part of the contract.</li>
+        <li>The third asks for a product that cannot exist. <code>404</code> ("not found") is the right answer, rather than a crash (500) or an empty success (200).</li>
+      </ul>
+    </div>
+  </details>
+  <p><strong>Always check the status first.</strong> Before you read anything from a reply, check its status. A reply from a failed call often has no <code>token</code> or <code>id</code> in it, so the next line quietly gets <code>undefined</code> and the test fails somewhere else:</p>
+<pre><code>test('registering the same email twice: check the status first', async ({ request }) =&gt; {
+  const email = `dup-${Date.now()}@peakandpack.test`;
+  const account = { name: 'QA Tester', email, password: 'password123' };
 
-  <h2 id="network-mocking">4. Network mocking: test error states without breaking the server</h2>
-  <p>Some scenarios are hard to reproduce against a real server: a 500 error, a timeout, a payment failure. Playwright's <code>route</code> API intercepts requests and returns whatever response you define:</p>
+  const first = await request.post(`${API}/api/auth/register`, { data: account });
+  expect(first.status()).toBe(201);                         // created
+
+  const second = await request.post(`${API}/api/auth/register`, { data: account });
+  expect(second.status()).toBe(409);                        // conflict: already registered
+  expect((await second.json()).error).toBe('Email already registered');
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>request.post(url, { data: account })</code> sends a POST with a body. <code>data</code> is the body, which Playwright sends as JSON.</li>
+        <li><code>expect(first.status()).toBe(201)</code> comes <strong>before</strong> anything is read from the reply. <code>201</code> means "created".</li>
+        <li>The second call repeats the same email. The server refuses with <code>409</code>, "conflict", and a message in the body: <code>Email already registered</code>.</li>
+        <li><strong>Why check the status first, always.</strong> Skip it and read <code>token</code> from a failed reply, and you get <code>undefined</code>. The test then fails several steps later, with a 401 on some other call, and you spend time looking in the wrong place. A one-line status check makes the failure appear on the call that actually failed, with the right number.</li>
+      </ul>
+    </div>
+  </details>
+
+    <h2 id="mocking">6. Mocking: replacing the server's answer</h2>
+  <p>Sometimes you want the page to receive data you choose, not what the server holds. <strong>Mocking</strong> catches a request on its way out and answers it yourself. Keep the fake data in a JSON file next to your tests:</p>
+<pre><code>{
+  "products": [
+    { "id": 101, "name": "Mock Ice Axe", "description": "A made-up product for a test", "price": 89.5,
+      "category": "Mountaineering", "stock": 7, "image_url": "https://picsum.photos/seed/axe/300/200", "sort_order": 0 },
+    { "id": 102, "name": "Mock Gaiters", "description": "Another made-up product", "price": 29,
+      "category": "Trekking", "stock": 0, "image_url": "https://picsum.photos/seed/gaiters/300/200", "sort_order": 1 }
+  ]
+}</code></pre>
+<pre><code>import { test, expect } from '@playwright/test';
+import twoProducts from './mock-data/two-products.json';
+
+test('the product list shows whatever the API returns', async ({ page }) =&gt; {
+  // Set up the mock BEFORE the page makes the request. The pattern's ** matches
+  // the API on any host, so it keeps working if the address changes.
+  await page.route('**/api/products', (route) =&gt; route.fulfill({ json: twoProducts }));
+
+  await page.goto('/');
+
+  // Assert the mocked data arrived, or the test proves nothing
+  await expect(page.getByTestId('result-count')).toHaveText('Showing 2 of 2 products');
+  await expect(page.getByTestId('product-card')).toHaveCount(2);
+  await expect(page.getByTestId('product-card').first()).toContainText('Mock Ice Axe');
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <p><strong>In plain words:</strong> replace the product list's data with two made-up products, and check the page shows them.</p>
+      <ul>
+        <li><code>import twoProducts from './mock-data/two-products.json'</code> loads the JSON file above as a ready-made object. The file lives next to your tests. Keeping the fake data in its own file keeps the test short, and lets several tests share it.</li>
+        <li><code>page.route('**/api/products', handler)</code> catches requests whose address matches the pattern. <code>**</code> means "anything", so the pattern matches the API's address on any host. That is the <strong>wildcard</strong> trick: the same test works against any environment.</li>
+        <li><code>route.fulfill({ json: twoProducts })</code> answers the request itself, with that data, so the real server is never called. <code>json</code> sets the body and the JSON content type for you.</li>
+        <li><strong>The order matters:</strong> the route must be set up <em>before</em> the page makes the request, so it comes before <code>page.goto('/')</code>. A route registered after the request has already gone out catches nothing.</li>
+        <li>The assertions check the page shows two products, named as in the file. <strong>Always assert the mocked result.</strong> Without these lines, a test could end before the mock was applied, pass, and prove nothing.</li>
+      </ul>
+    </div>
+  </details>
+
+  <p>Mocks have one trap that is worth seeing, because it makes tests look green when they prove nothing:</p>
+<pre><code>test('a negative assertion can pass before the data arrives', async ({ page }) =&gt; {
+  await page.goto('/');
+  await expect(page.getByTestId('product-card').first()).toBeVisible();
+
+  // A search that answers after 800 ms with one product
+  await page.route('**/api/search*', async (route) =&gt; {
+    await new Promise((resolve) =&gt; setTimeout(resolve, 800));
+    await route.fulfill({ json: { results: twoProducts.products.slice(0, 1), query: 'axe' } });
+  });
+  const searchDone = page.waitForResponse((res) =&gt; res.url().includes('/api/search'));
+  await page.getByPlaceholder('Search gear...').fill('axe');
+  await page.getByRole('button', { name: 'Search', exact: true }).click();
+
+  // WRONG on purpose: the axe is about to appear. This still passes, because the page
+  // shows "Loading gear..." right now and no axe is on it yet.
+  await expect(page.getByText('Mock Ice Axe')).toHaveCount(0);
+
+  // The fix: wait for the response, then assert. Now the real result decides.
+  await searchDone;
+  await expect(page.getByText('Mock Ice Axe')).toHaveCount(1);
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li>The route answers a search after 800 milliseconds, using <code>setTimeout</code> inside a promise (as in Phase 4). That slow answer stands in for a real server taking a moment.</li>
+        <li><code>toHaveCount(0)</code> asserts that nothing on the page matches. Here it is a wrong claim on purpose: the axe is about to appear.</li>
+        <li>It passes anyway. When you press Search, PeakAndPack replaces the whole list with "Loading gear..." until the answer arrives. For a moment the page has no axe, so <code>toHaveCount(0)</code> is true and Playwright stops checking.</li>
+        <li><code>await searchDone</code> waits for the response, as in Phase 3. After it, the page has the axe, and <code>toHaveCount(1)</code> checks the real result.</li>
+        <li><strong>The lesson:</strong> an assertion that something is <em>absent</em> can pass because the data has not arrived yet. Before a negative assertion, wait for the thing that fills the page (the response, or a positive assertion on something that arrives with it).</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2 id="network-mocking">7. Forcing an error state</h2>
+  <p>Some scenarios are hard to reproduce against a real server: a 500 error, a timeout, a payment failure. The same <code>route</code> API from section 6 can return whatever response you define, such as a failure:</p>
   <pre><code>test('checkout shows an error when the API returns 500', async ({ page, request }) => {
-  // Log in and put an item in the cart through the API (section 2's pattern)
+  // Log in and put an item in the cart through the API (section 1's pattern)
   const loginRes = await request.post('https://peakandpackshopdemo.onrender.com/api/auth/login', {
     data: { email: 'test@peakandpack.com', password: 'password123' }
   });
@@ -324,7 +554,7 @@ test('GET /api/products/:id with invalid id returns 404', async ({ request }) =>
     });
   });
 
-  await page.goto('https://peakandpack-ui.onrender.com/checkout');
+  await page.goto('/checkout');
   // Pay in the checkout's payment iframe first: "Confirm Order" stays
   // disabled until it's done (Phase 8 explains iframes)
   const payment = page.frameLocator('iframe[title="Payment form"]');
@@ -340,9 +570,121 @@ test('GET /api/products/:id with invalid id returns 404', async ({ request }) =>
   await expect(page.getByRole('heading', { name: /order placed/i })).toHaveCount(0);
 });
 </code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li>The first part is setup through the API, as in section 1: a token, an item in the cart, and the browser signed in.</li>
+        <li><code>page.route(url, handler)</code> catches the checkout request. The pattern is the <strong>full</strong> API address because a path starting with <code>/</code> would be joined to <code>baseURL</code>, the page host, and never match the API host.</li>
+        <li><code>route.fulfill({ status: 500, contentType: 'application/json', body: ... })</code> answers with a 500 error and a body you wrote. <code>JSON.stringify</code> turns an object into text. The real server is never called, so no order is created.</li>
+        <li>The test then pays in the iframe and presses Confirm Order, and checks the page shows the server's message and no "Order placed" heading. <code>toHaveCount(0)</code> is safe here because the error text, a positive assertion, came first.</li>
+      </ul>
+    </div>
+  </details>
   <p><strong>Look at what the customer actually sees.</strong> The page shows the server's raw message, "Internal server error", in red. It isn't a crash, but it doesn't tell the customer whether they were charged or what to do next. A mock like this is how you find that out without breaking the real server, and it's worth raising as a finding.</p>
 
-  <h2 id="js-vs-python">5. JS vs Python: when Python request context is better</h2>
+  <h2 id="modify-response">8. Editing a real response</h2>
+  <p>A full mock replaces everything. Often you want the real data with one thing changed: a huge price, a very long name, a sold-out product. <code>route.fetch()</code> lets the request go to the real server, and you edit the answer before the page sees it:</p>
+<pre><code>test('a real response with one product edited to an extreme', async ({ page }) =&gt; {
+  await page.route('**/api/products', async (route) =&gt; {
+    const response = await route.fetch();                 // let the real request go to the server
+    const json = await response.json();                   // read the real answer
+    json.products[0].name = 'Extra Long Name '.repeat(20); // change one thing
+    json.products[0].price = 1000000;
+    await route.fulfill({ response, json });              // hand the edited answer to the page
+  });
+
+  await page.goto('/');
+
+  const first = page.getByTestId('product-card').first();
+  await expect(first).toContainText('Extra Long Name');
+  await expect(first).toContainText('$1000000.00');
+  await expect(first.getByRole('button', { name: 'Add to cart' })).toBeVisible();
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <p><strong>In plain words:</strong> take the real product list, change one product to an extreme, and see how the page copes.</p>
+      <ul>
+        <li><code>route.fetch()</code> sends the real request to the real server and hands you the answer. Unlike <code>fulfill</code> on its own, the page still gets real data.</li>
+        <li><code>await response.json()</code> reads that answer into an object. <code>json.products[0].name = ...</code> and <code>.price = 1000000</code> change two fields of the first product. <code>'Extra Long Name '.repeat(20)</code> makes a 320-character name.</li>
+        <li><code>route.fulfill({ response, json })</code> answers the page with the original response (its status and headers) but with the edited data.</li>
+        <li>The test then checks the edited product shows on the page: the long name, the price as <code>$1000000.00</code>, and a visible "Add to cart" button, so the card has not broken the layout.</li>
+        <li><strong>Why this is useful:</strong> you get an extreme value (a huge price, a very long name) without needing the server to hold one. It is still mostly an integration test, because the rest of the data is real.</li>
+      </ul>
+    </div>
+  </details>
+  <p>The card grows very tall when the name is that long, because the name wraps over many lines. That is worth a look: it is the kind of thing you would only find by pushing a value to an extreme.</p>
+
+  <h2 id="read-response">9. Reading the page's own responses</h2>
+  <p>Sometimes the page makes a request whose answer you need: a new record's id, or a message the page does not show. <code>waitForResponse</code> from Phase 3 hands you that response, and you can read its body. Add the Phase 5 helpers, then:</p>
+<pre><code>import { expect, APIRequestContext, Page } from '@playwright/test';
+
+// The two helpers from Phase 5 (API is the constant from section 2)
+async function createUser(request: APIRequestContext) {
+  const email = `test-${Date.now()}-${Math.floor(Math.random() * 1000)}@peakandpack.test`;
+  const res = await request.post(`${API}/api/auth/register`, {
+    data: { name: 'QA Tester', email, password: 'password123' },
+  });
+  expect(res.status()).toBe(201);
+  const { token, user } = await res.json();
+  return { email, token, user };
+}
+
+async function signBrowserIn(page: Page, token: string, user: object) {
+  await page.addInitScript(([t, u]) =&gt; {
+    localStorage.setItem('token', t);
+    localStorage.setItem('user', u);
+  }, [token, JSON.stringify(user)]);
+}</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li>These are the helpers from Phase 5, repeated so this file is self-contained. <code>createUser</code> registers a new user through the API, and <code>signBrowserIn</code> logs the browser in as them.</li>
+        <li>They use the <code>API</code> constant from section 2.</li>
+      </ul>
+    </div>
+  </details>
+<pre><code>test("read what the page's own request returned, then clean up", async ({ page, request }) =&gt; {
+  const { token, user } = await createUser(request);
+  const auth = { Authorization: `Bearer ${token}` };
+  await signBrowserIn(page, token, user);
+  await page.goto('/');
+
+  // Listen right before the action that triggers the request
+  const added = page.waitForResponse(
+    (res) =&gt; res.url().includes('/api/cart') &amp;&amp; res.request().method() === 'POST'
+  );
+  await page.getByRole('button', { name: /add to cart/i }).first().click();
+  const body = await (await added).json();                // the data the server sent the page
+
+  expect(body.message).toBe('Added to cart');
+  const addedId = body.cart[0].product_id;                // something only the response knows
+
+  try {
+    await page.goto('/cart');
+    await expect(page.getByText(body.cart[0].name)).toBeVisible();
+  } finally {
+    // Clean up through the API, using the id we just read
+    const removed = await request.delete(`${API}/api/cart/${addedId}`, { headers: auth });
+    expect(removed.status()).toBe(200);
+  }
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>createUser</code>, <code>auth</code> and <code>signBrowserIn</code> set up a new user, as in Phase 5. The <code>auth</code> object is the Authorization header, kept for the cleanup at the end.</li>
+        <li><code>page.waitForResponse(...)</code> is set up right before the click, as in Phase 3. The difference now is what we do with it: <code>(await added).json()</code> waits for the response and reads its body.</li>
+        <li><code>body.cart[0].product_id</code> is the id of the product the server added. The test never typed that id: it read it from the page's own request. That is useful when the page creates something you cannot predict, such as a new record's id.</li>
+        <li><code>expect(body.message).toBe('Added to cart')</code> checks what the server said, not just the page.</li>
+        <li>The <code>try</code> and <code>finally</code> from Phase 5 make sure the cleanup runs even if the check fails. <code>request.delete(.../api/cart/${addedId})</code> uses the id we read to remove exactly what the page added.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2 id="js-vs-python">10. JS vs Python: when Python request context is better</h2>
   <p>For pure API testing in a Playwright suite, JavaScript and Python are equivalent. The Python version becomes the better choice when you need to combine Playwright API calls with Python-native eval tooling: for example, running a RAGAs evaluation on the API response in the same script. That pattern is covered in the AI and LLM Testing series.</p>
   <div class="table-wrap">
     <table>
@@ -362,21 +704,26 @@ test('GET /api/products/:id with invalid id returns 404', async ({ request }) =>
       <li><strong>Asserting exact values instead of types.</strong> <code>expect(body.products[0].price).toBe(19.99)</code> breaks the moment the price changes. Assert <code>typeof price === 'number'</code> and <code>price >= 0</code> instead.</li>
       <li><strong>Assuming storageState covers the request fixture.</strong> API requests only send cookies from <code>storageState</code>, never its localStorage. PeakAndPack's session lives in <code>localStorage</code>, so the <code>request</code> fixture (and <code>page.request</code>) still needs the Bearer token passed as a header on every authenticated call, no matter what's configured in <code>use.storageState</code>.</li>
       <li><strong>Using route mocks in tests that also test real API behaviour.</strong> A mocked route replaces the real response. Don't mix mocking and real API assertions in the same test: you'll get confused about what you're actually testing.</li>
+      <li><strong>Not checking the status before reading the reply.</strong> A failed call has no token or id to read, so the next line gets <code>undefined</code> and the test fails far from the cause. Check the status first.</li>
+      <li><strong>Mocking without asserting the mocked result.</strong> The test can end before the mock applies and still pass. Assert what the mock should have produced.</li>
+      <li><strong>Setting the route up after the request.</strong> A mock only catches requests made after it exists. Register it before the action or the navigation.</li>
+      <li><strong>Trusting a negative assertion too early.</strong> "Not on the page" can be true because the page is still loading. Wait for the data first (section 6).</li>
       <li><strong>Not checking response body on error codes.</strong> A 400 that returns an HTML error page instead of a JSON error is a real bug. Check both the status and the content type.</li>
     </ul>
   </div>
 
-  <h2 id="deliverables">6. Deliverables</h2>
+  <h2 id="deliverables">11. Deliverables</h2>
   <ul>
     <li><code>tests/api.spec.ts</code>: API contract tests for PeakAndPack endpoints</li>
     <li><code>tests/hybrid.spec.ts</code>: API seed + UI assert pattern</li>
-    <li><code>tests/mocking.spec.ts</code>: network mock examples for error states</li>
+    <li><code>tests/mocking.spec.ts</code>: network mock examples for error states, with <code>mock-data/two-products.json</code></li>
+    <li><code>tests/api-workout.spec.ts</code>: the assignment's part 2 checks</li>
   </ul>
 
   <hr style="border:none;border-top:1px solid var(--border);margin:0">
 
   <div class="assignment">
-    <div class="a-label">Assignment</div>
+    <div class="a-label">Assignment, part 1</div>
     <h3>Write a hybrid test for the checkout flow</h3>
     <p>Using the API + UI pattern: log in via the API, seed a cart with two different products via <code>request.post('https://peakandpackshopdemo.onrender.com/api/cart')</code> with the token attached, sync the browser to that session with <code>page.addInitScript</code>, then navigate to <code>/cart</code> and assert both products appear. Then click checkout and assert the order confirmation heading is visible. The only UI interaction should be the button clicks and the final assertion: all data setup goes through the API.</p>
 
@@ -402,7 +749,7 @@ test('GET /api/products/:id with invalid id returns 404', async ({ request }) =>
   }, [token, JSON.stringify(user)]);
 
   // Assert: navigate to cart and verify both appear
-  await page.goto('https://peakandpack-ui.onrender.com/cart');
+  await page.goto('/cart');
   // Both products are listed (by name: the shared account may hold other items too)
   await expect(page.getByText('Trekking Poles (Pair)')).toBeVisible();
   await expect(page.getByText('4-Season Tent')).toBeVisible();
@@ -428,6 +775,90 @@ test('GET /api/products/:id with invalid id returns 404', async ({ request }) =>
 });
 </code></pre>
       <p><strong>Why this pattern is faster than pure UI testing.</strong> Seeding via API takes milliseconds. The equivalent UI flow (navigate to each product, click add to cart, wait for the API response twice) takes seconds. Over a full suite, this difference compounds. The test is also more reliable because the setup is deterministic: the API either succeeds with 200 or fails clearly, with no timing ambiguity.</p>
+    </div>
+  </details>
+  </div>
+
+  <div class="assignment" style="margin-top:2rem">
+    <div class="a-label">Assignment, part 2</div>
+    <h3>The API workout</h3>
+    <p>Use everything from sections 2 to 9. Put the made-up products in <code>mock-data/two-products.json</code> first.</p>
+    <ol>
+      <li><strong>Query parameters.</strong> Search for "stove" with <code>params</code>, check the status first, and assert the query and the one result.</li>
+      <li><strong>Status first.</strong> Register an email twice. Assert 201, then 409.</li>
+      <li><strong>Mock from a file.</strong> Replace the product list with the two made-up products and assert the count line and the second card's name.</li>
+      <li><strong>A negative assertion, done safely.</strong> Mock a slow search that returns only the gaiters. Assert the axe is absent, but only after the search has answered.</li>
+      <li><strong>Edit a real response.</strong> Show the second real product as sold out (<code>stock: 0</code>) and check its card says so, while the first card does not.</li>
+      <li><strong>Read the page's own response.</strong> Press "Add to cart" on the page, read the product id out of the response, and use it to clean up through the API.</li>
+    </ol>
+
+  <details class="solution">
+    <summary>Show solution: try it yourself first</summary>
+    <div class="solution-body">
+      <h3>Steps 1 to 5</h3>
+<pre><code>import { test, expect } from '@playwright/test';
+import twoProducts from './mock-data/two-products.json';
+
+// 1. Query parameters, with the status checked first
+test('workout 1: search with a query parameter', async ({ request }) =&gt; {
+  const res = await request.get(`${API}/api/search`, { params: { q: 'stove' } });
+  expect(res.status()).toBe(200);
+  const body = await res.json();
+  expect(body.query).toBe('stove');
+  expect(body.results.map((p: { name: string }) =&gt; p.name)).toEqual(['Camping Stove']);
+});
+
+// 2. A conflict is a status, not a surprise
+test('workout 2: a duplicate email is refused', async ({ request }) =&gt; {
+  const account = { name: 'QA Tester', email: `workout-${Date.now()}@peakandpack.test`, password: 'password123' };
+  expect((await request.post(`${API}/api/auth/register`, { data: account })).status()).toBe(201);
+  const again = await request.post(`${API}/api/auth/register`, { data: account });
+  expect(again.status()).toBe(409);
+});
+
+// 3. Mock the whole list from a JSON file
+test('workout 3: the list shows the mocked products', async ({ page }) =&gt; {
+  await page.route('**/api/products', (route) =&gt; route.fulfill({ json: twoProducts }));
+  await page.goto('/');
+  await expect(page.getByTestId('result-count')).toHaveText('Showing 2 of 2 products');
+  await expect(page.getByTestId('product-card').nth(1)).toContainText('Mock Gaiters');
+});
+
+// 4. Negative assertion: wait for the response, then assert
+test('workout 4: the axe is absent only after the search answers', async ({ page }) =&gt; {
+  await page.goto('/');
+  await expect(page.getByTestId('product-card').first()).toBeVisible();
+  await page.route('**/api/search*', async (route) =&gt; {
+    await new Promise((resolve) =&gt; setTimeout(resolve, 500));
+    await route.fulfill({ json: { results: twoProducts.products.slice(1), query: 'gaiters' } });
+  });
+  const searchDone = page.waitForResponse((res) =&gt; res.url().includes('/api/search'));
+  await page.getByPlaceholder('Search gear...').fill('gaiters');
+  await page.getByRole('button', { name: 'Search', exact: true }).click();
+  await searchDone;
+  await expect(page.getByText('Mock Ice Axe')).toHaveCount(0);   // now it means something
+  await expect(page.getByText('Mock Gaiters')).toHaveCount(1);
+});
+
+// 5. Edit a real response: make the second product sold out
+test('workout 5: one real product shown as out of stock', async ({ page }) =&gt; {
+  let name = '';
+  await page.route('**/api/products', async (route) =&gt; {
+    const response = await route.fetch();
+    const json = await response.json();
+    name = json.products[1].name;
+    json.products[1].stock = 0;
+    await route.fulfill({ response, json });
+  });
+  await page.goto('/');
+  await expect(page.getByTestId('product-card').first()).toBeVisible();
+  const card = page.getByTestId('product-card').filter({ hasText: name });
+  await expect(card).toContainText('Stock: 0');
+  await expect(page.getByTestId('product-card').first()).not.toContainText('Stock: 0');
+});</code></pre>
+      <p>Step 6 is the test in section 9. Reading the page's own response is the same code with your own product.</p>
+      <p><strong>Step 4.</strong> Compare it with section 6's wrong assertion: the same check is meaningful once the response has arrived. The wait is not decoration, it is what lets "absent" mean something.</p>
+      <p><strong>Step 5.</strong> The product's name is read from the real response, then used to find its card, so the test does not depend on where the card sits in the list.</p>
     </div>
   </details>
   </div>
