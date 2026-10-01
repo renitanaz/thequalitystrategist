@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>(function(){try{if(localStorage.getItem('pw-theme')==='light'){document.documentElement.setAttribute('data-theme','light');}}catch(e){}})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Objects and Arrays | JavaScript for Testers</title>
+<meta name="description" content="JavaScript for Testers, part 2: objects and arrays, the shapes test data and API responses come in, explained for testers.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+  --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+  --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.09); --purple-border:rgba(167,139,250,0.35);
+  --green:#4ade80; --green-bg:rgba(74,222,128,0.07); --green-border:rgba(74,222,128,0.25);
+  --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07); --blue-border:rgba(96,165,250,0.25);
+  --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07); --amber-border:rgba(251,191,36,0.25);
+  --red:#f87171; --red-bg:rgba(248,113,113,0.07); --red-border:rgba(248,113,113,0.25);
+  --ff-serif:'DM Serif Display',Georgia,serif; --ff-sans:'DM Sans',system-ui,sans-serif;
+}
+:root[data-theme="light"]{
+  --bg:#FAFCF5; --bg2:#F5F7F0; --bg3:#EDF0E4; --border:#DEE3D3;
+  --text:#1A1F14; --text-2:#3D4235; --text-3:#6B7060;
+  --purple:#7A4A9A; --purple-bg:#EDE0F5; --purple-border:rgba(122,74,154,0.35);
+  --green:#1A7A3A; --green-bg:#D8F0E0; --green-border:rgba(26,122,58,0.25);
+  --blue:#2A5C9A; --blue-bg:#DDE8F5; --blue-border:rgba(42,92,154,0.25);
+  --amber:#9A6E1A; --amber-bg:#F5EDD6; --amber-border:rgba(154,110,26,0.25);
+  --red:#B0402E; --red-bg:#F5DEDA; --red-border:rgba(176,64,46,0.25);
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body{background:var(--bg);color:var(--text);font-family:var(--ff-sans);font-size:16px;line-height:1.8;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.skip-link{position:absolute;top:-100%;left:1rem;background:var(--green);color:#000;padding:.5rem 1rem;border-radius:0 0 6px 6px;font-size:.85rem;font-weight:500;text-decoration:none;z-index:999}
+.skip-link:focus{top:0}
+nav.site-nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:56px}
+.nav-logo{font-family:var(--ff-serif);font-size:1rem;color:var(--text);text-decoration:none}
+.theme-toggle{background:var(--bg3);border:1px solid var(--border);color:var(--text-2);border-radius:8px;padding:.4rem .8rem;font-size:.78rem;cursor:pointer;font-family:var(--ff-sans);}
+.theme-toggle:hover{border-color:var(--purple);color:var(--text)}
+main{max-width:900px;margin:0 auto;padding:3rem 1.5rem 5rem}
+.breadcrumb{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.breadcrumb a{color:var(--text-3);text-decoration:none}
+.breadcrumb a:hover{color:var(--purple)}
+.series-tag{font-size:.7rem;padding:4px 11px;border-radius:99px;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);letter-spacing:.04em;text-transform:uppercase;font-weight:500;display:inline-block;margin-bottom:1.25rem}
+h1{font-family:var(--ff-serif);font-size:clamp(1.85rem,4vw,2.6rem);line-height:1.2;color:var(--purple);margin-bottom:.75rem;font-weight:400}
+.subtitle{font-family:var(--ff-serif);font-size:1.1rem;font-style:italic;color:var(--text-3);margin-bottom:1.5rem;max-width:680px}
+.meta-row{display:flex;align-items:center;gap:1.25rem;font-size:.82rem;color:var(--text-3);flex-wrap:wrap;margin-bottom:1.6rem;padding-bottom:1.3rem;border-bottom:1px solid var(--border)}
+h2{font-family:var(--ff-serif);font-size:1.5rem;font-weight:400;color:var(--text);margin:3.5rem 0 1.1rem;padding-top:1rem;border-top:1px solid var(--border)}
+h3{font-size:1rem;font-weight:500;color:var(--text);margin:1.75rem 0 .5rem}
+p{color:var(--text-2);margin-bottom:1.25rem;font-weight:300}
+strong{color:var(--text);font-weight:500}
+ul,ol{padding-left:1.4rem;margin-bottom:1.25rem;color:var(--text-2);font-weight:300}
+li{margin-bottom:.45rem}
+.goal-list{list-style:none;padding-left:1.4rem}
+.goal-list li{position:relative}
+.goal-list li::before{content:"";position:absolute;left:-1.3rem;top:.48em;width:.85rem;height:.85rem;border:1.5px solid var(--purple);border-radius:3px}
+code{background:var(--bg3);padding:1px 6px;border-radius:3px;font-size:.85em;color:var(--text-2);font-family:monospace}
+pre{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:1rem 1.1rem;font-family:monospace;font-size:.82rem;color:var(--text-2);line-height:1.65;overflow-x:auto;margin:1rem 0}
+pre code{background:none;padding:0;color:inherit}
+.callout{display:block;background:var(--blue-bg);border-left:3px solid var(--blue);border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.95rem;color:var(--text);line-height:1.7}
+.callout p{margin-bottom:0;color:var(--text-2)}
+.callout.amber{background:var(--amber-bg);border-color:var(--amber)}
+.callout.green{background:var(--green-bg);border-color:var(--green)}
+.callout.red{background:var(--red-bg);border-color:var(--red)}
+.callout.blue{background:var(--blue-bg);border-color:var(--blue)}
+.callout.purple{background:var(--purple-bg);border-color:var(--purple)}
+.table-wrap{display:block;overflow-x:auto;margin:1.5rem 0;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+thead th{background:var(--bg2);padding:9px 13px;text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);font-weight:500;border-bottom:1px solid var(--border)}
+tbody td{padding:9px 13px;border-bottom:1px solid var(--border);color:var(--text-2);vertical-align:top;line-height:1.55;font-size:.85rem}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--bg2)}
+/* Phase progress strip */
+.phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem}
+.phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--text-3);background:var(--bg2);text-decoration:none}
+.phase-pip:hover{border-color:var(--purple);color:var(--text)}
+.phase-pip.active{background:var(--purple);color:#0d0d0d;border-color:transparent}
+.phase-pip.done{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+/* Before/After blocks */
+.ba-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0}
+.ba-block{border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+.ba-label{padding:.4rem .8rem;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.ba-block.before .ba-label{background:var(--red-bg);color:var(--red)}
+.ba-block.after .ba-label{background:var(--green-bg);color:var(--green)}
+.ba-block pre{margin:0;border-radius:0;border:none}
+/* Assignment / bonus blocks */
+.assignment{background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:12px;padding:1.2rem 1.4rem;margin:4.5rem 0 1rem}
+.assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem}
+.assignment h3{font-family:var(--ff-serif);color:var(--text);margin-top:.2rem;margin-bottom:.5rem;font-weight:400}
+.bonus{background:var(--purple-bg);border:1px solid var(--purple-border);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem}
+.bonus .b-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--purple);margin-bottom:.4rem}
+/* Collapsible solution */
+details.solution{margin:1rem 0 2rem;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+details.solution summary{padding:.9rem 1.2rem;cursor:pointer;font-weight:700;font-size:.92rem;background:var(--bg2);list-style:none;display:flex;align-items:center;gap:.5rem;color:var(--text)}
+details.solution summary::-webkit-details-marker{display:none}
+details.solution summary::before{content:"\25B6";font-size:.7rem;color:var(--text-3);transition:transform .2s}
+details.solution[open] summary::before{transform:rotate(90deg)}
+.solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border)}
+.solution-body p{font-size:.92rem}
+.series-nav{margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border)}
+.series-nav .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);font-weight:500;margin-bottom:.75rem;display:block}
+.nav-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.nav-blog{display:flex;align-items:center;gap:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.25rem;text-decoration:none;transition:border-color .2s,background .2s}
+.nav-blog:hover{border-color:var(--purple);background:var(--bg3)}
+.nav-blog-arrow{color:var(--text-3);font-size:1rem;flex-shrink:0}
+.nav-blog-title{font-size:.88rem;font-weight:500;color:var(--text)}
+.nav-blog-sub{font-size:.75rem;color:var(--text-3);margin-top:2px}
+footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.8rem;color:var(--text-3)}
+footer a{color:var(--text-3);text-decoration:none}
+footer a:hover{color:var(--purple)}
+@media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
+.blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
+.blog-tags .series-tag{margin-bottom:0}
+.tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+.term-shot{margin:1.2rem 0}
+.term-shot img{display:block;max-width:100%;height:auto;border:1px solid var(--border);border-radius:8px}
+.term-shot figcaption{font-size:.8rem;color:var(--text-3);margin-top:.5rem;line-height:1.5}
+/* Collapsible code explanations */
+details.explain{margin:.5rem 0 1.5rem;border:1px solid var(--purple-border);border-radius:10px;background:var(--purple-bg)}
+details.explain summary{padding:.6rem 1rem;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--purple);list-style:none;display:flex;align-items:center;gap:.5rem}
+details.explain summary::-webkit-details-marker{display:none}
+details.explain summary::before{content:"\25B6";font-size:.65rem;transition:transform .2s}
+details.explain[open] summary::before{transform:rotate(90deg)}
+.explain-body{padding:.1rem 1.2rem 1rem;font-size:.92rem;line-height:1.7}
+.explain-body p{margin:.7rem 0}
+.explain-body ul{margin:.3rem 0 .7rem 1.2rem;padding-left:0}
+.explain-body li{margin-bottom:.35rem}
+.explain-body pre{margin:.6rem 0}
+</style>
+<meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Playwright: Zero to Architect, by The Quality Strategist. A complete automation series: 16 phases in 4 stages, built against a real app, PeakAndPack.">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+/* Diagrams */
+.dg{margin:1.4rem 0;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1rem 1rem .8rem;overflow-x:auto}
+.dg svg{display:block;width:100%;height:auto;max-width:700px;margin:0 auto;min-width:480px}
+.dg figcaption{font-size:.8rem;color:var(--text-3);text-align:center;margin-top:.6rem;line-height:1.5}
+.dg-box{fill:var(--bg);stroke:var(--border);stroke-width:1.5}
+.dg-acc{stroke:var(--purple)}
+.dg-dash{stroke-dasharray:6 5}
+.dg-okb{stroke:var(--green)}
+.dg-badb{stroke:var(--red)}
+.dg-t{fill:var(--text);font:13px var(--ff-sans)}
+.dg-h{fill:var(--text);font:700 13px var(--ff-sans)}
+.dg-c{fill:var(--text);font:13px ui-monospace,Consolas,monospace}
+.dg-cs{fill:var(--text);font:11.5px ui-monospace,Consolas,monospace}
+.dg-big{fill:var(--text);font:700 20px ui-monospace,Consolas,monospace}
+.dg-m{fill:var(--text-3);font:12px var(--ff-sans)}
+.dg-ms{fill:var(--text-3);font:11px var(--ff-sans)}
+.dg-p{fill:var(--purple)}
+.dg-ok{fill:var(--green)}
+.dg-bad{fill:var(--red)}
+.dg-amb{fill:var(--amber)}
+.dg-line{stroke:var(--text-3);stroke-width:1.5;fill:none}
+.dg-head{fill:var(--text-3)}
+.dg-fill-p{fill:var(--purple-bg);stroke:var(--purple);stroke-width:1.5}
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a class="nav-logo" href="../../../index.html">The Quality Strategist</a>
+  <button class="theme-toggle" id="themeToggle" type="button">Light</button>
+</nav>
+
+<main id="main-content">
+
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="../../../blogs.html">Blogs</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <span>JavaScript for Testers</span>
+    <span aria-hidden="true">&rsaquo;</span>
+    <span aria-current="page">Part 2</span>
+  </nav>
+
+  <div class="blog-tags" aria-label="Blog categories" role="group">
+    <span class="series-tag">JavaScript for Testers &middot; Part 2</span>
+    <span class="tag">Objects</span>
+    <span class="tag">Arrays</span>
+    <span class="tag">Test Data</span>
+  </div>
+
+  <h1>Objects and Arrays</h1>
+  <p class="subtitle">The two shapes almost all test data comes in, from a single product to a whole API response, explained for testers.</p>
+
+  <div class="meta-row">
+    <span><strong>Series: JavaScript for Testers</strong></span>
+    <span>Demo: PeakAndPack</span>
+    <span>By: RN</span>
+  </div>
+
+  <div class="callout amber">
+    <p><strong>Draft.</strong> Structured from study notes; every example still needs running during review.</p>
+  </div>
+
+  <h2>Goal</h2>
+  <ul class="goal-list">
+    <li>Group related values in an object, and read or change them</li>
+    <li>Keep an ordered list in an array, and pick items by position</li>
+    <li>Read data nested several levels deep, the way API responses arrive</li>
+    <li>Recognise the error you'll see most often when data isn't where you expected</li>
+  </ul>
+
+  <h2 id="why">1. Why testers need this</h2>
+  <p>Part 1 stored one value per variable. Real test data comes in groups: a product has a name, a price and a stock level; a cart holds a list of products. When a test asks PeakAndPack's API for its products, the answer arrives as a list of product records. Objects hold the records, arrays hold the lists, and reading them confidently is most of the work in API tests.</p>
+
+  <h2 id="objects">2. Objects: related values under one name</h2>
+  <p>An object groups values that belong together, each with a label:</p>
+  <figure class="dg">
+    <svg viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="An object called product drawn as a two-column table. Keys on the left: name, price, inStock. Values on the right: 'Headlamp', 24.99, true. product.price points to the price row and gives 24.99."><defs><marker id="b1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-head" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<text class="dg-c dg-p" x="200" y="26" text-anchor="middle">const product</text>
+<rect class="dg-box dg-acc" x="60" y="38" width="280" height="135" rx="10"/>
+<text class="dg-ms" x="80" y="58">KEY</text><text class="dg-ms" x="190" y="58">VALUE</text>
+<path class="dg-line" d="M170,44 v124" style="stroke:var(--border)"/>
+<path class="dg-line" d="M66,66 h268" style="stroke:var(--border)"/>
+<text class="dg-c" x="80" y="90">name</text><text class="dg-cs" x="190" y="90">'Headlamp'</text>
+<text class="dg-c" x="80" y="125">price</text><text class="dg-cs" x="190" y="125">24.99</text>
+<text class="dg-c" x="80" y="160">inStock</text><text class="dg-cs" x="190" y="160">true</text>
+<text class="dg-c dg-p" x="420" y="110">product.price</text>
+<path class="dg-line" d="M415,121 C385,121 375,121 346,121" marker-end="url(#b1)"/>
+<text class="dg-t" x="420" y="135">gives 24.99</text></svg>
+    <figcaption>An object pairs each key (the label) with a value. Read one with <code>product.key</code>.</figcaption>
+  </figure>
+  <pre><code>// One product, as a single object
+const product = {
+  name: 'Headlamp',
+  price: 24.99,
+  inStock: true,
+};
+
+console.log(product);      // { name: 'Headlamp', price: 24.99, inStock: true }
+console.log(product.name); // Headlamp</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><strong>Curly braces</strong> <code>{ }</code> make an object.</li>
+        <li>Inside, each entry is a <strong>key</strong> and a <strong>value</strong>: <code>name: 'Headlamp'</code>. The key is the label, the value is what it holds, and a colon separates them. Entries are separated by commas.</li>
+        <li>Values can be any type from Part 1: text, numbers, true/false, even other objects and lists.</li>
+        <li>The comma after the last entry is optional. Many people leave it in, so adding another line later doesn't need a comma fix.</li>
+        <li><code>product.name</code> reads one value: "the <code>name</code> of <code>product</code>". In VS Code, typing <code>product.</code> pops up a list of the keys it has.</li>
+        <li><code>console.log(product)</code> prints the whole object, which is handy for seeing exactly what a test received.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2 id="read-change">3. Reading and changing values</h2>
+  <p>There are two ways to read a value. Dot notation is the everyday one; square brackets cover the cases dots can't:</p>
+  <pre><code>// Dot notation: the usual way
+console.log(product.price);    // 24.99
+
+// Bracket notation: the key goes in quotes
+console.log(product['price']); // 24.99
+
+// Brackets are needed when the key has a dash or a space...
+const headers = { 'Content-Type': 'application/json' };
+console.log(headers['Content-Type']); // application/json
+
+// ...or when the key's name is stored in a variable
+const field = 'price';
+console.log(product[field]); // 24.99</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>product.price</code> and <code>product['price']</code> read the same value.</li>
+        <li><code>'Content-Type'</code> contains a dash, so it can't be written after a dot: <code>headers.Content-Type</code> would be read as "<code>headers.Content</code> minus <code>Type</code>". Keys like this need quotes when you create them, and brackets when you read them. API headers are a common place to meet them.</li>
+        <li><code>product[field]</code>, without quotes, uses the variable: <code>field</code> holds <code>'price'</code>, so it reads <code>product.price</code>. That lets one piece of code read whichever field it's told to.</li>
+      </ul>
+    </div>
+  </details>
+  <p>Changing a value, or adding a new one, uses the same notation with <code>=</code>:</p>
+  <pre><code>product.price = 19.99;         // change an existing value
+product.category = 'Trekking'; // add a new key
+console.log(product);
+// { name: 'Headlamp', price: 19.99, inStock: true, category: 'Trekking' }
+
+console.log(product.rating);   // undefined: there's no such key</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li>Assigning to a key that exists replaces its value; assigning to a new key adds it.</li>
+        <li>Reading a key that doesn't exist doesn't stop the test. It quietly gives <code>undefined</code> (Part 1). A misspelled key, such as <code>product.prise</code>, does the same, which is why <code>undefined</code> is a hint to check spelling.</li>
+      </ul>
+    </div>
+  </details>
+  <div class="callout blue">
+    <p><strong>But <code>product</code> is a <code>const</code>. How can it change?</strong> <code>const</code> fixes which object the name points to, not what's inside it. You can change the contents freely; what you can't do is point the name at a different object: <code>product = {}</code> fails with <code>TypeError: Assignment to constant variable.</code> That's why test code declares objects with <code>const</code> and still updates them.</p>
+  </div>
+
+  <h2 id="arrays">4. Arrays: ordered lists</h2>
+  <p>An array is a list of values in a fixed order. There are no labels; each item is found by its position, called its <strong>index</strong>:</p>
+  <figure class="dg">
+    <svg viewBox="0 0 680 170" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="An array of three slots numbered from 0: index 0 Camping, index 1 Trekking, index 2 Mountaineering. length is 3, so the last item is at length minus 1, which is 2. A dashed fourth slot at index 3 holds undefined."><defs><marker id="b2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-head" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<text class="dg-c dg-p" x="85" y="34" text-anchor="middle">[0]</text><text class="dg-c dg-p" x="225" y="34" text-anchor="middle">[1]</text><text class="dg-c dg-p" x="365" y="34" text-anchor="middle">[2]</text><text class="dg-c" x="525" y="34" text-anchor="middle" style="fill:var(--text-3)">[3]</text>
+<rect class="dg-box dg-acc" x="20" y="45" width="130" height="50" rx="8"/><text class="dg-cs" x="85" y="75" text-anchor="middle">'Camping'</text>
+<rect class="dg-box dg-acc" x="160" y="45" width="130" height="50" rx="8"/><text class="dg-cs" x="225" y="75" text-anchor="middle">'Trekking'</text>
+<rect class="dg-box dg-acc" x="300" y="45" width="130" height="50" rx="8"/><text class="dg-cs" x="365" y="75" text-anchor="middle">'Mountaineering'</text>
+<rect class="dg-box dg-dash" x="460" y="45" width="130" height="50" rx="8"/><text class="dg-cs" x="525" y="75" text-anchor="middle" style="fill:var(--text-3)">undefined</text>
+<path class="dg-line" d="M22,112 v8 h406 v-8" /><text class="dg-t" x="225" y="140" text-anchor="middle">length is 3</text>
+<text class="dg-ms" x="365" y="160" text-anchor="middle">last item: [length - 1]</text>
+<text class="dg-ms" x="525" y="118" text-anchor="middle">past the end</text></svg>
+    <figcaption>Positions start at 0, so three items sit at 0, 1 and 2. Reading past the end gives <code>undefined</code>, not an error.</figcaption>
+  </figure>
+  <pre><code>const categories = ['Camping', 'Trekking', 'Mountaineering'];
+
+console.log(categories[0]);       // Camping: the FIRST item is index 0
+console.log(categories.length);   // 3: how many items
+console.log(categories[categories.length - 1]); // Mountaineering: the last item
+console.log(categories[3]);       // undefined: there is no fourth item
+
+categories[1] = 'Travel';         // replace the second item
+console.log(categories);          // [ 'Camping', 'Travel', 'Mountaineering' ]</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><strong>Square brackets</strong> <code>[ ]</code> make an array, with items separated by commas.</li>
+        <li><strong>Counting starts at 0.</strong> The first item is <code>[0]</code>, the second <code>[1]</code>, the third <code>[2]</code>. It's the most common beginner slip, called an "off-by-one" error.</li>
+        <li><code>.length</code> is how many items the array has. Because counting starts at 0, the last item is always at <code>length - 1</code>.</li>
+        <li>Asking for a position past the end gives <code>undefined</code>, not an error.</li>
+        <li><code>categories[1] = 'Travel'</code> replaces an item. As with objects, <code>const</code> doesn't stop you changing what's inside.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2 id="nested">5. Objects and arrays together: real test data</h2>
+  <p>Objects can hold arrays, and arrays can hold objects. Real data, like PeakAndPack's product list from its API, is built this way. You read it by chaining the steps, left to right:</p>
+  <pre><code>// An object holding an array
+const tent = { name: '4-Season Tent', price: 320, tags: ['2-person', 'snow-rated'] };
+console.log(tent.tags[0]); // 2-person
+
+// An array of objects: the shape of an API response
+const body = {
+  products: [
+    { id: 1, name: 'Trekking Poles (Pair)', price: 34.99 },
+    { id: 2, name: '4-Season Tent', price: 320 },
+  ],
+};
+
+console.log(body.products.length);  // 2
+console.log(body.products[1].name); // 4-Season Tent
+console.log(`${body.products[0].name} costs $${body.products[0].price}`);
+// Trekking Poles (Pair) costs $34.99</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>tent.tags[0]</code>: first <code>tent.tags</code> (the array), then <code>[0]</code> (its first item).</li>
+        <li><code>body.products[1].name</code> reads in three steps: <code>body.products</code> is the list, <code>[1]</code> is its second product, <code>.name</code> is that product's name.</li>
+        <li>This is the shape PeakAndPack's API answers in. The Playwright series' Phase 7 reads its responses exactly like this, for example checking that <code>body.products[0].price</code> is a number.</li>
+        <li>The last line mixes Part 1's template literals with nested reads.</li>
+      </ul>
+    </div>
+  </details>
+  <figure class="dg">
+    <svg viewBox="0 0 700 190" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Reading nested data step by step. Top row: body, then .products, then [1], then .name, giving '4-Season Tent'. Bottom row: body, then .products, then [5], which is undefined, so .name fails with Cannot read properties of undefined (reading 'name')."><defs><marker id="b3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-head" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="dg-box" x="20" y="25" width="70" height="38" rx="8"/><text class="dg-c" x="55" y="49" text-anchor="middle">body</text>
+<path class="dg-line" d="M90,44 h22" marker-end="url(#b3)"/>
+<rect class="dg-box" x="116" y="25" width="100" height="38" rx="8"/><text class="dg-c" x="166" y="49" text-anchor="middle">.products</text>
+<path class="dg-line" d="M216,44 h22" marker-end="url(#b3)"/>
+<rect class="dg-box" x="242" y="25" width="50" height="38" rx="8"/><text class="dg-c" x="267" y="49" text-anchor="middle">[1]</text>
+<path class="dg-line" d="M292,44 h22" marker-end="url(#b3)"/>
+<rect class="dg-box" x="318" y="25" width="70" height="38" rx="8"/><text class="dg-c" x="353" y="49" text-anchor="middle">.name</text>
+<path class="dg-line" d="M388,44 h22" marker-end="url(#b3)"/>
+<rect class="dg-box dg-okb" x="414" y="25" width="170" height="38" rx="8"/><text class="dg-cs dg-ok" x="499" y="49" text-anchor="middle">'4-Season Tent'</text>
+<rect class="dg-box" x="20" y="105" width="70" height="38" rx="8"/><text class="dg-c" x="55" y="129" text-anchor="middle">body</text>
+<path class="dg-line" d="M90,124 h22" marker-end="url(#b3)"/>
+<rect class="dg-box" x="116" y="105" width="100" height="38" rx="8"/><text class="dg-c" x="166" y="129" text-anchor="middle">.products</text>
+<path class="dg-line" d="M216,124 h22" marker-end="url(#b3)"/>
+<rect class="dg-box" x="242" y="105" width="50" height="38" rx="8"/><text class="dg-c" x="267" y="129" text-anchor="middle">[5]</text>
+<path class="dg-line" d="M292,124 h22" marker-end="url(#b3)"/>
+<rect class="dg-box dg-badb dg-dash" x="318" y="105" width="100" height="38" rx="8"/><text class="dg-cs dg-bad" x="368" y="129" text-anchor="middle">undefined</text>
+<path class="dg-line" d="M418,124 h22" marker-end="url(#b3)"/>
+<text class="dg-c dg-bad" x="446" y="129">.name &#10007;</text>
+<text class="dg-ms dg-bad" x="368" y="168" text-anchor="middle">Cannot read properties of undefined (reading 'name')</text></svg>
+    <figcaption>Each step reads from the result of the step before. When one step gives <code>undefined</code>, the next one fails.</figcaption>
+  </figure>
+  <div class="callout red">
+    <p><strong>The error you'll see most: <code>Cannot read properties of undefined (reading 'name')</code>.</strong> It means one step of the chain didn't exist. <code>body.products[5].name</code> fails this way: there's no product at index 5, so <code>body.products[5]</code> is <code>undefined</code>, and you can't read <code>.name</code> of nothing. Read the message right to left: it tried to read <code>name</code>, so check the step before it.</p>
+  </div>
+
+  <div class="callout red">
+    <p><strong>Common mistakes.</strong></p>
+    <ul style="margin:.5rem 0 0 1.2rem;">
+      <li><strong>Starting to count at 1.</strong> The first item is <code>[0]</code>, and the last is <code>[length - 1]</code>.</li>
+      <li><strong>Misspelling a key.</strong> No error, just <code>undefined</code>, often several lines before the test actually fails.</li>
+      <li><strong>Forgetting the quotes in brackets.</strong> <code>product['price']</code> reads the key "price"; <code>product[price]</code> looks for a variable called <code>price</code>.</li>
+      <li><strong>Assuming a list has items.</strong> Before reading <code>[0]</code> of a list from an API, check its <code>length</code>, or the test fails with "Cannot read properties of undefined".</li>
+    </ul>
+  </div>
+
+  <hr style="border:none;border-top:1px solid var(--border);margin:0">
+
+  <div class="assignment">
+    <div class="a-label">Exercise</div>
+    <h3>Read an order like a test would</h3>
+    <p>Create <code>exercise-objects.js</code>, write code for each step, and run it with <code>node exercise-objects.js</code>:</p>
+    <ol style="margin:.5rem 0 0 1.2rem;">
+      <li>Create a <code>customer</code> object with a first name, a last name and an email, and print the whole object.</li>
+      <li>Print the first name with dot notation, and the last name with bracket notation.</li>
+      <li>Change the email, add a new key <code>isMember</code> set to <code>true</code>, and print the object again.</li>
+      <li>Print <code>customer.phone</code>. What do you get, and why isn't it an error?</li>
+      <li>Create <code>const field = 'email'</code> and use it to print the customer's email.</li>
+      <li>Create a <code>headers</code> object with the key <code>'Content-Type'</code> and print its value.</li>
+      <li>Create an array <code>cartItems</code> with three product names. Print the first item, the number of items, and the last item using <code>length</code>.</li>
+      <li>Replace the second item with <code>Headlamp</code>, then print <code>cartItems[3]</code>. What do you get?</li>
+      <li>Create an <code>order</code> object with an <code>id</code> and an <code>items</code> array of two products, each an object with a <code>name</code> and a <code>price</code>.</li>
+      <li>From <code>order</code>, print: how many items there are, the second item's name, and a sentence with a template literal: <code>Order 7: Headlamp costs $24.99</code>.</li>
+      <li>Break it on purpose, one at a time, and read each error: point <code>customer</code> at a new object (<code>customer = {}</code>); read <code>order.items[5].name</code>.</li>
+    </ol>
+
+  <details class="solution">
+    <summary>Show solution: try it yourself first</summary>
+    <div class="solution-body">
+      <pre><code>// 1. An object: related values under one name
+const customer = { firstName: 'Ana', lastName: 'Silva', email: 'ana@example.com' };
+console.log(customer);
+
+// 2. Dot and bracket notation
+console.log(customer.firstName, customer['lastName']);
+
+// 3. Change a value, add a key: allowed even though customer is a const
+customer.email = 'ana.silva@example.com';
+customer.isMember = true;
+console.log(customer);
+
+// 4. A key that doesn't exist
+console.log(customer.phone);
+
+// 5. A key name held in a variable: brackets, no quotes
+const field = 'email';
+console.log(customer[field]);
+
+// 6. A key with a dash needs quotes, and brackets to read it
+const headers = { 'Content-Type': 'application/json' };
+console.log(headers['Content-Type']);
+
+// 7. An array: counting starts at 0
+const cartItems = ['Trekking Poles (Pair)', 'Camping Stove', 'GPS Watch'];
+console.log(cartItems[0], cartItems.length, cartItems[cartItems.length - 1]);
+
+// 8. Replace an item, and read past the end
+cartItems[1] = 'Headlamp';
+console.log(cartItems, cartItems[3]);
+
+// 9. An object holding an array of objects
+const order = {
+  id: 7,
+  items: [
+    { name: 'Trekking Poles (Pair)', price: 34.99 },
+    { name: 'Headlamp', price: 24.99 },
+  ],
+};
+
+// 10. Reading nested data
+console.log(order.items.length, order.items[1].name);
+console.log(`Order ${order.id}: ${order.items[1].name} costs $${order.items[1].price}`);
+
+// 11. Break it on purpose (remove the // from one line at a time)
+// customer = {};                 // TypeError: Assignment to constant variable.
+// console.log(order.items[5].name); // TypeError: Cannot read properties of undefined (reading 'name')</code></pre>
+      <p><strong>Output:</strong></p>
+      <pre><code>{ firstName: 'Ana', lastName: 'Silva', email: 'ana@example.com' }
+Ana Silva
+{
+  firstName: 'Ana',
+  lastName: 'Silva',
+  email: 'ana.silva@example.com',
+  isMember: true
+}
+undefined
+ana.silva@example.com
+application/json
+Trekking Poles (Pair) 3 GPS Watch
+[ 'Trekking Poles (Pair)', 'Headlamp', 'GPS Watch' ] undefined
+2 Headlamp
+Order 7: Headlamp costs $24.99</code></pre>
+      <p><strong>What to notice.</strong></p>
+      <ul>
+        <li><strong>Step 3 worked on a <code>const</code></strong>, because changing what's inside an object isn't the same as pointing the name at a new one. Step 11's <code>customer = {}</code> is the part <code>const</code> blocks.</li>
+        <li><strong>Steps 4 and 8 give <code>undefined</code>, not errors.</strong> A missing key or a position past the end quietly gives nothing, which can surface as a confusing failure much later in a test.</li>
+        <li><strong>Long objects print over several lines.</strong> Node switches to one key per line once an object gets too wide.</li>
+        <li><strong>Step 11's second error</strong> is the one you'll see most in tests. Read it right to left: it tried to read <code>name</code> from something that was <code>undefined</code>, so the step before, <code>order.items[5]</code>, doesn't exist.</li>
+      </ul>
+    </div>
+  </details>
+  </div>
+
+  <p style="margin:2rem 0 0"><strong>All parts at a glance:</strong> <a href="js-for-testers-in-a-view.html" style="color:var(--purple)">the mind map and cheat sheet</a>.</p>
+
+  <div class="series-nav">
+    <span class="label">Navigate JavaScript for Testers</span>
+    <div class="nav-pair">
+      <a href="js-for-testers-1-variables-and-strings.html" class="nav-blog"><span class="nav-blog-arrow" aria-hidden="true">&larr;</span><div><div class="nav-blog-title">Part 1: Variables, Data Types and Strings</div><div class="nav-blog-sub">Storing values, and building text from them</div></div></a>
+      <a href="js-for-testers-3-comparisons-and-conditions.html" class="nav-blog"><div><div class="nav-blog-title">Part 3: Comparisons and Conditions</div><div class="nav-blog-sub">How every check in a test really works</div></div><span class="nav-blog-arrow" aria-hidden="true">&rarr;</span></a>
+    </div>
+  </div>
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--text-3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; JavaScript for Testers</p>
+  </div>
+</main>
+
+<footer>
+  <p><a href="../../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+<script>
+(function(){
+  var btn = document.getElementById('themeToggle');
+  function isLight(){ return document.documentElement.getAttribute('data-theme') === 'light'; }
+  function sync(){ btn.textContent = isLight() ? 'Dark' : 'Light'; }
+  sync();
+  btn.addEventListener('click', function(){
+    if(isLight()){
+      document.documentElement.removeAttribute('data-theme');
+      try{ localStorage.setItem('pw-theme','dark'); }catch(e){}
+    } else {
+      document.documentElement.setAttribute('data-theme','light');
+      try{ localStorage.setItem('pw-theme','light'); }catch(e){}
+    }
+    sync();
+  });
+})();
+</script>
+
+</body>
+</html>

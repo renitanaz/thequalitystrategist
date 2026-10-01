@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>(function(){try{if(localStorage.getItem('pw-theme')==='light'){document.documentElement.setAttribute('data-theme','light');}}catch(e){}})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Async and Await | JavaScript for Testers</title>
+<meta name="description" content="JavaScript for Testers, part 6: promises, async and await, the waiting behind every Playwright step, and the missing await that causes so many flaky tests.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+  --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+  --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.09); --purple-border:rgba(167,139,250,0.35);
+  --green:#4ade80; --green-bg:rgba(74,222,128,0.07); --green-border:rgba(74,222,128,0.25);
+  --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07); --blue-border:rgba(96,165,250,0.25);
+  --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07); --amber-border:rgba(251,191,36,0.25);
+  --red:#f87171; --red-bg:rgba(248,113,113,0.07); --red-border:rgba(248,113,113,0.25);
+  --ff-serif:'DM Serif Display',Georgia,serif; --ff-sans:'DM Sans',system-ui,sans-serif;
+}
+:root[data-theme="light"]{
+  --bg:#FAFCF5; --bg2:#F5F7F0; --bg3:#EDF0E4; --border:#DEE3D3;
+  --text:#1A1F14; --text-2:#3D4235; --text-3:#6B7060;
+  --purple:#7A4A9A; --purple-bg:#EDE0F5; --purple-border:rgba(122,74,154,0.35);
+  --green:#1A7A3A; --green-bg:#D8F0E0; --green-border:rgba(26,122,58,0.25);
+  --blue:#2A5C9A; --blue-bg:#DDE8F5; --blue-border:rgba(42,92,154,0.25);
+  --amber:#9A6E1A; --amber-bg:#F5EDD6; --amber-border:rgba(154,110,26,0.25);
+  --red:#B0402E; --red-bg:#F5DEDA; --red-border:rgba(176,64,46,0.25);
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body{background:var(--bg);color:var(--text);font-family:var(--ff-sans);font-size:16px;line-height:1.8;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.skip-link{position:absolute;top:-100%;left:1rem;background:var(--green);color:#000;padding:.5rem 1rem;border-radius:0 0 6px 6px;font-size:.85rem;font-weight:500;text-decoration:none;z-index:999}
+.skip-link:focus{top:0}
+nav.site-nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:56px}
+.nav-logo{font-family:var(--ff-serif);font-size:1rem;color:var(--text);text-decoration:none}
+.theme-toggle{background:var(--bg3);border:1px solid var(--border);color:var(--text-2);border-radius:8px;padding:.4rem .8rem;font-size:.78rem;cursor:pointer;font-family:var(--ff-sans);}
+.theme-toggle:hover{border-color:var(--purple);color:var(--text)}
+main{max-width:900px;margin:0 auto;padding:3rem 1.5rem 5rem}
+.breadcrumb{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.breadcrumb a{color:var(--text-3);text-decoration:none}
+.breadcrumb a:hover{color:var(--purple)}
+.series-tag{font-size:.7rem;padding:4px 11px;border-radius:99px;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);letter-spacing:.04em;text-transform:uppercase;font-weight:500;display:inline-block;margin-bottom:1.25rem}
+h1{font-family:var(--ff-serif);font-size:clamp(1.85rem,4vw,2.6rem);line-height:1.2;color:var(--purple);margin-bottom:.75rem;font-weight:400}
+.subtitle{font-family:var(--ff-serif);font-size:1.1rem;font-style:italic;color:var(--text-3);margin-bottom:1.5rem;max-width:680px}
+.meta-row{display:flex;align-items:center;gap:1.25rem;font-size:.82rem;color:var(--text-3);flex-wrap:wrap;margin-bottom:1.6rem;padding-bottom:1.3rem;border-bottom:1px solid var(--border)}
+h2{font-family:var(--ff-serif);font-size:1.5rem;font-weight:400;color:var(--text);margin:3.5rem 0 1.1rem;padding-top:1rem;border-top:1px solid var(--border)}
+h3{font-size:1rem;font-weight:500;color:var(--text);margin:1.75rem 0 .5rem}
+p{color:var(--text-2);margin-bottom:1.25rem;font-weight:300}
+strong{color:var(--text);font-weight:500}
+ul,ol{padding-left:1.4rem;margin-bottom:1.25rem;color:var(--text-2);font-weight:300}
+li{margin-bottom:.45rem}
+.goal-list{list-style:none;padding-left:1.4rem}
+.goal-list li{position:relative}
+.goal-list li::before{content:"";position:absolute;left:-1.3rem;top:.48em;width:.85rem;height:.85rem;border:1.5px solid var(--purple);border-radius:3px}
+code{background:var(--bg3);padding:1px 6px;border-radius:3px;font-size:.85em;color:var(--text-2);font-family:monospace}
+pre{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:1rem 1.1rem;font-family:monospace;font-size:.82rem;color:var(--text-2);line-height:1.65;overflow-x:auto;margin:1rem 0}
+pre code{background:none;padding:0;color:inherit}
+.callout{display:block;background:var(--blue-bg);border-left:3px solid var(--blue);border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.95rem;color:var(--text);line-height:1.7}
+.callout p{margin-bottom:0;color:var(--text-2)}
+.callout.amber{background:var(--amber-bg);border-color:var(--amber)}
+.callout.green{background:var(--green-bg);border-color:var(--green)}
+.callout.red{background:var(--red-bg);border-color:var(--red)}
+.callout.blue{background:var(--blue-bg);border-color:var(--blue)}
+.callout.purple{background:var(--purple-bg);border-color:var(--purple)}
+.table-wrap{display:block;overflow-x:auto;margin:1.5rem 0;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+thead th{background:var(--bg2);padding:9px 13px;text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);font-weight:500;border-bottom:1px solid var(--border)}
+tbody td{padding:9px 13px;border-bottom:1px solid var(--border);color:var(--text-2);vertical-align:top;line-height:1.55;font-size:.85rem}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--bg2)}
+/* Phase progress strip */
+.phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem}
+.phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--text-3);background:var(--bg2);text-decoration:none}
+.phase-pip:hover{border-color:var(--purple);color:var(--text)}
+.phase-pip.active{background:var(--purple);color:#0d0d0d;border-color:transparent}
+.phase-pip.done{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+/* Before/After blocks */
+.ba-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0}
+.ba-block{border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+.ba-label{padding:.4rem .8rem;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.ba-block.before .ba-label{background:var(--red-bg);color:var(--red)}
+.ba-block.after .ba-label{background:var(--green-bg);color:var(--green)}
+.ba-block pre{margin:0;border-radius:0;border:none}
+/* Assignment / bonus blocks */
+.assignment{background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:12px;padding:1.2rem 1.4rem;margin:4.5rem 0 1rem}
+.assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem}
+.assignment h3{font-family:var(--ff-serif);color:var(--text);margin-top:.2rem;margin-bottom:.5rem;font-weight:400}
+.bonus{background:var(--purple-bg);border:1px solid var(--purple-border);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem}
+.bonus .b-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--purple);margin-bottom:.4rem}
+/* Collapsible solution */
+details.solution{margin:1rem 0 2rem;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+details.solution summary{padding:.9rem 1.2rem;cursor:pointer;font-weight:700;font-size:.92rem;background:var(--bg2);list-style:none;display:flex;align-items:center;gap:.5rem;color:var(--text)}
+details.solution summary::-webkit-details-marker{display:none}
+details.solution summary::before{content:"\25B6";font-size:.7rem;color:var(--text-3);transition:transform .2s}
+details.solution[open] summary::before{transform:rotate(90deg)}
+.solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border)}
+.solution-body p{font-size:.92rem}
+.series-nav{margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border)}
+.series-nav .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);font-weight:500;margin-bottom:.75rem;display:block}
+.nav-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.nav-blog{display:flex;align-items:center;gap:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.25rem;text-decoration:none;transition:border-color .2s,background .2s}
+.nav-blog:hover{border-color:var(--purple);background:var(--bg3)}
+.nav-blog-arrow{color:var(--text-3);font-size:1rem;flex-shrink:0}
+.nav-blog-title{font-size:.88rem;font-weight:500;color:var(--text)}
+.nav-blog-sub{font-size:.75rem;color:var(--text-3);margin-top:2px}
+footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.8rem;color:var(--text-3)}
+footer a{color:var(--text-3);text-decoration:none}
+footer a:hover{color:var(--purple)}
+@media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
+.blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
+.blog-tags .series-tag{margin-bottom:0}
+.tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+.term-shot{margin:1.2rem 0}
+.term-shot img{display:block;max-width:100%;height:auto;border:1px solid var(--border);border-radius:8px}
+.term-shot figcaption{font-size:.8rem;color:var(--text-3);margin-top:.5rem;line-height:1.5}
+/* Collapsible code explanations */
+details.explain{margin:.5rem 0 1.5rem;border:1px solid var(--purple-border);border-radius:10px;background:var(--purple-bg)}
+details.explain summary{padding:.6rem 1rem;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--purple);list-style:none;display:flex;align-items:center;gap:.5rem}
+details.explain summary::-webkit-details-marker{display:none}
+details.explain summary::before{content:"\25B6";font-size:.65rem;transition:transform .2s}
+details.explain[open] summary::before{transform:rotate(90deg)}
+.explain-body{padding:.1rem 1.2rem 1rem;font-size:.92rem;line-height:1.7}
+.explain-body p{margin:.7rem 0}
+.explain-body ul{margin:.3rem 0 .7rem 1.2rem;padding-left:0}
+.explain-body li{margin-bottom:.35rem}
+.explain-body pre{margin:.6rem 0}
+</style>
+<meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Playwright: Zero to Architect, by The Quality Strategist. A complete automation series: 16 phases in 4 stages, built against a real app, PeakAndPack.">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+/* Diagrams */
+.dg{margin:1.4rem 0;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1rem 1rem .8rem;overflow-x:auto}
+.dg svg{display:block;width:100%;height:auto;max-width:700px;margin:0 auto;min-width:480px}
+.dg figcaption{font-size:.8rem;color:var(--text-3);text-align:center;margin-top:.6rem;line-height:1.5}
+.dg-box{fill:var(--bg);stroke:var(--border);stroke-width:1.5}
+.dg-acc{stroke:var(--purple)}
+.dg-dash{stroke-dasharray:6 5}
+.dg-okb{stroke:var(--green)}
+.dg-badb{stroke:var(--red)}
+.dg-t{fill:var(--text);font:13px var(--ff-sans)}
+.dg-h{fill:var(--text);font:700 13px var(--ff-sans)}
+.dg-c{fill:var(--text);font:13px ui-monospace,Consolas,monospace}
+.dg-cs{fill:var(--text);font:11.5px ui-monospace,Consolas,monospace}
+.dg-big{fill:var(--text);font:700 20px ui-monospace,Consolas,monospace}
+.dg-m{fill:var(--text-3);font:12px var(--ff-sans)}
+.dg-ms{fill:var(--text-3);font:11px var(--ff-sans)}
+.dg-p{fill:var(--purple)}
+.dg-ok{fill:var(--green)}
+.dg-bad{fill:var(--red)}
+.dg-amb{fill:var(--amber)}
+.dg-line{stroke:var(--text-3);stroke-width:1.5;fill:none}
+.dg-head{fill:var(--text-3)}
+.dg-fill-p{fill:var(--purple-bg);stroke:var(--purple);stroke-width:1.5}
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a class="nav-logo" href="../../../index.html">The Quality Strategist</a>
+  <button class="theme-toggle" id="themeToggle" type="button">Light</button>
+</nav>
+
+<main id="main-content">
+
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="../../../blogs.html">Blogs</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <span>JavaScript for Testers</span>
+    <span aria-hidden="true">&rsaquo;</span>
+    <span aria-current="page">Part 6</span>
+  </nav>
+
+  <div class="blog-tags" aria-label="Blog categories" role="group">
+    <span class="series-tag">JavaScript for Testers &middot; Part 6</span>
+    <span class="tag">Promises</span>
+    <span class="tag">Async and Await</span>
+    <span class="tag">Waiting</span>
+  </div>
+
+  <h1>Async and Await</h1>
+  <p class="subtitle">Every Playwright step waits for something: a page to load, a button to appear, a server to answer. This is how JavaScript waits, and why one missing word causes so many flaky tests.</p>
+
+  <div class="meta-row">
+    <span><strong>Series: JavaScript for Testers</strong></span>
+    <span>Demo: PeakAndPack</span>
+    <span>By: RN</span>
+  </div>
+
+  <div class="callout amber">
+    <p><strong>Draft.</strong> Structured from study notes; every example still needs running during review.</p>
+  </div>
+
+  <h2>Goal</h2>
+  <ul class="goal-list">
+    <li>Explain why JavaScript doesn't wait on its own</li>
+    <li>Read a promise's states: pending, fulfilled, rejected</li>
+    <li>Use <code>await</code> and <code>async</code>, and handle a wait that fails</li>
+    <li>Tell which Playwright lines need <code>await</code>, and spot a missing one</li>
+  </ul>
+
+  <h2 id="why">1. Why testers need this</h2>
+  <p>A browser is slow compared with your code. Clicking, loading a page, waiting for a server's answer: each takes milliseconds to seconds. Every Playwright test is full of <code>await</code> for this reason, and a missing <code>await</code> is one of the most common causes of a test that fails at random, or passes without checking anything. The examples on this page use small stand-in functions that take time on purpose, so you can watch the waiting happen without a browser.</p>
+  <p>The examples use <code>await</code> at the top level of a file, which needs <code>"type": "module"</code> in your practice folder's <code>package.json</code> (Part 4, section 9). Inside a Playwright test, you never need to think about it.</p>
+
+  <h2 id="not-waiting">2. JavaScript doesn't wait on its own</h2>
+  <p>When something takes time, JavaScript starts it, then carries straight on with the next line. It doesn't stop and wait unless you tell it to:</p>
+  <pre><code>console.log('1. Click "Place order"');
+
+// Pretend the server takes half a second to confirm
+setTimeout(() =&gt; console.log('3. Server confirms the order'), 500);
+
+console.log('2. Check for "Order placed!"');</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>setTimeout(work, 500)</code> means "do this work in 500 milliseconds". It's a stand-in for anything slow.</li>
+        <li>JavaScript schedules it and moves on immediately, so the output is <code>1</code>, <code>2</code>, then <code>3</code>: the check runs before the server has confirmed anything.</li>
+        <li>That's the bug a missing <code>await</code> causes in a test: the check runs against a page that isn't ready yet.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2 id="promises">3. Promises: an answer that arrives later</h2>
+  <p>A function that takes time gives back a <strong>promise</strong>: an object standing in for an answer that isn't ready yet, like a receipt you swap for your order later. Playwright's <code>click</code>, <code>goto</code> and <code>textContent</code> all return promises.</p>
+  <pre><code>// A stand-in for a slow operation: answers with a price after half a second
+function fetchPrice(name) {
+  return new Promise((resolve) =&gt; {
+    setTimeout(() =&gt; resolve(24.99), 500);
+  });
+}
+
+const pricePromise = fetchPrice('Headlamp');
+console.log(pricePromise); // Promise { &lt;pending&gt; }: no answer yet</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>new Promise((resolve) =&gt; { ... })</code> creates a promise. Calling <code>resolve(24.99)</code> later delivers the answer. You'll rarely write this yourself; Playwright's methods return promises for you.</li>
+        <li>Printing the promise straight away shows <code>Promise { &lt;pending&gt; }</code>: the answer hasn't arrived. If you ever see this in a test's output, an <code>await</code> is missing.</li>
+      </ul>
+    </div>
+  </details>
+  <figure class="dg">
+    <svg viewBox="0 0 680 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A promise's three states. It starts pending: the work has started, no answer yet. It then settles once: either fulfilled, with a value such as 24.99, or rejected, with an error such as Timeout 5000ms exceeded. await waits while it's pending, then gives you the value or throws the error."><defs><marker id="f1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-head" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="dg-fill-p" x="20" y="72" width="170" height="56" rx="12"/>
+<text class="dg-h" x="105" y="96" text-anchor="middle">pending</text>
+<text class="dg-ms" x="105" y="115" text-anchor="middle">started, no answer yet</text>
+<path class="dg-line" d="M190,90 C250,90 260,48 330,48" marker-end="url(#f1)"/>
+<path class="dg-line" d="M190,110 C250,110 260,152 330,152" marker-end="url(#f1)"/>
+<rect class="dg-box dg-okb" x="334" y="22" width="190" height="52" rx="10"/>
+<text class="dg-h dg-ok" x="429" y="44" text-anchor="middle">fulfilled</text>
+<text class="dg-cs" x="429" y="63" text-anchor="middle">value: 24.99</text>
+<rect class="dg-box dg-badb" x="334" y="126" width="190" height="52" rx="10"/>
+<text class="dg-h dg-bad" x="429" y="148" text-anchor="middle">rejected</text>
+<text class="dg-cs" x="429" y="167" text-anchor="middle">error: Timeout exceeded</text>
+<text class="dg-ms" x="604" y="44" text-anchor="middle">await gives</text>
+<text class="dg-ms" x="604" y="60" text-anchor="middle">you the value</text>
+<text class="dg-ms" x="604" y="148" text-anchor="middle">await throws</text>
+<text class="dg-ms" x="604" y="164" text-anchor="middle">the error</text></svg>
+    <figcaption>A promise starts <em>pending</em> and settles exactly once. <code>await</code> holds your code until it does.</figcaption>
+  </figure>
+
+  <h2 id="await">4. <code>await</code> and <code>async</code></h2>
+  <p><code>await</code> means "stop here until this promise settles, then give me its answer". <code>async</code> marks a function that's allowed to use <code>await</code>:</p>
+  <pre><code>// await: wait for the answer, then carry on
+const price = await fetchPrice('Headlamp');
+console.log(price); // 24.99, after half a second
+
+// async: a function that waits inside
+async function isPriceValid(name) {
+  const price = await fetchPrice(name);
+  return price &gt;= 0;
+}
+
+console.log(isPriceValid('Headlamp'));       // Promise { &lt;pending&gt; }
+console.log(await isPriceValid('Headlamp')); // true</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>await fetchPrice(...)</code> pauses this code until the promise is fulfilled, then hands over the value, <code>24.99</code>. Nothing below it runs until then.</li>
+        <li><code>async function</code> is required for <code>await</code> inside a function. Use <code>await</code> in an ordinary function and the file won't run: <code>SyntaxError: await is only valid in async functions and the top level bodies of modules</code>.</li>
+        <li><strong>An <code>async</code> function always returns a promise</strong>, even though its code says <code>return price &gt;= 0</code>. That's why calling it without <code>await</code> prints <code>Promise { &lt;pending&gt; }</code>, and why Part 5's page object method had the return type <code>Promise&lt;boolean&gt;</code>: "true or false, later".</li>
+        <li>Every Playwright test is <code>async ({ page }) =&gt; { ... }</code> for exactly this reason: so its steps can <code>await</code>.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2 id="failures">5. When the wait fails</h2>
+  <p>A promise can also <strong>reject</strong>: the work failed, or took too long. With <code>await</code>, a rejection becomes an error at that line. Here's a stand-in for Playwright waiting for a heading that never appears:</p>
+  <pre><code>// Resolves if the heading shows up, rejects with a timeout if it doesn't
+function waitForHeading(found) {
+  return new Promise((resolve, reject) =&gt; {
+    setTimeout(() =&gt; {
+      if (found) {
+        resolve('Order placed!');
+      } else {
+        reject(new Error('Timeout 5000ms exceeded waiting for heading'));
+      }
+    }, 300);
+  });
+}
+
+try {
+  const heading = await waitForHeading(false);
+  console.log(heading);
+} catch (error) {
+  console.log('Test failed:', error.message);
+}
+// Test failed: Timeout 5000ms exceeded waiting for heading</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>reject(new Error(...))</code> settles the promise as failed, with an error describing why.</li>
+        <li><code>await</code> on a rejected promise <strong>throws</strong> that error at that line, so the lines after it don't run.</li>
+        <li><code>try { ... } catch (error) { ... }</code> catches it: if anything in the <code>try</code> block throws, the <code>catch</code> block runs instead, with the error in <code>error</code>. <code>error.message</code> is its text.</li>
+        <li>This is exactly what happens when a Playwright check times out: the step's promise rejects, the error is thrown, and the test fails on that line with the message you see in the report.</li>
+      </ul>
+    </div>
+  </details>
+  <div class="callout red">
+    <p><strong>Don't wrap test steps in <code>try/catch</code> to "keep going".</strong> In a test, the failure <em>is</em> the result: catching it hides a real problem and lets the test pass. Use <code>try/catch</code> in helper code that genuinely knows how to recover, and let test steps fail loudly. A rejection nobody catches at all also stops a plain Node.js script, with the error printed.</p>
+  </div>
+
+  <h2 id="playwright">6. Which Playwright lines need <code>await</code></h2>
+  <p>The rule: <strong>if it returns a promise, await it</strong>. In VS Code, hover over a method: if its type mentions <code>Promise</code>, it needs <code>await</code>.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Line</th><th>Await?</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td><code>await page.goto('/')</code></td><td>Yes</td><td>Loading a page takes time.</td></tr>
+        <tr><td><code>await card.click()</code>, <code>await field.fill('x')</code></td><td>Yes</td><td>Actions wait for the element, then act.</td></tr>
+        <tr><td><code>await expect(locator).toBeVisible()</code></td><td>Yes</td><td>Locator checks keep retrying, up to 5 seconds.</td></tr>
+        <tr><td><code>await locator.textContent()</code>, <code>await locator.all()</code></td><td>Yes</td><td>Reading from the page takes time.</td></tr>
+        <tr><td><code>const card = page.getByTestId('product-card')</code></td><td>No</td><td>A locator is a description, not a search (Part 2 of the Playwright series); nothing happens yet.</td></tr>
+        <tr><td><code>expect(total).toBe(59.98)</code></td><td>No</td><td>A plain value check: the value is already here.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><strong>What a missing <code>await</code> looks like:</strong> a printed <code>Promise { &lt;pending&gt; }</code>; a check that passes even though the page is wrong, because the test finished before the check ran; or a confusing error after the test has ended, about a page or browser that has already closed. Playwright recommends a lint rule, <code>@typescript-eslint/no-floating-promises</code>, that underlines any promise you forgot to <code>await</code>.</p>
+  <div class="callout blue">
+    <p><strong>Starting a wait before the action.</strong> You've met this pattern in the Playwright series' Phases 3 and 8:</p>
+    <pre><code>const cartUpdated = page.waitForResponse(r =&gt; r.url().includes('/api/cart'));
+await addButton.click();
+await cartUpdated;</code></pre>
+    <p>The first line has no <code>await</code> on purpose: it <em>starts</em> listening and keeps the promise. The click happens next, and only then does the test <code>await</code> the promise. If the first line had <code>await</code>, the test would sit waiting for a response that can't come until the click it hasn't made yet.</p>
+  </div>
+
+  <h2 id="order">7. One after another, or all at once</h2>
+  <p>Part 4 warned that <code>forEach</code> doesn't wait. Here's why, with a stand-in that takes 100 milliseconds per item:</p>
+  <pre><code>// Waits ms milliseconds, says it's done, then resolves
+const delay = (ms, label) =&gt; new Promise((resolve) =&gt; {
+  setTimeout(() =&gt; {
+    console.log('done', label);
+    resolve(label);
+  }, ms);
+});
+
+// forEach starts every item, and moves on without waiting
+['A', 'B', 'C'].forEach(async (item) =&gt; {
+  await delay(100, item);
+});
+console.log('after forEach'); // prints FIRST, before A, B and C are done
+
+// for...of waits for each round before the next
+for (const item of ['A', 'B', 'C']) {
+  await delay(100, item);
+}
+console.log('after for...of'); // prints LAST, after A, B and C</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>forEach</code> calls the async function for each item, but ignores the promises they return. So "after forEach" prints immediately, and A, B and C finish later. In a test, that means checks still running after the test thinks it's done.</li>
+        <li><code>for...of</code> with <code>await</code> inside waits for each round to finish before starting the next, so "after for...of" prints after all three. This is the loop to use in tests.</li>
+      </ul>
+    </div>
+  </details>
+  <p>Sometimes you <em>want</em> several things to happen at once. <code>Promise.all</code> starts them together and waits for all of them:</p>
+  <pre><code>// One after another: about 600 ms
+await delay(300, 'first');
+await delay(300, 'second');
+
+// Together: about 300 ms
+const results = await Promise.all([delay(300, 'x'), delay(300, 'y')]);
+console.log(results); // [ 'x', 'y' ]</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>Promise.all([...])</code> takes a list of promises, runs them at the same time, and gives back a list of their answers, in the same order. If any of them rejects, the whole thing rejects.</li>
+        <li>Two 300 ms waits take about 600 ms in turn, but about 300 ms together.</li>
+        <li>Test steps normally run one after another, because each depends on the last. <code>Promise.all</code> is for independent work, like the Playwright series' Phase 6 bonus, where two customers check out at the same moment.</li>
+      </ul>
+    </div>
+  </details>
+
+  <div class="callout red">
+    <p><strong>Common mistakes.</strong></p>
+    <ul style="margin:.5rem 0 0 1.2rem;">
+      <li><strong>A missing <code>await</code>.</strong> Hover over the method: if it returns a promise, it needs one.</li>
+      <li><strong><code>await</code> on a locator.</strong> Harmless, but pointless: building a locator doesn't wait for anything.</li>
+      <li><strong><code>await</code> inside a function that isn't <code>async</code>.</strong> The file won't run.</li>
+      <li><strong><code>forEach</code> with <code>await</code> inside.</strong> It doesn't wait. Use <code>for...of</code>.</li>
+      <li><strong>Catching errors in a test to keep it going.</strong> It hides the failure the test exists to find.</li>
+    </ul>
+  </div>
+
+  <hr style="border:none;border-top:1px solid var(--border);margin:0">
+
+  <div class="assignment">
+    <div class="a-label">Exercise</div>
+    <h3>Watch waiting happen</h3>
+    <p>Create <code>exercise-async.js</code> in your practice folder (with <code>"type": "module"</code> in <code>package.json</code>), write code for each step, and run it with <code>node exercise-async.js</code>. Predict each output before you run it.</p>
+    <ol style="margin:.5rem 0 0 1.2rem;">
+      <li>Print "1. Click", then use <code>setTimeout</code> to print "3. Server answers" after 500 ms, then print "2. Check". Why does 3 come last?</li>
+      <li>Write <code>fetchPrice(name)</code> that returns a promise resolving to <code>24.99</code> after 500 ms. Print <code>fetchPrice('Headlamp')</code> without <code>await</code>.</li>
+      <li>Print it again with <code>await</code>.</li>
+      <li>Write <code>async function isPriceValid(name)</code> that awaits <code>fetchPrice</code> and returns whether the price is 0 or more. Print the call without <code>await</code>, then with it. What would its TypeScript return type be?</li>
+      <li>Write <code>waitForHeading(found)</code> that resolves with <code>'Order placed!'</code> when <code>found</code> is true, and rejects with <code>new Error('Timeout 5000ms exceeded')</code> when it's false. Await it with <code>false</code> inside <code>try/catch</code>, and print the error's message.</li>
+      <li>Write a <code>delay(ms, label)</code> helper. Run three items through <code>forEach</code> with <code>await</code> inside, then print "after forEach". Then the same with <code>for...of</code>. Which order does each print in?</li>
+      <li>Time two 300 ms delays one after another, then together with <code>Promise.all</code>. Use <code>Date.now()</code> before and after to measure.</li>
+      <li>For each line, say whether it needs <code>await</code>, and why: <code>page.goto('/')</code>; <code>page.getByRole('button', { name: 'Log in' })</code>; <code>button.click()</code>; <code>expect(heading).toBeVisible()</code>; <code>expect(2 + 2).toBe(4)</code>; <code>card.textContent()</code>.</li>
+      <li>Break it on purpose: put <code>await fetchPrice('x')</code> inside an ordinary (non-async) function, and read the error.</li>
+    </ol>
+
+  <details class="solution">
+    <summary>Show solution: try it yourself first</summary>
+    <div class="solution-body">
+      <pre><code>// 1. JavaScript doesn't wait on its own
+console.log('1. Click');
+setTimeout(() =&gt; console.log('3. Server answers'), 500);
+console.log('2. Check');
+
+// 2. A promise: an answer that arrives later
+function fetchPrice(name) {
+  return new Promise((resolve) =&gt; {
+    setTimeout(() =&gt; resolve(24.99), 500);
+  });
+}
+console.log(fetchPrice('Headlamp'));
+
+// 3. await gives you the answer
+console.log(await fetchPrice('Headlamp'));
+
+// 4. An async function always returns a promise
+async function isPriceValid(name) {
+  const price = await fetchPrice(name);
+  return price &gt;= 0;
+}
+console.log(isPriceValid('Headlamp'));
+console.log(await isPriceValid('Headlamp'));
+
+// 5. A wait that fails
+function waitForHeading(found) {
+  return new Promise((resolve, reject) =&gt; {
+    setTimeout(() =&gt; {
+      if (found) {
+        resolve('Order placed!');
+      } else {
+        reject(new Error('Timeout 5000ms exceeded'));
+      }
+    }, 300);
+  });
+}
+try {
+  console.log(await waitForHeading(false));
+} catch (error) {
+  console.log('Test failed:', error.message);
+}
+
+// 6. forEach doesn't wait; for...of does
+const delay = (ms, label) =&gt; new Promise((resolve) =&gt; {
+  setTimeout(() =&gt; {
+    console.log('done', label);
+    resolve(label);
+  }, ms);
+});
+['A', 'B', 'C'].forEach(async (item) =&gt; {
+  await delay(100, item);
+});
+console.log('after forEach');
+await delay(400, 'pause'); // let the forEach rounds finish before the next demo
+for (const item of ['A', 'B', 'C']) {
+  await delay(100, item);
+}
+console.log('after for...of');
+
+// 7. One after another, then together
+let start = Date.now();
+await delay(300, 'first');
+await delay(300, 'second');
+console.log('in turn, ms:', Date.now() - start);
+start = Date.now();
+await Promise.all([delay(300, 'x'), delay(300, 'y')]);
+console.log('together, ms:', Date.now() - start);
+
+// 8. Answers in the notes below
+
+// 9. Break it on purpose (remove the // to try)
+// function notAsync() { const p = await fetchPrice('x'); }
+//   -&gt; SyntaxError: await is only valid in async functions and the top level bodies of modules</code></pre>
+      <p><strong>Output</strong> (the millisecond counts will differ slightly):</p>
+      <pre><code>1. Click
+2. Check
+Promise { &lt;pending&gt; }
+3. Server answers
+24.99
+Promise { &lt;pending&gt; }
+true
+Test failed: Timeout 5000ms exceeded
+after forEach
+done A
+done B
+done C
+done pause
+done A
+done B
+done C
+after for...of
+done first
+done second
+in turn, ms: 604
+done x
+done y
+together, ms: 302</code></pre>
+      <p><strong>What to notice.</strong></p>
+      <ul>
+        <li><strong>Step 1:</strong> "3. Server answers" doesn't even print before the promise in step 2: JavaScript ran every line it could, then delivered the delayed work when its time came.</li>
+        <li><strong>Step 4:</strong> the return type would be <code>Promise&lt;boolean&gt;</code>: true or false, later.</li>
+        <li><strong>Step 6:</strong> "after forEach" prints before A, B and C are done; "after for...of" prints after. Same three items, same waits: only the loop is different.</li>
+        <li><strong>Step 7:</strong> about 600 ms in turn, about 300 ms together.</li>
+        <li><strong>Step 8:</strong> <code>goto</code>, <code>click</code>, <code>expect(heading).toBeVisible()</code> and <code>textContent()</code> need <code>await</code>: they return promises. <code>getByRole(...)</code> only builds a locator, and <code>expect(2 + 2).toBe(4)</code> checks a value you already have, so neither does.</li>
+      </ul>
+    </div>
+  </details>
+  </div>
+
+  <p style="margin:2rem 0 0"><strong>All parts at a glance:</strong> <a href="js-for-testers-in-a-view.html" style="color:var(--purple)">the mind map and cheat sheet</a>.</p>
+
+  <div class="series-nav">
+    <span class="label">Navigate JavaScript for Testers</span>
+    <div class="nav-pair">
+      <a href="js-for-testers-5-classes-and-typescript.html" class="nav-blog"><span class="nav-blog-arrow" aria-hidden="true">&larr;</span><div><div class="nav-blog-title">Part 5: Classes and TypeScript</div><div class="nav-blog-sub">Page objects, and types that catch mistakes early</div></div></a>
+      <span></span>
+    </div>
+  </div>
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--text-3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; JavaScript for Testers</p>
+  </div>
+</main>
+
+<footer>
+  <p><a href="../../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+<script>
+(function(){
+  var btn = document.getElementById('themeToggle');
+  function isLight(){ return document.documentElement.getAttribute('data-theme') === 'light'; }
+  function sync(){ btn.textContent = isLight() ? 'Dark' : 'Light'; }
+  sync();
+  btn.addEventListener('click', function(){
+    if(isLight()){
+      document.documentElement.removeAttribute('data-theme');
+      try{ localStorage.setItem('pw-theme','dark'); }catch(e){}
+    } else {
+      document.documentElement.setAttribute('data-theme','light');
+      try{ localStorage.setItem('pw-theme','light'); }catch(e){}
+    }
+    sync();
+  });
+})();
+</script>
+
+</body>
+</html>

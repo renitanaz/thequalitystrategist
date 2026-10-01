@@ -114,6 +114,20 @@ footer a:hover{color:var(--purple)}
 .blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
 .blog-tags .series-tag{margin-bottom:0}
 .tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+.term-shot{margin:1.2rem 0}
+.term-shot img{display:block;max-width:100%;height:auto;border:1px solid var(--border);border-radius:8px}
+.term-shot figcaption{font-size:.8rem;color:var(--text-3);margin-top:.5rem;line-height:1.5}
+/* Collapsible code explanations */
+details.explain{margin:.5rem 0 1.5rem;border:1px solid var(--purple-border);border-radius:10px;background:var(--purple-bg)}
+details.explain summary{padding:.6rem 1rem;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--purple);list-style:none;display:flex;align-items:center;gap:.5rem}
+details.explain summary::-webkit-details-marker{display:none}
+details.explain summary::before{content:"\25B6";font-size:.65rem;transition:transform .2s}
+details.explain[open] summary::before{transform:rotate(90deg)}
+.explain-body{padding:.1rem 1.2rem 1rem;font-size:.92rem;line-height:1.7}
+.explain-body p{margin:.7rem 0}
+.explain-body ul{margin:.3rem 0 .7rem 1.2rem;padding-left:0}
+.explain-body li{margin-bottom:.35rem}
+.explain-body pre{margin:.6rem 0}
 </style>
 <meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
 <meta property="og:image:width" content="1200">
@@ -210,6 +224,22 @@ const { chromium } = require('playwright');
   await browser.close();
 })();
 </code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <p><strong>In plain words:</strong> this script opens a browser, goes to PeakAndPack, clicks the element styled with the class <code>product-list-header</code>, prints "clicked", and closes the browser. It's a script, not a test: nothing in it checks that anything is right.</p>
+      <ul>
+        <li>Lines starting with <code>//</code> are <strong>comments</strong>: notes for people, which the computer ignores.</li>
+        <li><code>const { chromium } = require('playwright');</code> loads Playwright's controller for the Chromium browser. <code>require</code> is an older way of loading code someone else wrote. <code>const</code> gives the result a name that can't be changed later.</li>
+        <li><code>(async () =&gt; { ... })();</code> wraps the steps in a block of code and runs it straight away. It's only there so the steps can use <code>await</code> (explained in step 5). The test runner in the "after" version does this for you.</li>
+        <li><code>chromium.launch()</code> and <code>browser.newPage()</code> start a browser and open a tab, by hand. The test runner gives every test a ready tab instead.</li>
+        <li><code>page.goto('https://...')</code> opens the full address, typed into the script. If the address changes, every script needs editing.</li>
+        <li><code>page.click('.product-list-header')</code> finds an element by its CSS class, a name used for styling, and clicks it. Rename the class in a redesign and this breaks, even though nothing a user sees has changed.</li>
+        <li><code>console.log('clicked')</code> prints a message in the terminal. It only proves the script got that far, not that the page is right.</li>
+        <li><code>browser.close()</code> closes the browser. Forget it, and browsers pile up in the background.</li>
+      </ul>
+    </div>
+  </details>
     </div>
     <div class="ba-block after">
       <div class="ba-label">After: the right starting point</div>
@@ -225,36 +255,212 @@ test('product list loads', async ({ page }) => {
   ).toBeVisible();
 });
 </code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <p><strong>In plain words:</strong> one real test: open the store's home page and check that its main heading is visible.</p>
+      <p>It uses Playwright's <strong>test runner</strong>, the part of Playwright that finds your tests, gives each one a fresh browser tab, runs them, and reports pass or fail. That's what the "before" script was missing.</p>
+      <p>Compared with the "before" script, notice three things:</p>
+      <ul>
+        <li>It <strong>checks</strong> something: the <code>expect(...)</code> line.</li>
+        <li>It finds the heading by <strong>what it is</strong>, not by how it's styled: <code>getByRole('heading', ...)</code>.</li>
+        <li>It opens <code>'/'</code> instead of the full address, because the address lives in one settings file.</li>
+      </ul>
+      <p>You'll write this kind of test yourself in step 5, and every part of it is explained there, line by line.</p>
+    </div>
+  </details>
     </div>
   </div>
 
   <p>The "before" version works once. The "after" version works in CI, survives a restyle, and gives you a proper pass/fail report. The rest of this phase explains exactly why, and builds it step by step.</p>
 
-  <h2 id="check-node">2. Check Node.js is installed</h2>
-  <p>Playwright runs on Node.js. Open a terminal (Mac: search "Terminal"; Windows: search "PowerShell") and run:</p>
+  <h2 id="check-node">2. Get Node.js and VS Code ready</h2>
+  <p>You need two free tools:</p>
+  <ul>
+    <li><strong>Node.js</strong>, which runs Playwright. Get it from <a href="https://nodejs.org" target="_blank" style="color:var(--purple)">nodejs.org</a>, and choose the version marked <strong>LTS</strong>: long-term support. That's the version that has been properly tested and stays supported. The newer releases are for trying out features, not for depending on.</li>
+    <li><strong>VS Code</strong>, the code editor this series uses. Get it from <a href="https://code.visualstudio.com" target="_blank" style="color:var(--purple)">code.visualstudio.com</a>.</li>
+  </ul>
+  <p>Already have Node.js? Check its version. Open a terminal (Mac: search "Terminal"; Windows: search "PowerShell") and run:</p>
   <pre><code># Prints your Node.js version. Playwright needs 18 or higher.
 node --version</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <p><strong>In plain words:</strong> asks your computer which version of Node.js is installed.</p>
+      <ul>
+        <li><strong>Node.js</strong> is the program that runs JavaScript outside a web browser. Playwright is written in JavaScript, so it needs Node.js to run.</li>
+        <li><code>node</code> starts Node.js.</li>
+        <li><code>--version</code> is an <strong>option</strong>. Options start with two dashes and change what a command does. This one says "print your version, then stop".</li>
+        <li>In a terminal block, lines starting with <code>#</code> are comments, like <code>//</code> in code. They're notes for you, not something to type.</li>
+        <li><strong>What you'll see:</strong> something like <code>v20.17.0</code>. The first number, the major version, is the one that matters. Playwright needs 18 or higher.</li>
+      </ul>
+    </div>
+  </details>
+  <figure class="term-shot">
+    <img src="phase0-node-version.png" width="609" height="76" loading="lazy" alt="A PowerShell window after running node --version, which prints v20.17.0">
+    <figcaption>What a successful check looks like in PowerShell on Windows.</figcaption>
+  </figure>
   <p>If you see something like <code>v20.x.x</code> (anything 18 or higher), you're set. If you get "command not found", install the LTS build from <a href="https://nodejs.org" target="_blank" style="color:var(--purple)">nodejs.org</a>, then close and reopen the terminal.</p>
 
   <h2 id="install-playwright">3. Create your project and install Playwright</h2>
-  <pre><code># Make a folder for the project and move into it
+  <pre><code># Go to the folder where you keep your projects (Documents works fine).
+# Don't create it wherever the terminal happened to open, which can be a system folder.
+cd ~/Documents
+
+# Make a folder for the project and move into it
 mkdir peakandpack-tests
 cd peakandpack-tests
 
 # Set up Playwright: config file, example test, and the browsers it drives
 npm init playwright@latest</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <p><strong>In plain words:</strong> go to your projects folder, make a folder for this project, step into it, and let Playwright's installer set everything up.</p>
+      <ul>
+        <li><code>cd ~/Documents</code>: <code>cd</code> means "change directory", which moves you into a folder. <code>~</code> is short for your home folder (on Windows, <code>C:\Users\your-name</code>), so this goes to your Documents folder.</li>
+        <li><code>mkdir peakandpack-tests</code>: "make directory" creates an empty folder with that name.</li>
+        <li><code>cd peakandpack-tests</code> steps into the new folder. Everything after this happens inside it. The terminal's prompt always shows which folder you're in.</li>
+        <li><code>npm init playwright@latest</code>: <code>npm</code> is Node's package manager, installed along with Node.js. A <strong>package</strong> is ready-made code someone else wrote and shared, and npm downloads and manages packages. <code>init</code> starts a new project, and <code>playwright@latest</code> says to use Playwright's own setup tool, newest version.</li>
+      </ul>
+      <p><strong>What the installer creates:</strong></p>
+      <ul>
+        <li><code>package.json</code>: the project's ID card. It holds the project's name and the list of packages it needs.</li>
+        <li><code>package-lock.json</code>: the exact version of every package installed, so the project installs identically on another computer.</li>
+        <li><code>node_modules/</code>: the downloaded packages themselves. It's large and can be rebuilt from <code>package.json</code> at any time, so it never goes into Git.</li>
+        <li><code>playwright.config.ts</code>: Playwright's settings (step 4).</li>
+        <li><code>tests/example.spec.ts</code>: a demo test, which you'll delete in step 5.</li>
+        <li><code>.gitignore</code>: a list of files Git should leave out, such as <code>node_modules</code> and old reports.</li>
+        <li>The browsers: Chromium, Firefox and WebKit. They're downloaded to a shared folder on your computer, not into the project.</li>
+      </ul>
+    </div>
+  </details>
+  <figure class="term-shot">
+    <img src="phase0-create-folder.png" width="1029" height="424" loading="lazy" alt="PowerShell after moving into a projects folder, running mkdir peakandpack-tests, which lists the new directory, then cd peakandpack-tests">
+    <figcaption>The first three commands in PowerShell. Your folder path will be different; what matters is that the prompt now ends in <code>peakandpack-tests</code>.</figcaption>
+  </figure>
   <p>When it asks questions, choose:</p>
   <ul>
+    <li>"Need to install the following packages... Ok to proceed?": <strong>y</strong> (it downloads the setup tool once)</li>
     <li>TypeScript: <strong>yes</strong></li>
     <li>Tests folder: <strong>tests</strong></li>
     <li>Add GitHub Actions: <strong>no</strong> (Phase 12 covers that)</li>
     <li>Everything else: accept the default</li>
   </ul>
-  <p>This installs Playwright and downloads the browsers it drives, so give it a minute the first time.</p>
+  <figure class="term-shot">
+    <img src="phase0-npm-init.png" width="1457" height="702" loading="lazy" alt="The Playwright installer in PowerShell with its answers: TypeScript, tests folder, no GitHub Actions workflow, and install browsers true, followed by it writing package.json">
+    <figcaption>The installer's questions with these answers. It then writes <code>package.json</code> and carries on installing.</figcaption>
+  </figure>
+  <p>This installs Playwright and downloads the browsers it drives, so give it a minute the first time. It's finished when it says "Happy hacking!" and gives you the prompt back:</p>
+  <figure class="term-shot">
+    <img src="phase0-happy-hacking.png" width="864" height="98" loading="lazy" alt="The end of the installer output: Happy hacking!, followed by the PowerShell prompt in the peakandpack-tests folder">
+    <figcaption>The last line of a successful install.</figcaption>
+  </figure>
   <p>Before you write a single test, put this project under version control. Every later phase, especially Phase 12's CI setup, assumes your test code lives in a Git repo on GitHub. New to Git? The <a href="../Mind_On_QA_WithAI/Basics/git-for-qa.html" style="color:var(--purple)">Git for QA primer</a> covers <code>init</code>, committing, branching, and pushing to GitHub in one page.</p>
+  <pre><code># Start tracking this folder with Git
+git init
+# Stage every file the installer created
+git add .
+# Save them as the first snapshot of the project
+git commit -m "Set up Playwright"</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <p><strong>In plain words:</strong> turn the folder into a Git repository and save its first snapshot.</p>
+      <ul>
+        <li><strong>Git</strong> records versions of your files over time. Each saved version is a <strong>commit</strong>: a snapshot you can return to or compare against.</li>
+        <li><code>git init</code> starts tracking this folder. It adds a hidden <code>.git</code> folder where Git keeps the history. Nothing is saved yet.</li>
+        <li><code>git add .</code> chooses what goes into the next snapshot, a step called <strong>staging</strong>. The <code>.</code> means "everything in this folder", except what <code>.gitignore</code> lists.</li>
+        <li><code>git commit -m "Set up Playwright"</code> takes the snapshot. <code>-m</code> attaches a message, in quotes, saying what changed. Clear messages make the history easy to read later.</li>
+        <li><strong>What you'll see:</strong> a line like <code>[master (root-commit) d9bfb4b] Set up Playwright</code>. <code>master</code> is the branch name, <code>root-commit</code> means it's the very first snapshot, and <code>d9bfb4b</code> is the snapshot's short ID.</li>
+      </ul>
+    </div>
+  </details>
+  <figure class="term-shot">
+    <img src="phase0-git-init.png" width="1718" height="561" loading="lazy" alt="PowerShell running git init, git add and git commit: five LF will be replaced by CRLF warnings, then a root commit named Set up Playwright creating five files">
+    <figcaption>The first commit: five files, the ones the installer created. On Windows, the "LF will be replaced by CRLF" warnings are normal and safe to ignore. They're about line endings, not about your files.</figcaption>
+  </figure>
+  <p>Then create an empty repository on GitHub called <code>peakandpack-tests</code>: leave "Add a README", ".gitignore" and "license" unchecked, because your folder already has files. Connect your folder to it and push:</p>
+  <pre><code># Tell your local repo where its GitHub copy lives (use your own username)
+git remote add origin https://github.com/YOUR-USERNAME/peakandpack-tests.git
+# Rename the branch to main, the name GitHub uses by default
+git branch -M main
+# Upload the commit; -u means later pushes are just "git push"
+git push -u origin main</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <p><strong>In plain words:</strong> connect your folder to the empty repository on GitHub, and upload your snapshot to it.</p>
+      <ul>
+        <li><strong>GitHub</strong> is a website that stores Git repositories online, so your work is backed up and shareable. Phase 12's pipeline will run your tests from there.</li>
+        <li><code>git remote add origin https://...</code>: a <strong>remote</strong> is the online copy of your repository. This adds one and names it <code>origin</code>, the usual name for "the main online copy".</li>
+        <li><code>git branch -M main</code>: a <strong>branch</strong> is a line of work in Git. Yours is called <code>master</code> (you saw it in the commit output), and this renames it to <code>main</code>, the name GitHub uses. <code>-M</code> means "rename".</li>
+        <li><code>git push -u origin main</code> uploads your commits on <code>main</code> to <code>origin</code>. <code>-u</code> remembers that pairing, so from now on <code>git push</code> on its own is enough.</li>
+        <li>If a sign-in window opens, that's GitHub checking it's you. It usually only happens the first time.</li>
+      </ul>
+    </div>
+  </details>
+  <figure class="term-shot">
+    <img src="phase0-git-push.png" width="1829" height="445" loading="lazy" alt="PowerShell running git remote add, git branch -M main and git push -u origin main, ending with a new branch main pushed and set up to track origin/main">
+    <figcaption>A successful first push. Refresh the repository page on GitHub and your five files are there.</figcaption>
+  </figure>
 
   <h2 id="config-file">4. Understand the config file</h2>
-  <p>Open <code>playwright.config.ts</code>. It was generated for you. Here is what the key settings mean:</p>
+  <p><strong>First, turn on Auto Save</strong> in VS Code: <strong>File &rarr; Auto Save</strong>. Without it, you can change a file, run your tests, and get the old result, because the change was never saved.</p>
+  <p>Open the project in VS Code (<code>code .</code> from the project folder), then open <code>playwright.config.ts</code>. The installer wrote it for you, with a comment above most lines. One line needs changing before your tests can run: inside <code>use: {</code>, the base URL starts switched off and pointing somewhere else:</p>
+  <pre><code>// baseURL: 'http://localhost:3000',</code></pre>
+  <p>Delete the <code>//</code> at the start and put PeakAndPack's address in:</p>
+  <pre><code>baseURL: 'https://peakandpack-ui.onrender.com',</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <p><strong>In plain words:</strong> the first line is the setting switched off; the second is the same setting switched on and pointing at PeakAndPack.</p>
+      <ul>
+        <li><code>//</code> at the start of a line makes it a comment, so the computer ignores it. Removing the <code>//</code> "uncomments" the line, and it counts again. Installers often ship optional settings this way: written in, but switched off.</li>
+        <li><code>baseURL:</code> is the setting's name. Settings are written as <code>name: value</code>.</li>
+        <li><code>'https://peakandpack-ui.onrender.com'</code> is the value. It's in quote marks because it's text, which programmers call a <strong>string</strong>.</li>
+        <li>The comma at the end separates this setting from the next one. Keep it: a missing comma between settings is a common cause of red error underlines.</li>
+        <li><strong>Why it matters:</strong> with a base URL set, a test can say <code>page.goto('/')</code>, and Playwright fills in the rest of the address. Step 5's tests rely on it.</li>
+      </ul>
+    </div>
+  </details>
+  <figure class="term-shot">
+    <img src="phase0-config-baseurl.png" width="1549" height="651" loading="lazy" alt="VS Code with playwright.config.ts open, an arrow pointing at the edited line inside use: baseURL set to https://peakandpack-ui.onrender.com">
+    <figcaption>The edited line in VS Code. The rest of the generated file can stay as it is for now.</figcaption>
+  </figure>
+  <div class="callout amber">
+    <p><strong>Red squiggles under <code>process</code>?</strong> VS Code may report "Cannot find name 'process'" on the <code>process.env.CI</code> lines. Newer versions of TypeScript, the checker VS Code uses, no longer load Node's type definitions on their own. Your tests still run, since Playwright doesn't type-check, but the false alarms can hide real mistakes. Fix it by adding a <code>tsconfig.json</code> next to the config file:</p>
+    <pre><code>{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "types": ["node"],
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  }
+}</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <p><strong>In plain words:</strong> settings for TypeScript, the checker that underlines mistakes in VS Code. Your tests run without this file; it only changes what VS Code reports.</p>
+      <ul>
+        <li><strong>TypeScript</strong> is JavaScript with extra checks: it spots mistakes, like a misspelled name, before you run anything. That's what the <code>.ts</code> ending on your files means.</li>
+        <li>This file is <strong>JSON</strong>: settings written as <code>"name": value</code> pairs inside curly braces. Unlike the config file, every name needs double quotes, and there's no comma after the last setting.</li>
+        <li><code>"compilerOptions"</code> is the group that holds all of the checker's settings.</li>
+        <li><code>"target": "ES2022"</code>: which version of JavaScript to assume. ES2022 is a recent one that current Node.js fully supports.</li>
+        <li><code>"module"</code> and <code>"moduleResolution": "nodenext"</code>: how files load each other (the <code>import</code> lines). <code>nodenext</code> means "follow Node.js's current rules".</li>
+        <li><code>"types": ["node"]</code>: load Node's type definitions, the descriptions of built-in things like <code>process</code>. This is the line that removes the red squiggles. The square brackets hold a list, here with one item.</li>
+        <li><code>"strict": true</code> turns on the stricter checks, which catch more mistakes.</li>
+        <li><code>"skipLibCheck": true</code>: check only your code, not the code inside downloaded packages. It's faster, and their code isn't yours to fix.</li>
+        <li><code>"noEmit": true</code>: only check, never write out converted files. Playwright takes care of running your TypeScript itself.</li>
+      </ul>
+    </div>
+  </details>
+    <p><code>"types": ["node"]</code> is the line that fixes it. Then press Ctrl+Shift+P (Cmd+Shift+P on a Mac) and run <strong>TypeScript: Restart TS Server</strong>.</p>
+  </div>
+  <p>Stripped of its comments, the part of the file that matters for this series looks like this. Here's what each setting means:</p>
   <pre><code>import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
@@ -267,10 +473,39 @@ export default defineConfig({
   },
 });
 </code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <p><strong>In plain words:</strong> the settings Playwright reads before it runs anything: where your tests are, how to run them, and what every test shares.</p>
+      <ul>
+        <li><code>import { defineConfig } from '@playwright/test';</code>: <code>import</code> borrows a tool from a package, here <code>'@playwright/test'</code>, the Playwright package the installer added. <code>defineConfig</code> wraps your settings so VS Code can suggest valid ones and flag mistakes as you type.</li>
+        <li><code>export default defineConfig({ ... });</code>: <code>export default</code> hands these settings to whatever loads the file, which is Playwright. Everything between <code>{</code> and <code>}</code> is one group of settings, each written <code>name: value,</code>.</li>
+        <li><code>testDir: './tests'</code>: the folder to look in for tests. <code>./</code> means "starting from this project's folder".</li>
+        <li><code>fullyParallel: true</code>: run tests at the same time instead of one after another. <code>true</code> and <code>false</code> are yes/no values, written without quotes.</li>
+        <li><code>retries: process.env.CI ? 2 : 0</code>: how many times to rerun a failed test. Read it as "on a CI server, 2, otherwise 0".
+          <ul>
+            <li><code>process.env</code> holds <strong>environment variables</strong>: settings the computer passes to a program when it starts it.</li>
+            <li>CI stands for continuous integration: servers, such as GitHub Actions, that run your tests automatically (Phase 12). They set a variable called <code>CI</code>. Your laptop doesn't.</li>
+            <li><code>? :</code> is a one-line if-then-else: <code>question ? answer-if-yes : answer-if-no</code>.</li>
+            <li>Why no retries on your own machine: a retry can make a real problem pass on the second try and hide it. Locally, you want to see every failure.</li>
+          </ul>
+        </li>
+        <li><code>use: { ... }</code>: settings every test shares. Here, the base URL and the trace setting.</li>
+        <li><code>trace: 'on-first-retry'</code>: record a detailed replay of the test, but only when a failed test is retried. Traces are very useful but large, so this records them only when something has gone wrong (Phase 4).</li>
+      </ul>
+      <p><strong>Other lines you'll see in your generated file:</strong></p>
+      <ul>
+        <li><code>forbidOnly: !!process.env.CI</code>: on CI, fail the run if someone left <code>test.only</code> in a file. (<code>test.only</code> runs just that one test and silently skips the rest.) <code>!!</code> turns "is the CI variable set?" into a plain true or false.</li>
+        <li><code>workers: process.env.CI ? 1 : undefined</code>: on CI, run one test at a time. <code>undefined</code> means "not set", so on your machine Playwright decides, based on your processor.</li>
+        <li><code>reporter: 'html'</code>: produce the HTML report you'll open in step 7.</li>
+        <li><code>projects: [ ... ]</code>: the list of browsers to run every test in, which is why each test runs three times (step 6).</li>
+      </ul>
+    </div>
+  </details>
   <p><strong>The most important line is <code>baseURL</code>.</strong> Once it is set, every test can use <code>page.goto('/')</code> instead of the full URL. If PeakAndPack ever moves to a different host, you change one line in the config and every test updates automatically.</p>
 
   <h2 id="first-tests">5. Write your first two tests</h2>
-  <p>Delete <code>tests/example.spec.ts</code> (it was generated as a demo). Create <code>tests/first.spec.ts</code>:</p>
+  <p>Delete <code>tests/example.spec.ts</code>. The installer added it as a demo, and it tests Playwright's own website, not PeakAndPack. Then create <code>tests/first.spec.ts</code>:</p>
   <pre><code>import { test, expect } from '@playwright/test';
 
 // Test 1: the product list loads
@@ -289,37 +524,145 @@ test('product search is available', async ({ page }) => {
   ).toBeVisible();
 });
 </code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <p><strong>In plain words:</strong> two tests. The first opens the store and checks that its main heading is visible. The second opens the store and checks that the search box is there. As a manual tester, you'd do the same: open the page, look for the title, look for the search box.</p>
+      <p><strong>The file name.</strong> <code>first.spec.ts</code>: "spec" is short for specification. Playwright runs files whose names end in <code>.spec.ts</code>, and <code>.ts</code> means TypeScript.</p>
+      <p><strong>Line 1: bring in Playwright's tools.</strong> <code>import { test, expect } from '@playwright/test';</code> borrows two tools from the Playwright package: <code>test</code> creates a test, and <code>expect</code> checks that something is true.</p>
+      <p><strong>Creating a test.</strong> <code>test('product list heading is visible', async ({ page }) =&gt; {</code></p>
+      <ul>
+        <li><code>test(...)</code> creates one test. The text in quotes is its name, which appears in the results. Name it after what should be true: when it fails, the name alone tells you what broke.</li>
+        <li><code>async</code> marks the test as containing steps that take time, like loading a page. It's required whenever the steps use <code>await</code>.</li>
+        <li><code>({ page })</code>: Playwright hands the test a fresh, empty browser tab called <code>page</code>. Every test gets its own, so tests can't interfere with each other.</li>
+        <li><code>=&gt; {</code> starts the test's steps, which run until the matching <code>});</code>.</li>
+      </ul>
+      <p><strong>Step 1: open the site.</strong> <code>await page.goto('/');</code></p>
+      <ul>
+        <li><code>page.goto</code> loads an address in the tab. The <strong>dot</strong> means "use a tool that belongs to <code>page</code>". A tool like this is called a <strong>method</strong>, and the brackets after it hold the details you give it.</li>
+        <li><code>'/'</code> means the home page. Playwright joins it to the base URL from step 4, so this opens <code>https://peakandpack-ui.onrender.com/</code>.</li>
+        <li><code>await</code> means "wait until this finishes before the next line". Without it, the test races ahead before the page has loaded.</li>
+        <li><code>;</code> ends the instruction, like a full stop ends a sentence.</li>
+      </ul>
+      <p><strong>Step 2: the check.</strong> Read it as one sentence: "wait while you check, and expect the heading named peakandpack on this page to be visible."</p>
+      <pre><code>await expect(
+  page.getByRole('heading', { name: /peakandpack/i })
+).toBeVisible();</code></pre>
+      <p>In testing terms, this is an <strong>assertion</strong>: a statement that must be true for the test to pass. A test without one only clicks around and never checks anything. Inside out:</p>
+      <ul>
+        <li><code>page.getByRole(...)</code> finds something on the page by its <strong>role</strong>: its job, such as button, link, heading or text box. Screen readers describe pages the same way ("heading, PeakAndPack Gear"). Finding elements by role has two benefits:
+          <ul>
+            <li>It survives redesigns: change the colour, font or position, and it's still a heading.</li>
+            <li>It checks accessibility for free: if Playwright can't find something by its role, a screen reader user probably can't either.</li>
+          </ul>
+        </li>
+        <li><code>'heading'</code> is the role wanted: a title on the page, the <code>&lt;h1&gt;</code> to <code>&lt;h6&gt;</code> tags in its code. It's in quote marks because it's text.</li>
+        <li>The comma separates the two details given to <code>getByRole</code>: what kind of thing, then which one.</li>
+        <li><code>{ name: /peakandpack/i }</code>: the curly braces hold options, written <code>label: value</code>. <code>name</code> asks for the heading whose name, its visible text, matches. A page often has several headings (each product card has one), so without a name Playwright wouldn't know which one you mean and would stop with an error.</li>
+        <li><code>/peakandpack/i</code> is a <strong>pattern</strong>, not exact text. The slashes mark its start and end, the way quote marks do for text. It matches any name containing these letters, so "PeakAndPack Gear" matches. The <code>i</code> after the last slash means "ignore upper and lower case". A pattern keeps working if the title becomes, say, "PeakAndPack Outdoor Gear".</li>
+        <li>What <code>getByRole</code> gives back is a <strong>locator</strong>: not the heading itself, but a description of how to find it. Playwright searches only when the locator is used, and searches again every time. That matters on pages where content appears a moment after loading, like PeakAndPack's "Loading gear..." screen.</li>
+        <li><code>expect(...)</code> prepares the locator for checking. On its own, it doesn't check anything yet.</li>
+        <li><code>.toBeVisible()</code> is the check itself, called a <strong>matcher</strong>: the heading must exist, not be hidden, and take up space on screen, so a real user could see it. Other matchers check other things (Phase 3).</li>
+        <li><code>await</code>: <code>toBeVisible</code> doesn't look just once. Playwright keeps checking for up to 5 seconds. If the heading appears, the check passes and the test moves on. If it never does, the test fails, and the report shows what it looked for. <code>await</code> holds the test on this line until that's decided. Leave it out, and the test can finish, even "pass", before the check has run.</li>
+        <li>The line breaks are only for readability. Written on one line, the code does exactly the same thing. Each opening bracket has a closing partner.</li>
+      </ul>
+      <p><strong>Test 2</strong> has the same shape, with one difference: <code>getByRole('textbox', { name: /search gear/i })</code>. A textbox is anything you can type into. The search box has no visible label, so its grey hint text, "Search gear..." (called a <strong>placeholder</strong>), becomes its name.</p>
+      <p><strong>What happens when the check runs:</strong> Playwright builds the description, searches the page, finds only "Loading gear..." at first, waits and searches again, then finds "PeakAndPack Gear" and confirms it's visible. Pass. In the report, that's the "Expect toBeVisible" step and its time.</p>
+    </div>
+  </details>
 
-  <div class="callout amber">
-    <p><strong>Anatomy of a Playwright test.</strong></p>
-    <ul style="margin:.5rem 0 0 1.2rem;">
-      <li><code>test('name', async ({ page }) =&gt; { ... })</code>: the name is what appears in the report.</li>
-      <li><code>page</code>: the browser tab Playwright gives you.</li>
-      <li><code>await</code>: required because everything in Playwright is asynchronous (the browser takes time to respond). Without it, the assertion runs before the page has finished loading and fails every time.</li>
-      <li><code>expect(...).toBeVisible()</code>: the assertion. It waits up to 5 seconds for the condition to be true before failing.</li>
-    </ul>
-  </div>
 
   <h2 id="run-tests">6. Run the tests</h2>
   <pre><code># Runs every test in tests/ with no visible browser (headless)
 npx playwright test</code></pre>
-  <p>Playwright opens the browser invisibly (headless), loads PeakAndPack, runs both tests, and prints the result. To watch it happen in a visible browser:</p>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <p><strong>In plain words:</strong> run all your tests and print the results.</p>
+      <ul>
+        <li><strong>Headless</strong> means the browsers run without opening any windows. It's faster, and it's how tests run on servers, which have no screen.</li>
+        <li><strong>What you'll see:</strong> <code>Running 6 tests using 6 workers</code>, then <code>6 passed</code> and the time. A <strong>worker</strong> is a separate process that runs tests; with several, tests run side by side.</li>
+        <li>If any test fails, Playwright opens the HTML report automatically and keeps the terminal busy showing it. Click in the terminal and press Ctrl+C to get your prompt back.</li>
+      </ul>
+    </div>
+  </details>
+  <p><code>npx</code> runs a tool installed in this project, here Playwright. <code>playwright test</code> finds every file in <code>tests/</code> ending in <code>.spec.ts</code> and runs the tests inside it.</p>
+  <p>Playwright opens the browser invisibly (headless), loads PeakAndPack, runs both tests, and prints the result. Expect to see <strong>6 passed</strong>, not 2. The generated config has a <code>projects</code> list that runs every test in three browsers: Chromium (Chrome's engine), Firefox and WebKit (Safari's engine). That's useful later. Phase 10 covers when to keep all three.</p>
+  <figure class="term-shot">
+    <img src="phase0-six-passed.png" width="1200" height="169" loading="lazy" alt="PowerShell after npx playwright test: Running 6 tests using 6 workers, 6 passed in 17.2 seconds">
+    <figcaption>A passing run: 2 tests in 3 browsers. "6 workers" means Playwright ran all six at the same time, each in its own process, which is why it finishes in seconds.</figcaption>
+  </figure>
+  <div class="callout blue">
+    <p><strong>Every test failed on your first run?</strong> PeakAndPack runs on a free hosting plan that puts its server to sleep when nobody has visited for a while. Waking it takes 30 to 60 seconds, and until then the store shows only "Loading gear...", with no heading and no search box, so the tests fail after waiting their 5 seconds. Open <a href="https://peakandpack-ui.onrender.com" target="_blank" style="color:var(--purple)">the store</a> in your browser, wait until the products appear, and run the tests again. Reading the failure in the report (next step) is how you'd find this out yourself.</p>
+  </div>
+  <p>To watch it happen in a visible browser:</p>
   <pre><code># Same run, but opens a visible browser so you can watch each step
 npx playwright test --headed</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>--headed</code> is an option, like <code>--version</code>, that shows the browser windows. You'll see windows open, the store load, and the windows close, quickly. It's useful for watching what a test really does, but slower than headless.</li>
+        <li>With three browsers in the config, windows from all three open. Add <code>--project=chromium</code> to watch just one.</li>
+      </ul>
+    </div>
+  </details>
   <p>To run just one file:</p>
   <pre><code># Runs only this file, handy while you're still writing it
 npx playwright test tests/first.spec.ts</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>tests/first.spec.ts</code> is the path to one file, starting from the project folder. Playwright runs only the tests in it.</li>
+        <li>Part of the name works too: <code>npx playwright test first</code> runs every test file whose path contains "first".</li>
+        <li>It's handy while you're writing a test: you see results for the file you're working on without waiting for the whole suite.</li>
+      </ul>
+    </div>
+  </details>
+
+  <p><strong>Running tests from VS Code.</strong> Microsoft's <strong>Playwright Test for VS Code</strong> extension lets you run tests with a click. In VS Code, open Extensions (the four-squares icon on the left), search for it, and click Install. A green &#9654; button then appears next to every test, and a Testing panel (the flask icon) lists them all. Keep using the terminal while you learn: it shows what's really happening, and it's exactly what a CI pipeline runs.</p>
+  <details class="explain">
+    <summary>What the extension adds, and when to use it</summary>
+    <div class="explain-body">
+      <p>You don't need it: <code>npx playwright test</code> already runs everything. It makes everyday work faster:</p>
+      <ul>
+        <li><strong>A &#9654; button next to every test</strong>, in the code file. Click it to run that one test, and see a tick or a cross right there.</li>
+        <li><strong>The Testing panel</strong> lists every file and test. Run all of them, one file, or one test, and see which passed.</li>
+        <li><strong>Show browser</strong>: watch the test run in a visible browser, the same as <code>--headed</code>.</li>
+        <li><strong>Pick locator</strong>: point at something on the real page, and it suggests a locator, such as <code>getByRole('button', { name: 'Add to cart' })</code>. Useful in Phase 2.</li>
+        <li><strong>Record new</strong>: click through the site, and it writes test code for you. It's good for seeing how actions become code, but always review what it writes (Phase 13).</li>
+        <li><strong>Debugging</strong>: pause a test on a line and step through it, watching the browser at each step (Phase 4).</li>
+      </ul>
+      <p>Use it as a shortcut once you understand the command it replaces.</p>
+    </div>
+  </details>
 
   <h2 id="html-report">7. Read the HTML report</h2>
   <pre><code># Opens the HTML report from the last run in your browser
 npx playwright show-report</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>show-report</code> opens the report from the last run. Each run replaces the <code>playwright-report/</code> folder in your project with a fresh report.</li>
+        <li>It starts a small web server on your own computer, which is why the browser's address starts with <code>localhost</code>, and why the terminal stays busy. Press Ctrl+C in the terminal when you're done.</li>
+      </ul>
+    </div>
+  </details>
   <p>This opens a browser tab with the full report. Learn to read it now; you will use it constantly. The key sections:</p>
   <ul>
     <li><strong>Summary bar at the top</strong>: total passed, failed, skipped, and total run time at a glance.</li>
-    <li><strong>Test list</strong>: every test with its file, duration, and status. Click any test to expand it.</li>
+    <li><strong>Test list</strong>: every test with its status, the file and line it starts on (<code>first.spec.ts:4</code>), a coloured tag for the browser it ran in, and how long it took. Click a test's name to open it. Clicking the browser tag instead filters the list to that browser: the search box shows <code>p:chromium</code>, and clearing it shows everything again.</li>
+    <li><strong>Test steps</strong>: inside a test, every line that did something is listed with its time. <em>Before Hooks</em> is Playwright preparing a fresh browser tab, and <em>After Hooks</em> is it cleaning up. The steps in between are your own lines, such as <em>Navigate /</em> for <code>page.goto('/')</code>.</li>
     <li><strong>Failure detail</strong>: on a failing test, you see the exact assertion that failed, the expected value, the actual value, and the line number. This is where you start debugging, not the terminal.</li>
     <li><strong>Trace viewer</strong>: if a test was retried (and you set <code>trace: 'on-first-retry'</code> in the config), a trace link appears. Click it to open a full recording of every action the test took, with screenshots at each step and the network requests alongside them. This is Playwright's superpower for debugging failing tests.</li>
   </ul>
+
+  <figure class="term-shot">
+    <img src="phase0-html-report.png" width="2000" height="1044" loading="lazy" alt="The Playwright HTML report: 6 passed, 0 failed, and the two tests from first.spec.ts listed once each for chromium, firefox and webkit, with durations from 1.3 to 14.5 seconds">
+    <figcaption>The report after a passing run. Notice the durations: the Firefox runs took over 13 seconds while the others took under 2. Spotting an outlier like that is the kind of thing the report is for.</figcaption>
+  </figure>
 
   <h2 id="after-right-setup">8. After: what you have now versus the wrong start</h2>
   <div class="callout green">
@@ -351,7 +694,7 @@ npx playwright show-report</code></pre>
 
 # Test 1: the product list loads
 def test_product_list_heading_is_visible(page: Page):
-    page.goto("/")  # "/" is relative to the base URL, same as the TypeScript config
+    page.goto("/")  # "/" is relative to the base URL, set with pytest --base-url
     expect(page.get_by_role("heading", name="peakandpack")).to_be_visible()
 
 # Test 2: the search box is available
@@ -359,6 +702,20 @@ def test_product_search_is_available(page: Page):
     page.goto("/")
     expect(page.get_by_role("textbox", name="search gear")).to_be_visible()
 </code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <p><strong>In plain words:</strong> the same two tests, written in Python. You don't need this for the series; it's here to show that the ideas carry across languages.</p>
+      <ul>
+        <li><code>from playwright.sync_api import Page, expect</code> is Python's version of <code>import</code>. In <code>sync_api</code>, Playwright's Python style, each step finishes before the next one starts by itself, so there's no <code>await</code>.</li>
+        <li><code>def test_product_list_heading_is_visible(page: Page):</code>: <code>def</code> creates a function. Python's test runner, <strong>pytest</strong>, runs every function whose name starts with <code>test_</code>. <code>page: Page</code> receives the browser tab, like <code>({ page })</code>.</li>
+        <li>Python groups a test's lines by indenting them, where TypeScript uses <code>{ }</code>.</li>
+        <li><code>get_by_role</code> and <code>to_be_visible</code> are the same tools, in Python's naming style: words joined by underscores.</li>
+        <li><code>name="peakandpack"</code> is plain text, not a pattern. A plain-text name already ignores case and matches part of the full name, so it still finds "PeakAndPack Gear". (The TypeScript version uses a pattern to show the technique; plain text would work there too.)</li>
+        <li>Python has no <code>playwright.config.ts</code>. You give the base URL when running the tests: <code>pytest --base-url https://peakandpack-ui.onrender.com</code>.</li>
+      </ul>
+    </div>
+  </details>
 
   <div class="callout red">
     <p><strong>Common mistakes in Phase 0.</strong></p>
@@ -395,6 +752,15 @@ def test_product_search_is_available(page: Page):
   await expect(page).toHaveTitle(/react app/i);
 });
 </code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>expect(page).toHaveTitle(...)</code> checks the page's <strong>title</strong>: the text on the browser tab, not something inside the page. That's why it checks <code>page</code> directly instead of a locator.</li>
+        <li><code>/react app/i</code> is a pattern, as in step 5. PeakAndPack's tab still says "React App", the default from the tool it was built with. It's a real finding: a generic title doesn't tell users, or search engines, which site they're on.</li>
+      </ul>
+    </div>
+  </details>
       <p><strong>Why this works.</strong> <code>toHaveTitle()</code> checks the document <code>&lt;title&gt;</code> element. The regex matches the actual title, the unedited default. A regex is still the right call over a hardcoded exact string: if the title ever gets a proper subtitle added later, a test written as <code>/react app/i</code> breaks the moment it's fixed, which is exactly the signal you want, prompting you to update the test to match the (now-correct) new title.</p>
       <p><strong>What to watch out for.</strong> <code>toHaveTitle()</code> does not need a locator: it acts on the page directly. A common mistake is writing <code>expect(page.getByRole('heading')).toHaveTitle()</code>, which fails because <code>toHaveTitle</code> is a page-level assertion, not a locator assertion.</p>
     </div>
@@ -413,6 +779,8 @@ def test_product_search_is_available(page: Page):
       <li>Fix the test, set <code>retries</code> back to <code>process.env.CI ? 2 : 0</code>, and confirm it passes again.</li>
     </ol>
   </div>
+
+  <p style="margin:2rem 0 0"><strong>Check what stuck:</strong> <a href="playwrightseries-revision.html" style="color:var(--purple)">answer this phase's revision questions from memory</a>, then open each recap to check.</p>
 
   <div class="series-nav">
     <span class="label">Navigate the series</span>

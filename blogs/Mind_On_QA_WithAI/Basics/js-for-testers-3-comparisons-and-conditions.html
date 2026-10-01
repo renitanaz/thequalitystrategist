@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>(function(){try{if(localStorage.getItem('pw-theme')==='light'){document.documentElement.setAttribute('data-theme','light');}}catch(e){}})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comparisons and Conditions | JavaScript for Testers</title>
+<meta name="description" content="JavaScript for Testers, part 3: comparing values, strict and loose equality, and converting text to numbers, explained for testers.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+  --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+  --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.09); --purple-border:rgba(167,139,250,0.35);
+  --green:#4ade80; --green-bg:rgba(74,222,128,0.07); --green-border:rgba(74,222,128,0.25);
+  --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07); --blue-border:rgba(96,165,250,0.25);
+  --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07); --amber-border:rgba(251,191,36,0.25);
+  --red:#f87171; --red-bg:rgba(248,113,113,0.07); --red-border:rgba(248,113,113,0.25);
+  --ff-serif:'DM Serif Display',Georgia,serif; --ff-sans:'DM Sans',system-ui,sans-serif;
+}
+:root[data-theme="light"]{
+  --bg:#FAFCF5; --bg2:#F5F7F0; --bg3:#EDF0E4; --border:#DEE3D3;
+  --text:#1A1F14; --text-2:#3D4235; --text-3:#6B7060;
+  --purple:#7A4A9A; --purple-bg:#EDE0F5; --purple-border:rgba(122,74,154,0.35);
+  --green:#1A7A3A; --green-bg:#D8F0E0; --green-border:rgba(26,122,58,0.25);
+  --blue:#2A5C9A; --blue-bg:#DDE8F5; --blue-border:rgba(42,92,154,0.25);
+  --amber:#9A6E1A; --amber-bg:#F5EDD6; --amber-border:rgba(154,110,26,0.25);
+  --red:#B0402E; --red-bg:#F5DEDA; --red-border:rgba(176,64,46,0.25);
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body{background:var(--bg);color:var(--text);font-family:var(--ff-sans);font-size:16px;line-height:1.8;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.skip-link{position:absolute;top:-100%;left:1rem;background:var(--green);color:#000;padding:.5rem 1rem;border-radius:0 0 6px 6px;font-size:.85rem;font-weight:500;text-decoration:none;z-index:999}
+.skip-link:focus{top:0}
+nav.site-nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:56px}
+.nav-logo{font-family:var(--ff-serif);font-size:1rem;color:var(--text);text-decoration:none}
+.theme-toggle{background:var(--bg3);border:1px solid var(--border);color:var(--text-2);border-radius:8px;padding:.4rem .8rem;font-size:.78rem;cursor:pointer;font-family:var(--ff-sans);}
+.theme-toggle:hover{border-color:var(--purple);color:var(--text)}
+main{max-width:900px;margin:0 auto;padding:3rem 1.5rem 5rem}
+.breadcrumb{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.breadcrumb a{color:var(--text-3);text-decoration:none}
+.breadcrumb a:hover{color:var(--purple)}
+.series-tag{font-size:.7rem;padding:4px 11px;border-radius:99px;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);letter-spacing:.04em;text-transform:uppercase;font-weight:500;display:inline-block;margin-bottom:1.25rem}
+h1{font-family:var(--ff-serif);font-size:clamp(1.85rem,4vw,2.6rem);line-height:1.2;color:var(--purple);margin-bottom:.75rem;font-weight:400}
+.subtitle{font-family:var(--ff-serif);font-size:1.1rem;font-style:italic;color:var(--text-3);margin-bottom:1.5rem;max-width:680px}
+.meta-row{display:flex;align-items:center;gap:1.25rem;font-size:.82rem;color:var(--text-3);flex-wrap:wrap;margin-bottom:1.6rem;padding-bottom:1.3rem;border-bottom:1px solid var(--border)}
+h2{font-family:var(--ff-serif);font-size:1.5rem;font-weight:400;color:var(--text);margin:3.5rem 0 1.1rem;padding-top:1rem;border-top:1px solid var(--border)}
+h3{font-size:1rem;font-weight:500;color:var(--text);margin:1.75rem 0 .5rem}
+p{color:var(--text-2);margin-bottom:1.25rem;font-weight:300}
+strong{color:var(--text);font-weight:500}
+ul,ol{padding-left:1.4rem;margin-bottom:1.25rem;color:var(--text-2);font-weight:300}
+li{margin-bottom:.45rem}
+.goal-list{list-style:none;padding-left:1.4rem}
+.goal-list li{position:relative}
+.goal-list li::before{content:"";position:absolute;left:-1.3rem;top:.48em;width:.85rem;height:.85rem;border:1.5px solid var(--purple);border-radius:3px}
+code{background:var(--bg3);padding:1px 6px;border-radius:3px;font-size:.85em;color:var(--text-2);font-family:monospace}
+pre{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:1rem 1.1rem;font-family:monospace;font-size:.82rem;color:var(--text-2);line-height:1.65;overflow-x:auto;margin:1rem 0}
+pre code{background:none;padding:0;color:inherit}
+.callout{display:block;background:var(--blue-bg);border-left:3px solid var(--blue);border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.95rem;color:var(--text);line-height:1.7}
+.callout p{margin-bottom:0;color:var(--text-2)}
+.callout.amber{background:var(--amber-bg);border-color:var(--amber)}
+.callout.green{background:var(--green-bg);border-color:var(--green)}
+.callout.red{background:var(--red-bg);border-color:var(--red)}
+.callout.blue{background:var(--blue-bg);border-color:var(--blue)}
+.callout.purple{background:var(--purple-bg);border-color:var(--purple)}
+.table-wrap{display:block;overflow-x:auto;margin:1.5rem 0;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+thead th{background:var(--bg2);padding:9px 13px;text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);font-weight:500;border-bottom:1px solid var(--border)}
+tbody td{padding:9px 13px;border-bottom:1px solid var(--border);color:var(--text-2);vertical-align:top;line-height:1.55;font-size:.85rem}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--bg2)}
+/* Phase progress strip */
+.phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem}
+.phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--text-3);background:var(--bg2);text-decoration:none}
+.phase-pip:hover{border-color:var(--purple);color:var(--text)}
+.phase-pip.active{background:var(--purple);color:#0d0d0d;border-color:transparent}
+.phase-pip.done{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+/* Before/After blocks */
+.ba-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0}
+.ba-block{border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+.ba-label{padding:.4rem .8rem;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.ba-block.before .ba-label{background:var(--red-bg);color:var(--red)}
+.ba-block.after .ba-label{background:var(--green-bg);color:var(--green)}
+.ba-block pre{margin:0;border-radius:0;border:none}
+/* Assignment / bonus blocks */
+.assignment{background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:12px;padding:1.2rem 1.4rem;margin:4.5rem 0 1rem}
+.assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem}
+.assignment h3{font-family:var(--ff-serif);color:var(--text);margin-top:.2rem;margin-bottom:.5rem;font-weight:400}
+.bonus{background:var(--purple-bg);border:1px solid var(--purple-border);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem}
+.bonus .b-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--purple);margin-bottom:.4rem}
+/* Collapsible solution */
+details.solution{margin:1rem 0 2rem;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+details.solution summary{padding:.9rem 1.2rem;cursor:pointer;font-weight:700;font-size:.92rem;background:var(--bg2);list-style:none;display:flex;align-items:center;gap:.5rem;color:var(--text)}
+details.solution summary::-webkit-details-marker{display:none}
+details.solution summary::before{content:"\25B6";font-size:.7rem;color:var(--text-3);transition:transform .2s}
+details.solution[open] summary::before{transform:rotate(90deg)}
+.solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border)}
+.solution-body p{font-size:.92rem}
+.series-nav{margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border)}
+.series-nav .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);font-weight:500;margin-bottom:.75rem;display:block}
+.nav-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.nav-blog{display:flex;align-items:center;gap:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.25rem;text-decoration:none;transition:border-color .2s,background .2s}
+.nav-blog:hover{border-color:var(--purple);background:var(--bg3)}
+.nav-blog-arrow{color:var(--text-3);font-size:1rem;flex-shrink:0}
+.nav-blog-title{font-size:.88rem;font-weight:500;color:var(--text)}
+.nav-blog-sub{font-size:.75rem;color:var(--text-3);margin-top:2px}
+footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.8rem;color:var(--text-3)}
+footer a{color:var(--text-3);text-decoration:none}
+footer a:hover{color:var(--purple)}
+@media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
+.blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
+.blog-tags .series-tag{margin-bottom:0}
+.tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+.term-shot{margin:1.2rem 0}
+.term-shot img{display:block;max-width:100%;height:auto;border:1px solid var(--border);border-radius:8px}
+.term-shot figcaption{font-size:.8rem;color:var(--text-3);margin-top:.5rem;line-height:1.5}
+/* Collapsible code explanations */
+details.explain{margin:.5rem 0 1.5rem;border:1px solid var(--purple-border);border-radius:10px;background:var(--purple-bg)}
+details.explain summary{padding:.6rem 1rem;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--purple);list-style:none;display:flex;align-items:center;gap:.5rem}
+details.explain summary::-webkit-details-marker{display:none}
+details.explain summary::before{content:"\25B6";font-size:.65rem;transition:transform .2s}
+details.explain[open] summary::before{transform:rotate(90deg)}
+.explain-body{padding:.1rem 1.2rem 1rem;font-size:.92rem;line-height:1.7}
+.explain-body p{margin:.7rem 0}
+.explain-body ul{margin:.3rem 0 .7rem 1.2rem;padding-left:0}
+.explain-body li{margin-bottom:.35rem}
+.explain-body pre{margin:.6rem 0}
+</style>
+<meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Playwright: Zero to Architect, by The Quality Strategist. A complete automation series: 16 phases in 4 stages, built against a real app, PeakAndPack.">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+/* Diagrams */
+.dg{margin:1.4rem 0;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1rem 1rem .8rem;overflow-x:auto}
+.dg svg{display:block;width:100%;height:auto;max-width:700px;margin:0 auto;min-width:480px}
+.dg figcaption{font-size:.8rem;color:var(--text-3);text-align:center;margin-top:.6rem;line-height:1.5}
+.dg-box{fill:var(--bg);stroke:var(--border);stroke-width:1.5}
+.dg-acc{stroke:var(--purple)}
+.dg-dash{stroke-dasharray:6 5}
+.dg-okb{stroke:var(--green)}
+.dg-badb{stroke:var(--red)}
+.dg-t{fill:var(--text);font:13px var(--ff-sans)}
+.dg-h{fill:var(--text);font:700 13px var(--ff-sans)}
+.dg-c{fill:var(--text);font:13px ui-monospace,Consolas,monospace}
+.dg-cs{fill:var(--text);font:11.5px ui-monospace,Consolas,monospace}
+.dg-big{fill:var(--text);font:700 20px ui-monospace,Consolas,monospace}
+.dg-m{fill:var(--text-3);font:12px var(--ff-sans)}
+.dg-ms{fill:var(--text-3);font:11px var(--ff-sans)}
+.dg-p{fill:var(--purple)}
+.dg-ok{fill:var(--green)}
+.dg-bad{fill:var(--red)}
+.dg-amb{fill:var(--amber)}
+.dg-line{stroke:var(--text-3);stroke-width:1.5;fill:none}
+.dg-head{fill:var(--text-3)}
+.dg-fill-p{fill:var(--purple-bg);stroke:var(--purple);stroke-width:1.5}
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a class="nav-logo" href="../../../index.html">The Quality Strategist</a>
+  <button class="theme-toggle" id="themeToggle" type="button">Light</button>
+</nav>
+
+<main id="main-content">
+
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="../../../blogs.html">Blogs</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <span>JavaScript for Testers</span>
+    <span aria-hidden="true">&rsaquo;</span>
+    <span aria-current="page">Part 3</span>
+  </nav>
+
+  <div class="blog-tags" aria-label="Blog categories" role="group">
+    <span class="series-tag">JavaScript for Testers &middot; Part 3</span>
+    <span class="tag">Comparisons</span>
+    <span class="tag">Equality</span>
+    <span class="tag">Logical Operators</span>
+    <span class="tag">Conditions</span>
+  </div>
+
+  <h1>Comparisons and Conditions</h1>
+  <p class="subtitle">Every check a test makes comes down to comparing two values. Here's how JavaScript compares, and the traps that make a correct-looking check give the wrong answer.</p>
+
+  <div class="meta-row">
+    <span><strong>Series: JavaScript for Testers</strong></span>
+    <span>Demo: PeakAndPack</span>
+    <span>By: RN</span>
+  </div>
+
+  <div class="callout amber">
+    <p><strong>Draft.</strong> Structured from study notes; every example still needs running during review.</p>
+  </div>
+
+  <h2>Goal</h2>
+  <ul class="goal-list">
+    <li>Compare numbers with <code>&gt;</code>, <code>&lt;</code>, <code>&gt;=</code> and <code>&lt;=</code></li>
+    <li>Check equality with <code>===</code> and <code>!==</code>, and know why to avoid <code>==</code></li>
+    <li>Convert text read from a page into a number before comparing it</li>
+    <li>Know why two identical-looking objects aren't "equal"</li>
+    <li>Combine checks with <code>&amp;&amp;</code>, <code>||</code> and <code>!</code></li>
+    <li>Choose what code runs with <code>if</code>, <code>else if</code> and <code>else</code></li>
+  </ul>
+
+  <h2 id="why">1. Why testers need this</h2>
+  <p>A test is a list of checks, and every check is a comparison: is the price at least zero, is the cart count what we expect, is the heading the one we want. Playwright's checks, like <code>expect(price).toBeGreaterThanOrEqual(0)</code>, are these same comparisons with better error messages. Knowing how JavaScript compares tells you why a check passed or failed, and catches the cases where it gives the wrong answer quietly.</p>
+
+  <h2 id="comparison">2. Comparing numbers</h2>
+  <p>Comparison operators ask a question about two values, and the answer is always a boolean: <code>true</code> or <code>false</code>.</p>
+  <pre><code>const price = -89; // PeakAndPack's Sleeping Bag, a known bug
+
+console.log(price > 0);  // false: is it more than 0?
+console.log(price &lt; 0);  // true:  is it less than 0?
+console.log(price >= 0); // false: is it 0 or more?
+console.log(5 >= 5);     // true:  5 is not more than 5, but it is equal
+console.log(4 &lt;= 5);     // true:  4 is less than 5
+
+// The answer can be stored, like any value
+const isValidPrice = price >= 0;
+console.log(isValidPrice, typeof isValidPrice); // false boolean</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li>Each operator compares the value on its left with the value on its right:
+          <ul>
+            <li><code>&gt;</code> more than, <code>&lt;</code> less than;</li>
+            <li><code>&gt;=</code> more than or equal to, <code>&lt;=</code> less than or equal to.</li>
+          </ul>
+        </li>
+        <li>The difference between <code>&gt;</code> and <code>&gt;=</code> only shows when the two sides are equal: <code>5 &gt; 5</code> is false, <code>5 &gt;= 5</code> is true. Choosing the wrong one is a classic boundary bug, the kind Boundary Value Analysis in the Playwright series' Phase 1 is designed to catch.</li>
+        <li><code>price &gt;= 0</code> is the business rule "a price can't be negative" written as code. On the Sleeping Bag, it's <code>false</code>: the check catches the bug.</li>
+        <li>The result is an ordinary boolean, so you can store it in a variable and use it later.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2 id="equality">3. Equality: <code>===</code>, not <code>==</code></h2>
+  <p>To check whether two values are the same, use three equals signs. To check they're different, use <code>!==</code>:</p>
+  <pre><code>console.log('Headlamp' === 'Headlamp'); // true
+console.log('Headlamp' === 'headlamp'); // false: capitals matter
+console.log('Headlamp' !== 'Tent');     // true: they're different
+
+// Same-looking values of different types
+console.log(89 === '89');  // false: a number is not text
+console.log(89 == '89');   // true:  == converts one side first</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>===</code> is <strong>strict equality</strong>: true only if the value <em>and</em> the type are the same.</li>
+        <li><code>!==</code> is its opposite: true when they differ, in value or type.</li>
+        <li><code>==</code> is <strong>loose equality</strong>: it quietly converts one side to the other's type before comparing. That's why <code>89 == '89'</code> is true.</li>
+        <li>Remember from Part 1: a single <code>=</code> doesn't compare at all, it stores a value. Writing <code>=</code> where you meant <code>===</code> is a common slip.</li>
+        <li>Text comparisons are exact: <code>'Headlamp'</code> and <code>'headlamp'</code> are different.</li>
+      </ul>
+    </div>
+  </details>
+  <div class="callout red">
+    <p><strong>Why to avoid <code>==</code>:</strong> its conversions produce surprises. <code>0 == ''</code> is <code>true</code>, <code>1 == true</code> is <code>true</code>, and <code>null == undefined</code> is <code>true</code>. A test using <code>==</code> can pass when the values really are different. Use <code>===</code> and <code>!==</code> every time; Playwright's <code>toBe</code> check works the same strict way.</p>
+  </div>
+
+  <h2 id="convert">4. Converting text before comparing</h2>
+  <p>Anything a test reads from a page is text, prices included (Part 1). Compared strictly with a number, it's never equal. Convert it with <code>Number()</code> first:</p>
+  <pre><code>const priceFromPage = '89.00';
+
+console.log(priceFromPage === 89);         // false: text vs number
+console.log(Number(priceFromPage) === 89); // true:  both numbers now
+
+// The $ sign has to go first
+console.log(Number('$34.99')); // NaN: "Not a Number"
+console.log(Number('34.99'));  // 34.99
+
+// And an empty string quietly becomes 0
+console.log(Number(''));       // 0</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>Number(text)</code> turns text that looks like a number into a real number.</li>
+        <li>If the text isn't purely a number, the result is <code>NaN</code>, short for "Not a Number". <code>'$34.99'</code> fails because of the <code>$</code>. Prices on PeakAndPack's pages include it, so it has to be removed before converting. The Playwright series shows how in Phase 3.</li>
+        <li><code>Number('')</code> gives <code>0</code>, not an error. If a test reads an empty price and converts it, a check like "price is 0 or more" passes on a blank value. Check the text isn't empty first.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2 id="objects">5. Comparing objects and arrays</h2>
+  <p>Objects and arrays are compared by <em>identity</em>, not by what's inside them:</p>
+  <figure class="dg">
+    <svg viewBox="0 0 640 190" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three names and two objects. expected and sameOne both point to the same object holding id 1 and name Headlamp. actual points to a second, separate object with the same contents. expected === sameOne is true; expected === actual is false."><defs><marker id="c1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-head" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<text class="dg-c dg-p" x="40" y="48">expected</text>
+<text class="dg-c dg-p" x="40" y="88">sameOne</text>
+<text class="dg-c dg-p" x="40" y="150">actual</text>
+<rect class="dg-box dg-acc" x="300" y="35" width="270" height="56" rx="10"/><text class="dg-cs" x="435" y="68" text-anchor="middle">{ id: 1, name: 'Headlamp' }</text>
+<rect class="dg-box dg-acc" x="300" y="125" width="270" height="50" rx="10"/><text class="dg-cs" x="435" y="155" text-anchor="middle">{ id: 1, name: 'Headlamp' }</text>
+<path class="dg-line" d="M120,44 C200,44 220,55 296,58" marker-end="url(#c1)"/>
+<path class="dg-line" d="M118,84 C200,84 220,70 296,68" marker-end="url(#c1)"/>
+<path class="dg-line" d="M100,146 C200,146 220,150 296,150" marker-end="url(#c1)"/>
+<text class="dg-ms dg-ok" x="300" y="22">one object, two names: === is true</text>
+<text class="dg-ms dg-bad" x="300" y="188">a separate object, same contents: === is false</text></svg>
+    <figcaption><code>===</code> on objects asks whether two names point to the very same object, not whether the contents match.</figcaption>
+  </figure>
+  <pre><code>const expected = { id: 1, name: 'Headlamp' };
+const actual = { id: 1, name: 'Headlamp' };
+const sameOne = expected;
+
+console.log(expected === actual);  // false: two separate objects
+console.log(expected === sameOne); // true:  the very same object
+console.log([1, 2] === [1, 2]);    // false: two separate arrays</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>===</code> on objects asks "is this the very same object?", not "do they hold the same things?". <code>expected</code> and <code>actual</code> hold identical values, but they're two separate objects, so the answer is false.</li>
+        <li><code>sameOne = expected</code> doesn't copy anything; both names point to one object, so the answer is true.</li>
+        <li>That's why Playwright has two checks: <code>toBe</code> works like <code>===</code>, and <code>toEqual</code> compares what's inside. Comparing an API response with the object you expected needs <code>toEqual</code>.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2 id="logical">6. Combining checks: <code>&amp;&amp;</code>, <code>||</code> and <code>!</code></h2>
+  <p>Business rules usually have more than one condition: you can buy an item if it's in stock <em>and</em> the quantity is available <em>and</em> the price is valid. Logical operators join comparisons into one answer:</p>
+  <pre><code>const inStock = true;
+const stock = 5;
+const quantity = 3;
+const price = 34.99;
+
+// AND: every part must be true
+const canBuy = inStock &amp;&amp; quantity &lt;= stock &amp;&amp; price &gt;= 0;
+console.log(canBuy); // true
+
+// OR: at least one part must be true
+const isMember = false;
+const hasCode = true;
+console.log(isMember || hasCode); // true: gets the discount either way
+
+// NOT: flips true and false
+const isLoggedIn = false;
+console.log(!isLoggedIn); // true: "not logged in" is true</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>&amp;&amp;</code> (AND) is true only if <em>every</em> part is true. One false part makes the whole thing false. <code>canBuy</code> is true because all three checks pass.</li>
+        <li><code>||</code> (OR) is true if <em>any</em> part is true. It's false only when every part is false. The two vertical bars are on the backslash key on most keyboards.</li>
+        <li><code>!</code> (NOT) flips a boolean: <code>!true</code> is <code>false</code>. Read <code>!isLoggedIn</code> as "not logged in". <code>!==</code> from section 3 is the same idea built into one operator: <code>!(6 === 10)</code> and <code>6 !== 10</code> both give <code>true</code>.</li>
+        <li>When you mix <code>&amp;&amp;</code> and <code>||</code>, JavaScript does the <code>&amp;&amp;</code> parts first, like multiplication before addition. Add brackets to make your meaning clear: <code>(isMember || hasCode) &amp;&amp; inStock</code>.</li>
+      </ul>
+    </div>
+  </details>
+  <p><strong>Beyond true and false.</strong> <code>&amp;&amp;</code>, <code>||</code> and <code>!</code> also work on values that aren't booleans. JavaScript treats six values as "false-like" (called <strong>falsy</strong>): <code>false</code>, <code>0</code>, <code>''</code> (empty text), <code>null</code>, <code>undefined</code> and <code>NaN</code>. Everything else counts as true. Two patterns use this, and you'll meet both in test configs:</p>
+  <pre><code>// !! turns any value into a plain true or false
+console.log(!!'Headlamp'); // true:  non-empty text
+console.log(!!'');         // false: empty text is falsy
+console.log(!!'0');        // true:  the TEXT "0" isn't empty
+console.log(!!process.env.CI); // false on your laptop, true on a CI server
+
+// || picks the first value that isn't falsy: a default
+const baseUrl = process.env.BASE_URL || 'https://peakandpack-ui.onrender.com';
+console.log(baseUrl); // the fallback address, unless BASE_URL is set</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>!!</code> is two NOTs: the first flips the value into a boolean, the second flips it back. The result is "is this value true-like?" as a plain <code>true</code> or <code>false</code>. Phase 0's config uses it: <code>forbidOnly: !!process.env.CI</code> means "true if the CI variable is set".</li>
+        <li><code>'0'</code> is text with one character in it, so it's not empty and counts as true. Only the <em>number</em> <code>0</code> is falsy.</li>
+        <li><code>a || b</code> gives back <code>a</code> if it's true-like, otherwise <code>b</code>. With <code>process.env.BASE_URL || '...'</code>, a test can be pointed at a different site by setting <code>BASE_URL</code>, and falls back to the live store when it isn't set.</li>
+        <li><strong>The trap:</strong> <code>||</code> can't tell "missing" from a real <code>0</code> or <code>''</code>. <code>const quantity = 0 || 1;</code> gives <code>1</code>, quietly replacing a real quantity of zero. For numbers that can legitimately be 0, compare explicitly instead.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2 id="conditions">7. Conditions: choosing what runs</h2>
+  <p>So far every line has run, top to bottom. A condition makes code choose: run this block if something is true, otherwise run that one. Here's PeakAndPack's stock label as code:</p>
+  <figure class="dg">
+    <svg viewBox="0 0 640 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Flowchart. Start with stock. First question: stock === 0? If yes, Out of stock. If no, second question: stock less than 5? If yes, Only N left. If no, In stock. Only one box runs."><defs><marker id="c3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-head" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="dg-fill-p" x="140" y="10" width="140" height="34" rx="17"/><text class="dg-c" x="210" y="32" text-anchor="middle">stock = 3</text>
+<path class="dg-line" d="M210,44 v18" marker-end="url(#c3)"/>
+<polygon class="dg-box dg-acc" points="210,66 300,106 210,146 120,106"/><text class="dg-cs" x="210" y="110" text-anchor="middle">stock === 0 ?</text>
+<path class="dg-line" d="M300,106 h96" marker-end="url(#c3)"/><text class="dg-ms dg-ok" x="345" y="98" text-anchor="middle">yes</text>
+<rect class="dg-box dg-badb" x="400" y="88" width="170" height="36" rx="8"/><text class="dg-t" x="485" y="111" text-anchor="middle">'Out of stock'</text>
+<path class="dg-line" d="M210,146 v18" marker-end="url(#c3)"/><text class="dg-ms dg-bad" x="224" y="160">no</text>
+<polygon class="dg-box dg-acc" points="210,168 300,208 210,248 120,208"/><text class="dg-cs" x="210" y="212" text-anchor="middle">stock &lt; 5 ?</text>
+<path class="dg-line" d="M300,208 h96" marker-end="url(#c3)"/><text class="dg-ms dg-ok" x="345" y="200" text-anchor="middle">yes</text>
+<rect class="dg-box" x="400" y="190" width="170" height="36" rx="8" style="stroke:var(--amber);stroke-width:2.5"/><text class="dg-t" x="485" y="213" text-anchor="middle">'Only 3 left'  &#8592; runs</text>
+<path class="dg-line" d="M210,248 v18" marker-end="url(#c3)"/><text class="dg-ms dg-bad" x="224" y="262">no</text>
+<rect class="dg-box dg-okb" x="125" y="268" width="170" height="30" rx="8"/><text class="dg-t" x="210" y="288" text-anchor="middle">'In stock'</text></svg>
+    <figcaption>Each condition is checked only if the ones above were false. The first <em>yes</em> wins, and the rest are skipped.</figcaption>
+  </figure>
+  <pre><code>const stock = 3;
+
+if (stock === 0) {
+  console.log('Out of stock');
+} else if (stock &lt; 5) {
+  console.log(`Only ${stock} left`);
+} else {
+  console.log('In stock');
+}
+// Only 3 left</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>if (condition) { ... }</code>: the condition in the round brackets is checked; if it's true, the code in the curly braces runs.</li>
+        <li><code>else if (condition) { ... }</code> is checked only if everything above it was false. You can have as many as you need.</li>
+        <li><code>else { ... }</code> runs when nothing above was true. It's optional, and has no condition.</li>
+        <li><strong>Only one block runs</strong>: the first whose condition is true. The rest are skipped, even if their conditions are also true.</li>
+        <li>The condition can be any comparison or combination from the sections above: <code>stock &gt;= 1 &amp;&amp; stock &lt; 5</code>, <code>isMember || hasCode</code>, <code>!isLoggedIn</code>.</li>
+        <li>Change <code>stock</code> to <code>0</code>, then <code>5</code>, and rerun to see each block run.</li>
+      </ul>
+    </div>
+  </details>
+  <p><strong>The boundaries live in the conditions.</strong> This code has two: 0, where "Out of stock" begins, and 5, where "In stock" begins. Testing it properly means checking the values on each side, 0, 1, 4 and 5, the Boundary Value Analysis from the Playwright series' Phase 1.</p>
+  <figure class="dg">
+    <svg viewBox="0 0 680 170" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A number line for stock from 0 to 7. 0 is Out of stock. 1 to 4 is Only N left. 5 and above is In stock. The test values 0, 1, 4 and 5 are circled, on each side of the two boundaries."><defs><marker id="c2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-head" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<path class="dg-line" d="M40,80 H640" marker-end="url(#c2)"/>
+<path class="dg-line" d="M60,74 v12"/><text class="dg-c" x="60" y="108" text-anchor="middle">0</text><path class="dg-line" d="M135,74 v12"/><text class="dg-c" x="135" y="108" text-anchor="middle">1</text><path class="dg-line" d="M210,74 v12"/><text class="dg-c" x="210" y="108" text-anchor="middle">2</text><path class="dg-line" d="M285,74 v12"/><text class="dg-c" x="285" y="108" text-anchor="middle">3</text><path class="dg-line" d="M360,74 v12"/><text class="dg-c" x="360" y="108" text-anchor="middle">4</text><path class="dg-line" d="M435,74 v12"/><text class="dg-c" x="435" y="108" text-anchor="middle">5</text><path class="dg-line" d="M510,74 v12"/><text class="dg-c" x="510" y="108" text-anchor="middle">6</text><path class="dg-line" d="M585,74 v12"/><text class="dg-c" x="585" y="108" text-anchor="middle">7</text>
+<circle cx="60" cy="80" r="11" fill="none" style="stroke:var(--red);stroke-width:2"/>
+<circle cx="135" cy="80" r="11" fill="none" style="stroke:var(--amber);stroke-width:2"/>
+<circle cx="360" cy="80" r="11" fill="none" style="stroke:var(--amber);stroke-width:2"/>
+<circle cx="435" cy="80" r="11" fill="none" style="stroke:var(--green);stroke-width:2"/>
+<text class="dg-t dg-bad" x="60" y="40" text-anchor="middle">Out of stock</text>
+<path class="dg-line" d="M135,52 v-6 h225 v6" style="stroke:var(--amber)"/><text class="dg-t dg-amb" x="247" y="38" text-anchor="middle">Only N left</text>
+<path class="dg-line" d="M435,52 v-6 h195" style="stroke:var(--green)"/><text class="dg-t dg-ok" x="530" y="38" text-anchor="middle">In stock</text>
+<path class="dg-line" d="M97,62 v60" style="stroke-dasharray:4 4"/><path class="dg-line" d="M397,62 v60" style="stroke-dasharray:4 4"/>
+<text class="dg-ms" x="97" y="140" text-anchor="middle">boundary</text><text class="dg-ms" x="397" y="140" text-anchor="middle">boundary</text>
+<text class="dg-m" x="340" y="162" text-anchor="middle">circled: the four values to test</text></svg>
+    <figcaption>Two boundaries, two values on each side: 0, 1, 4 and 5. A wrong <code>&lt;</code> or <code>&lt;=</code> shows up at exactly these values.</figcaption>
+  </figure>
+  <div class="callout amber">
+    <p><strong>Order matters.</strong> Swap the first two conditions, checking <code>stock &lt; 5</code> before <code>stock === 0</code>, and a stock of 0 shows "Only 0 left": 0 is less than 5, so that block wins and the "Out of stock" check never runs. Put the most specific condition first.</p>
+  </div>
+  <p><strong>A one-line if/else.</strong> When you just need to choose between two values, <code>? :</code> does it in one line. You've seen it in Phase 0's config:</p>
+  <pre><code>const isCI = false;
+
+// question ? value-if-true : value-if-false
+const retries = isCI ? 2 : 0;
+console.log(retries); // 0
+
+// A condition can use a falsy value directly (section 6)
+const discountCode = null;
+if (discountCode) {
+  console.log(`Apply ${discountCode}`);
+} else {
+  console.log('No code'); // runs: null is falsy
+}</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>isCI ? 2 : 0</code> reads "is it CI? then 2, otherwise 0". It's called the <strong>ternary operator</strong>, and it gives back a value, so you can store it, which a full <code>if</code> can't do directly.</li>
+        <li><code>if (discountCode)</code> works without a comparison: the condition is falsy for <code>null</code>, <code>''</code>, <code>0</code> and the rest, and true-like otherwise. Remember the trap from section 6: a real <code>0</code> counts as falsy too.</li>
+      </ul>
+    </div>
+  </details>
+  <div class="callout blue">
+    <p><strong>In tests, be careful with <code>if</code>.</strong> A test that checks something only <em>if</em> a condition holds can pass without checking anything: the condition was false, so the check never ran, and the test still shows green. A test should check the same things every run. Conditions belong in setup and helpers, such as closing a cookie banner if one appears, not around the checks themselves.</p>
+  </div>
+
+  <div class="callout red">
+    <p><strong>Common mistakes.</strong></p>
+    <ul style="margin:.5rem 0 0 1.2rem;">
+      <li><strong>Using <code>==</code>.</strong> It converts types behind your back. Use <code>===</code>.</li>
+      <li><strong>Comparing page text with a number.</strong> Convert with <code>Number()</code> first, after removing symbols like <code>$</code>.</li>
+      <li><strong>Choosing <code>&gt;</code> when the rule says "or equal".</strong> "At least 0" is <code>&gt;= 0</code>; "more than 0" is <code>&gt; 0</code>. The boundary value is where they differ.</li>
+      <li><strong>Mixing <code>&amp;&amp;</code> and <code>||</code> without brackets.</strong> The <code>&amp;&amp;</code> parts run first, which may not be what you meant. Brackets make it explicit.</li>
+      <li><strong>Using <code>||</code> for a default when 0 is a valid value.</strong> <code>0 || 1</code> is <code>1</code>.</li>
+      <li><strong>Putting a broad condition before a specific one.</strong> The first true condition wins, so <code>stock &lt; 5</code> before <code>stock === 0</code> means the zero case never runs.</li>
+      <li><strong>Wrapping a test's checks in <code>if</code>.</strong> If the condition is false, the test passes without checking anything.</li>
+      <li><strong>Comparing objects with <code>===</code>.</strong> Two objects with the same contents are still different objects. Compare contents, or use Playwright's <code>toEqual</code>.</li>
+    </ul>
+  </div>
+
+  <hr style="border:none;border-top:1px solid var(--border);margin:0">
+
+  <div class="assignment">
+    <div class="a-label">Exercise</div>
+    <h3>Check a product like a test would</h3>
+    <p>Create <code>exercise-comparisons.js</code>, write code for each step, and run it with <code>node exercise-comparisons.js</code>. For every step, predict the answer before you run it.</p>
+    <ol style="margin:.5rem 0 0 1.2rem;">
+      <li>Store the Sleeping Bag's price, <code>-89</code>. Check, and print: is it more than 0? less than 0? 0 or more?</li>
+      <li>Store the answer to "is the price valid (0 or more)?" in a variable, and print it with its type.</li>
+      <li>Stock is 5 and the customer wants 5. Using <code>&gt;=</code> and then <code>&gt;</code>, check whether there's enough stock. Which operator matches the rule "you can buy if stock covers the quantity"?</li>
+      <li>Check the quantity is no more than the maximum per order, 10, with <code>&lt;=</code>.</li>
+      <li>Check whether <code>'Headlamp'</code> equals <code>'headlamp'</code>, and whether <code>'Headlamp'</code> is different from <code>'Tent'</code>.</li>
+      <li>A price read from the page is <code>'89.00'</code>. Compare it with <code>89</code> using <code>===</code>, then using <code>==</code>. Why do they disagree?</li>
+      <li>Convert it with <code>Number()</code>, and compare again with <code>===</code>.</li>
+      <li>Try converting <code>'$89.00'</code> and <code>''</code>. What do you get, and what could go wrong in a test?</li>
+      <li>Print <code>0 == ''</code> and <code>null == undefined</code>, then the same with <code>===</code>.</li>
+      <li>Create two objects with the same <code>id</code> and <code>name</code>, and a third name pointing at the first. Which pairs are <code>===</code>?</li>
+      <li>Write the rule "a customer can buy if the item is in stock AND the quantity is no more than the stock AND the price is 0 or more" as one variable, <code>canBuy</code>, for the Sleeping Bag (in stock, stock 5, quantity 5, price <code>-89</code>). Which part makes it false?</li>
+      <li>Write "gets free delivery if they're a member OR the order is over 100": check it for a non-member with an order of 120, then for a non-member with an order of 50.</li>
+      <li>Store <code>isLoggedIn = false</code>, and print "not logged in" with <code>!</code>. Then show that <code>!(price === 89)</code> and <code>price !== 89</code> give the same answer.</li>
+      <li>Print <code>!!</code> of: <code>'Headlamp'</code>, <code>''</code>, <code>'0'</code>, <code>0</code>, <code>null</code>. Which surprise you?</li>
+      <li>Set a base URL with <code>process.env.BASE_URL || 'https://peakandpack-ui.onrender.com'</code> and print it. Then print <code>0 || 1</code>: why is that a problem for a quantity?</li>
+      <li>Write the stock label with <code>if</code>, <code>else if</code> and <code>else</code>: 0 is "Out of stock", under 5 is "Only N left", otherwise "In stock". Run it with stock 0, 1, 4 and 5. Why those four values?</li>
+      <li>Swap the first two conditions and run it with stock 0. What goes wrong, and why?</li>
+      <li>Using <code>? :</code>, set <code>retries</code> to 2 on CI and 0 otherwise, with <code>isCI = false</code>.</li>
+      <li>With <code>discountCode = null</code>, use <code>if (discountCode)</code> to print either "Apply ..." or "No code". Then set it to <code>'SAVE10'</code> and rerun.</li>
+    </ol>
+
+  <details class="solution">
+    <summary>Show solution: try it yourself first</summary>
+    <div class="solution-body">
+      <pre><code>// 1. Comparing numbers: the answer is always true or false
+const price = -89;
+console.log(price > 0, price &lt; 0, price >= 0);
+
+// 2. The answer is a value you can store
+const isValidPrice = price >= 0;
+console.log(isValidPrice, typeof isValidPrice);
+
+// 3. The boundary: stock exactly equal to the quantity
+const stock = 5;
+const quantity = 5;
+console.log(stock >= quantity, stock > quantity);
+
+// 4. At most the maximum per order
+const maxPerOrder = 10;
+console.log(quantity &lt;= maxPerOrder);
+
+// 5. Strict equality on text: exact, capitals included
+console.log('Headlamp' === 'headlamp', 'Headlamp' !== 'Tent');
+
+// 6. Text vs number: strict and loose disagree
+const priceFromPage = '89.00';
+console.log(priceFromPage === 89, priceFromPage == 89);
+
+// 7. Convert first, then compare strictly
+console.log(Number(priceFromPage) === 89);
+
+// 8. Conversions that go wrong
+console.log(Number('$89.00'), Number(''));
+
+// 9. Loose equality's surprises
+console.log(0 == '', null == undefined, 0 === '', null === undefined);
+
+// 10. Objects compare by identity
+const expected = { id: 1, name: 'Headlamp' };
+const actual = { id: 1, name: 'Headlamp' };
+const sameOne = expected;
+console.log(expected === actual, expected === sameOne);
+
+// 11. AND: every part must be true
+const inStock = true;
+const canBuy = inStock &amp;&amp; quantity &lt;= stock &amp;&amp; price &gt;= 0;
+console.log(canBuy);
+
+// 12. OR: any part can make it true
+const isMember = false;
+console.log(isMember || 120 &gt; 100, isMember || 50 &gt; 100);
+
+// 13. NOT
+const isLoggedIn = false;
+console.log(!isLoggedIn, !(price === 89), price !== 89);
+
+// 14. Falsy and true-like values
+console.log(!!'Headlamp', !!'', !!'0', !!0, !!null);
+
+// 15. || as a default, and its trap
+const baseUrl = process.env.BASE_URL || 'https://peakandpack-ui.onrender.com';
+console.log(baseUrl, 0 || 1);
+
+// 16. if / else if / else: rerun with stockLeft set to 0, 1, 4 and 5
+const stockLeft = 4;
+if (stockLeft === 0) {
+  console.log('Out of stock');
+} else if (stockLeft &lt; 5) {
+  console.log(`Only ${stockLeft} left`);
+} else {
+  console.log('In stock');
+}
+
+// 17. The same checks in the wrong order (with stockLeft set to 0):
+// if (stockLeft &lt; 5) { ... } else if (stockLeft === 0) { ... }  -&gt; "Only 0 left"
+
+// 18. One-line if/else
+const isCI = false;
+const retries = isCI ? 2 : 0;
+console.log(retries);
+
+// 19. A falsy value as the condition: rerun with discountCode set to 'SAVE10'
+const discountCode = null;
+if (discountCode) {
+  console.log(`Apply ${discountCode}`);
+} else {
+  console.log('No code');
+}</code></pre>
+      <p><strong>Output:</strong></p>
+      <pre><code>false true false
+false boolean
+true false
+true
+false true
+false true
+true
+NaN 0
+true true false false
+false true
+false
+true false
+true true true
+true false true false false
+https://peakandpack-ui.onrender.com 1
+Only 4 left
+0
+No code</code></pre>
+      <p><strong>What to notice.</strong></p>
+      <ul>
+        <li><strong>Step 3 is a boundary.</strong> With stock and quantity both 5, <code>&gt;=</code> says yes and <code>&gt;</code> says no. The rule "stock covers the quantity" means <code>&gt;=</code>; using <code>&gt;</code> would wrongly block buying the last 5. This is why tests check the boundary value itself.</li>
+        <li><strong>Step 6:</strong> <code>===</code> says no because the types differ; <code>==</code> converts the text and says yes. A test using <code>==</code> can't tell text from a number.</li>
+        <li><strong>Step 8:</strong> the <code>$</code> makes <code>NaN</code>, and empty text becomes <code>0</code>. Both are quiet: no error, just a wrong value for the next check to trip over.</li>
+        <li><strong>Step 10:</strong> identical contents, but separate objects. Only the name pointing at the same object is <code>===</code>.</li>
+        <li><strong>Step 11:</strong> stock and quantity pass, but <code>price &gt;= 0</code> fails, so <code>&amp;&amp;</code> makes the whole rule false. One failing part is enough: that's how a test catches the negative price.</li>
+        <li><strong>Step 13:</strong> <code>!(price === 89)</code> and <code>price !== 89</code> are two ways to say the same thing. <code>!==</code> is easier to read.</li>
+        <li><strong>Step 14:</strong> <code>'0'</code> is true-like because it's non-empty text; the number <code>0</code> is falsy.</li>
+        <li><strong>Step 15:</strong> <code>0 || 1</code> gives <code>1</code>. If 0 is a real answer, like a quantity of zero, <code>||</code> replaces it without warning.</li>
+        <li><strong>Step 16:</strong> with stock 0, 1, 4 and 5 you see "Out of stock", "Only 1 left", "Only 4 left" and "In stock". Those four sit on each side of the two boundaries, 0 and 5, where a wrong <code>&lt;</code> or <code>&lt;=</code> would show.</li>
+        <li><strong>Step 17:</strong> 0 is less than 5, so the "Only N left" block runs first and "Out of stock" is never reached. The first true condition wins.</li>
+        <li><strong>Step 19:</strong> <code>null</code> is falsy, so "No code" runs; <code>'SAVE10'</code> is true-like, so "Apply SAVE10" runs.</li>
+      </ul>
+    </div>
+  </details>
+  </div>
+
+  <p style="margin:2rem 0 0"><strong>All parts at a glance:</strong> <a href="js-for-testers-in-a-view.html" style="color:var(--purple)">the mind map and cheat sheet</a>.</p>
+
+  <div class="series-nav">
+    <span class="label">Navigate JavaScript for Testers</span>
+    <div class="nav-pair">
+      <a href="js-for-testers-2-objects-and-arrays.html" class="nav-blog"><span class="nav-blog-arrow" aria-hidden="true">&larr;</span><div><div class="nav-blog-title">Part 2: Objects and Arrays</div><div class="nav-blog-sub">The shapes test data and API responses come in</div></div></a>
+      <a href="js-for-testers-4-loops-and-functions.html" class="nav-blog"><div><div class="nav-blog-title">Part 4: Loops and Functions</div><div class="nav-blog-sub">Check every item, and stop repeating yourself</div></div><span class="nav-blog-arrow" aria-hidden="true">&rarr;</span></a>
+    </div>
+  </div>
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--text-3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; JavaScript for Testers</p>
+  </div>
+</main>
+
+<footer>
+  <p><a href="../../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+<script>
+(function(){
+  var btn = document.getElementById('themeToggle');
+  function isLight(){ return document.documentElement.getAttribute('data-theme') === 'light'; }
+  function sync(){ btn.textContent = isLight() ? 'Dark' : 'Light'; }
+  sync();
+  btn.addEventListener('click', function(){
+    if(isLight()){
+      document.documentElement.removeAttribute('data-theme');
+      try{ localStorage.setItem('pw-theme','dark'); }catch(e){}
+    } else {
+      document.documentElement.setAttribute('data-theme','light');
+      try{ localStorage.setItem('pw-theme','light'); }catch(e){}
+    }
+    sync();
+  });
+})();
+</script>
+
+</body>
+</html>

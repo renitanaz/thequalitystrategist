@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>(function(){try{if(localStorage.getItem('pw-theme')==='light'){document.documentElement.setAttribute('data-theme','light');}}catch(e){}})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Classes and TypeScript | JavaScript for Testers</title>
+<meta name="description" content="JavaScript for Testers, part 5: classes, the shape of every page object, and TypeScript, the types that catch mistakes before a test runs.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+  --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+  --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.09); --purple-border:rgba(167,139,250,0.35);
+  --green:#4ade80; --green-bg:rgba(74,222,128,0.07); --green-border:rgba(74,222,128,0.25);
+  --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07); --blue-border:rgba(96,165,250,0.25);
+  --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07); --amber-border:rgba(251,191,36,0.25);
+  --red:#f87171; --red-bg:rgba(248,113,113,0.07); --red-border:rgba(248,113,113,0.25);
+  --ff-serif:'DM Serif Display',Georgia,serif; --ff-sans:'DM Sans',system-ui,sans-serif;
+}
+:root[data-theme="light"]{
+  --bg:#FAFCF5; --bg2:#F5F7F0; --bg3:#EDF0E4; --border:#DEE3D3;
+  --text:#1A1F14; --text-2:#3D4235; --text-3:#6B7060;
+  --purple:#7A4A9A; --purple-bg:#EDE0F5; --purple-border:rgba(122,74,154,0.35);
+  --green:#1A7A3A; --green-bg:#D8F0E0; --green-border:rgba(26,122,58,0.25);
+  --blue:#2A5C9A; --blue-bg:#DDE8F5; --blue-border:rgba(42,92,154,0.25);
+  --amber:#9A6E1A; --amber-bg:#F5EDD6; --amber-border:rgba(154,110,26,0.25);
+  --red:#B0402E; --red-bg:#F5DEDA; --red-border:rgba(176,64,46,0.25);
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body{background:var(--bg);color:var(--text);font-family:var(--ff-sans);font-size:16px;line-height:1.8;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.skip-link{position:absolute;top:-100%;left:1rem;background:var(--green);color:#000;padding:.5rem 1rem;border-radius:0 0 6px 6px;font-size:.85rem;font-weight:500;text-decoration:none;z-index:999}
+.skip-link:focus{top:0}
+nav.site-nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:56px}
+.nav-logo{font-family:var(--ff-serif);font-size:1rem;color:var(--text);text-decoration:none}
+.theme-toggle{background:var(--bg3);border:1px solid var(--border);color:var(--text-2);border-radius:8px;padding:.4rem .8rem;font-size:.78rem;cursor:pointer;font-family:var(--ff-sans);}
+.theme-toggle:hover{border-color:var(--purple);color:var(--text)}
+main{max-width:900px;margin:0 auto;padding:3rem 1.5rem 5rem}
+.breadcrumb{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.breadcrumb a{color:var(--text-3);text-decoration:none}
+.breadcrumb a:hover{color:var(--purple)}
+.series-tag{font-size:.7rem;padding:4px 11px;border-radius:99px;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);letter-spacing:.04em;text-transform:uppercase;font-weight:500;display:inline-block;margin-bottom:1.25rem}
+h1{font-family:var(--ff-serif);font-size:clamp(1.85rem,4vw,2.6rem);line-height:1.2;color:var(--purple);margin-bottom:.75rem;font-weight:400}
+.subtitle{font-family:var(--ff-serif);font-size:1.1rem;font-style:italic;color:var(--text-3);margin-bottom:1.5rem;max-width:680px}
+.meta-row{display:flex;align-items:center;gap:1.25rem;font-size:.82rem;color:var(--text-3);flex-wrap:wrap;margin-bottom:1.6rem;padding-bottom:1.3rem;border-bottom:1px solid var(--border)}
+h2{font-family:var(--ff-serif);font-size:1.5rem;font-weight:400;color:var(--text);margin:3.5rem 0 1.1rem;padding-top:1rem;border-top:1px solid var(--border)}
+h3{font-size:1rem;font-weight:500;color:var(--text);margin:1.75rem 0 .5rem}
+p{color:var(--text-2);margin-bottom:1.25rem;font-weight:300}
+strong{color:var(--text);font-weight:500}
+ul,ol{padding-left:1.4rem;margin-bottom:1.25rem;color:var(--text-2);font-weight:300}
+li{margin-bottom:.45rem}
+.goal-list{list-style:none;padding-left:1.4rem}
+.goal-list li{position:relative}
+.goal-list li::before{content:"";position:absolute;left:-1.3rem;top:.48em;width:.85rem;height:.85rem;border:1.5px solid var(--purple);border-radius:3px}
+code{background:var(--bg3);padding:1px 6px;border-radius:3px;font-size:.85em;color:var(--text-2);font-family:monospace}
+pre{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:1rem 1.1rem;font-family:monospace;font-size:.82rem;color:var(--text-2);line-height:1.65;overflow-x:auto;margin:1rem 0}
+pre code{background:none;padding:0;color:inherit}
+.callout{display:block;background:var(--blue-bg);border-left:3px solid var(--blue);border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.95rem;color:var(--text);line-height:1.7}
+.callout p{margin-bottom:0;color:var(--text-2)}
+.callout.amber{background:var(--amber-bg);border-color:var(--amber)}
+.callout.green{background:var(--green-bg);border-color:var(--green)}
+.callout.red{background:var(--red-bg);border-color:var(--red)}
+.callout.blue{background:var(--blue-bg);border-color:var(--blue)}
+.callout.purple{background:var(--purple-bg);border-color:var(--purple)}
+.table-wrap{display:block;overflow-x:auto;margin:1.5rem 0;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+thead th{background:var(--bg2);padding:9px 13px;text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);font-weight:500;border-bottom:1px solid var(--border)}
+tbody td{padding:9px 13px;border-bottom:1px solid var(--border);color:var(--text-2);vertical-align:top;line-height:1.55;font-size:.85rem}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--bg2)}
+/* Phase progress strip */
+.phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem}
+.phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--text-3);background:var(--bg2);text-decoration:none}
+.phase-pip:hover{border-color:var(--purple);color:var(--text)}
+.phase-pip.active{background:var(--purple);color:#0d0d0d;border-color:transparent}
+.phase-pip.done{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+/* Before/After blocks */
+.ba-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0}
+.ba-block{border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+.ba-label{padding:.4rem .8rem;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.ba-block.before .ba-label{background:var(--red-bg);color:var(--red)}
+.ba-block.after .ba-label{background:var(--green-bg);color:var(--green)}
+.ba-block pre{margin:0;border-radius:0;border:none}
+/* Assignment / bonus blocks */
+.assignment{background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:12px;padding:1.2rem 1.4rem;margin:4.5rem 0 1rem}
+.assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem}
+.assignment h3{font-family:var(--ff-serif);color:var(--text);margin-top:.2rem;margin-bottom:.5rem;font-weight:400}
+.bonus{background:var(--purple-bg);border:1px solid var(--purple-border);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem}
+.bonus .b-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--purple);margin-bottom:.4rem}
+/* Collapsible solution */
+details.solution{margin:1rem 0 2rem;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+details.solution summary{padding:.9rem 1.2rem;cursor:pointer;font-weight:700;font-size:.92rem;background:var(--bg2);list-style:none;display:flex;align-items:center;gap:.5rem;color:var(--text)}
+details.solution summary::-webkit-details-marker{display:none}
+details.solution summary::before{content:"\25B6";font-size:.7rem;color:var(--text-3);transition:transform .2s}
+details.solution[open] summary::before{transform:rotate(90deg)}
+.solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border)}
+.solution-body p{font-size:.92rem}
+.series-nav{margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border)}
+.series-nav .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);font-weight:500;margin-bottom:.75rem;display:block}
+.nav-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.nav-blog{display:flex;align-items:center;gap:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.25rem;text-decoration:none;transition:border-color .2s,background .2s}
+.nav-blog:hover{border-color:var(--purple);background:var(--bg3)}
+.nav-blog-arrow{color:var(--text-3);font-size:1rem;flex-shrink:0}
+.nav-blog-title{font-size:.88rem;font-weight:500;color:var(--text)}
+.nav-blog-sub{font-size:.75rem;color:var(--text-3);margin-top:2px}
+footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.8rem;color:var(--text-3)}
+footer a{color:var(--text-3);text-decoration:none}
+footer a:hover{color:var(--purple)}
+@media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
+.blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
+.blog-tags .series-tag{margin-bottom:0}
+.tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+.term-shot{margin:1.2rem 0}
+.term-shot img{display:block;max-width:100%;height:auto;border:1px solid var(--border);border-radius:8px}
+.term-shot figcaption{font-size:.8rem;color:var(--text-3);margin-top:.5rem;line-height:1.5}
+/* Collapsible code explanations */
+details.explain{margin:.5rem 0 1.5rem;border:1px solid var(--purple-border);border-radius:10px;background:var(--purple-bg)}
+details.explain summary{padding:.6rem 1rem;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--purple);list-style:none;display:flex;align-items:center;gap:.5rem}
+details.explain summary::-webkit-details-marker{display:none}
+details.explain summary::before{content:"\25B6";font-size:.65rem;transition:transform .2s}
+details.explain[open] summary::before{transform:rotate(90deg)}
+.explain-body{padding:.1rem 1.2rem 1rem;font-size:.92rem;line-height:1.7}
+.explain-body p{margin:.7rem 0}
+.explain-body ul{margin:.3rem 0 .7rem 1.2rem;padding-left:0}
+.explain-body li{margin-bottom:.35rem}
+.explain-body pre{margin:.6rem 0}
+</style>
+<meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Playwright: Zero to Architect, by The Quality Strategist. A complete automation series: 16 phases in 4 stages, built against a real app, PeakAndPack.">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+/* Diagrams */
+.dg{margin:1.4rem 0;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1rem 1rem .8rem;overflow-x:auto}
+.dg svg{display:block;width:100%;height:auto;max-width:700px;margin:0 auto;min-width:480px}
+.dg figcaption{font-size:.8rem;color:var(--text-3);text-align:center;margin-top:.6rem;line-height:1.5}
+.dg-box{fill:var(--bg);stroke:var(--border);stroke-width:1.5}
+.dg-acc{stroke:var(--purple)}
+.dg-dash{stroke-dasharray:6 5}
+.dg-okb{stroke:var(--green)}
+.dg-badb{stroke:var(--red)}
+.dg-t{fill:var(--text);font:13px var(--ff-sans)}
+.dg-h{fill:var(--text);font:700 13px var(--ff-sans)}
+.dg-c{fill:var(--text);font:13px ui-monospace,Consolas,monospace}
+.dg-cs{fill:var(--text);font:11.5px ui-monospace,Consolas,monospace}
+.dg-big{fill:var(--text);font:700 20px ui-monospace,Consolas,monospace}
+.dg-m{fill:var(--text-3);font:12px var(--ff-sans)}
+.dg-ms{fill:var(--text-3);font:11px var(--ff-sans)}
+.dg-p{fill:var(--purple)}
+.dg-ok{fill:var(--green)}
+.dg-bad{fill:var(--red)}
+.dg-amb{fill:var(--amber)}
+.dg-line{stroke:var(--text-3);stroke-width:1.5;fill:none}
+.dg-head{fill:var(--text-3)}
+.dg-fill-p{fill:var(--purple-bg);stroke:var(--purple);stroke-width:1.5}
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a class="nav-logo" href="../../../index.html">The Quality Strategist</a>
+  <button class="theme-toggle" id="themeToggle" type="button">Light</button>
+</nav>
+
+<main id="main-content">
+
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="../../../blogs.html">Blogs</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <span>JavaScript for Testers</span>
+    <span aria-hidden="true">&rsaquo;</span>
+    <span aria-current="page">Part 5</span>
+  </nav>
+
+  <div class="blog-tags" aria-label="Blog categories" role="group">
+    <span class="series-tag">JavaScript for Testers &middot; Part 5</span>
+    <span class="tag">Classes</span>
+    <span class="tag">TypeScript</span>
+    <span class="tag">Page Objects</span>
+  </div>
+
+  <h1>Classes and TypeScript</h1>
+  <p class="subtitle">Classes are the shape of every page object; TypeScript is the safety net that catches mistakes before a test runs. Both, explained for testers.</p>
+
+  <div class="meta-row">
+    <span><strong>Series: JavaScript for Testers</strong></span>
+    <span>Demo: PeakAndPack</span>
+    <span>By: RN</span>
+  </div>
+
+  <div class="callout amber">
+    <p><strong>Draft.</strong> Structured from study notes; every example still needs running during review.</p>
+  </div>
+
+  <h2>Goal</h2>
+  <ul class="goal-list">
+    <li>Build objects from a class, with a <code>constructor</code>, <code>this</code> and methods</li>
+    <li>Share a class between files</li>
+    <li>Read and write TypeScript types: on variables, functions and your own <code>type</code></li>
+    <li>Read the TypeScript in Playwright code: <code>page: Page</code>, <code>Promise&lt;boolean&gt;</code>, <code>private page</code></li>
+  </ul>
+
+  <h2 id="why">1. Why testers need this</h2>
+  <p>The Playwright series' Phase 9 organises tests into <strong>page objects</strong>: one class per page of the app, holding that page's locators and actions, so tests read like journeys. Every page object is a class. And every Playwright test is TypeScript, so its code is full of types like <code>page: Page</code>. This part explains both, so that code reads as plain sense rather than syntax.</p>
+
+  <h2 id="classes">2. Classes: a blueprint for objects</h2>
+  <p>Part 2's objects were written out one at a time. A <strong>class</strong> is a blueprint that builds as many objects as you need, each with the same shape and the same abilities:</p>
+  <pre><code>class Cart {
+  // Runs once, when a new cart is built
+  constructor(owner) {
+    this.owner = owner;
+    this.items = [];
+  }
+
+  // A method: something every cart can do
+  add(name, price) {
+    this.items.push({ name, price });
+  }
+
+  total() {
+    let sum = 0;
+    for (const item of this.items) {
+      sum += item.price;
+    }
+    return sum;
+  }
+}
+
+const anasCart = new Cart('Ana');
+anasCart.add('Headlamp', 24.99);
+anasCart.add('Camping Stove', 45.99);
+
+const bensCart = new Cart('Ben');
+bensCart.add('4-Season Tent', 320);
+
+console.log(anasCart.owner, anasCart.items.length, anasCart.total().toFixed(2)); // Ana 2 70.98
+console.log(bensCart.owner, bensCart.items.length, bensCart.total());            // Ben 1 320</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>class Cart { ... }</code> creates the blueprint. By convention, class names start with a capital letter.</li>
+        <li><strong><code>constructor(owner)</code></strong> runs once, automatically, each time a new cart is built. It sets up the cart's starting values.</li>
+        <li><strong><code>this</code></strong> means "the object being built or used right now". <code>this.owner = owner</code> stores the owner <em>on this cart</em>; <code>this.items = []</code> gives it its own empty list.</li>
+        <li><code>add(name, price) { ... }</code> and <code>total() { ... }</code> are <strong>methods</strong>: functions that belong to the class. Unlike Part 4's functions, they're written without the word <code>function</code>.</li>
+        <li><code>this.items.push({ name, price })</code> adds an item to the end of this cart's list. <code>push</code> is the array method for adding; <code>{ name, price }</code> is short for <code>{ name: name, price: price }</code>.</li>
+        <li><strong><code>new Cart('Ana')</code></strong> builds an object from the blueprint, running the constructor with <code>'Ana'</code>. That object is called an <strong>instance</strong>.</li>
+        <li><code>anasCart.add(...)</code> calls a method on one instance. Ana's items and Ben's items stay separate: each cart has its own <code>this</code>.</li>
+      </ul>
+    </div>
+  </details>
+  <figure class="dg">
+    <svg viewBox="0 0 680 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A class drawn as a blueprint called Cart, listing what every cart has: owner and items, and what it can do: add and total. Two arrows labelled new lead to two separate carts: Ana's cart with two items, and Ben's cart with one."><defs><marker id="e1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-head" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="dg-box dg-acc dg-dash" x="230" y="12" width="220" height="104" rx="12"/>
+<text class="dg-ms dg-p" x="340" y="32" text-anchor="middle">BLUEPRINT</text>
+<text class="dg-c dg-p" x="340" y="52" text-anchor="middle">class Cart</text>
+<text class="dg-cs" x="340" y="76" text-anchor="middle">has: owner, items</text>
+<text class="dg-cs" x="340" y="98" text-anchor="middle">can: add(), total()</text>
+<path class="dg-line" d="M290,116 C250,140 200,140 170,154" marker-end="url(#e1)"/>
+<path class="dg-line" d="M390,116 C430,140 480,140 510,154" marker-end="url(#e1)"/>
+<text class="dg-cs" x="205" y="134" text-anchor="middle">new Cart('Ana')</text>
+<text class="dg-cs" x="478" y="134" text-anchor="middle">new Cart('Ben')</text>
+<rect class="dg-box dg-okb" x="40" y="158" width="250" height="60" rx="10"/>
+<text class="dg-cs" x="165" y="182" text-anchor="middle">owner: 'Ana'</text>
+<text class="dg-cs" x="165" y="204" text-anchor="middle">items: Headlamp, Camping Stove</text>
+<rect class="dg-box dg-okb" x="390" y="158" width="250" height="60" rx="10"/>
+<text class="dg-cs" x="515" y="182" text-anchor="middle">owner: 'Ben'</text>
+<text class="dg-cs" x="515" y="204" text-anchor="middle">items: 4-Season Tent</text></svg>
+    <figcaption>A class is a blueprint. Each <code>new</code> builds a separate object from it, with its own values and the same abilities.</figcaption>
+  </figure>
+  <div class="callout amber">
+    <p><strong>Two errors you'll meet.</strong> Forget <code>new</code>, as in <code>Cart('Ana')</code>, and you get <code>TypeError: Class constructor Cart cannot be invoked without 'new'</code>. Forget <code>this.</code> inside a method, writing <code>items.push(...)</code>, and you get <code>ReferenceError: items is not defined</code>: without <code>this.</code>, the method looks for an ordinary variable called <code>items</code>, and there isn't one.</p>
+  </div>
+
+  <h2 id="share-class">3. Sharing a class between files</h2>
+  <p>Classes are exported and imported like Part 4's functions. Each file that imports the class builds its own instances with <code>new</code>:</p>
+  <pre><code>// helpers/cart.js
+export class Cart {
+  constructor(owner) {
+    this.owner = owner;
+    this.items = [];
+  }
+
+  /**
+   * Adds one product to this cart.
+   * @param {string} name  The product's name
+   * @param {number} price The product's price
+   */
+  add(name, price) {
+    this.items.push({ name, price });
+  }
+}</code></pre>
+  <pre><code>// shopping.js
+import { Cart } from './helpers/cart.js';
+
+const cart = new Cart('Ana');
+cart.add('Headlamp', 24.99);
+console.log(cart.items); // [ { name: 'Headlamp', price: 24.99 } ]</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>export class Cart</code> makes the class available to other files, the same way <code>export</code> worked for functions.</li>
+        <li><code>/** ... */</code> is a <strong>documentation comment</strong>. VS Code shows it when you hover over <code>add</code> anywhere in your code, so whoever uses the class sees what it does and what to pass in. <code>@param</code> lines describe each parameter.</li>
+        <li>You can also export a ready-built instance, <code>export const cart = new Cart('Ana');</code>, so other files share that one object. For page objects, export the class instead: each test builds its own, with its own browser tab.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2 id="page-object">4. From class to page object</h2>
+  <p>Here's the shape of a page object from the Playwright series' Phase 9, without the TypeScript yet. Read it with what you now know:</p>
+  <pre><code>export class CartPage {
+  constructor(page) {
+    this.page = page; // the browser tab this page object works in
+  }
+
+  async goto() {
+    await this.page.goto('/cart');
+  }
+
+  async proceedToCheckout() {
+    await this.page.getByRole('button', { name: /proceed to checkout/i }).click();
+  }
+}
+
+// In a test:
+// const cart = new CartPage(page);
+// await cart.goto();
+// await cart.proceedToCheckout();</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li>The constructor receives the test's browser tab and keeps it as <code>this.page</code>, so every method can use it.</li>
+        <li>Each method is one user action on that page. The test calls <code>cart.proceedToCheckout()</code> instead of repeating the locator, so if the button's wording changes, only this class needs fixing.</li>
+        <li><code>async</code> and <code>await</code> are there because browser actions take time; Part 6 explains them.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2 id="typescript">5. TypeScript: JavaScript with types</h2>
+  <p>TypeScript is JavaScript plus <strong>types</strong>: labels saying what kind of value something holds. All JavaScript is valid TypeScript; the types are the extra layer. The point is to catch mistakes in VS Code, while you type, instead of when a test fails. TypeScript files end in <code>.ts</code>.</p>
+  <pre><code>// TypeScript works out the type from the first value...
+let productName = 'Headlamp'; // hover over it: let productName: string
+
+// ...or you can state it yourself, after a colon
+let price: number = 24.99;
+
+productName = 100;   // red underline: Type 'number' is not assignable to type 'string'.
+price = '24.99';     // red underline: Type 'string' is not assignable to type 'number'.</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><strong>Type inference:</strong> <code>let productName = 'Headlamp'</code> has no type written, but TypeScript infers <code>string</code> from the value. Hover over a variable in VS Code to see it.</li>
+        <li><strong>Type annotation:</strong> <code>let price: number</code> states the type, after a colon.</li>
+        <li>In plain JavaScript, putting a number into <code>productName</code> is allowed, and the mistake surfaces later, somewhere confusing. TypeScript underlines it in red immediately.</li>
+      </ul>
+    </div>
+  </details>
+  <p>The real power is describing the shape of your data, and the inputs and outputs of functions:</p>
+  <pre><code>// Your own type: what every product must look like
+type Product = {
+  name: string;
+  price: number;
+  inStock: boolean;
+  rating?: number; // the ? means optional
+};
+
+const headlamp: Product = { name: 'Headlamp', price: 24.99, inStock: true };
+
+// Typed parameters, and a typed return value
+function formatPrice(price: number): string {
+  return `$${price.toFixed(2)}`;
+}
+
+const tent: Product = { name: '4-Season Tent', price: 320 };
+// red underline: Property 'inStock' is missing in type ... but required in type 'Product'.
+
+const stove: Product = { name: 'Camping Stove', price: 45.99, inStock: true, colour: 'red' };
+// red underline: Object literal may only specify known properties, and 'colour' does not exist in type 'Product'.
+
+formatPrice('24.99');
+// red underline: Argument of type 'string' is not assignable to parameter of type 'number'.</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>type Product = { ... }</code> creates your own type: every <code>Product</code> must have a text <code>name</code>, a number <code>price</code> and a true/false <code>inStock</code>.</li>
+        <li><code>rating?: number</code>: the <code>?</code> makes it optional. A product may have a rating or not, but if it has one, it must be a number.</li>
+        <li><code>function formatPrice(price: number): string</code>: the parameter must be a number, and the function promises to return text. The part after the closing bracket is the return type.</li>
+        <li>The three underlined lines are the mistakes TypeScript catches for you: a missing property, an unknown property (often a typo), and the wrong type of argument. Each message names the problem precisely.</li>
+      </ul>
+    </div>
+  </details>
+  <div class="callout red">
+    <p><strong>Type errors don't stop a test from running.</strong> TypeScript checks your code in VS Code, but Playwright doesn't type-check when it runs tests (Phase 0 noted this). A file full of red underlines still runs, and fails later, in a more confusing way. Treat red underlines as failures: fix them before you run. To check a whole project at once, run <code>npx tsc --noEmit</code>, which lists every type error without changing any files.</p>
+  </div>
+
+  <h2 id="ts-in-playwright">6. The TypeScript you'll see in Playwright code</h2>
+  <p>Here's the same page object, in TypeScript, the way Phase 9 writes it:</p>
+  <pre><code>import { Page } from '@playwright/test';
+
+export class CartPage {
+  constructor(private page: Page) {}
+
+  async goto(): Promise&lt;void&gt; {
+    await this.page.goto('/cart');
+  }
+
+  async isEmpty(): Promise&lt;boolean&gt; {
+    return this.page.getByText('Your cart is empty.').isVisible();
+  }
+}</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>import { Page } from '@playwright/test'</code> brings in Playwright's type for a browser tab. Types are imported like functions.</li>
+        <li><code>page: Page</code> means "<code>page</code> must be a Playwright browser tab". Pass anything else and it's underlined.</li>
+        <li><code>constructor(private page: Page) {}</code> is a shorthand. Writing <code>private</code> in front of a parameter means "store it as <code>this.page</code>": it replaces the <code>this.page = page;</code> line from section 4. <code>private</code> also means only the class itself can use it, so tests can't reach in and click things directly.</li>
+        <li><code>Promise&lt;boolean&gt;</code> is the return type of an <code>async</code> method: "an answer that arrives later, and will be true or false". <code>Promise&lt;void&gt;</code> means "finishes later, with no answer". Part 6 covers promises.</li>
+      </ul>
+    </div>
+  </details>
+  <div class="callout blue">
+    <p><strong>Running TypeScript while practising.</strong> Node.js 20 can't run <code>.ts</code> files directly. Use <code>npx tsx file.ts</code>, which runs them without a separate build step, and <code>npx tsc --noEmit</code> to check types. Inside your Playwright project, you don't need either: Playwright runs <code>.ts</code> test files itself.</p>
+  </div>
+
+  <div class="callout red">
+    <p><strong>Common mistakes.</strong></p>
+    <ul style="margin:.5rem 0 0 1.2rem;">
+      <li><strong>Forgetting <code>new</code>.</strong> "Class constructor ... cannot be invoked without 'new'".</li>
+      <li><strong>Forgetting <code>this.</code> inside a method.</strong> "... is not defined".</li>
+      <li><strong>Sharing one exported instance between tests.</strong> For page objects, export the class; each test builds its own.</li>
+      <li><strong>Ignoring red underlines because the test still runs.</strong> Type errors are bugs found early; fix them first.</li>
+    </ul>
+  </div>
+
+  <hr style="border:none;border-top:1px solid var(--border);margin:0">
+
+  <div class="assignment">
+    <div class="a-label">Exercise</div>
+    <h3>Build a cart class, then type it</h3>
+    <p>Do steps 1 to 6 in <code>exercise-classes.js</code> (run with <code>node</code>), and steps 7 to 10 in <code>exercise-types.ts</code> (run with <code>npx tsx</code>, check with <code>npx tsc --noEmit</code>):</p>
+    <ol style="margin:.5rem 0 0 1.2rem;">
+      <li>Write a <code>Cart</code> class whose constructor stores an <code>owner</code> and an empty <code>items</code> list.</li>
+      <li>Add a method <code>add(name, price)</code> that pushes an item, and a method <code>total()</code> that returns the sum of the prices.</li>
+      <li>Build two carts, Ana's with two items and Ben's with one, and print each owner, item count and total. Do they share items?</li>
+      <li>Add a <code>/** ... */</code> comment above <code>add</code>, then hover over a call to <code>add</code> in VS Code. What appears?</li>
+      <li>Break it on purpose, one at a time: build a cart without <code>new</code>; inside <code>add</code>, write <code>items.push</code> without <code>this.</code>. Read each error.</li>
+      <li>Move <code>Cart</code> into <code>helpers/cart.js</code>, export it, and import it into your exercise file.</li>
+      <li>In <code>exercise-types.ts</code>, write a <code>type Product</code> with <code>name</code>, <code>price</code> and an optional <code>rating</code>.</li>
+      <li>Rewrite <code>Cart</code> with types: <code>owner: string</code>, <code>items: Product[]</code>, <code>add(product: Product): void</code>, <code>total(): number</code>. Build a cart, add two products (one with a rating), and print the total.</li>
+      <li>Add three mistakes: a product whose price is <code>'320'</code>, a product with no price, and <code>cart.add('Tent')</code>. Read each red underline, then run <code>npx tsc --noEmit</code> and compare.</li>
+      <li>With the mistakes still in, run the file with <code>npx tsx</code>. Does it run? What does that tell you about red underlines?</li>
+    </ol>
+
+  <details class="solution">
+    <summary>Show solution: try it yourself first</summary>
+    <div class="solution-body">
+      <pre><code>// exercise-classes.js: steps 1 to 5
+class Cart {
+  constructor(owner) {
+    this.owner = owner;
+    this.items = [];
+  }
+
+  /** Adds one product to this cart */
+  add(name, price) {
+    this.items.push({ name, price });
+  }
+
+  total() {
+    let sum = 0;
+    for (const item of this.items) {
+      sum += item.price;
+    }
+    return sum;
+  }
+}
+
+const anasCart = new Cart('Ana');
+anasCart.add('Headlamp', 24.99);
+anasCart.add('Camping Stove', 45.99);
+const bensCart = new Cart('Ben');
+bensCart.add('4-Season Tent', 320);
+
+console.log(anasCart.owner, anasCart.items.length, anasCart.total().toFixed(2));
+console.log(bensCart.owner, bensCart.items.length, bensCart.total());
+
+// 5. Break it on purpose (one at a time)
+// const oops = Cart('Cy');  -&gt; TypeError: Class constructor Cart cannot be invoked without 'new'
+// items.push(...) inside add -&gt; ReferenceError: items is not defined</code></pre>
+      <pre><code>// exercise-types.ts: steps 7 to 10
+type Product = {
+  name: string;
+  price: number;
+  rating?: number;
+};
+
+class Cart {
+  owner: string;
+  items: Product[];
+
+  constructor(owner: string) {
+    this.owner = owner;
+    this.items = [];
+  }
+
+  /** Adds one product to this cart */
+  add(product: Product): void {
+    this.items.push(product);
+  }
+
+  total(): number {
+    let sum = 0;
+    for (const item of this.items) {
+      sum += item.price;
+    }
+    return sum;
+  }
+}
+
+const cart = new Cart('Ana');
+cart.add({ name: 'Headlamp', price: 24.99 });
+cart.add({ name: 'Camping Stove', price: 45.99, rating: 4.5 });
+console.log(cart.owner, cart.items.length, cart.total().toFixed(2));
+
+// 9. Three mistakes (uncomment to see the red underlines)
+// cart.add({ name: 'Tent', price: '320' }); // Type 'string' is not assignable to type 'number'.
+// cart.add({ name: 'Tent' });               // Property 'price' is missing ... but required in type 'Product'.
+// cart.add('Tent');                         // Argument of type 'string' is not assignable to parameter of type 'Product'.</code></pre>
+      <p><strong>Output:</strong></p>
+      <pre><code>Ana 2 70.98
+Ben 1 320
+Ana 2 70.98</code></pre>
+      <p><strong>What to notice.</strong></p>
+      <ul>
+        <li><strong>Step 3:</strong> the two carts don't share items. Each <code>new</code> builds a separate object, with its own <code>this.items</code>.</li>
+        <li><strong>Step 4:</strong> hovering shows your comment, "Adds one product to this cart". Other people using your class see it too.</li>
+        <li><strong><code>items: Product[]</code></strong> reads "a list of <code>Product</code>s": the square brackets after a type mean "a list of that type".</li>
+        <li><strong>Step 10:</strong> with all three mistakes uncommented, <code>npx tsx</code> still runs the file and prints the totals. The underlines are the only warning you get before running, so treat them as failures.</li>
+      </ul>
+    </div>
+  </details>
+  </div>
+
+  <p style="margin:2rem 0 0"><strong>All parts at a glance:</strong> <a href="js-for-testers-in-a-view.html" style="color:var(--purple)">the mind map and cheat sheet</a>.</p>
+
+  <div class="series-nav">
+    <span class="label">Navigate JavaScript for Testers</span>
+    <div class="nav-pair">
+      <a href="js-for-testers-4-loops-and-functions.html" class="nav-blog"><span class="nav-blog-arrow" aria-hidden="true">&larr;</span><div><div class="nav-blog-title">Part 4: Loops and Functions</div><div class="nav-blog-sub">Check every item, and stop repeating yourself</div></div></a>
+      <a href="js-for-testers-6-async-and-await.html" class="nav-blog"><div><div class="nav-blog-title">Part 6: Async and Await</div><div class="nav-blog-sub">The waiting behind every Playwright step</div></div><span class="nav-blog-arrow" aria-hidden="true">&rarr;</span></a>
+    </div>
+  </div>
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--text-3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; JavaScript for Testers</p>
+  </div>
+</main>
+
+<footer>
+  <p><a href="../../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+<script>
+(function(){
+  var btn = document.getElementById('themeToggle');
+  function isLight(){ return document.documentElement.getAttribute('data-theme') === 'light'; }
+  function sync(){ btn.textContent = isLight() ? 'Dark' : 'Light'; }
+  sync();
+  btn.addEventListener('click', function(){
+    if(isLight()){
+      document.documentElement.removeAttribute('data-theme');
+      try{ localStorage.setItem('pw-theme','dark'); }catch(e){}
+    } else {
+      document.documentElement.setAttribute('data-theme','light');
+      try{ localStorage.setItem('pw-theme','light'); }catch(e){}
+    }
+    sync();
+  });
+})();
+</script>
+
+</body>
+</html>

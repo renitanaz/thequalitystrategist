@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>(function(){try{if(localStorage.getItem('pw-theme')==='light'){document.documentElement.setAttribute('data-theme','light');}}catch(e){}})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revision | Playwright: Zero to Architect</title>
+<meta name="description" content="Active recall for Playwright: Zero to Architect. Answer each question from memory, then open the recap to check.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+  --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+  --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.09); --purple-border:rgba(167,139,250,0.35);
+  --green:#4ade80; --green-bg:rgba(74,222,128,0.07); --green-border:rgba(74,222,128,0.25);
+  --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07); --blue-border:rgba(96,165,250,0.25);
+  --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07); --amber-border:rgba(251,191,36,0.25);
+  --red:#f87171; --red-bg:rgba(248,113,113,0.07); --red-border:rgba(248,113,113,0.25);
+  --ff-serif:'DM Serif Display',Georgia,serif; --ff-sans:'DM Sans',system-ui,sans-serif;
+}
+:root[data-theme="light"]{
+  --bg:#FAFCF5; --bg2:#F5F7F0; --bg3:#EDF0E4; --border:#DEE3D3;
+  --text:#1A1F14; --text-2:#3D4235; --text-3:#6B7060;
+  --purple:#7A4A9A; --purple-bg:#EDE0F5; --purple-border:rgba(122,74,154,0.35);
+  --green:#1A7A3A; --green-bg:#D8F0E0; --green-border:rgba(26,122,58,0.25);
+  --blue:#2A5C9A; --blue-bg:#DDE8F5; --blue-border:rgba(42,92,154,0.25);
+  --amber:#9A6E1A; --amber-bg:#F5EDD6; --amber-border:rgba(154,110,26,0.25);
+  --red:#B0402E; --red-bg:#F5DEDA; --red-border:rgba(176,64,46,0.25);
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body{background:var(--bg);color:var(--text);font-family:var(--ff-sans);font-size:16px;line-height:1.8;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.skip-link{position:absolute;top:-100%;left:1rem;background:var(--green);color:#000;padding:.5rem 1rem;border-radius:0 0 6px 6px;font-size:.85rem;font-weight:500;text-decoration:none;z-index:999}
+.skip-link:focus{top:0}
+nav.site-nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:56px}
+.nav-logo{font-family:var(--ff-serif);font-size:1rem;color:var(--text);text-decoration:none}
+.theme-toggle{background:var(--bg3);border:1px solid var(--border);color:var(--text-2);border-radius:8px;padding:.4rem .8rem;font-size:.78rem;cursor:pointer;font-family:var(--ff-sans);}
+.theme-toggle:hover{border-color:var(--purple);color:var(--text)}
+main{max-width:900px;margin:0 auto;padding:3rem 1.5rem 5rem}
+.breadcrumb{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.breadcrumb a{color:var(--text-3);text-decoration:none}
+.breadcrumb a:hover{color:var(--purple)}
+.series-tag{font-size:.7rem;padding:4px 11px;border-radius:99px;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);letter-spacing:.04em;text-transform:uppercase;font-weight:500;display:inline-block;margin-bottom:1.25rem}
+h1{font-family:var(--ff-serif);font-size:clamp(1.85rem,4vw,2.6rem);line-height:1.2;color:var(--purple);margin-bottom:.75rem;font-weight:400}
+.subtitle{font-family:var(--ff-serif);font-size:1.1rem;font-style:italic;color:var(--text-3);margin-bottom:1.5rem;max-width:680px}
+.meta-row{display:flex;align-items:center;gap:1.25rem;font-size:.82rem;color:var(--text-3);flex-wrap:wrap;margin-bottom:1.6rem;padding-bottom:1.3rem;border-bottom:1px solid var(--border)}
+h2{font-family:var(--ff-serif);font-size:1.5rem;font-weight:400;color:var(--text);margin:3.5rem 0 1.1rem;padding-top:1rem;border-top:1px solid var(--border)}
+h3{font-size:1rem;font-weight:500;color:var(--text);margin:1.75rem 0 .5rem}
+p{color:var(--text-2);margin-bottom:1.25rem;font-weight:300}
+strong{color:var(--text);font-weight:500}
+ul,ol{padding-left:1.4rem;margin-bottom:1.25rem;color:var(--text-2);font-weight:300}
+li{margin-bottom:.45rem}
+.goal-list{list-style:none;padding-left:1.4rem}
+.goal-list li{position:relative}
+.goal-list li::before{content:"";position:absolute;left:-1.3rem;top:.48em;width:.85rem;height:.85rem;border:1.5px solid var(--purple);border-radius:3px}
+code{background:var(--bg3);padding:1px 6px;border-radius:3px;font-size:.85em;color:var(--text-2);font-family:monospace}
+pre{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:1rem 1.1rem;font-family:monospace;font-size:.82rem;color:var(--text-2);line-height:1.65;overflow-x:auto;margin:1rem 0}
+pre code{background:none;padding:0;color:inherit}
+.callout{display:block;background:var(--blue-bg);border-left:3px solid var(--blue);border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.95rem;color:var(--text);line-height:1.7}
+.callout p{margin-bottom:0;color:var(--text-2)}
+.callout.amber{background:var(--amber-bg);border-color:var(--amber)}
+.callout.green{background:var(--green-bg);border-color:var(--green)}
+.callout.red{background:var(--red-bg);border-color:var(--red)}
+.callout.blue{background:var(--blue-bg);border-color:var(--blue)}
+.callout.purple{background:var(--purple-bg);border-color:var(--purple)}
+.table-wrap{display:block;overflow-x:auto;margin:1.5rem 0;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+thead th{background:var(--bg2);padding:9px 13px;text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);font-weight:500;border-bottom:1px solid var(--border)}
+tbody td{padding:9px 13px;border-bottom:1px solid var(--border);color:var(--text-2);vertical-align:top;line-height:1.55;font-size:.85rem}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--bg2)}
+/* Phase progress strip */
+.phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem}
+.phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--text-3);background:var(--bg2);text-decoration:none}
+.phase-pip:hover{border-color:var(--purple);color:var(--text)}
+.phase-pip.active{background:var(--purple);color:#0d0d0d;border-color:transparent}
+.phase-pip.done{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+/* Before/After blocks */
+.ba-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0}
+.ba-block{border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+.ba-label{padding:.4rem .8rem;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.ba-block.before .ba-label{background:var(--red-bg);color:var(--red)}
+.ba-block.after .ba-label{background:var(--green-bg);color:var(--green)}
+.ba-block pre{margin:0;border-radius:0;border:none}
+/* Assignment / bonus blocks */
+.assignment{background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:12px;padding:1.2rem 1.4rem;margin:4.5rem 0 1rem}
+.assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem}
+.assignment h3{font-family:var(--ff-serif);color:var(--text);margin-top:.2rem;margin-bottom:.5rem;font-weight:400}
+.bonus{background:var(--purple-bg);border:1px solid var(--purple-border);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem}
+.bonus .b-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--purple);margin-bottom:.4rem}
+/* Collapsible solution */
+details.solution{margin:1rem 0 2rem;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+details.solution summary{padding:.9rem 1.2rem;cursor:pointer;font-weight:700;font-size:.92rem;background:var(--bg2);list-style:none;display:flex;align-items:center;gap:.5rem;color:var(--text)}
+details.solution summary::-webkit-details-marker{display:none}
+details.solution summary::before{content:"\25B6";font-size:.7rem;color:var(--text-3);transition:transform .2s}
+details.solution[open] summary::before{transform:rotate(90deg)}
+.solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border)}
+.solution-body p{font-size:.92rem}
+.series-nav{margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border)}
+.series-nav .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);font-weight:500;margin-bottom:.75rem;display:block}
+.nav-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.nav-blog{display:flex;align-items:center;gap:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.25rem;text-decoration:none;transition:border-color .2s,background .2s}
+.nav-blog:hover{border-color:var(--purple);background:var(--bg3)}
+.nav-blog-arrow{color:var(--text-3);font-size:1rem;flex-shrink:0}
+.nav-blog-title{font-size:.88rem;font-weight:500;color:var(--text)}
+.nav-blog-sub{font-size:.75rem;color:var(--text-3);margin-top:2px}
+footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.8rem;color:var(--text-3)}
+footer a{color:var(--text-3);text-decoration:none}
+footer a:hover{color:var(--purple)}
+@media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
+.blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
+.blog-tags .series-tag{margin-bottom:0}
+.tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+.term-shot{margin:1.2rem 0}
+.term-shot img{display:block;max-width:100%;height:auto;border:1px solid var(--border);border-radius:8px}
+.term-shot figcaption{font-size:.8rem;color:var(--text-3);margin-top:.5rem;line-height:1.5}
+/* Collapsible code explanations */
+details.explain{margin:.5rem 0 1.5rem;border:1px solid var(--purple-border);border-radius:10px;background:var(--purple-bg)}
+details.explain summary{padding:.6rem 1rem;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--purple);list-style:none;display:flex;align-items:center;gap:.5rem}
+details.explain summary::-webkit-details-marker{display:none}
+details.explain summary::before{content:"\25B6";font-size:.65rem;transition:transform .2s}
+details.explain[open] summary::before{transform:rotate(90deg)}
+.explain-body{padding:.1rem 1.2rem 1rem;font-size:.92rem;line-height:1.7}
+.explain-body p{margin:.7rem 0}
+.explain-body ul{margin:.3rem 0 .7rem 1.2rem;padding-left:0}
+.explain-body li{margin-bottom:.35rem}
+.explain-body pre{margin:.6rem 0}
+
+/* Active recall */
+.how-to{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1rem 1.2rem;margin:0 0 2rem;font-size:.92rem}
+.how-to ol{margin:.4rem 0 0 1.2rem}
+.how-to li{margin-bottom:.3rem}
+details.phase{border:1px solid var(--border);border-radius:12px;margin:0 0 1.5rem;background:var(--bg2)}
+details.phase>summary{cursor:pointer;list-style:none;padding:1rem 1.2rem;font-family:var(--ff-serif);font-size:1.25rem;color:var(--text);display:flex;align-items:center;gap:.6rem}
+details.phase>summary::-webkit-details-marker{display:none}
+details.phase>summary::before{content:"\25B6";font-size:.7rem;color:var(--text-3);transition:transform .2s}
+details.phase[open]>summary::before{transform:rotate(90deg)}
+details.phase>summary .phase-link{margin-left:auto;font-family:var(--ff-sans);font-size:.8rem;color:var(--purple)}
+.recall-outline{display:flex;flex-direction:column;gap:1.4rem;padding:.4rem 1.2rem 1.4rem}
+.recall-branch{border-left:3px solid var(--border);padding-left:1rem}
+.recall-branch.g1{border-left-color:var(--red)}
+.recall-branch.g2{border-left-color:var(--purple)}
+.recall-branch.g3{border-left-color:var(--amber)}
+.recall-branch.g4{border-left-color:var(--blue)}
+.recall-branch.g5{border-left-color:var(--green)}
+.ro-head{font-weight:700;font-size:.95rem;margin-bottom:.55rem;color:var(--text)}
+.ro-line{padding-left:1.4rem;font-size:.9rem;color:var(--text-2);margin-bottom:.45rem;position:relative}
+.ro-line::before{content:"\2192";position:absolute;left:0;color:var(--text-3);font-weight:700}
+.recap-toggle-row{display:flex;justify-content:flex-end;margin-top:.6rem}
+.recap-toggle{width:100%}
+.recap-toggle>summary{cursor:pointer;list-style:none;display:inline-flex;float:right;align-items:center;gap:.3rem;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--purple);padding:.3rem .7rem;border:1px solid var(--purple);border-radius:99px;white-space:nowrap}
+.recap-toggle>summary::-webkit-details-marker{display:none}
+.recap-toggle>summary::after{content:"\25BE"}
+.recap-toggle[open]>summary::after{content:"\25B4"}
+.recap-toggle .recap-hide{display:none}
+.recap-toggle[open] .recap-show{display:none}
+.recap-toggle[open] .recap-hide{display:inline}
+.recap-toggle[open]>summary{background:var(--purple);color:var(--bg)}
+.recap{clear:both;margin-top:.7rem;padding:.9rem 1.1rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-size:.88rem;color:var(--text-2)}
+.recap ul{margin:0 0 0 1.1rem}
+.recap li{margin-bottom:.35rem}
+.recap .see{display:block;margin-top:.5rem;font-size:.8rem}
+.recap .see a{color:var(--purple)}
+.coming{color:var(--text-3);font-size:.9rem;margin-top:1rem}
+</style>
+<meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Playwright: Zero to Architect, by The Quality Strategist. A complete automation series: 16 phases in 4 stages, built against a real app, PeakAndPack.">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a class="nav-logo" href="../../index.html">The Quality Strategist</a>
+  <button class="theme-toggle" id="themeToggle" type="button">Light</button>
+</nav>
+
+<main id="main-content">
+
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="../../blogs.html">Blogs</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <a href="00-playwrightseries-landing.html">Playwright: Zero to Architect</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <span aria-current="page">Revision</span>
+  </nav>
+
+  <div class="blog-tags" aria-label="Blog categories" role="group">
+    <span class="series-tag">Revision</span>
+    <span class="tag">Active Recall</span>
+  </div>
+
+  <h1>Revision: Active Recall</h1>
+  <p class="subtitle">Questions from each phase, to answer from memory. Recalling an answer before you see it is what makes it stick; rereading only feels like learning.</p>
+
+  <div class="meta-row">
+    <span><strong>Series: Playwright: Zero to Architect</strong></span>
+    <span>Demo: PeakAndPack</span>
+    <span>By: RN</span>
+  </div>
+
+  <div class="how-to">
+    <strong>How to use this page</strong>
+    <ol>
+      <li>Read a question and answer it out loud, or write it down, before opening anything.</li>
+      <li>Press <strong>Recap</strong> to check. Each recap links to the step that explains it.</li>
+      <li>Note the questions you missed, and come back to those first next time.</li>
+    </ol>
+  </div>
+
+  <details class="phase" open>
+    <summary>Phase 0: Intro &amp; Setup <a class="phase-link" href="00-playwrightseries-intro-setup.html">Open phase</a></summary>
+    <div class="recall-outline">
+        <div class="recall-branch g1">
+          <div class="ro-head">1 &middot; Setting up</div>
+          <div class="ro-line">Why does Playwright need Node.js, and which minimum version?</div>
+          <div class="ro-line">What is npm, and what is a package?</div>
+          <div class="ro-line">Which five things does <code>npm init playwright@latest</code> put in your project?</div>
+          <div class="ro-line">Why does <code>node_modules</code> never go into Git?</div>
+          <div class="ro-line">Why should you <code>cd</code> into a projects folder before <code>mkdir</code>?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>Playwright is written in JavaScript, and Node.js runs JavaScript outside a browser. It needs version 18 or higher.</li>
+                <li>npm is Node's package manager, installed with Node. A package is ready-made code someone else wrote and shared.</li>
+                <li><code>package.json</code> (the project's ID card), <code>package-lock.json</code> (exact versions), <code>node_modules/</code> (the packages), <code>playwright.config.ts</code> (settings), <code>tests/example.spec.ts</code> (a demo you delete). Plus <code>.gitignore</code>, and the browsers go to a shared folder outside the project.</li>
+                <li>It's large, and it can be rebuilt from <code>package.json</code> at any time.</li>
+                <li>A terminal can open in a system folder, such as <code>C:\WINDOWS\system32</code> when run as administrator. The project would end up there.</li>
+              </ul>
+              <span class="see">&rarr; <a href="00-playwrightseries-intro-setup.html#install-playwright">See: Phase 0, step 3</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g2">
+          <div class="ro-head">2 &middot; Git and GitHub</div>
+          <div class="ro-line">What do <code>git init</code>, <code>git add .</code> and <code>git commit -m</code> each do?</div>
+          <div class="ro-line">What is staging?</div>
+          <div class="ro-line">What are a remote and <code>origin</code>?</div>
+          <div class="ro-line">Why <code>git branch -M main</code>, and what does <code>-u</code> do in <code>git push -u origin main</code>?</div>
+          <div class="ro-line">Why create the GitHub repository without a README?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li><code>init</code> starts tracking the folder (a hidden <code>.git</code> folder). <code>add .</code> chooses everything for the next snapshot. <code>commit -m</code> takes the snapshot, with a message.</li>
+                <li>Choosing what goes into the next commit, before taking it.</li>
+                <li>A remote is the online copy of your repository. <code>origin</code> is the usual name for the main one.</li>
+                <li>It renames the branch from <code>master</code> to <code>main</code>, GitHub's default. <code>-u</code> remembers the pairing, so later pushes are just <code>git push</code>.</li>
+                <li>Your folder already has files. An empty repository avoids a clash on the first push.</li>
+              </ul>
+              <span class="see">&rarr; <a href="00-playwrightseries-intro-setup.html#install-playwright">See: Phase 0, step 3</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g3">
+          <div class="ro-head">3 &middot; The config file</div>
+          <div class="ro-line">What does <code>baseURL</code> do, and how does it start in the generated file?</div>
+          <div class="ro-line">Read <code>retries: process.env.CI ? 2 : 0</code> aloud. Why 0 on your own machine?</div>
+          <div class="ro-line">What is <code>process.env</code>, and who sets <code>CI</code>?</div>
+          <div class="ro-line">When does <code>trace: 'on-first-retry'</code> record a trace?</div>
+          <div class="ro-line">Why does every test run three times?</div>
+          <div class="ro-line">Why did VS Code underline <code>process</code>, and what fixed it?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>It's joined to every <code>page.goto('/')</code>, so the address lives in one place. It starts commented out, pointing at <code>localhost</code>; you uncomment it and set PeakAndPack's address.</li>
+                <li>"On a CI server, retry twice, otherwise never." Locally, a retry could make a real problem pass on the second try and hide it.</li>
+                <li>Environment variables: settings the computer passes to a program. CI services such as GitHub Actions set <code>CI</code>; your laptop doesn't.</li>
+                <li>Only when a failed test is retried. Traces are large, so they're recorded only when something went wrong.</li>
+                <li>The <code>projects</code> list runs each test in Chromium, Firefox and WebKit.</li>
+                <li>Newer TypeScript no longer loads Node's types on its own. A <code>tsconfig.json</code> with <code>"types": ["node"]</code> fixed it. Tests run either way.</li>
+              </ul>
+              <span class="see">&rarr; <a href="00-playwrightseries-intro-setup.html#config-file">See: Phase 0, step 4</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g4">
+          <div class="ro-head">4 &middot; Anatomy of a test</div>
+          <div class="ro-line">What do <code>test</code> and <code>expect</code> do?</div>
+          <div class="ro-line">What makes a good test name?</div>
+          <div class="ro-line">What is <code>page</code>, and why does every test get its own?</div>
+          <div class="ro-line">Why is <code>async</code> there?</div>
+          <div class="ro-line">What does <code>await</code> do, and what happens without it?</div>
+          <div class="ro-line">What is an assertion?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li><code>test</code> creates a test; <code>expect</code> checks that something is true.</li>
+                <li>It says what should be true, so a failure tells you what broke without opening the code.</li>
+                <li>A fresh, empty browser tab. Its own tab means tests can't interfere with each other.</li>
+                <li>It's required whenever the steps use <code>await</code>.</li>
+                <li>It waits for the step to finish before the next line. Without it, the test races ahead and can finish, even "pass", before a check has run.</li>
+                <li>A statement that must be true for the test to pass. A test without one never checks anything.</li>
+              </ul>
+              <span class="see">&rarr; <a href="00-playwrightseries-intro-setup.html#first-tests">See: Phase 0, step 5</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g5">
+          <div class="ro-head">5 &middot; Finding and checking elements</div>
+          <div class="ro-line">Why find elements by role? Name two benefits.</div>
+          <div class="ro-line">In <code>{ name: /peakandpack/i }</code>, what do the slashes and the <code>i</code> mean?</div>
+          <div class="ro-line">Why give a name at all?</div>
+          <div class="ro-line">What does <code>getByRole</code> give back: the element, or something else?</div>
+          <div class="ro-line">What does <code>toBeVisible</code> check, and how long does it wait?</div>
+          <div class="ro-line">How is the search box found when it has no label?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>It survives redesigns (it's still a heading after a restyle), and it checks accessibility for free (if Playwright can't find it by role, a screen reader user probably can't either).</li>
+                <li>Slashes mark a pattern instead of exact text, matching any name that contains the letters. <code>i</code> ignores upper and lower case.</li>
+                <li>A page often has several headings. Without a name, Playwright doesn't know which one you mean and stops with an error.</li>
+                <li>A locator: a description of how to find it. Playwright searches only when it's used, and searches again each time.</li>
+                <li>That the element exists, isn't hidden, and takes up space on screen. It keeps retrying for up to 5 seconds.</li>
+                <li>By its placeholder, the grey hint text "Search gear...", which becomes its name.</li>
+              </ul>
+              <span class="see">&rarr; <a href="00-playwrightseries-intro-setup.html#first-tests">See: Phase 0, step 5</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g1">
+          <div class="ro-head">6 &middot; Running and reading results</div>
+          <div class="ro-line">What do <code>npx</code> and <code>playwright test</code> each do?</div>
+          <div class="ro-line">Headless or <code>--headed</code>: what's the difference?</div>
+          <div class="ro-line">Why 6 results for 2 tests? What is a worker?</div>
+          <div class="ro-line">How do you run a single file?</div>
+          <div class="ro-line">Every test failed on the first run. Most likely cause on PeakAndPack?</div>
+          <div class="ro-line">In the report, what are Before Hooks and After Hooks, and what does <code>p:chromium</code> mean?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li><code>npx</code> runs a tool installed in the project. <code>playwright test</code> runs every <code>.spec.ts</code> file in <code>tests/</code>.</li>
+                <li>Headless runs without windows: faster, and how servers run it. <code>--headed</code> shows the windows, so you can watch.</li>
+                <li>2 tests &times; 3 browsers. A worker is a separate process running tests side by side.</li>
+                <li><code>npx playwright test tests/first.spec.ts</code>, or part of the name: <code>npx playwright test first</code>.</li>
+                <li>The free server was asleep. The page showed "Loading gear..." for longer than the 5-second wait. Open the store, wait for products, rerun.</li>
+                <li>Playwright preparing a fresh tab, and cleaning up afterwards. <code>p:chromium</code> is a filter for the chromium project, set by clicking its tag.</li>
+              </ul>
+              <span class="see">&rarr; <a href="00-playwrightseries-intro-setup.html#run-tests">See: Phase 0, steps 6 and 7</a></span>
+            </div>
+          </details></div>
+        </div>
+    </div>
+  </details>
+
+  <p class="coming">More phases are added here as each one is completed.</p>
+
+</main>
+
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+<script>
+(function(){
+  var btn = document.getElementById('themeToggle');
+  function isLight(){ return document.documentElement.getAttribute('data-theme') === 'light'; }
+  function sync(){ btn.textContent = isLight() ? 'Dark' : 'Light'; }
+  sync();
+  btn.addEventListener('click', function(){
+    if(isLight()){
+      document.documentElement.removeAttribute('data-theme');
+      try{ localStorage.setItem('pw-theme','dark'); }catch(e){}
+    } else {
+      document.documentElement.setAttribute('data-theme','light');
+      try{ localStorage.setItem('pw-theme','light'); }catch(e){}
+    }
+    sync();
+  });
+})();
+</script>
+
+</body>
+</html>

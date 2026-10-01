@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>(function(){try{if(localStorage.getItem('pw-theme')==='light'){document.documentElement.setAttribute('data-theme','light');}}catch(e){}})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loops and Functions | JavaScript for Testers</title>
+<meta name="description" content="JavaScript for Testers, part 4: loops for checking every item in a list, explained for testers with a real product list.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+  --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+  --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.09); --purple-border:rgba(167,139,250,0.35);
+  --green:#4ade80; --green-bg:rgba(74,222,128,0.07); --green-border:rgba(74,222,128,0.25);
+  --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07); --blue-border:rgba(96,165,250,0.25);
+  --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07); --amber-border:rgba(251,191,36,0.25);
+  --red:#f87171; --red-bg:rgba(248,113,113,0.07); --red-border:rgba(248,113,113,0.25);
+  --ff-serif:'DM Serif Display',Georgia,serif; --ff-sans:'DM Sans',system-ui,sans-serif;
+}
+:root[data-theme="light"]{
+  --bg:#FAFCF5; --bg2:#F5F7F0; --bg3:#EDF0E4; --border:#DEE3D3;
+  --text:#1A1F14; --text-2:#3D4235; --text-3:#6B7060;
+  --purple:#7A4A9A; --purple-bg:#EDE0F5; --purple-border:rgba(122,74,154,0.35);
+  --green:#1A7A3A; --green-bg:#D8F0E0; --green-border:rgba(26,122,58,0.25);
+  --blue:#2A5C9A; --blue-bg:#DDE8F5; --blue-border:rgba(42,92,154,0.25);
+  --amber:#9A6E1A; --amber-bg:#F5EDD6; --amber-border:rgba(154,110,26,0.25);
+  --red:#B0402E; --red-bg:#F5DEDA; --red-border:rgba(176,64,46,0.25);
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body{background:var(--bg);color:var(--text);font-family:var(--ff-sans);font-size:16px;line-height:1.8;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.skip-link{position:absolute;top:-100%;left:1rem;background:var(--green);color:#000;padding:.5rem 1rem;border-radius:0 0 6px 6px;font-size:.85rem;font-weight:500;text-decoration:none;z-index:999}
+.skip-link:focus{top:0}
+nav.site-nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:56px}
+.nav-logo{font-family:var(--ff-serif);font-size:1rem;color:var(--text);text-decoration:none}
+.theme-toggle{background:var(--bg3);border:1px solid var(--border);color:var(--text-2);border-radius:8px;padding:.4rem .8rem;font-size:.78rem;cursor:pointer;font-family:var(--ff-sans);}
+.theme-toggle:hover{border-color:var(--purple);color:var(--text)}
+main{max-width:900px;margin:0 auto;padding:3rem 1.5rem 5rem}
+.breadcrumb{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.breadcrumb a{color:var(--text-3);text-decoration:none}
+.breadcrumb a:hover{color:var(--purple)}
+.series-tag{font-size:.7rem;padding:4px 11px;border-radius:99px;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);letter-spacing:.04em;text-transform:uppercase;font-weight:500;display:inline-block;margin-bottom:1.25rem}
+h1{font-family:var(--ff-serif);font-size:clamp(1.85rem,4vw,2.6rem);line-height:1.2;color:var(--purple);margin-bottom:.75rem;font-weight:400}
+.subtitle{font-family:var(--ff-serif);font-size:1.1rem;font-style:italic;color:var(--text-3);margin-bottom:1.5rem;max-width:680px}
+.meta-row{display:flex;align-items:center;gap:1.25rem;font-size:.82rem;color:var(--text-3);flex-wrap:wrap;margin-bottom:1.6rem;padding-bottom:1.3rem;border-bottom:1px solid var(--border)}
+h2{font-family:var(--ff-serif);font-size:1.5rem;font-weight:400;color:var(--text);margin:3.5rem 0 1.1rem;padding-top:1rem;border-top:1px solid var(--border)}
+h3{font-size:1rem;font-weight:500;color:var(--text);margin:1.75rem 0 .5rem}
+p{color:var(--text-2);margin-bottom:1.25rem;font-weight:300}
+strong{color:var(--text);font-weight:500}
+ul,ol{padding-left:1.4rem;margin-bottom:1.25rem;color:var(--text-2);font-weight:300}
+li{margin-bottom:.45rem}
+.goal-list{list-style:none;padding-left:1.4rem}
+.goal-list li{position:relative}
+.goal-list li::before{content:"";position:absolute;left:-1.3rem;top:.48em;width:.85rem;height:.85rem;border:1.5px solid var(--purple);border-radius:3px}
+code{background:var(--bg3);padding:1px 6px;border-radius:3px;font-size:.85em;color:var(--text-2);font-family:monospace}
+pre{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:1rem 1.1rem;font-family:monospace;font-size:.82rem;color:var(--text-2);line-height:1.65;overflow-x:auto;margin:1rem 0}
+pre code{background:none;padding:0;color:inherit}
+.callout{display:block;background:var(--blue-bg);border-left:3px solid var(--blue);border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.95rem;color:var(--text);line-height:1.7}
+.callout p{margin-bottom:0;color:var(--text-2)}
+.callout.amber{background:var(--amber-bg);border-color:var(--amber)}
+.callout.green{background:var(--green-bg);border-color:var(--green)}
+.callout.red{background:var(--red-bg);border-color:var(--red)}
+.callout.blue{background:var(--blue-bg);border-color:var(--blue)}
+.callout.purple{background:var(--purple-bg);border-color:var(--purple)}
+.table-wrap{display:block;overflow-x:auto;margin:1.5rem 0;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+thead th{background:var(--bg2);padding:9px 13px;text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);font-weight:500;border-bottom:1px solid var(--border)}
+tbody td{padding:9px 13px;border-bottom:1px solid var(--border);color:var(--text-2);vertical-align:top;line-height:1.55;font-size:.85rem}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--bg2)}
+/* Phase progress strip */
+.phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem}
+.phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--text-3);background:var(--bg2);text-decoration:none}
+.phase-pip:hover{border-color:var(--purple);color:var(--text)}
+.phase-pip.active{background:var(--purple);color:#0d0d0d;border-color:transparent}
+.phase-pip.done{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+/* Before/After blocks */
+.ba-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0}
+.ba-block{border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+.ba-label{padding:.4rem .8rem;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.ba-block.before .ba-label{background:var(--red-bg);color:var(--red)}
+.ba-block.after .ba-label{background:var(--green-bg);color:var(--green)}
+.ba-block pre{margin:0;border-radius:0;border:none}
+/* Assignment / bonus blocks */
+.assignment{background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:12px;padding:1.2rem 1.4rem;margin:4.5rem 0 1rem}
+.assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem}
+.assignment h3{font-family:var(--ff-serif);color:var(--text);margin-top:.2rem;margin-bottom:.5rem;font-weight:400}
+.bonus{background:var(--purple-bg);border:1px solid var(--purple-border);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem}
+.bonus .b-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--purple);margin-bottom:.4rem}
+/* Collapsible solution */
+details.solution{margin:1rem 0 2rem;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+details.solution summary{padding:.9rem 1.2rem;cursor:pointer;font-weight:700;font-size:.92rem;background:var(--bg2);list-style:none;display:flex;align-items:center;gap:.5rem;color:var(--text)}
+details.solution summary::-webkit-details-marker{display:none}
+details.solution summary::before{content:"\25B6";font-size:.7rem;color:var(--text-3);transition:transform .2s}
+details.solution[open] summary::before{transform:rotate(90deg)}
+.solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border)}
+.solution-body p{font-size:.92rem}
+.series-nav{margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border)}
+.series-nav .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);font-weight:500;margin-bottom:.75rem;display:block}
+.nav-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.nav-blog{display:flex;align-items:center;gap:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.25rem;text-decoration:none;transition:border-color .2s,background .2s}
+.nav-blog:hover{border-color:var(--purple);background:var(--bg3)}
+.nav-blog-arrow{color:var(--text-3);font-size:1rem;flex-shrink:0}
+.nav-blog-title{font-size:.88rem;font-weight:500;color:var(--text)}
+.nav-blog-sub{font-size:.75rem;color:var(--text-3);margin-top:2px}
+footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.8rem;color:var(--text-3)}
+footer a{color:var(--text-3);text-decoration:none}
+footer a:hover{color:var(--purple)}
+@media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
+.blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
+.blog-tags .series-tag{margin-bottom:0}
+.tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+.term-shot{margin:1.2rem 0}
+.term-shot img{display:block;max-width:100%;height:auto;border:1px solid var(--border);border-radius:8px}
+.term-shot figcaption{font-size:.8rem;color:var(--text-3);margin-top:.5rem;line-height:1.5}
+/* Collapsible code explanations */
+details.explain{margin:.5rem 0 1.5rem;border:1px solid var(--purple-border);border-radius:10px;background:var(--purple-bg)}
+details.explain summary{padding:.6rem 1rem;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--purple);list-style:none;display:flex;align-items:center;gap:.5rem}
+details.explain summary::-webkit-details-marker{display:none}
+details.explain summary::before{content:"\25B6";font-size:.65rem;transition:transform .2s}
+details.explain[open] summary::before{transform:rotate(90deg)}
+.explain-body{padding:.1rem 1.2rem 1rem;font-size:.92rem;line-height:1.7}
+.explain-body p{margin:.7rem 0}
+.explain-body ul{margin:.3rem 0 .7rem 1.2rem;padding-left:0}
+.explain-body li{margin-bottom:.35rem}
+.explain-body pre{margin:.6rem 0}
+</style>
+<meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Playwright: Zero to Architect, by The Quality Strategist. A complete automation series: 16 phases in 4 stages, built against a real app, PeakAndPack.">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+/* Diagrams */
+.dg{margin:1.4rem 0;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1rem 1rem .8rem;overflow-x:auto}
+.dg svg{display:block;width:100%;height:auto;max-width:700px;margin:0 auto;min-width:480px}
+.dg figcaption{font-size:.8rem;color:var(--text-3);text-align:center;margin-top:.6rem;line-height:1.5}
+.dg-box{fill:var(--bg);stroke:var(--border);stroke-width:1.5}
+.dg-acc{stroke:var(--purple)}
+.dg-dash{stroke-dasharray:6 5}
+.dg-okb{stroke:var(--green)}
+.dg-badb{stroke:var(--red)}
+.dg-t{fill:var(--text);font:13px var(--ff-sans)}
+.dg-h{fill:var(--text);font:700 13px var(--ff-sans)}
+.dg-c{fill:var(--text);font:13px ui-monospace,Consolas,monospace}
+.dg-cs{fill:var(--text);font:11.5px ui-monospace,Consolas,monospace}
+.dg-big{fill:var(--text);font:700 20px ui-monospace,Consolas,monospace}
+.dg-m{fill:var(--text-3);font:12px var(--ff-sans)}
+.dg-ms{fill:var(--text-3);font:11px var(--ff-sans)}
+.dg-p{fill:var(--purple)}
+.dg-ok{fill:var(--green)}
+.dg-bad{fill:var(--red)}
+.dg-amb{fill:var(--amber)}
+.dg-line{stroke:var(--text-3);stroke-width:1.5;fill:none}
+.dg-head{fill:var(--text-3)}
+.dg-fill-p{fill:var(--purple-bg);stroke:var(--purple);stroke-width:1.5}
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a class="nav-logo" href="../../../index.html">The Quality Strategist</a>
+  <button class="theme-toggle" id="themeToggle" type="button">Light</button>
+</nav>
+
+<main id="main-content">
+
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="../../../blogs.html">Blogs</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <span>JavaScript for Testers</span>
+    <span aria-hidden="true">&rsaquo;</span>
+    <span aria-current="page">Part 4</span>
+  </nav>
+
+  <div class="blog-tags" aria-label="Blog categories" role="group">
+    <span class="series-tag">JavaScript for Testers &middot; Part 4</span>
+    <span class="tag">Loops</span>
+    <span class="tag">Functions</span>
+  </div>
+
+  <h1>Loops and Functions</h1>
+  <p class="subtitle">Check every item in a list, not just the first one, and stop repeating yourself, explained for testers with a real product list.</p>
+
+  <div class="meta-row">
+    <span><strong>Series: JavaScript for Testers</strong></span>
+    <span>Demo: PeakAndPack</span>
+    <span>By: RN</span>
+  </div>
+
+  <div class="callout amber">
+    <p><strong>Draft.</strong> Structured from study notes; every example still needs running during review.</p>
+  </div>
+
+  <h2>Goal</h2>
+  <ul class="goal-list">
+    <li>Repeat code a set number of times with a <code>for</code> loop</li>
+    <li>Go through every item in a list with <code>for...of</code></li>
+    <li>Check every item, count, and total as you go</li>
+    <li>Stop a loop early with <code>break</code>, and know when to avoid <code>forEach</code></li>
+    <li>Write a check once as a function, and reuse it anywhere, even from other files</li>
+  </ul>
+
+  <h2 id="why">1. Why testers need this</h2>
+  <p>A test that checks only the first product proves very little. PeakAndPack's product list has a negative price and a product with no name, and neither is first in the list. Loops let a test check every item, however many there are, with the same few lines. They also let you run one check across several inputs, such as the boundary values 0, 1, 4 and 5 from Part 3.</p>
+
+  <h2 id="for">2. The counting loop: <code>for</code></h2>
+  <p>A <code>for</code> loop runs the same block of code a set number of times:</p>
+  <pre><code>// Runs 5 times: i is 0, 1, 2, 3, then 4
+for (let i = 0; i &lt; 5; i++) {
+  console.log('Checking product', i);
+}</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li>The round brackets hold three parts, separated by semicolons:
+          <ul>
+            <li><code>let i = 0</code> runs once, at the start: a counter called <code>i</code>, starting at 0. (<code>i</code> is the traditional name, short for "index".)</li>
+            <li><code>i &lt; 5</code> is checked before every round. While it's true, the loop keeps going; once it's false, the loop ends.</li>
+            <li><code>i++</code> runs after every round. It adds 1 to <code>i</code>; it's short for <code>i = i + 1</code>.</li>
+          </ul>
+        </li>
+        <li>The curly braces hold the <strong>body</strong>: the code that repeats.</li>
+        <li>It prints 0 to 4, not 1 to 5, and stops before 5 because <code>5 &lt; 5</code> is false. That's five rounds, starting from 0, the same way array positions count (Part 2).</li>
+        <li>The counter must be <code>let</code>: <code>i++</code> changes it, and a <code>const</code> can't change.</li>
+      </ul>
+
+    </div>
+  </details>
+  <figure class="dg">
+    <svg viewBox="0 0 660 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Flowchart of a for loop. Start: let i = 0. Check: is i less than 5? If yes, run the body, then i++ adds 1 to i, and go back to the check. If no, the loop ends."><defs><marker id="d1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-head" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="dg-fill-p" x="15" y="92" width="140" height="38" rx="19"/><text class="dg-c" x="85" y="116" text-anchor="middle">let i = 0</text>
+<path class="dg-line" d="M155,111 h33" marker-end="url(#d1)"/>
+<polygon class="dg-box dg-acc" points="275,71 355,111 275,151 195,111"/><text class="dg-cs" x="275" y="115" text-anchor="middle">i &lt; 5 ?</text>
+<path class="dg-line" d="M355,111 h53" marker-end="url(#d1)"/><text class="dg-ms dg-ok" x="381" y="103" text-anchor="middle">yes</text>
+<rect class="dg-box dg-okb" x="412" y="92" width="220" height="38" rx="8"/><text class="dg-cs" x="522" y="116" text-anchor="middle">run the body</text>
+<path class="dg-line" d="M522,130 v32" marker-end="url(#d1)"/>
+<rect class="dg-box" x="452" y="166" width="140" height="36" rx="8"/><text class="dg-c" x="522" y="189" text-anchor="middle">i++</text>
+<path class="dg-line" d="M452,184 H275 V156" marker-end="url(#d1)"/><text class="dg-ms" x="360" y="178" text-anchor="middle">back to the check</text>
+<path class="dg-line" d="M275,71 V44" marker-end="url(#d1)"/><text class="dg-ms dg-bad" x="290" y="62">no</text>
+<rect class="dg-box dg-badb" x="205" y="6" width="140" height="34" rx="8"/><text class="dg-t" x="275" y="28" text-anchor="middle">loop ends</text></svg>
+    <figcaption>A <code>for</code> loop: set up once, then check, run, step, and check again, until the check says no.</figcaption>
+  </figure>
+  <div class="callout amber">
+    <p><strong>A loop that never ends.</strong> If the check can never become false, for example <code>i--</code> (subtract 1) instead of <code>i++</code>, the loop runs forever and the terminal stops responding. Click in the terminal and press <strong>Ctrl+C</strong> to stop it.</p>
+  </div>
+
+  <h2 id="for-of">3. Going through a list: <code>for...of</code></h2>
+  <p>Most loops in tests go through a list. <code>for...of</code> hands you each item in turn, with no counter to manage:</p>
+  <pre><code>const products = [
+  { name: 'Trekking Poles (Pair)', price: 34.99, stock: 50 },
+  { name: '4-Season Tent', price: 320, stock: 15 },
+  { name: 'Sleeping Bag (-15C)', price: -89, stock: 30 },
+  { name: 'Headlamp', price: 24.99, stock: 0 },
+  { name: '', price: 9.99, stock: 5 },
+];
+
+for (const product of products) {
+  console.log(product.name, product.price);
+}</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>products</code> is an array of objects, the shape an API sends a product list in (Part 2).</li>
+        <li><code>for (const product of products)</code> reads "for each product in products". Each round, <code>product</code> holds the next item: first the Trekking Poles, then the tent, and so on to the end.</li>
+        <li>You choose the name. <code>product</code> (singular) for an item of <code>products</code> (plural) keeps it readable.</li>
+        <li><code>const</code> is fine here, because each round gets a fresh <code>product</code> rather than changing the old one.</li>
+        <li>The fifth product prints as a blank name and <code>9.99</code>: it really has no name. That's one of PeakAndPack's seeded bugs.</li>
+      </ul>
+    </div>
+  </details>
+  <p>When you need the position as well, use the counting loop with the list's <code>length</code>:</p>
+  <pre><code>for (let i = 0; i &lt; products.length; i++) {
+  console.log(i, products[i].name); // 0 Trekking Poles (Pair), 1 4-Season Tent, ...
+}</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>i &lt; products.length</code> stops after the last item: with 5 products, <code>i</code> goes 0 to 4.</li>
+        <li><code>products[i]</code> is the item at position <code>i</code>.</li>
+        <li>Using <code>&lt;=</code> here is the classic mistake: the last round asks for <code>products[5]</code>, which doesn't exist, and <code>.name</code> fails with "Cannot read properties of undefined" (Part 2).</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2 id="checking">4. Checking, counting and totalling as you go</h2>
+  <p>Put a condition inside the loop, and it checks every item. Keep a variable outside the loop, and you can count or add up as you go:</p>
+  <pre><code>let inStockCount = 0;
+let total = 0;
+
+for (const product of products) {
+  // Check every item against the rules
+  if (product.price &lt; 0) {
+    console.log('Negative price:', product.name);
+  }
+  if (product.name === '') {
+    console.log('Product with no name, priced', product.price);
+  }
+
+  // Count and total as you go
+  if (product.stock &gt; 0) {
+    inStockCount++;
+  }
+  total += product.price;
+}
+
+console.log('In stock:', inStockCount); // 4
+console.log('Total:', total);           // 300.97</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li>The two <code>if</code> checks run for every product, so both of PeakAndPack's bugs are reported, wherever they sit in the list.</li>
+        <li><code>inStockCount</code> and <code>total</code> are created <em>before</em> the loop, with <code>let</code>, so they keep their values between rounds. Created inside, they'd start again from 0 every round.</li>
+        <li><code>inStockCount++</code> adds 1 each time a product has stock. The Headlamp has 0, so the count is 4.</li>
+        <li><code>total += product.price</code> is short for <code>total = total + product.price</code>.</li>
+      </ul>
+    </div>
+  </details>
+  <div class="callout amber">
+    <p><strong>Decimals don't add exactly.</strong> <code>34.99 + 24.99</code> gives <code>59.980000000000004</code>. Computers store decimals in binary, which can't hold most of them exactly. Round before comparing money: <code>total.toFixed(2)</code> (Part 1), or compare amounts in cents.</p>
+  </div>
+  <p>Notice too that the total includes the Sleeping Bag's -89. Bad data doesn't just fail its own check: it quietly distorts every number calculated from it.</p>
+
+  <h2 id="break">5. Stopping early: <code>break</code></h2>
+  <p>Once you've found what you're looking for, there's no need to check the rest. <code>break</code> leaves the loop straight away:</p>
+  <pre><code>for (const product of products) {
+  if (product.price &lt; 30) {
+    console.log('First product under $30:', product.name);
+    break; // stop: no need to check the rest
+  }
+}
+// First product under $30: Sleeping Bag (-15C)</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>break</code> ends the whole loop immediately; the code after the loop runs next.</li>
+        <li>The answer is the Sleeping Bag, not the Headlamp: <code>-89</code> is less than 30. The bad price has corrupted a search that has nothing to do with prices being valid.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2 id="foreach">6. <code>forEach</code>: the other way you'll see</h2>
+  <p>Lists also have a built-in <code>forEach</code>, which you'll see in a lot of JavaScript:</p>
+  <pre><code>products.forEach((product) =&gt; {
+  console.log(product.name);
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>products.forEach(...)</code> runs the code inside the brackets once for each item.</li>
+        <li><code>(product) =&gt; { ... }</code> is a short way to write a <strong>function</strong>: a named-later block of code that receives the current item as <code>product</code>. Functions are the next section of this page.</li>
+        <li>It prints the same names as the <code>for...of</code> loop above.</li>
+      </ul>
+
+    </div>
+  </details>
+  <div class="callout blue">
+    <p><strong>In Playwright tests, prefer <code>for...of</code>.</strong> Test steps use <code>await</code> to wait for the browser (Phase 0). <code>forEach</code> doesn't wait for <code>await</code> inside it: it starts every item at once and moves on, so the test can finish before the checks run. <code>for...of</code> waits for each round. Part 6 explains why.</p>
+  </div>
+
+  <h2 id="functions">7. Functions: write a check once, use it everywhere</h2>
+  <p>The price rule from section 4 will be needed in many tests. Copying it into each one means fixing every copy when the rule changes. A <strong>function</strong> gives a piece of work a name, so you write it once and call it wherever it's needed:</p>
+  <pre><code>// Create the function once
+function isValidPrice(price) {
+  return price &gt;= 0;
+}
+
+// Call it as often as you like
+console.log(isValidPrice(34.99)); // true
+console.log(isValidPrice(-89));   // false</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>function isValidPrice(price) { ... }</code> creates a function: the keyword <code>function</code>, a name, round brackets, then the body in curly braces. Creating it doesn't run it.</li>
+        <li><code>price</code> in the brackets is a <strong>parameter</strong>: a placeholder name for the value the function will be given.</li>
+        <li><code>return price &gt;= 0;</code> works out the answer and hands it back to whoever called the function. <code>return</code> also ends the function: nothing after it runs.</li>
+        <li><code>isValidPrice(34.99)</code> <strong>calls</strong> the function. The value in the brackets is the <strong>argument</strong>: inside the function, <code>price</code> becomes <code>34.99</code>. The call is replaced by the answer, <code>true</code>.</li>
+        <li>Name functions after what they answer or do. A function giving true or false often starts with <code>is</code> or <code>has</code>.</li>
+      </ul>
+    </div>
+  </details>
+  <figure class="dg">
+    <svg viewBox="0 0 660 170" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A function drawn as a machine. The argument -89 goes in to the parameter price. Inside, the body works out price >= 0. The return value, false, comes out."><defs><marker id="d2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-head" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<text class="dg-ms" x="70" y="40" text-anchor="middle">ARGUMENT IN</text>
+<rect class="dg-box" x="20" y="55" width="100" height="44" rx="8"/><text class="dg-c" x="70" y="82" text-anchor="middle">-89</text>
+<path class="dg-line" d="M120,77 h40" marker-end="url(#d2)"/>
+<rect class="dg-fill-p" x="164" y="25" width="300" height="104" rx="14"/>
+<text class="dg-c dg-p" x="314" y="50" text-anchor="middle">function isValidPrice(price)</text>
+<text class="dg-ms" x="314" y="74" text-anchor="middle">price is -89 inside the function</text>
+<text class="dg-c" x="314" y="106" text-anchor="middle">return price &gt;= 0;</text>
+<path class="dg-line" d="M464,77 h40" marker-end="url(#d2)"/>
+<text class="dg-ms" x="568" y="40" text-anchor="middle">RETURN VALUE OUT</text>
+<rect class="dg-box dg-badb" x="508" y="55" width="120" height="44" rx="8"/><text class="dg-c dg-bad" x="568" y="82" text-anchor="middle">false</text>
+<text class="dg-m" x="330" y="160" text-anchor="middle">const ok = isValidPrice(-89);   // ok is false</text></svg>
+    <figcaption>A function takes values in through its parameters, works something out, and hands the answer back with <code>return</code>.</figcaption>
+  </figure>
+  <p>Functions can take several values, separated by commas, and can be used inside loops and other functions:</p>
+  <pre><code>function describe(name, price) {
+  return `${name}: $${price.toFixed(2)}`;
+}
+
+for (const product of products) {
+  if (!isValidPrice(product.price)) {
+    console.log('Invalid price:', describe(product.name, product.price));
+  }
+}
+// Invalid price: Sleeping Bag (-15C): $-89.00</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>describe(name, price)</code> has two parameters. Arguments are matched by position: the first value goes to <code>name</code>, the second to <code>price</code>.</li>
+        <li><code>!isValidPrice(product.price)</code> calls the function and flips the answer: "if the price is not valid".</li>
+        <li>The loop now reads almost like the business rule. If the rule changes, say prices must be above 0, you change one line inside <code>isValidPrice</code>, and every test using it follows.</li>
+      </ul>
+    </div>
+  </details>
+  <div class="callout amber">
+    <p><strong><code>return</code> versus <code>console.log</code>.</strong> Printing an answer isn't the same as giving it back. A function that ends with <code>console.log(result)</code> instead of <code>return result</code> shows the answer in the terminal, but hands back <code>undefined</code>, so <code>const ok = check(5)</code> gets nothing. The same happens if you forget the <code>return</code> line altogether.</p>
+    <p style="margin-top:.6rem"><strong>Missing arguments.</strong> Call <code>describe('Tent')</code> with only one value, and <code>price</code> is <code>undefined</code> inside the function. <code>price.toFixed(2)</code> then fails with <code>Cannot read properties of undefined (reading 'toFixed')</code>: the same error as in Part 2, from a different cause.</p>
+  </div>
+
+  <h2 id="function-styles">8. Three ways to write a function</h2>
+  <p>You'll meet three styles. They do the same job; the third is the one you'll see most in tests:</p>
+  <pre><code>// 1. A function declaration
+function double(n) {
+  return n * 2;
+}
+
+// 2. A function stored in a variable (a function expression)
+const triple = function (n) {
+  return n * 3;
+};
+
+// 3. An arrow function
+const square = (n) =&gt; {
+  return n * n;
+};
+
+// An arrow function that only returns can be shortened to one line
+const half = (n) =&gt; n / 2;
+
+console.log(double(5), triple(5), square(4), half(9)); // 10 15 16 4.5</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><strong>Declaration:</strong> <code>function name() {}</code>, as in section 7.</li>
+        <li><strong>Function expression:</strong> a function with no name of its own, stored in a <code>const</code>. You call it by the variable's name.</li>
+        <li><strong>Arrow function:</strong> <code>(n) =&gt; { ... }</code>, read as "takes <code>n</code>, then does this". No <code>function</code> keyword.</li>
+        <li><strong>The one-line arrow:</strong> with no curly braces, the value after <code>=&gt;</code> is returned automatically, so there's no <code>return</code> to write.</li>
+        <li><strong>You already know this shape from Playwright:</strong> <code>test('name', async ({ page }) =&gt; { ... })</code> passes an arrow function to <code>test</code>. The <code>async</code> is Part 6.</li>
+      </ul>
+    </div>
+  </details>
+  <p><strong>One difference that matters: when you can call it.</strong> A declaration can be called from anywhere in the file, even above where it's written. A function stored in a <code>const</code> can only be called after its line has run:</p>
+  <pre><code>console.log(greet('Ana')); // works: declarations are ready from the start
+function greet(name) {
+  return `Hello, ${name}`;
+}
+
+console.log(shout('Ana')); // ReferenceError: Cannot access 'shout' before initialization
+const shout = (name) =&gt; `HELLO, ${name}`;</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li>JavaScript prepares all function declarations before running the file, so <code>greet</code> exists from the first line. This is called <strong>hoisting</strong>.</li>
+        <li><code>shout</code> is a <code>const</code>, which only gets its value when its line runs. Calling it earlier fails with "Cannot access 'shout' before initialization".</li>
+        <li>Simplest habit: define functions above the code that uses them, whichever style you choose.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2 id="modules">9. Sharing functions between files</h2>
+  <p>A check written once is most useful when every test file can use it. Put shared functions in their own file, <strong>export</strong> them there, and <strong>import</strong> them where they're needed:</p>
+  <pre><code>// helpers/product-checks.js
+export function isValidPrice(price) {
+  return price &gt;= 0;
+}
+
+export const formatPrice = (price) =&gt; `$${price.toFixed(2)}`;</code></pre>
+  <pre><code>// audit.js, in the folder above helpers
+import { isValidPrice, formatPrice } from './helpers/product-checks.js';
+
+console.log(isValidPrice(-89), formatPrice(89)); // false $89.00
+
+// Or bring in everything from the file under one name
+import * as checks from './helpers/product-checks.js';
+console.log(checks.formatPrice(24.99)); // $24.99</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>export</code> in front of a function makes it available to other files. Without it, the function stays private to its own file.</li>
+        <li><code>import { isValidPrice, formatPrice } from '...'</code> brings in the named functions. The names in the curly braces must match the exported names.</li>
+        <li><code>'./helpers/product-checks.js'</code> is the path from this file: <code>./</code> means "this folder". Include the <code>.js</code> ending, or Node can't find the file.</li>
+        <li><code>import * as checks</code> brings in everything the file exports, as one object: you then call <code>checks.formatPrice(...)</code>, with a dot, like reading a key (Part 2).</li>
+        <li><strong>You've seen this before:</strong> every Playwright test starts with <code>import { test, expect } from '@playwright/test';</code>. That's the same thing, importing from a package instead of your own file.</li>
+      </ul>
+    </div>
+  </details>
+  <div class="callout amber">
+    <p><strong>"Cannot use import statement outside a module"?</strong> Plain Node.js needs to be told that your files use <code>import</code>. Add <code>"type": "module"</code> to your practice folder's <code>package.json</code>:</p>
+    <pre><code>{
+  "name": "js-practice",
+  "type": "module"
+}</code></pre>
+    <p>Your Playwright project doesn't need this: Playwright handles imports in test files itself.</p>
+  </div>
+
+  <div class="callout red">
+    <p><strong>Common mistakes.</strong></p>
+    <ul style="margin:.5rem 0 0 1.2rem;">
+      <li><strong><code>&lt;=</code> with a list's length.</strong> The last round reads past the end. Use <code>i &lt; list.length</code>.</li>
+      <li><strong>Checking only the first item.</strong> Bugs hide in the middle of lists. Loop over all of them.</li>
+      <li><strong>Creating a counter or total inside the loop.</strong> It resets every round. Create it before the loop.</li>
+      <li><strong>Comparing decimal totals exactly.</strong> Round with <code>toFixed(2)</code> first.</li>
+      <li><strong><code>forEach</code> with <code>await</code> inside.</strong> It doesn't wait. Use <code>for...of</code>.</li>
+      <li><strong>Printing instead of returning.</strong> A function without <code>return</code> hands back <code>undefined</code>.</li>
+      <li><strong>Calling a <code>const</code> function before its line.</strong> "Cannot access ... before initialization".</li>
+      <li><strong>Forgetting <code>export</code>, or the <code>.js</code> in an import path.</strong> The import fails to find what you asked for.</li>
+    </ul>
+  </div>
+
+  <hr style="border:none;border-top:1px solid var(--border);margin:0">
+
+  <div class="assignment">
+    <div class="a-label">Exercise</div>
+    <h3>Audit the product list</h3>
+    <p>Create <code>exercise-loops.js</code>, start it with the <code>products</code> list from section 3, write code for each step, and run it with <code>node exercise-loops.js</code>:</p>
+    <ol style="margin:.5rem 0 0 1.2rem;">
+      <li>With a <code>for</code> loop, print "Check 1" to "Check 3". (Careful: the counter starts at 0.)</li>
+      <li>With <code>for...of</code>, print each product's name and price.</li>
+      <li>With a counting loop and <code>length</code>, print each product's position and name.</li>
+      <li>In one loop, report every product with a negative price, and every product with no name.</li>
+      <li>Count the products in stock, and add up all the prices. Print the count, and the total with two decimals.</li>
+      <li>Print <code>34.99 + 24.99</code>. Why isn't it <code>59.98</code>, and how would you compare it safely?</li>
+      <li>Find the first product under $30 with <code>break</code>. Is the answer the one you expected? Why not?</li>
+      <li>Print every name again with <code>forEach</code>.</li>
+      <li>Break it on purpose, one at a time: change the step 3 loop to <code>&lt;=</code>; change a counter's <code>let</code> to <code>const</code>. Read each error. (Don't run a loop with <code>i--</code>: it never ends. If you do, press Ctrl+C.)</li>
+      <li>Write a function <code>isValidPrice(price)</code> that returns whether a price is 0 or more. Call it with <code>34.99</code> and <code>-89</code>.</li>
+      <li>Write <code>describe(name, price)</code> that returns text like <code>Headlamp: $24.99</code>. Use both functions in a loop to report every invalid price.</li>
+      <li>Write <code>printOnly(price)</code> that only <code>console.log</code>s the price. Store <code>printOnly(5)</code> in a variable and print it. What do you get, and why?</li>
+      <li>Rewrite <code>isValidPrice</code> as a one-line arrow function called <code>isValidPriceArrow</code>, and check it gives the same answers.</li>
+      <li>Call <code>describe('Tent')</code>, with one argument. Read the error: which value was missing?</li>
+      <li>Call a declaration above its definition, then a <code>const</code> arrow function above its definition. Which works?</li>
+      <li>Move <code>isValidPrice</code> and <code>describe</code> into <code>helpers/product-checks.js</code>, export them, and import them into your exercise file, first by name, then with <code>import * as</code>. (Add <code>"type": "module"</code> to <code>package.json</code> first.)</li>
+    </ol>
+
+  <details class="solution">
+    <summary>Show solution: try it yourself first</summary>
+    <div class="solution-body">
+      <pre><code>const products = [
+  { name: 'Trekking Poles (Pair)', price: 34.99, stock: 50 },
+  { name: '4-Season Tent', price: 320, stock: 15 },
+  { name: 'Sleeping Bag (-15C)', price: -89, stock: 30 },
+  { name: 'Headlamp', price: 24.99, stock: 0 },
+  { name: '', price: 9.99, stock: 5 },
+];
+
+// 1. The counter starts at 0, so print i + 1
+for (let i = 0; i &lt; 3; i++) {
+  console.log(`Check ${i + 1}`);
+}
+
+// 2. Every item in turn
+for (const product of products) {
+  console.log(product.name, product.price);
+}
+
+// 3. Position and item
+for (let i = 0; i &lt; products.length; i++) {
+  console.log(i, products[i].name);
+}
+
+// 4. Check every item against the rules
+for (const product of products) {
+  if (product.price &lt; 0) {
+    console.log('Negative price:', product.name);
+  }
+  if (product.name === '') {
+    console.log('No name, priced', product.price);
+  }
+}
+
+// 5. Count and total, created before the loop
+let inStockCount = 0;
+let total = 0;
+for (const product of products) {
+  if (product.stock &gt; 0) {
+    inStockCount++;
+  }
+  total += product.price;
+}
+console.log('In stock:', inStockCount, 'Total:', total.toFixed(2));
+
+// 6. Decimals don't add exactly: round before comparing
+console.log(34.99 + 24.99, (34.99 + 24.99).toFixed(2) === '59.98');
+
+// 7. Stop at the first match
+for (const product of products) {
+  if (product.price &lt; 30) {
+    console.log('First under $30:', product.name);
+    break;
+  }
+}
+
+// 8. forEach
+products.forEach((product) =&gt; {
+  console.log(product.name);
+});
+
+// 9. Break it on purpose (one at a time)
+// for (let i = 0; i &lt;= products.length; i++) { console.log(products[i].name); }
+//   -&gt; TypeError: Cannot read properties of undefined (reading 'name')
+// for (const i = 0; i &lt; 3; i++) { console.log(i); }
+//   -&gt; prints 0, then TypeError: Assignment to constant variable.
+
+// 10. A function that answers a question
+function isValidPrice(price) {
+  return price &gt;= 0;
+}
+console.log(isValidPrice(34.99), isValidPrice(-89));
+
+// 11. Two parameters, reused in a loop
+function describe(name, price) {
+  return `${name}: $${price.toFixed(2)}`;
+}
+for (const product of products) {
+  if (!isValidPrice(product.price)) {
+    console.log('Invalid price:', describe(product.name, product.price));
+  }
+}
+
+// 12. Printing is not returning
+function printOnly(price) {
+  console.log('Price is', price);
+}
+const result = printOnly(5);
+console.log('printOnly gave back:', result);
+
+// 13. The same check as a one-line arrow function
+const isValidPriceArrow = (price) =&gt; price &gt;= 0;
+console.log(isValidPriceArrow(34.99), isValidPriceArrow(-89));
+
+// 14. A missing argument (remove the // to try it)
+// describe('Tent');  -&gt; TypeError: Cannot read properties of undefined (reading 'toFixed')
+
+// 15. Declarations work early; const functions don't (remove the // to try)
+// console.log(early());  // works, if 'function early() {}' is written below
+// console.log(late());   // ReferenceError: Cannot access 'late' before initialization
+// const late = () =&gt; 1;</code></pre>
+      <p><strong>Step 16</strong>, in two files (with <code>"type": "module"</code> in <code>package.json</code>):</p>
+      <pre><code>// helpers/product-checks.js
+export function isValidPrice(price) {
+  return price &gt;= 0;
+}
+
+export function describe(name, price) {
+  return `${name}: $${price.toFixed(2)}`;
+}</code></pre>
+      <pre><code>// exercise-loops.js: replace the two functions above with an import
+import { isValidPrice, describe } from './helpers/product-checks.js';
+// ...or: import * as checks from './helpers/product-checks.js';
+//        and call checks.isValidPrice(...) and checks.describe(...)</code></pre>
+      <p><strong>Output:</strong></p>
+      <pre><code>Check 1
+Check 2
+Check 3
+Trekking Poles (Pair) 34.99
+4-Season Tent 320
+Sleeping Bag (-15C) -89
+Headlamp 24.99
+ 9.99
+0 Trekking Poles (Pair)
+1 4-Season Tent
+2 Sleeping Bag (-15C)
+3 Headlamp
+4
+Negative price: Sleeping Bag (-15C)
+No name, priced 9.99
+In stock: 4 Total: 300.97
+59.980000000000004 true
+First under $30: Sleeping Bag (-15C)
+Trekking Poles (Pair)
+4-Season Tent
+Sleeping Bag (-15C)
+Headlamp
+
+true false
+Invalid price: Sleeping Bag (-15C): $-89.00
+Price is 5
+printOnly gave back: undefined
+true false</code></pre>
+      <p><strong>What to notice.</strong></p>
+      <ul>
+        <li><strong>Step 1:</strong> the counter runs 0, 1, 2, so the message uses <code>i + 1</code> to read naturally.</li>
+        <li><strong>Step 4</strong> finds both seeded bugs, the negative price and the missing name, because the loop checks every product, not just the first.</li>
+        <li><strong>Step 6:</strong> <code>toFixed(2)</code> gives the text <code>'59.98'</code>, which compares cleanly.</li>
+        <li><strong>Step 7</strong> answers "Sleeping Bag": its broken price is under $30. One bad value can mislead checks that aren't about it at all.</li>
+        <li><strong>Step 12:</strong> <code>printOnly</code> prints "Price is 5", but gives back <code>undefined</code>: it never returns anything.</li>
+        <li><strong>Step 14:</strong> the missing second argument makes <code>price</code> undefined inside <code>describe</code>, so <code>.toFixed</code> fails.</li>
+        <li><strong>Step 15:</strong> the declaration works above its definition; the <code>const</code> doesn't, because it has no value until its line runs.</li>
+        <li><strong>Step 9:</strong> <code>&lt;=</code> reads one past the end; a <code>const</code> counter can't be increased. The <code>const</code> loop prints <code>0</code> first, because the error only happens at <code>i++</code>, after the first round.</li>
+      </ul>
+    </div>
+  </details>
+  </div>
+
+  <p style="margin:2rem 0 0"><strong>All parts at a glance:</strong> <a href="js-for-testers-in-a-view.html" style="color:var(--purple)">the mind map and cheat sheet</a>.</p>
+
+  <div class="series-nav">
+    <span class="label">Navigate JavaScript for Testers</span>
+    <div class="nav-pair">
+      <a href="js-for-testers-3-comparisons-and-conditions.html" class="nav-blog"><span class="nav-blog-arrow" aria-hidden="true">&larr;</span><div><div class="nav-blog-title">Part 3: Comparisons and Conditions</div><div class="nav-blog-sub">How every check in a test really works</div></div></a>
+      <a href="js-for-testers-5-classes-and-typescript.html" class="nav-blog"><div><div class="nav-blog-title">Part 5: Classes and TypeScript</div><div class="nav-blog-sub">Page objects, and types that catch mistakes early</div></div><span class="nav-blog-arrow" aria-hidden="true">&rarr;</span></a>
+    </div>
+  </div>
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--text-3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; JavaScript for Testers</p>
+  </div>
+</main>
+
+<footer>
+  <p><a href="../../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+<script>
+(function(){
+  var btn = document.getElementById('themeToggle');
+  function isLight(){ return document.documentElement.getAttribute('data-theme') === 'light'; }
+  function sync(){ btn.textContent = isLight() ? 'Dark' : 'Light'; }
+  sync();
+  btn.addEventListener('click', function(){
+    if(isLight()){
+      document.documentElement.removeAttribute('data-theme');
+      try{ localStorage.setItem('pw-theme','dark'); }catch(e){}
+    } else {
+      document.documentElement.setAttribute('data-theme','light');
+      try{ localStorage.setItem('pw-theme','light'); }catch(e){}
+    }
+    sync();
+  });
+})();
+</script>
+
+</body>
+</html>

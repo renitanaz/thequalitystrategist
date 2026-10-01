@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>(function(){try{if(localStorage.getItem('pw-theme')==='light'){document.documentElement.setAttribute('data-theme','light');}}catch(e){}})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Variables, Data Types and Strings | JavaScript for Testers</title>
+<meta name="description" content="JavaScript for Testers, part 1: variables, constants, data types and strings, explained for testers with examples from a real test suite.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+  --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+  --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.09); --purple-border:rgba(167,139,250,0.35);
+  --green:#4ade80; --green-bg:rgba(74,222,128,0.07); --green-border:rgba(74,222,128,0.25);
+  --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07); --blue-border:rgba(96,165,250,0.25);
+  --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07); --amber-border:rgba(251,191,36,0.25);
+  --red:#f87171; --red-bg:rgba(248,113,113,0.07); --red-border:rgba(248,113,113,0.25);
+  --ff-serif:'DM Serif Display',Georgia,serif; --ff-sans:'DM Sans',system-ui,sans-serif;
+}
+:root[data-theme="light"]{
+  --bg:#FAFCF5; --bg2:#F5F7F0; --bg3:#EDF0E4; --border:#DEE3D3;
+  --text:#1A1F14; --text-2:#3D4235; --text-3:#6B7060;
+  --purple:#7A4A9A; --purple-bg:#EDE0F5; --purple-border:rgba(122,74,154,0.35);
+  --green:#1A7A3A; --green-bg:#D8F0E0; --green-border:rgba(26,122,58,0.25);
+  --blue:#2A5C9A; --blue-bg:#DDE8F5; --blue-border:rgba(42,92,154,0.25);
+  --amber:#9A6E1A; --amber-bg:#F5EDD6; --amber-border:rgba(154,110,26,0.25);
+  --red:#B0402E; --red-bg:#F5DEDA; --red-border:rgba(176,64,46,0.25);
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body{background:var(--bg);color:var(--text);font-family:var(--ff-sans);font-size:16px;line-height:1.8;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.skip-link{position:absolute;top:-100%;left:1rem;background:var(--green);color:#000;padding:.5rem 1rem;border-radius:0 0 6px 6px;font-size:.85rem;font-weight:500;text-decoration:none;z-index:999}
+.skip-link:focus{top:0}
+nav.site-nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:56px}
+.nav-logo{font-family:var(--ff-serif);font-size:1rem;color:var(--text);text-decoration:none}
+.theme-toggle{background:var(--bg3);border:1px solid var(--border);color:var(--text-2);border-radius:8px;padding:.4rem .8rem;font-size:.78rem;cursor:pointer;font-family:var(--ff-sans);}
+.theme-toggle:hover{border-color:var(--purple);color:var(--text)}
+main{max-width:900px;margin:0 auto;padding:3rem 1.5rem 5rem}
+.breadcrumb{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.breadcrumb a{color:var(--text-3);text-decoration:none}
+.breadcrumb a:hover{color:var(--purple)}
+.series-tag{font-size:.7rem;padding:4px 11px;border-radius:99px;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);letter-spacing:.04em;text-transform:uppercase;font-weight:500;display:inline-block;margin-bottom:1.25rem}
+h1{font-family:var(--ff-serif);font-size:clamp(1.85rem,4vw,2.6rem);line-height:1.2;color:var(--purple);margin-bottom:.75rem;font-weight:400}
+.subtitle{font-family:var(--ff-serif);font-size:1.1rem;font-style:italic;color:var(--text-3);margin-bottom:1.5rem;max-width:680px}
+.meta-row{display:flex;align-items:center;gap:1.25rem;font-size:.82rem;color:var(--text-3);flex-wrap:wrap;margin-bottom:1.6rem;padding-bottom:1.3rem;border-bottom:1px solid var(--border)}
+h2{font-family:var(--ff-serif);font-size:1.5rem;font-weight:400;color:var(--text);margin:3.5rem 0 1.1rem;padding-top:1rem;border-top:1px solid var(--border)}
+h3{font-size:1rem;font-weight:500;color:var(--text);margin:1.75rem 0 .5rem}
+p{color:var(--text-2);margin-bottom:1.25rem;font-weight:300}
+strong{color:var(--text);font-weight:500}
+ul,ol{padding-left:1.4rem;margin-bottom:1.25rem;color:var(--text-2);font-weight:300}
+li{margin-bottom:.45rem}
+.goal-list{list-style:none;padding-left:1.4rem}
+.goal-list li{position:relative}
+.goal-list li::before{content:"";position:absolute;left:-1.3rem;top:.48em;width:.85rem;height:.85rem;border:1.5px solid var(--purple);border-radius:3px}
+code{background:var(--bg3);padding:1px 6px;border-radius:3px;font-size:.85em;color:var(--text-2);font-family:monospace}
+pre{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:1rem 1.1rem;font-family:monospace;font-size:.82rem;color:var(--text-2);line-height:1.65;overflow-x:auto;margin:1rem 0}
+pre code{background:none;padding:0;color:inherit}
+.callout{display:block;background:var(--blue-bg);border-left:3px solid var(--blue);border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.95rem;color:var(--text);line-height:1.7}
+.callout p{margin-bottom:0;color:var(--text-2)}
+.callout.amber{background:var(--amber-bg);border-color:var(--amber)}
+.callout.green{background:var(--green-bg);border-color:var(--green)}
+.callout.red{background:var(--red-bg);border-color:var(--red)}
+.callout.blue{background:var(--blue-bg);border-color:var(--blue)}
+.callout.purple{background:var(--purple-bg);border-color:var(--purple)}
+.table-wrap{display:block;overflow-x:auto;margin:1.5rem 0;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+thead th{background:var(--bg2);padding:9px 13px;text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);font-weight:500;border-bottom:1px solid var(--border)}
+tbody td{padding:9px 13px;border-bottom:1px solid var(--border);color:var(--text-2);vertical-align:top;line-height:1.55;font-size:.85rem}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--bg2)}
+/* Phase progress strip */
+.phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem}
+.phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--text-3);background:var(--bg2);text-decoration:none}
+.phase-pip:hover{border-color:var(--purple);color:var(--text)}
+.phase-pip.active{background:var(--purple);color:#0d0d0d;border-color:transparent}
+.phase-pip.done{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+/* Before/After blocks */
+.ba-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0}
+.ba-block{border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+.ba-label{padding:.4rem .8rem;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.ba-block.before .ba-label{background:var(--red-bg);color:var(--red)}
+.ba-block.after .ba-label{background:var(--green-bg);color:var(--green)}
+.ba-block pre{margin:0;border-radius:0;border:none}
+/* Assignment / bonus blocks */
+.assignment{background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:12px;padding:1.2rem 1.4rem;margin:4.5rem 0 1rem}
+.assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem}
+.assignment h3{font-family:var(--ff-serif);color:var(--text);margin-top:.2rem;margin-bottom:.5rem;font-weight:400}
+.bonus{background:var(--purple-bg);border:1px solid var(--purple-border);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem}
+.bonus .b-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--purple);margin-bottom:.4rem}
+/* Collapsible solution */
+details.solution{margin:1rem 0 2rem;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+details.solution summary{padding:.9rem 1.2rem;cursor:pointer;font-weight:700;font-size:.92rem;background:var(--bg2);list-style:none;display:flex;align-items:center;gap:.5rem;color:var(--text)}
+details.solution summary::-webkit-details-marker{display:none}
+details.solution summary::before{content:"\25B6";font-size:.7rem;color:var(--text-3);transition:transform .2s}
+details.solution[open] summary::before{transform:rotate(90deg)}
+.solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border)}
+.solution-body p{font-size:.92rem}
+.series-nav{margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border)}
+.series-nav .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);font-weight:500;margin-bottom:.75rem;display:block}
+.nav-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.nav-blog{display:flex;align-items:center;gap:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.25rem;text-decoration:none;transition:border-color .2s,background .2s}
+.nav-blog:hover{border-color:var(--purple);background:var(--bg3)}
+.nav-blog-arrow{color:var(--text-3);font-size:1rem;flex-shrink:0}
+.nav-blog-title{font-size:.88rem;font-weight:500;color:var(--text)}
+.nav-blog-sub{font-size:.75rem;color:var(--text-3);margin-top:2px}
+footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.8rem;color:var(--text-3)}
+footer a{color:var(--text-3);text-decoration:none}
+footer a:hover{color:var(--purple)}
+@media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
+.blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
+.blog-tags .series-tag{margin-bottom:0}
+.tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+.term-shot{margin:1.2rem 0}
+.term-shot img{display:block;max-width:100%;height:auto;border:1px solid var(--border);border-radius:8px}
+.term-shot figcaption{font-size:.8rem;color:var(--text-3);margin-top:.5rem;line-height:1.5}
+/* Collapsible code explanations */
+details.explain{margin:.5rem 0 1.5rem;border:1px solid var(--purple-border);border-radius:10px;background:var(--purple-bg)}
+details.explain summary{padding:.6rem 1rem;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--purple);list-style:none;display:flex;align-items:center;gap:.5rem}
+details.explain summary::-webkit-details-marker{display:none}
+details.explain summary::before{content:"\25B6";font-size:.65rem;transition:transform .2s}
+details.explain[open] summary::before{transform:rotate(90deg)}
+.explain-body{padding:.1rem 1.2rem 1rem;font-size:.92rem;line-height:1.7}
+.explain-body p{margin:.7rem 0}
+.explain-body ul{margin:.3rem 0 .7rem 1.2rem;padding-left:0}
+.explain-body li{margin-bottom:.35rem}
+.explain-body pre{margin:.6rem 0}
+</style>
+<meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Playwright: Zero to Architect, by The Quality Strategist. A complete automation series: 16 phases in 4 stages, built against a real app, PeakAndPack.">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+/* Diagrams */
+.dg{margin:1.4rem 0;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1rem 1rem .8rem;overflow-x:auto}
+.dg svg{display:block;width:100%;height:auto;max-width:700px;margin:0 auto;min-width:480px}
+.dg figcaption{font-size:.8rem;color:var(--text-3);text-align:center;margin-top:.6rem;line-height:1.5}
+.dg-box{fill:var(--bg);stroke:var(--border);stroke-width:1.5}
+.dg-acc{stroke:var(--purple)}
+.dg-dash{stroke-dasharray:6 5}
+.dg-okb{stroke:var(--green)}
+.dg-badb{stroke:var(--red)}
+.dg-t{fill:var(--text);font:13px var(--ff-sans)}
+.dg-h{fill:var(--text);font:700 13px var(--ff-sans)}
+.dg-c{fill:var(--text);font:13px ui-monospace,Consolas,monospace}
+.dg-cs{fill:var(--text);font:11.5px ui-monospace,Consolas,monospace}
+.dg-big{fill:var(--text);font:700 20px ui-monospace,Consolas,monospace}
+.dg-m{fill:var(--text-3);font:12px var(--ff-sans)}
+.dg-ms{fill:var(--text-3);font:11px var(--ff-sans)}
+.dg-p{fill:var(--purple)}
+.dg-ok{fill:var(--green)}
+.dg-bad{fill:var(--red)}
+.dg-amb{fill:var(--amber)}
+.dg-line{stroke:var(--text-3);stroke-width:1.5;fill:none}
+.dg-head{fill:var(--text-3)}
+.dg-fill-p{fill:var(--purple-bg);stroke:var(--purple);stroke-width:1.5}
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a class="nav-logo" href="../../../index.html">The Quality Strategist</a>
+  <button class="theme-toggle" id="themeToggle" type="button">Light</button>
+</nav>
+
+<main id="main-content">
+
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="../../../blogs.html">Blogs</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <span>JavaScript for Testers</span>
+    <span aria-hidden="true">&rsaquo;</span>
+    <span aria-current="page">Part 1</span>
+  </nav>
+
+  <div class="blog-tags" aria-label="Blog categories" role="group">
+    <span class="series-tag">JavaScript for Testers &middot; Part 1</span>
+    <span class="tag">Variables</span>
+    <span class="tag">Constants</span>
+    <span class="tag">Data Types</span>
+    <span class="tag">Strings</span>
+  </div>
+
+  <h1>Variables, Data Types and Strings</h1>
+  <p class="subtitle">The building blocks every Playwright test is made of, explained for testers, with examples from a real store's test suite.</p>
+
+  <div class="meta-row">
+    <span><strong>Series: JavaScript for Testers</strong></span>
+    <span>Demo: PeakAndPack</span>
+    <span>By: RN</span>
+  </div>
+
+  <div class="callout amber">
+    <p><strong>Draft.</strong> Structured from study notes; every example still needs running during review.</p>
+  </div>
+
+  <h2>Goal</h2>
+  <ul class="goal-list">
+    <li>Run a JavaScript file on your own computer with Node.js</li>
+    <li>Store values with <code>const</code> and <code>let</code>, and know which to use</li>
+    <li>Tell the five everyday data types apart, and check a value's type</li>
+    <li>Build text from values with <code>+</code> and with template literals</li>
+    <li>Read the three errors beginners hit most with variables</li>
+  </ul>
+
+  <h2 id="why">1. Why testers need this</h2>
+  <p>A Playwright test is JavaScript (strictly, TypeScript, which is JavaScript with extra checks). Every test stores things while it runs: the product it's checking, the price it read from the page, whether the order went through. Variables are how it holds them, and data types decide what you can do with them. A price read as text can't be compared with a number, which is a classic cause of tests that fail for no visible reason.</p>
+  <p>You don't need to become a developer. You need enough to read a test, change it with confidence, and understand its error messages.</p>
+
+  <h2 id="run-js">2. Running JavaScript on your computer</h2>
+  <p>Browsers run JavaScript inside web pages. <strong>Node.js</strong> runs it directly on your computer, which is how Playwright runs your tests. Make a practice folder, open it in VS Code, create a file called <code>hello.js</code>, and add one line:</p>
+  <pre><code>// Prints a message in the terminal
+console.log('Hello, PeakAndPack');</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>//</code> starts a <strong>comment</strong>: a note for people, which the computer ignores.</li>
+        <li><code>console.log(...)</code> prints whatever is inside the brackets in the terminal. It's how you'll look at values while learning, and how you'll check what a test sees when it misbehaves.</li>
+        <li><code>'Hello, PeakAndPack'</code> is text in quote marks, called a <strong>string</strong> (section 5).</li>
+        <li><code>;</code> ends the instruction, like a full stop ends a sentence.</li>
+      </ul>
+    </div>
+  </details>
+  <p>Then run it from VS Code's terminal (Terminal &rarr; New Terminal):</p>
+  <pre><code># Tell Node.js to run the file
+node hello.js</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>node</code> starts Node.js, and <code>hello.js</code> is the file to run. The terminal must be in the folder that holds the file; <code>cd</code> moves you there.</li>
+        <li><strong>What you'll see:</strong> <code>Hello, PeakAndPack</code>, printed on the next line.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2 id="let">3. Variables: values that can change</h2>
+  <p>A variable is a named box that holds a value while the code runs. When the code finishes, the box is gone. You create one with <code>let</code>, and you can put a new value in it later:</p>
+  <pre><code>// Create a variable called price, holding 34.99
+let price = 34.99;
+console.log(price); // 34.99
+
+// Put a new value in the same box
+price = 29.99;
+console.log(price); // 29.99</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>let price = 34.99;</code>: <code>let</code> creates the variable, <code>price</code> is its name, and <code>=</code> puts a value in it. Read <code>=</code> as "becomes", not "equals": it stores a value, it doesn't compare.</li>
+        <li><code>price = 29.99;</code> replaces the value. No <code>let</code> the second time: the box already exists.</li>
+        <li><code>// 34.99</code> after a line is a comment showing what it prints.</li>
+        <li><strong>Names:</strong> no spaces, can't start with a digit, and they're case-sensitive (<code>price</code> and <code>Price</code> are different boxes). The convention is camelCase: <code>productName</code>, <code>isOrderConfirmed</code>.</li>
+      </ul>
+    </div>
+  </details>
+  <p>You can also create a variable without a value and fill it later. Until you do, it holds <code>undefined</code> (section 5).</p>
+  <div class="callout red">
+    <p><strong>You'll see <code>var</code> in older tutorials. Don't use it.</strong> It also creates a variable, but with older rules about where it can be seen, which cause bugs that are hard to find. Modern code, including every Playwright example, uses <code>let</code> and <code>const</code>.</p>
+  </div>
+
+  <h2 id="const">4. Constants: values that can't change</h2>
+  <p>A constant is a box whose value is fixed once set. You create it with <code>const</code>, and it must get its value straight away:</p>
+  <pre><code>// The product's name won't change while the test runs
+const productName = 'Trekking Poles (Pair)';
+console.log(productName);
+
+// productName = 'Tent';  // would fail: TypeError: Assignment to constant variable.
+// const supplier;        // would fail: SyntaxError: Missing initializer in const declaration</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>const productName = '...';</code> works like <code>let</code>, except the value can't be replaced afterwards.</li>
+        <li>The two commented-out lines show what's not allowed. Remove the <code>//</code> from one at a time and run the file to see the error for yourself.</li>
+        <li><strong>Why it helps:</strong> a constant tells anyone reading the test "this won't change", and the computer enforces it, so a value can't be overwritten by accident halfway through a test.</li>
+      </ul>
+    </div>
+  </details>
+  <div class="callout green">
+    <p><strong>In tests, <code>const</code> is the default.</strong> Use <code>const</code> unless you know the value will change, then <code>let</code>. That's why Playwright code is full of lines like <code>const card = page.getByTestId('product-card');</code>.</p>
+  </div>
+
+  <figure class="dg">
+    <svg viewBox="0 0 640 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two boxes. let price: a box now holding 29.99, which replaced 34.99. const productName: a locked box holding Trekking Poles (Pair); trying to replace it gives a TypeError."><defs><marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-head" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<text class="dg-c dg-p" x="160" y="30" text-anchor="middle">let price</text>
+<rect class="dg-box dg-acc" x="70" y="45" width="180" height="62" rx="10"/>
+<text class="dg-big" x="160" y="84" text-anchor="middle">29.99</text>
+<text class="dg-cs" x="160" y="135" text-anchor="middle">price = 29.99;</text>
+<text class="dg-ok dg-t" x="160" y="158" text-anchor="middle">&#10003; replaces 34.99</text>
+<text class="dg-m" x="160" y="182" text-anchor="middle">same box, new value</text>
+<text class="dg-c dg-p" x="480" y="30" text-anchor="middle">const productName</text>
+<rect class="dg-box dg-acc" x="360" y="45" width="240" height="62" rx="10"/>
+<text class="dg-cs" x="480" y="81" text-anchor="middle">'Trekking Poles (Pair)'</text>
+<rect class="dg-fill-p" x="558" y="18" width="16" height="13" rx="3"/>
+<path class="dg-line" d="M561,18 v-4 a5,5 0 0 1 10,0 v4" style="stroke:var(--purple)"/>
+<text class="dg-cs" x="480" y="135" text-anchor="middle">productName = 'Tent';</text>
+<text class="dg-bad dg-t" x="480" y="158" text-anchor="middle">&#10007; TypeError</text>
+<text class="dg-m" x="480" y="182" text-anchor="middle">the value is locked in</text></svg>
+    <figcaption>A variable is a named box. <code>let</code> lets you swap what's inside; <code>const</code> locks it.</figcaption>
+  </figure>
+  <h2 id="types">5. Data types: what kind of value it is</h2>
+  <p>Every value has a type, and the type decides what you can do with it. You can do arithmetic with a number but not with text, even if the text looks like a number. These five cover almost everything in tests:</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Type</th><th>Example</th><th>Where you meet it in tests</th></tr></thead>
+      <tbody>
+        <tr><td><strong>string</strong>: text, in quotes</td><td><code>'Trekking Poles (Pair)'</code></td><td>Names, URLs, messages, and anything read from a page. A price read from a page, <code>'$34.99'</code>, is a string.</td></tr>
+        <tr><td><strong>number</strong></td><td><code>34.99</code></td><td>Prices, counts, quantities.</td></tr>
+        <tr><td><strong>boolean</strong></td><td><code>true</code> / <code>false</code></td><td>Yes/no answers: is the item in stock, did the order go through.</td></tr>
+        <tr><td><strong>null</strong></td><td><code>null</code></td><td>"Deliberately empty": a field an API sends with no value.</td></tr>
+        <tr><td><strong>undefined</strong></td><td><code>undefined</code></td><td>"Nothing was ever put here": often a sign of a misspelled name.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><code>typeof</code> tells you a value's type, which is handy when a test behaves strangely:</p>
+  <pre><code>const productName = 'Headlamp';
+const price = 24.99;
+const inStock = true;
+const discountCode = null;   // deliberately no code
+let reviewRating;            // never given a value
+
+console.log(typeof productName);  // 'string'
+console.log(typeof price);        // 'number'
+console.log(typeof inStock);      // 'boolean'
+console.log(typeof discountCode); // 'object'  &larr; a famous quirk
+console.log(typeof reviewRating); // 'undefined'
+console.log(typeof '24.99');      // 'string': quotes make it text</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>typeof value</code> gives back the type's name, as text.</li>
+        <li><strong>Quotes decide the type.</strong> <code>24.99</code> is a number; <code>'24.99'</code> is a string, even though they look the same.</li>
+        <li><strong><code>typeof null</code> says <code>'object'</code>.</strong> That's a mistake from JavaScript's very first version, kept so old websites don't break. To check for null, compare directly: <code>value === null</code> (part 3).</li>
+        <li><strong><code>undefined</code> versus "not defined".</strong> <code>let reviewRating;</code> creates a box with nothing in it, so it holds <code>undefined</code>. A name that was never created at all is a different problem: <code>console.log(rating)</code> stops with <code>ReferenceError: rating is not defined</code>.</li>
+        <li>JavaScript has two more types, <code>bigint</code> and <code>symbol</code>. You won't need them for testing.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2 id="strings">6. Strings: building text from values</h2>
+  <p>Tests build text all the time: a message to check for, a web address, a unique email for a new test user. Usually part of the text is fixed and part comes from a variable. There are two ways to join them.</p>
+  <p><strong>Joining with <code>+</code></strong> (called concatenation): break the text into pieces and add them together.</p>
+  <pre><code>const itemName = 'Headlamp';
+const price = 24.99;
+
+// Fixed text + variable + fixed text + variable
+const message = 'The price of the ' + itemName + ' is $' + price;
+console.log(message); // The price of the Headlamp is $24.99</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li>Between two pieces of text, <code>+</code> joins them into one longer piece of text.</li>
+        <li>The spaces are part of the fixed text: <code>'The price of the '</code> ends with a space, and <code>' is $'</code> starts with one. Leave them out and you get <code>The price of theHeadlampis $24.99</code>, the most common concatenation slip.</li>
+        <li><code>price</code> is a number, but joined with text, it becomes text too.</li>
+      </ul>
+    </div>
+  </details>
+  <figure class="dg">
+    <svg viewBox="0 0 680 190" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Four pieces joined with plus: the text 'The price of the ' with a trailing space, the variable itemName holding Headlamp, the text ' is $' with a leading space, and the variable price holding 24.99. Together they make: The price of the Headlamp is $24.99."><defs><marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-head" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="dg-box" x="20" y="20" width="200" height="40" rx="8"/><text class="dg-cs" x="120" y="45" text-anchor="middle">'The price of the&#9251;'</text>
+<text class="dg-h" x="236" y="46" text-anchor="middle">+</text>
+<rect class="dg-box dg-acc" x="252" y="20" width="110" height="40" rx="8"/><text class="dg-cs dg-p" x="307" y="45" text-anchor="middle">itemName</text>
+<text class="dg-h" x="378" y="46" text-anchor="middle">+</text>
+<rect class="dg-box" x="394" y="20" width="90" height="40" rx="8"/><text class="dg-cs" x="439" y="45" text-anchor="middle">'&#9251;is $'</text>
+<text class="dg-h" x="500" y="46" text-anchor="middle">+</text>
+<rect class="dg-box dg-acc" x="516" y="20" width="90" height="40" rx="8"/><text class="dg-cs dg-p" x="561" y="45" text-anchor="middle">price</text>
+<path class="dg-line" d="M307,60 v22" marker-end="url(#a2)"/><text class="dg-cs" x="307" y="100" text-anchor="middle">'Headlamp'</text>
+<path class="dg-line" d="M561,60 v22" marker-end="url(#a2)"/><text class="dg-cs" x="561" y="100" text-anchor="middle">24.99</text>
+<rect class="dg-fill-p" x="90" y="125" width="500" height="40" rx="8"/>
+<text class="dg-c" x="340" y="150" text-anchor="middle">'The price of the Headlamp is $24.99'</text>
+<text class="dg-ms" x="120" y="78" text-anchor="middle">&#9251; = a space you type</text></svg>
+    <figcaption>Joining with <code>+</code>: fixed pieces and variables, end to end. The spaces (shown as &#9251;) live inside the fixed pieces.</figcaption>
+  </figure>
+  <p><strong>Template literals</strong> (also called interpolation): write the whole sentence once, between backticks, and drop the variables in with <code>${...}</code>.</p>
+  <pre><code>const itemName = 'Headlamp';
+const price = 24.99;
+
+// One piece of text, with the variables dropped in
+const message = `The price of the ${itemName} is $${price}`;
+console.log(message); // The price of the Headlamp is $24.99
+
+// Anything inside ${} is worked out first
+console.log(`Two cost $${(price * 2).toFixed(2)}`); // Two cost $49.98</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><strong>Backticks</strong>, <code>`</code>, not quote marks. On most keyboards the backtick sits to the left of the <code>1</code> key. With ordinary quotes, <code>${itemName}</code> would print literally.</li>
+        <li><code>${itemName}</code> means "put the value of <code>itemName</code> here".</li>
+        <li><code>$${price}</code>: the first <code>$</code> is just a dollar sign in the sentence; <code>${price}</code> drops in the value.</li>
+        <li>Inside <code>${}</code> you can put any calculation. <code>price * 2</code> doubles the price (<code>*</code> means multiply).</li>
+        <li><code>.toFixed(2)</code> turns a number into text with exactly two decimals, so <code>89</code> shows as <code>89.00</code>. Handy for prices, because numbers drop trailing zeros.</li>
+      </ul>
+    </div>
+  </details>
+  <p>Both give exactly the same result. Template literals are easier to read and harder to get the spaces wrong in, so modern test code mostly uses them, especially for the jobs below.</p>
+  <pre><code>// A unique email for every test run, so new test users never clash
+const email = `test-${Date.now()}@example.com`;
+
+// A web address built from a fixed base
+const API = 'https://peakandpackshopdemo.onrender.com';
+const cartUrl = `${API}/api/cart`;
+
+console.log(email);   // test-1790830940302@example.com (the number changes every run)
+console.log(cartUrl); // https://peakandpackshopdemo.onrender.com/api/cart</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>Date.now()</code> gives the number of milliseconds since 1 January 1970, so it's different every time the test runs. Putting it in an email makes each run's test user unique. The Playwright series uses this in Phase 5.</li>
+        <li><code>`${API}/api/cart`</code> builds an address from a base kept in one place. Change the base, and every address built from it follows.</li>
+      </ul>
+    </div>
+  </details>
+  <div class="callout amber">
+    <p><strong>The <code>+</code> trap.</strong> <code>+</code> adds numbers, but joins text, and if either side is text, it joins. So <code>89 + 1</code> is <code>90</code>, but <code>'89.00' + 1</code> is <code>'89.001'</code>. A price read from a page is text (section 5), so adding to it without converting it first gives nonsense, quietly.</p>
+  </div>
+
+  <div class="callout red">
+    <p><strong>Common mistakes.</strong></p>
+    <ul style="margin:.5rem 0 0 1.2rem;">
+      <li><strong>Comparing a price read from a page with a number.</strong> <code>'89.00'</code> and <code>89</code> aren't equal in a strict comparison. Convert the text first; Phase 3 of the Playwright series shows how.</li>
+      <li><strong>Using <code>let</code> for everything.</strong> It works, but it hides which values are meant to stay fixed. Default to <code>const</code>.</li>
+      <li><strong>Forgetting spaces when joining with <code>+</code>.</strong> <code>'Total:' + price</code> prints <code>Total:24.99</code>. Template literals make this harder to get wrong.</li>
+      <li><strong>Ordinary quotes around a template.</strong> <code>'Hi ${name}'</code> prints the <code>${name}</code> literally. Templates need backticks.</li>
+      <li><strong>Reading <code>undefined</code> as "the app is broken".</strong> Check your own spelling first: a misspelled name is the most common cause.</li>
+    </ul>
+  </div>
+
+  <hr style="border:none;border-top:1px solid var(--border);margin:0">
+
+  <div class="assignment">
+    <div class="a-label">Exercise</div>
+    <h3>Build a product record, and its messages</h3>
+    <p>You're checking a PeakAndPack product before writing a test. Create <code>exercise-variables.js</code>, write code for each step, and run it with <code>node exercise-variables.js</code>:</p>
+    <ol style="margin:.5rem 0 0 1.2rem;">
+      <li>Start the file with a comment saying what it does.</li>
+      <li>Store the product's name, <code>Sleeping Bag (-15C)</code>, and its category, <code>Camping</code>, in values that can never change.</li>
+      <li>Store its price, <code>-89.00</code>, in a variable: you're about to correct it.</li>
+      <li>Store whether it's in stock (it is).</li>
+      <li>Store its discount code. There deliberately isn't one.</li>
+      <li>Create a variable for its review rating, without a value.</li>
+      <li>Print all six values on one line with <code>console.log</code>.</li>
+      <li>The price is a known bug. Set it to <code>89.00</code> and print it again.</li>
+      <li>Reviews are in: give the review rating a value of <code>4.5</code>, and print it.</li>
+      <li>Print the type of each of the six values. Before you run it, predict what the discount code's type will be.</li>
+      <li>Create <code>priceFromPage = '89.00'</code>, the way a price looks when read from a web page, and print its type.</li>
+      <li>Using <code>+</code>, build and print: <code>Sleeping Bag (-15C) costs $89</code>. Check your spaces.</li>
+      <li>Build the same sentence with a template literal, this time showing the price with two decimals: <code>Sleeping Bag (-15C) costs $89.00</code>.</li>
+      <li>Build a unique test email like <code>test-1790830940302@example.com</code>. Run the file twice: does it change?</li>
+      <li>Predict, then print: <code>price + 1</code> and <code>priceFromPage + 1</code>. Why are they different, and why does this matter in a test?</li>
+      <li>Break it on purpose, one at a time, and read each error: change the product's name; create a <code>const</code> with no value; print a variable you never created; print <code>ProductName</code>, with a capital P.</li>
+    </ol>
+
+  <details class="solution">
+    <summary>Show solution: try it yourself first</summary>
+    <div class="solution-body">
+      <pre><code>// 1. A comment: checks a product's details before writing a test
+
+// 2. Constants: these never change
+const productName = 'Sleeping Bag (-15C)';
+const category = 'Camping';
+
+// 3. A variable: the price is about to be corrected
+let price = -89.00;
+
+// 4. Boolean
+const inStock = true;
+
+// 5. Null: deliberately no discount code
+const discountCode = null;
+
+// 6. Undefined: created, never given a value
+let reviewRating;
+
+// 7. Print all six
+console.log(productName, category, price, inStock, discountCode, reviewRating);
+
+// 8. Allowed, because price is a let
+price = 89.00;
+console.log('Corrected price:', price);
+
+// 9. A variable created empty can be filled later
+reviewRating = 4.5;
+console.log('Rating:', reviewRating);
+
+// 10. Types
+console.log(typeof productName, typeof category, typeof price,
+            typeof inStock, typeof discountCode, typeof reviewRating);
+
+// 11. A price read from a page is text
+const priceFromPage = '89.00';
+console.log(typeof priceFromPage);
+
+// 12. Joining with +: the spaces live inside the quotes
+console.log(productName + ' costs $' + price);
+
+// 13. Template literal, price shown with two decimals
+console.log(`${productName} costs $${price.toFixed(2)}`);
+
+// 14. A unique email: Date.now() changes every run
+console.log(`test-${Date.now()}@example.com`);
+
+// 15. + adds numbers, but joins text
+console.log(price + 1, priceFromPage + 1);
+
+// 16. Break it on purpose (remove the // from one line at a time)
+// productName = 'Tent';     // TypeError: Assignment to constant variable.
+// const supplier;           // SyntaxError: Missing initializer in const declaration
+// console.log(rating);      // ReferenceError: rating is not defined
+// console.log(ProductName); // ReferenceError: ProductName is not defined</code></pre>
+      <p><strong>Output</strong> (the email's number will differ):</p>
+      <pre><code>Sleeping Bag (-15C) Camping -89 true null undefined
+Corrected price: 89
+Rating: 4.5
+string string number boolean object number
+string
+Sleeping Bag (-15C) costs $89
+Sleeping Bag (-15C) costs $89.00
+test-1790830940302@example.com
+90 89.001</code></pre>
+      <p><strong>What to notice.</strong></p>
+      <ul>
+        <li><strong>The review rating's type changed</strong>, from <code>undefined</code> to <code>number</code>, once step 9 gave it a value. A variable's type is whatever it holds right now.</li>
+        <li><strong><code>-89.00</code> prints as <code>-89</code></strong>, because numbers don't keep trailing zeros. Step 13's <code>.toFixed(2)</code> brings them back for display.</li>
+        <li><strong>The discount code's type is <code>object</code>,</strong> JavaScript's <code>typeof null</code> quirk. Check for null with <code>=== null</code>.</li>
+        <li><strong>Step 15:</strong> <code>price + 1</code> adds, giving <code>90</code>. <code>priceFromPage + 1</code> joins, giving <code>'89.001'</code>, because one side is text. A test that adds to a price read from the page, without converting it, gets nonsense and doesn't complain.</li>
+        <li><strong>Step 16</strong> shows three kinds of error: a constant can't change (TypeError), a constant must start with a value (SyntaxError, which stops the file before anything runs), and a name that doesn't exist (ReferenceError). <code>ProductName</code> fails because names are case-sensitive.</li>
+      </ul>
+    </div>
+  </details>
+  </div>
+
+  <p style="margin:2rem 0 0"><strong>All parts at a glance:</strong> <a href="js-for-testers-in-a-view.html" style="color:var(--purple)">the mind map and cheat sheet</a>.</p>
+
+  <div class="series-nav">
+    <span class="label">Navigate JavaScript for Testers</span>
+    <div class="nav-pair">
+      <span></span>
+      <a href="js-for-testers-2-objects-and-arrays.html" class="nav-blog"><div><div class="nav-blog-title">Part 2: Objects and Arrays</div><div class="nav-blog-sub">The shapes test data and API responses come in</div></div><span class="nav-blog-arrow" aria-hidden="true">&rarr;</span></a>
+    </div>
+  </div>
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--text-3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; JavaScript for Testers</p>
+  </div>
+</main>
+
+<footer>
+  <p><a href="../../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+<script>
+(function(){
+  var btn = document.getElementById('themeToggle');
+  function isLight(){ return document.documentElement.getAttribute('data-theme') === 'light'; }
+  function sync(){ btn.textContent = isLight() ? 'Dark' : 'Light'; }
+  sync();
+  btn.addEventListener('click', function(){
+    if(isLight()){
+      document.documentElement.removeAttribute('data-theme');
+      try{ localStorage.setItem('pw-theme','dark'); }catch(e){}
+    } else {
+      document.documentElement.setAttribute('data-theme','light');
+      try{ localStorage.setItem('pw-theme','light'); }catch(e){}
+    }
+    sync();
+  });
+})();
+</script>
+
+</body>
+</html>

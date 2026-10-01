@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>(function(){try{if(localStorage.getItem('pw-theme')==='light'){document.documentElement.setAttribute('data-theme','light');}}catch(e){}})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UI Component Recipes | Playwright: Zero to Architect</title>
+<meta name="description" content="Companion to Phase 8 of Playwright: Zero to Architect. How to automate inputs, radio buttons, checkboxes, dropdowns, tooltips, date pickers, sliders and tables on PeakAndPack.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+  --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+  --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.09); --purple-border:rgba(167,139,250,0.35);
+  --green:#4ade80; --green-bg:rgba(74,222,128,0.07); --green-border:rgba(74,222,128,0.25);
+  --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07); --blue-border:rgba(96,165,250,0.25);
+  --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07); --amber-border:rgba(251,191,36,0.25);
+  --red:#f87171; --red-bg:rgba(248,113,113,0.07); --red-border:rgba(248,113,113,0.25);
+  --ff-serif:'DM Serif Display',Georgia,serif; --ff-sans:'DM Sans',system-ui,sans-serif;
+}
+:root[data-theme="light"]{
+  --bg:#FAFCF5; --bg2:#F5F7F0; --bg3:#EDF0E4; --border:#DEE3D3;
+  --text:#1A1F14; --text-2:#3D4235; --text-3:#6B7060;
+  --purple:#7A4A9A; --purple-bg:#EDE0F5; --purple-border:rgba(122,74,154,0.35);
+  --green:#1A7A3A; --green-bg:#D8F0E0; --green-border:rgba(26,122,58,0.25);
+  --blue:#2A5C9A; --blue-bg:#DDE8F5; --blue-border:rgba(42,92,154,0.25);
+  --amber:#9A6E1A; --amber-bg:#F5EDD6; --amber-border:rgba(154,110,26,0.25);
+  --red:#B0402E; --red-bg:#F5DEDA; --red-border:rgba(176,64,46,0.25);
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body{background:var(--bg);color:var(--text);font-family:var(--ff-sans);font-size:16px;line-height:1.8;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.skip-link{position:absolute;top:-100%;left:1rem;background:var(--green);color:#000;padding:.5rem 1rem;border-radius:0 0 6px 6px;font-size:.85rem;font-weight:500;text-decoration:none;z-index:999}
+.skip-link:focus{top:0}
+nav.site-nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:56px}
+.nav-logo{font-family:var(--ff-serif);font-size:1rem;color:var(--text);text-decoration:none}
+.theme-toggle{background:var(--bg3);border:1px solid var(--border);color:var(--text-2);border-radius:8px;padding:.4rem .8rem;font-size:.78rem;cursor:pointer;font-family:var(--ff-sans);}
+.theme-toggle:hover{border-color:var(--purple);color:var(--text)}
+main{max-width:900px;margin:0 auto;padding:3rem 1.5rem 5rem}
+.breadcrumb{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.breadcrumb a{color:var(--text-3);text-decoration:none}
+.breadcrumb a:hover{color:var(--purple)}
+.series-tag{font-size:.7rem;padding:4px 11px;border-radius:99px;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);letter-spacing:.04em;text-transform:uppercase;font-weight:500;display:inline-block;margin-bottom:1.25rem}
+h1{font-family:var(--ff-serif);font-size:clamp(1.85rem,4vw,2.6rem);line-height:1.2;color:var(--purple);margin-bottom:.75rem;font-weight:400}
+.subtitle{font-family:var(--ff-serif);font-size:1.1rem;font-style:italic;color:var(--text-3);margin-bottom:1.5rem;max-width:680px}
+.meta-row{display:flex;align-items:center;gap:1.25rem;font-size:.82rem;color:var(--text-3);flex-wrap:wrap;margin-bottom:1.6rem;padding-bottom:1.3rem;border-bottom:1px solid var(--border)}
+h2{font-family:var(--ff-serif);font-size:1.5rem;font-weight:400;color:var(--text);margin:3.5rem 0 1.1rem;padding-top:1rem;border-top:1px solid var(--border)}
+h3{font-size:1rem;font-weight:500;color:var(--text);margin:1.75rem 0 .5rem}
+p{color:var(--text-2);margin-bottom:1.25rem;font-weight:300}
+strong{color:var(--text);font-weight:500}
+ul,ol{padding-left:1.4rem;margin-bottom:1.25rem;color:var(--text-2);font-weight:300}
+li{margin-bottom:.45rem}
+code{background:var(--bg3);padding:1px 6px;border-radius:3px;font-size:.85em;color:var(--text-2);font-family:monospace}
+pre{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:1rem 1.1rem;font-family:monospace;font-size:.82rem;color:var(--text-2);line-height:1.65;overflow-x:auto;margin:1rem 0}
+pre code{background:none;padding:0;color:inherit}
+.callout{display:block;background:var(--blue-bg);border-left:3px solid var(--blue);border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.95rem;color:var(--text);line-height:1.7}
+.callout p{margin-bottom:0;color:var(--text-2)}
+.callout.amber{background:var(--amber-bg);border-color:var(--amber)}
+.callout.green{background:var(--green-bg);border-color:var(--green)}
+.callout.red{background:var(--red-bg);border-color:var(--red)}
+.callout.blue{background:var(--blue-bg);border-color:var(--blue)}
+.callout.purple{background:var(--purple-bg);border-color:var(--purple)}
+.table-wrap{display:block;overflow-x:auto;margin:1.5rem 0;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+thead th{background:var(--bg2);padding:9px 13px;text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);font-weight:500;border-bottom:1px solid var(--border)}
+tbody td{padding:9px 13px;border-bottom:1px solid var(--border);color:var(--text-2);vertical-align:top;line-height:1.55;font-size:.85rem}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--bg2)}
+/* Phase progress strip */
+.phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem}
+.phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--text-3);background:var(--bg2);text-decoration:none}
+.phase-pip:hover{border-color:var(--purple);color:var(--text)}
+.phase-pip.active{background:var(--purple);color:#0d0d0d;border-color:transparent}
+.phase-pip.done{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+/* Before/After blocks */
+.ba-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0}
+.ba-block{border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+.ba-label{padding:.4rem .8rem;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.ba-block.before .ba-label{background:var(--red-bg);color:var(--red)}
+.ba-block.after .ba-label{background:var(--green-bg);color:var(--green)}
+.ba-block pre{margin:0;border-radius:0;border:none}
+/* Assignment / bonus blocks */
+.assignment{background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:12px;padding:1.2rem 1.4rem;margin:4.5rem 0 1rem}
+.assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem}
+.assignment h3{font-family:var(--ff-serif);color:var(--text);margin-top:.2rem;margin-bottom:.5rem;font-weight:400}
+.bonus{background:var(--purple-bg);border:1px solid var(--purple-border);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem}
+.bonus .b-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--purple);margin-bottom:.4rem}
+/* Collapsible solution */
+details.solution{margin:1rem 0 2rem;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+details.solution summary{padding:.9rem 1.2rem;cursor:pointer;font-weight:700;font-size:.92rem;background:var(--bg2);list-style:none;display:flex;align-items:center;gap:.5rem;color:var(--text)}
+details.solution summary::-webkit-details-marker{display:none}
+details.solution summary::before{content:"\25B6";font-size:.7rem;color:var(--text-3);transition:transform .2s}
+details.solution[open] summary::before{transform:rotate(90deg)}
+.solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border)}
+.solution-body p{font-size:.92rem}
+.series-nav{margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border)}
+.series-nav .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);font-weight:500;margin-bottom:.75rem;display:block}
+.nav-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.nav-blog{display:flex;align-items:center;gap:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.25rem;text-decoration:none;transition:border-color .2s,background .2s}
+.nav-blog:hover{border-color:var(--purple);background:var(--bg3)}
+.nav-blog-arrow{color:var(--text-3);font-size:1rem;flex-shrink:0}
+.nav-blog-title{font-size:.88rem;font-weight:500;color:var(--text)}
+.nav-blog-sub{font-size:.75rem;color:var(--text-3);margin-top:2px}
+footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.8rem;color:var(--text-3)}
+footer a{color:var(--text-3);text-decoration:none}
+footer a:hover{color:var(--purple)}
+@media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
+.blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
+.blog-tags .series-tag{margin-bottom:0}
+.tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+/* Collapsible code explanations */
+details.explain{margin:.5rem 0 1.5rem;border:1px solid var(--purple-border);border-radius:10px;background:var(--purple-bg)}
+details.explain summary{padding:.6rem 1rem;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--purple);list-style:none;display:flex;align-items:center;gap:.5rem}
+details.explain summary::-webkit-details-marker{display:none}
+details.explain summary::before{content:"\25B6";font-size:.65rem;transition:transform .2s}
+details.explain[open] summary::before{transform:rotate(90deg)}
+.explain-body{padding:.1rem 1.2rem 1rem;font-size:.92rem;line-height:1.7}
+.explain-body p{margin:.7rem 0}
+.explain-body ul{margin:.3rem 0 .7rem 1.2rem;padding-left:0}
+.explain-body li{margin-bottom:.35rem}
+.explain-body pre{margin:.6rem 0}
+.recipe-index{columns:2;column-gap:2rem;margin:.6rem 0 1rem 1.2rem}
+.recipe-index li{margin-bottom:.3rem}
+</style>
+<meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Playwright: Zero to Architect, by The Quality Strategist. A complete automation series: 16 phases in 4 stages, built against a real app, PeakAndPack.">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a class="nav-logo" href="../../index.html">The Quality Strategist</a>
+  <button class="theme-toggle" id="themeToggle" type="button">Light</button>
+</nav>
+
+<main id="main-content">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="../../blogs.html">Blogs</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <a href="00-playwrightseries-landing.html">Playwright: Zero to Architect</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <span aria-current="page">UI component recipes</span>
+  </nav>
+  <div class="blog-tags" aria-label="Blog categories" role="group">
+    <span class="series-tag">Companion to Phase 8 &middot; UI Component Recipes</span>
+    <span class="tag">Form Controls</span>
+    <span class="tag">Date Pickers</span>
+    <span class="tag">Tables</span>
+    <span class="tag">Sliders</span>
+  </div>
+  <h1>UI Component Recipes</h1>
+  <p class="subtitle">How to automate the controls a real store is full of: inputs, checkboxes, dropdowns, sliders, radio buttons, tooltips, date pickers and tables. Every recipe runs against a real PeakAndPack page.</p>
+  <div class="meta-row">
+    <span><strong>Series: Playwright: Zero to Architect</strong></span>
+    <span>Demo: PeakAndPack</span>
+    <span>15 min read</span>
+    <span>By: RN</span>
+  </div>
+
+  <div class="callout amber">
+    <p><strong>Draft.</strong> Every recipe was run against a local copy of PeakAndPack. The filters, delivery options and out-of-stock product it uses are new, so these recipes only pass once the updated PeakAndPack is deployed. Run each one yourself when you reach this page.</p>
+  </div>
+
+  <h2>Goal</h2>
+  <ul class="goal-list">
+    <li>Automate every form control PeakAndPack has, with the method that fits each one</li>
+    <li>Recognise the three ways a control makes automation harder: a hidden real input, a list that lives outside it, and a value that arrives late</li>
+    <li>Pick dates dynamically, so a test works next month too</li>
+    <li>Read, filter and loop through a table</li>
+  </ul>
+
+  <h2 id="why">1. Why a recipe page</h2>
+  <p>Phase 8 covers the hard scenarios: uploads, tabs, dialogs, iframes, drag and drop, infinite scroll. The everyday controls come up even more often, and each has one or two tricks. You'll look these up when you meet one, so this page is built for finding the recipe, not for reading top to bottom.</p>
+  <p>Where each control lives in PeakAndPack:</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Control</th><th>Where</th><th>Recipe</th></tr></thead>
+      <tbody>
+        <tr><td>Text input</td><td>Product list: the search box</td><td><a href="#inputs">2. Input fields</a></td></tr>
+        <tr><td>Checkboxes</td><td>Product list: Category and "In stock only"</td><td><a href="#checkboxes">3. Checkboxes</a></td></tr>
+        <tr><td>Native dropdown</td><td>Product list: Sort by</td><td><a href="#native-dropdown">4. Native dropdowns</a></td></tr>
+        <tr><td>Slider</td><td>Product list: Price</td><td><a href="#sliders">5. Sliders</a></td></tr>
+        <tr><td>Radio buttons</td><td>Checkout: Delivery method</td><td><a href="#radio">6. Radio buttons</a></td></tr>
+        <tr><td>Custom dropdown</td><td>Checkout: Delivery time</td><td><a href="#custom-dropdown">7. Custom dropdowns</a></td></tr>
+        <tr><td>Tooltips</td><td>Checkout: the "i" buttons</td><td><a href="#tooltips">8. Tooltips</a></td></tr>
+        <tr><td>Date picker</td><td>Checkout: Delivery date</td><td><a href="#date-picker">9. Date pickers</a></td></tr>
+        <tr><td>Table</td><td>Admin panel: the products table</td><td><a href="#tables">10. Tables</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>The checkout recipes need a logged-in user with something in the cart. One small helper does that through the API, the same pattern as Phase 5, so each test starts straight on the checkout page:</p>
+  <pre><code>// helpers.ts: used by the checkout recipes
+import { Page, APIRequestContext } from '@playwright/test';
+
+const API = 'https://peakandpackshopdemo.onrender.com';
+
+// Log in through the API, put one item in the cart, and open the checkout page
+export async function openCheckout(page: Page, request: APIRequestContext) {
+  const login = await request.post(`${API}/api/auth/login`, {
+    data: { email: 'test@peakandpack.com', password: 'password123' },
+  });
+  const { token, user } = await login.json();
+  await request.post(`${API}/api/cart`, {
+    headers: { Authorization: `Bearer ${token}` },
+    data: { product_id: 1, quantity: 1 },
+  });
+  // The store keeps its session in localStorage: set it before the page loads
+  await page.addInitScript(([t, u]) =&gt; {
+    localStorage.setItem('token', t);
+    localStorage.setItem('user', u);
+  }, [token, JSON.stringify(user)]);
+  await page.goto('/checkout');
+}</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>export</code> makes the function available to other test files (Part 4 of JavaScript for Testers).</li>
+        <li><code>openCheckout(page, request)</code> takes the two things a test already has: the browser tab and the API request tool.</li>
+        <li>The first call logs in through the API and returns a token and the user. The second puts product 1 in that user's cart, using the token.</li>
+        <li><code>page.addInitScript(...)</code> runs a small script in every page before the page's own code. Here it saves the token and the user in <code>localStorage</code>, which is where PeakAndPack keeps its login, so the checkout page opens already signed in.</li>
+        <li><code>page.goto('/checkout')</code> goes straight there. <code>baseURL</code> from your config supplies the rest of the address.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2 id="inputs">2. Input fields</h2>
+  <p>The product list's search box is a plain text input. These five methods cover almost everything you'll do with one.</p>
+  <pre><code>test('search box: type, replace, clear and read', async ({ page }) =&gt; {
+  await page.goto('/');
+  const search = page.getByPlaceholder('Search gear...');
+
+  await search.fill('headlamp');                  // click, clear what's there, type
+  await expect(search).toHaveValue('headlamp');
+
+  await search.fill('stove');                     // fill replaces: no need to clear first
+  await expect(search).toHaveValue('stove');
+
+  await search.clear();                           // empty it, and leave it empty
+  await expect(search).toHaveValue('');
+
+  await search.pressSequentially('tent', { delay: 100 });   // real key presses, 100 ms apart
+  expect(await search.inputValue()).toBe('tent');           // read the value into a variable
+  await expect(search).toHaveValue(/^te/);                  // part of the value: use a pattern
+
+  expect(await search.getAttribute('placeholder')).toBe('Search gear...');
+  expect(await search.textContent()).toBe('');              // an input's value is not its text
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>fill('headlamp')</code> clicks the field, removes whatever is in it, and types the text. You never need to click first, or clear first.</li>
+        <li><code>clear()</code> empties the field and leaves it empty. Use it when emptying is the point of the step.</li>
+        <li><code>pressSequentially('tent', { delay: 100 })</code> presses one key at a time, 100 milliseconds apart. Use it when the app reacts to each keystroke, like a live search. <code>fill</code> sets the whole text at once.</li>
+        <li><code>inputValue()</code> reads what's in the field. The text inside an input isn't the page's text: <code>textContent()</code> returns an empty string for it.</li>
+        <li><code>toHaveValue(...)</code> is the assertion for an input. A text value must match exactly; a pattern between slashes, like <code>/^te/</code>, matches part of it.</li>
+        <li><code>getAttribute('placeholder')</code> reads any attribute of the element: here, the hint text.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2 id="checkboxes">3. Checkboxes</h2>
+  <p>The product list's Category filters and "In stock only" are checkboxes. Try the obvious thing first:</p>
+  <pre><code>await page.getByRole('checkbox', { name: 'Camping' }).check();</code></pre>
+  <p>It fails, after waiting 30 seconds:</p>
+  <pre><code>Error: locator.check: Timeout 30000ms exceeded.
+Call log:
+  - waiting for getByRole('checkbox', { name: 'Camping' })
+  -   locator resolved to &lt;input type="checkbox" name="category" value="Camping" class="visually-hidden"/&gt;
+  - attempting click action
+  -   waiting for element to be visible, enabled and stable
+  -   element is visible, enabled and stable
+  -   &lt;span class="mark"&gt;&lt;/span&gt; intercepts pointer events
+  - retrying click action ...</code></pre>
+
+  <p><strong>Why.</strong> The real checkbox is visually hidden, one pixel in size, and a styled box (the <code>span</code>) is drawn on top. That's a common pattern in design systems: the real input stays for screen readers and keyboards, and the span is what people see and click. Before clicking, Playwright checks that nothing else would receive the click. The span would, so Playwright keeps waiting, and eventually gives up.</p>
+  <p>There are two ways round it, and one proper fix:</p>
+  <ul>
+    <li><code>{ force: true }</code> skips those checks and clicks anyway. It works, but it switches off the safety net that makes tests stable, so use it only when you know why the check fails, as here.</li>
+    <li>Click what the user sees: the visible text, <code>page.getByText('Camping', { exact: true }).click()</code>.</li>
+    <li>The proper fix is in the app: ask the developers whether the styled box can be part of the clickable element. Until then, one of the two above.</li>
+  </ul>
+  <pre><code>test('category filters: check, uncheck, click', async ({ page }) =&gt; {
+  await page.goto('/');
+  const camping = page.getByRole('checkbox', { name: 'Camping' });
+
+  await camping.check({ force: true });           // fix 1: skip the checks that fail
+  await camping.check({ force: true });           // already checked: nothing happens
+  await expect(camping).toBeChecked();
+  await expect(page.getByTestId('result-count')).toHaveText('Showing 2 of 10 products');
+
+  await camping.click({ force: true });           // click toggles, whatever the state was
+  await expect(camping).not.toBeChecked();
+  await expect(page.getByTestId('result-count')).toHaveText('Showing 10 of 10 products');
+
+  await page.getByText('Camping', { exact: true }).click();   // fix 2: click what the user sees
+  await expect(camping).toBeChecked();
+  await camping.uncheck({ force: true });
+  await expect(camping).not.toBeChecked();
+});
+
+test('in stock only hides the out-of-stock product', async ({ page }) =&gt; {
+  await page.goto('/');
+  await page.getByText('In stock only').click();
+  await expect(page.getByTestId('result-count')).toHaveText('Showing 9 of 10 products');
+  await expect(page.getByRole('heading', { name: 'Climbing Harness' })).toHaveCount(0);
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>check()</code> makes sure the box is ticked. If it already is, nothing happens. <code>uncheck()</code> is the reverse. That's why they're safer than <code>click()</code>, which toggles whatever the state was.</li>
+        <li><code>{ force: true }</code> is the second argument of the action: an object of options.</li>
+        <li><code>toBeChecked()</code> and <code>not.toBeChecked()</code> are the assertions for a checkbox. They retry until true, like every locator assertion.</li>
+        <li><code>getByTestId('result-count')</code> reads the line "Showing 2 of 10 products", which proves the filter worked, not just that the box ticked. PeakAndPack's second test ID, after <code>product-card</code>.</li>
+        <li><code>getByText('Camping', { exact: true })</code>: <code>exact</code> matches the whole text. Without it, any text containing "Camping" would match, such as the category line on a product card.</li>
+        <li>The second test shows the new product state: the Climbing Harness is out of stock, so "In stock only" hides it.</li>
+      </ul>
+    </div>
+  </details>
+
+  <p>Because <code>check</code> and <code>uncheck</code> don't care about the starting state, you can loop over every checkbox on a page:</p>
+  <pre><code>test('every checkbox on the filter bar, in a loop', async ({ page }) =&gt; {
+  await page.goto('/');
+  // The filter bar appears once products have loaded, and all() doesn't wait
+  await expect(page.getByTestId('product-card').first()).toBeVisible();
+
+  const boxes = await page.getByRole('checkbox').all();    // a list of locators
+  expect(boxes).toHaveLength(6);                           // five categories + "In stock only"
+
+  for (const box of boxes) {
+    await box.check({ force: true });
+    await expect(box).toBeChecked();
+  }
+  for (const box of boxes) {
+    await box.uncheck({ force: true });
+    await expect(box).not.toBeChecked();
+  }
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>await expect(page.getByTestId('product-card').first()).toBeVisible()</code> waits for the products to load first. The filter bar only appears once they have, and <code>all()</code> doesn't wait: it returns whatever exists at that instant, possibly an empty list.</li>
+        <li><code>all()</code> turns a locator that matches several elements into a list of separate locators you can loop over with <code>for...of</code> (Part 4 of JavaScript for Testers).</li>
+        <li><code>toHaveLength(6)</code> checks the list's size: five categories and "In stock only".</li>
+        <li>Looping checks then unchecks every box, and asserts each state, so the test also proves every box responds.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2 id="native-dropdown">4. Native dropdowns</h2>
+  <p>"Sort by" on the product list is a plain HTML <code>&lt;select&gt;</code>. Its options are inside it, so Playwright can choose one without opening it.</p>
+  <pre><code>test('native dropdown: sort by', async ({ page }) =&gt; {
+  await page.goto('/');
+  const sort = page.getByRole('combobox', { name: 'Sort by' });
+
+  await sort.selectOption('price-asc');                   // pick by value
+  await expect(sort).toHaveValue('price-asc');
+  await expect(page.getByTestId('product-card').first()).toContainText('Sleeping Bag');   // -$89 comes first
+
+  await sort.selectOption({ label: 'Price: high to low' });   // pick by the text people read
+  await expect(page.getByTestId('product-card').first()).toContainText('Insulated Water Bottle');
+
+  await page.getByLabel('Sort by').selectOption({ index: 3 });   // pick by position
+  await expect(sort).toHaveValue('name');
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>getByRole('combobox', { name: 'Sort by' })</code>: a <code>&lt;select&gt;</code> has the role <code>combobox</code>. The name comes from its label, which is correctly linked here, so <code>getByLabel('Sort by')</code> works too.</li>
+        <li><code>selectOption('price-asc')</code> chooses by the option's <strong>value</strong>, the code behind it. There's no need to click the dropdown first.</li>
+        <li><code>selectOption({ label: 'Price: high to low' })</code> chooses by the <strong>label</strong>, the text people read. <code>{ index: 3 }</code> chooses by position, counting from 0.</li>
+        <li><code>toHaveValue('price-asc')</code> checks the chosen option's value, not its visible text.</li>
+        <li><code>toContainText('Sleeping Bag')</code> on the first card proves the list really changed order: the -$89 bug sorts first.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2 id="sliders">5. Sliders</h2>
+  <p>The product list's price slider is a custom one: a knob on a track. It has the role <code>slider</code>, and its position is published in <code>aria-valuenow</code>, the number a screen reader would read out. Two ways to move it:</p>
+  <ul>
+    <li><strong>The keyboard</strong> is the most reliable. Focus the knob and press the arrow keys, exactly as a keyboard user would.</li>
+    <li><strong>The mouse</strong> works when there's no keyboard support. It needs coordinates, so it's more fragile.</li>
+  </ul>
+  <pre><code>test('price slider: keyboard', async ({ page }) =&gt; {
+  await page.goto('/');
+  const slider = page.getByRole('slider', { name: 'Maximum price' });
+  await expect(slider).toHaveAttribute('aria-valuenow', '500');     // the far right means "any price"
+
+  await slider.focus();
+  await slider.press('Home');                                       // jump to the start
+  await expect(slider).toHaveAttribute('aria-valuenow', '0');
+  await expect(page.getByTestId('product-card')).toHaveCount(1);    // only the -$89 sleeping bag
+
+  for (let i = 0; i &lt; 10; i++) {
+    await slider.press('ArrowRight');                               // 10 per press
+  }
+  await expect(slider).toHaveAttribute('aria-valuenow', '100');
+  await expect(page.getByTestId('result-count')).toHaveText('Showing 6 of 10 products');
+});
+
+test('price slider: drag with the mouse', async ({ page }) =&gt; {
+  await page.goto('/');
+  const track = page.locator('.slider-track');
+  const knob = page.getByRole('slider', { name: 'Maximum price' });
+  await track.scrollIntoViewIfNeeded();                  // the mouse can only reach what's on screen
+
+  const trackBox = (await track.boundingBox())!;         // { x, y, width, height } on the screen
+  const knobBox = (await knob.boundingBox())!;
+
+  await page.mouse.move(knobBox.x + knobBox.width / 2, knobBox.y + knobBox.height / 2);   // knob centre
+  await page.mouse.down();                                                                // press
+  await page.mouse.move(trackBox.x + trackBox.width * 0.2, trackBox.y + trackBox.height / 2, { steps: 5 });
+  await page.mouse.up();                                                                  // release
+
+  await expect(knob).toHaveAttribute('aria-valuenow', '100');
+  await expect(page.getByText('Price: up to $100')).toBeVisible();
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>getByRole('slider', { name: 'Maximum price' })</code> finds the knob by its role and its <code>aria-label</code>.</li>
+        <li><code>toHaveAttribute('aria-valuenow', '500')</code> reads the slider's position from its attribute. Attribute values are text, so the number is in quotes. The far right, 500, means "any price" in PeakAndPack.</li>
+        <li><code>focus()</code> puts the keyboard on the knob. <code>press('Home')</code> jumps to the start; <code>press('ArrowRight')</code> moves one step, which is $10 here.</li>
+        <li><code>boundingBox()</code> returns the element's rectangle on the screen: <code>x</code> and <code>y</code> are its top-left corner, measured from the top-left of the visible page, plus <code>width</code> and <code>height</code>.</li>
+        <li>To grab the knob, move the mouse to its centre: its <code>x</code> plus half its width, its <code>y</code> plus half its height.</li>
+        <li><code>mouse.down()</code> presses the button, <code>mouse.move(x, y, { steps: 5 })</code> drags to a point in five small moves (so the page sees movement, not a jump), and <code>mouse.up()</code> lets go.</li>
+        <li>The target is 20% along the track: <code>trackBox.x + trackBox.width * 0.2</code>. With a range of 0 to 500, 20% is 100.</li>
+        <li><code>scrollIntoViewIfNeeded()</code> comes first because the mouse can only reach what's on screen.</li>
+        <li>A native slider (<code>&lt;input type=&quot;range&quot;&gt;</code>), which PeakAndPack doesn't have, is easier: <code>fill('300')</code> sets it.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2 id="radio">6. Radio buttons</h2>
+  <p>Checkout's "Delivery method" is a group of radio buttons built the same way as the checkboxes: a hidden real input with a styled circle on top. So the obvious call fails the same way:</p>
+  <pre><code>Error: locator.check: Timeout 30000ms exceeded.
+Call log:
+  - waiting for getByRole('radio', { name: 'Express (2 days)' })
+  -   locator resolved to &lt;input type="radio" name="delivery" value="express" class="visually-hidden"/&gt;
+  - attempting click action
+  -   &lt;span class="mark round"&gt;&lt;/span&gt; intercepts pointer events
+  - retrying click action ...</code></pre>
+
+  <p>The fixes are the same, too: <code>{ force: true }</code>, or click the visible text.</p>
+  <pre><code>test('delivery method: choose, switch, and the disabled option', async ({ page, request }) =&gt; {
+  await openCheckout(page, request);
+  const express = page.getByRole('radio', { name: 'Express (2 days)' });
+  const standard = page.getByRole('radio', { name: 'Standard (5 days)' });
+
+  await expect(standard).toBeChecked();                   // Standard is the default
+
+  await express.check({ force: true });                   // fix 1: skip the failing checks
+  await expect(express).toBeChecked();
+  await expect(standard).not.toBeChecked();               // choosing one clears the other
+
+  await page.getByText('Standard (5 days)').click();      // fix 2: click what the user sees
+  await expect(standard).toBeChecked();
+
+  await expect(page.getByRole('radio', { name: /store pickup/i })).toBeDisabled();
+});
+
+test('isChecked reads a status, it does not check one', async ({ page, request }) =&gt; {
+  await openCheckout(page, request);
+  const express = page.getByRole('radio', { name: 'Express (2 days)' });
+
+  const status = await express.isChecked();     // just true or false, right now
+  expect(status).toBe(false);                   // fine for logic, but it never waits or retries
+
+  await expect(express).not.toBeChecked();      // the real assertion: retries until true, or times out
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>openCheckout(page, request)</code> is the helper from the top of the page.</li>
+        <li><code>getByRole('radio', { name: 'Express (2 days)' })</code> finds one option by its role and its label.</li>
+        <li>Standard is selected by default, so the first assertion proves the starting state before changing anything.</li>
+        <li><code>check({ force: true })</code> selects an option. Checking one radio button clears the others in its group, which the next assertion proves with <code>not.toBeChecked()</code>.</li>
+        <li>There's no <code>uncheck</code> for radio buttons: you can only choose a different one.</li>
+        <li><code>toBeDisabled()</code> asserts that an option can't be chosen. Trying to <code>check</code> a disabled radio waits for it to become enabled, then fails.</li>
+        <li><code>isChecked()</code> returns <code>true</code> or <code>false</code> right now. It's useful when your test needs to decide something, but it isn't an assertion: it doesn't wait or retry. To check a state, use <code>toBeChecked()</code>.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2 id="custom-dropdown">7. Custom dropdowns</h2>
+  <p>Checkout's "Delivery time" looks like a dropdown, but it isn't a <code>&lt;select&gt;</code>. It's a button, and the list of options is built and added to the very bottom of the page when you click it, outside the button. Open DevTools and look in the Elements panel to see it for yourself. So there's no <code>selectOption</code>: do what a user does, click, then choose, then check.</p>
+  <pre><code>test('custom dropdown: delivery time', async ({ page, request }) =&gt; {
+  await openCheckout(page, request);
+  const timeButton = page.getByRole('button', { name: /delivery time/i });
+  await expect(timeButton).toHaveText('Delivery time: Morning (8-12)');
+
+  await timeButton.click();                               // open the list, like a user
+  await page.getByRole('listbox').getByRole('option', { name: 'Afternoon (12-17)' }).click();
+  await expect(timeButton).toHaveText('Delivery time: Afternoon (12-17)');   // text, not a value
+
+  await timeButton.click();                               // open it again to read every option
+  await expect(page.getByRole('option').first()).toBeVisible();   // wait: allTextContents() doesn't
+  const options = await page.getByRole('option').allTextContents();
+  expect(options).toEqual(['Morning (8-12)', 'Afternoon (12-17)', 'Evening (17-21)']);
+
+  await page.keyboard.press('Escape');                    // close the list
+  await expect(page.getByRole('listbox')).toHaveCount(0);
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>getByRole('button', { name: /delivery time/i })</code>: the control is a button, named by its text. The pattern ignores capital letters and matches part of the name, which changes with the chosen time.</li>
+        <li><code>toHaveText('Delivery time: Morning (8-12)')</code> asserts the button's text. A custom control has no value to check, so the visible text is the result.</li>
+        <li><code>getByRole('listbox').getByRole('option', { name: ... })</code> narrows to the options inside the list. The list isn't inside the button, so you scope to the list itself.</li>
+        <li><code>await expect(page.getByRole('option').first()).toBeVisible()</code> waits for the list. <code>allTextContents()</code> doesn't wait, so reading it too early can return an empty list.</li>
+        <li><code>allTextContents()</code> returns the text of every matching element as a list of strings. <code>toEqual([...])</code> compares the list's contents.</li>
+        <li><code>keyboard.press('Escape')</code> presses a key without targeting an element. The list closes, which <code>toHaveCount(0)</code> confirms: zero matches is how you assert something is gone.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2 id="tooltips">8. Tooltips</h2>
+  <p>A tooltip exists only while you hover, which makes it hard to inspect: the moment the mouse moves to DevTools, it vanishes. Freeze the page instead. Open DevTools, go to the Sources tab, hover the element so the tooltip shows, then press <strong>F8</strong> (or <strong>Ctrl+\</strong>; <strong>Cmd+\</strong> on a Mac) to pause the page. The Elements panel then shows the tooltip, so you can see what it's made of. In PeakAndPack it's a <code>div</code> with <code>role="tooltip"</code>, added to the bottom of the page.</p>
+  <pre><code>test('tooltips appear on hover and go away', async ({ page, request }) =&gt; {
+  await openCheckout(page, request);
+
+  await page.getByRole('button', { name: 'Discount code help' }).hover();     // hover, not click
+  await expect(page.getByRole('tooltip')).toHaveText('Codes are case-sensitive');
+
+  await page.getByRole('button', { name: 'Delivery date help' }).hover();
+  await expect(page.getByRole('tooltip')).toHaveText('The earliest delivery date is tomorrow');
+
+  await page.mouse.move(0, 0);                            // move away: the tooltip is removed
+  await expect(page.getByRole('tooltip')).toHaveCount(0);
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>hover()</code> moves the mouse onto the element without clicking, which is what shows a tooltip.</li>
+        <li><code>getByRole('button', { name: 'Discount code help' })</code> finds the little "i" button by its <code>aria-label</code>, since its visible text is just the letter i.</li>
+        <li><code>getByRole('tooltip')</code> finds the tooltip, because the app gives it that role. If yours doesn't have a role, use an ordinary locator for whatever the tooltip is.</li>
+        <li><code>toHaveText(...)</code> is a locator assertion, so it waits for the tooltip to appear.</li>
+        <li><code>mouse.move(0, 0)</code> moves the mouse to the top-left corner of the page, away from everything. <code>toHaveCount(0)</code> then confirms the tooltip was removed.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2 id="date-picker">9. Date pickers</h2>
+  <p>Checkout's "Delivery date" opens a calendar. Two things make calendars awkward:</p>
+  <ul>
+    <li>A calendar always shows whole weeks, so it includes days from the previous and next month. A "30" in the grid might be this month's or last month's. PeakAndPack gives those days an extra class, <code>bounding-month</code>, which you can exclude.</li>
+    <li>Text matching matches part of the text by default, so <code>getByText('2')</code> also matches 12, 20, 21 and so on.</li>
+  </ul>
+  <pre><code>test('date picker: neighbouring months, exact text, disabled days', async ({ page, request }) =&gt; {
+  await openCheckout(page, request);
+  await page.getByLabel('Delivery date (optional)').click();
+
+  await expect(page.locator('.day-cell')).toHaveCount(42);              // always six weeks of cells
+
+  // Without exact, "2" matches 2, 12, 20, 21 ... : text is matched as a part
+  const loose = await page.locator('.day-cell:not(.bounding-month)').getByText('2').count();
+  expect(loose).toBeGreaterThan(1);
+
+  // exact: true matches the whole text, and the class leaves out neighbouring months
+  const second = page.locator('.day-cell:not(.bounding-month)').getByText('2', { exact: true });
+  await expect(second).toHaveCount(1);
+
+  // Days before tomorrow are disabled
+  const today = new Date().getDate().toString();
+  await expect(page.locator('.day-cell:not(.bounding-month)').getByText(today, { exact: true })).toBeDisabled();
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>getByLabel('Delivery date (optional)')</code> finds the field by its label, which is linked to it. Clicking it opens the calendar.</li>
+        <li><code>.day-cell</code> is a CSS locator: the dot means "has this class". Each day is a button with that class, and <code>toHaveCount(42)</code> checks the six weeks of cells.</li>
+        <li><code>:not(.bounding-month)</code> means "without that class", so only days from the displayed month. Chaining <code>.getByText(...)</code> after a locator searches inside the matches.</li>
+        <li><code>getByText('2')</code> without <code>exact</code> matches any day whose text contains a 2, which is why the count is more than one.</li>
+        <li><code>{ exact: true }</code> matches the whole text, "2" and nothing else. Together with the class, it leaves exactly one cell.</li>
+        <li><code>new Date().getDate()</code> is today's day of the month, as a number; <code>.toString()</code> turns it into text for matching. PeakAndPack disables every day before tomorrow, which <code>toBeDisabled()</code> confirms for today.</li>
+      </ul>
+    </div>
+  </details>
+
+  <p>A test that picks a date must still work next month. So don't type a date: work it out from today with JavaScript's <code>Date</code> object, which handles month lengths and year ends for you.</p>
+  <pre><code>test('date picker: pick a date 40 days from today, in any month', async ({ page, request }) =&gt; {
+  await openCheckout(page, request);
+
+  const date = new Date();                         // right now
+  date.setDate(date.getDate() + 40);               // move it 40 days on; JavaScript fixes the month and year
+  const day = date.getDate().toString();
+  const monthShort = date.toLocaleString('en-US', { month: 'short' });   // Nov
+  const monthLong = date.toLocaleString('en-US', { month: 'long' });     // November
+  const year = date.getFullYear();
+  const expectedDate = `${monthShort} ${day}, ${year}`;                  // Nov 10, 2026
+
+  const dateField = page.getByLabel('Delivery date (optional)');
+  await dateField.click();
+
+  // Flip to the right month first
+  let shown = await page.locator('.calendar-title').textContent();
+  while (!shown!.includes(`${monthLong} ${year}`)) {
+    await page.getByRole('button', { name: 'Next month' }).click();
+    shown = await page.locator('.calendar-title').textContent();
+  }
+
+  await page.locator('.day-cell:not(.bounding-month)').getByText(day, { exact: true }).click();
+  await expect(dateField).toHaveValue(expectedDate);
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>new Date()</code> is the current date and time. <code>date.setDate(date.getDate() + 40)</code> moves it 40 days later. If that crosses into another month or year, JavaScript adjusts for you, so you never calculate month lengths yourself.</li>
+        <li><code>getDate()</code> is the day of the month, <code>getFullYear()</code> the year. <code>toLocaleString('en-US', { month: 'short' })</code> gives the month's name in a chosen format: <code>short</code> is Nov, <code>long</code> is November. <code>'en-US'</code> fixes the language, so the test gives the same answer on any computer.</li>
+        <li><code>`${monthShort} ${day}, ${year}`</code> builds the exact text the field will show, with a template literal (Part 1 of JavaScript for Testers).</li>
+        <li>The <code>while</code> loop repeats while its condition is true: while the calendar's title doesn't contain the month we want, click "Next month" and read the title again. It stops once the right month is showing.</li>
+        <li><code>!shown!.includes(...)</code>: the first <code>!</code> means "not". The second, after <code>shown</code>, is TypeScript's way of saying "this isn't empty", because <code>textContent()</code> may return nothing.</li>
+        <li><code>toHaveValue(expectedDate)</code> checks the field: PeakAndPack's date picker is an input, so its text is a value.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2 id="tables">10. Tables</h2>
+  <p>PeakAndPack's admin panel lists every product in a table. A table is rows, and rows are cells; there's no locator for a whole column, so you find a row first, then work inside it. The admin panel signs in through its own form, so these tests start with this helper:</p>
+  <pre><code>// The admin panel lives on the API server and keeps its login in memory,
+// so every admin test signs in through the panel's own form
+const ADMIN = 'https://peakandpackshopdemo.onrender.com/admin/';
+
+async function signInAsAdmin(page: Page) {
+  await page.goto(ADMIN);
+  await page.getByPlaceholder('admin@peakandpack.com').fill('admin@peakandpack.com');
+  await page.getByPlaceholder('Password').fill('adminpass123');
+  await page.getByRole('button', { name: 'Sign in as admin' }).click();
+  await expect(page.getByRole('heading', { name: 'Products' })).toBeVisible();
+}</code></pre>
+
+  <h3>Find a row, read its cells</h3>
+  <pre><code>test('admin table: find a row, read its cells', async ({ page }) =&gt; {
+  await signInAsAdmin(page);
+  const row = page.getByRole('row', { name: /Headlamp/ });       // the row whose text mentions Headlamp
+  await expect(row).toBeVisible();
+
+  await expect(row.getByRole('cell')).toHaveCount(6);            // handle, name, price, stock, category, actions
+  await expect(row.getByRole('cell').nth(2)).toHaveText('$24.99');   // columns count from 0
+  await expect(row.getByRole('cell').nth(3)).toHaveText('60');
+  await row.getByRole('button', { name: 'Delete' }).count();     // buttons inside the row are scoped to it
+});
+
+test('admin table: filter rows by one column', async ({ page }) =&gt; {
+  await signInAsAdmin(page);
+  await expect(page.getByRole('row', { name: /Headlamp/ })).toBeVisible();
+
+  // Rows whose Stock cell is exactly 0. Searching the row text for "0" would match prices too
+  const outOfStock = page.getByRole('row').filter({ has: page.getByRole('cell', { name: '0', exact: true }) });
+  await expect(outOfStock).toHaveCount(1);
+  await expect(outOfStock).toContainText('Climbing Harness');
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>getByRole('row', { name: /Headlamp/ })</code> finds the row whose text mentions Headlamp. Rows are named by all the text inside them.</li>
+        <li><code>row.getByRole('cell')</code> finds the cells inside that row only. <code>toHaveCount(6)</code> counts them: a drag handle, name, price, stock, category and the actions column.</li>
+        <li><code>.nth(2)</code> picks one cell by position, counting from 0: 0 is the handle, 1 the name, 2 the price, 3 the stock. Positions are fragile if columns move, so use them for tables whose columns are stable.</li>
+        <li><code>getByRole('cell', { name: '0', exact: true })</code> finds a cell whose whole text is 0. Searching the row's text for "0" would match prices like $1450.00 too. <code>filter({ has: ... })</code> keeps only the rows that contain the cell you describe.</li>
+        <li>The row's own buttons, such as Delete, are found through the row, so they're the right row's buttons even when every row has one.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h3>Wait, then read every row</h3>
+  <p>The admin table first shows a single "Loading..." row, then the real rows arrive. <code>all()</code> doesn't wait, so reading the rows too early gives you the loading row. On a fast server you might never notice. To prove it, the test below slows the API down by a second:</p>
+  <pre><code>test('admin table: wait for the data before reading every row', async ({ page }) =&gt; {
+  // Make the product list answer slowly, so the race is easy to see
+  await page.route('**/api/admin/products', async (route) =&gt; {
+    await new Promise((resolve) =&gt; setTimeout(resolve, 1000));
+    await route.continue();
+  });
+  await signInAsAdmin(page);
+
+  const tooEarly = await page.locator('#products-tbody tr').all();   // all() doesn't wait
+  expect(tooEarly).toHaveLength(1);                                  // just the "Loading..." row
+
+  await expect(page.getByRole('row', { name: /Trekking Poles/ })).toBeVisible();   // wait for real data
+  const rows = await page.locator('#products-tbody tr').all();
+  expect(rows).toHaveLength(10);
+});
+
+test('admin table: no product has a negative price', async ({ page }) =&gt; {
+  test.fail();    // expected to fail while BUG-001 exists: remove this line once it is fixed
+  await signInAsAdmin(page);
+  await expect(page.getByRole('row', { name: /Trekking Poles/ })).toBeVisible();
+
+  const rows = await page.locator('#products-tbody tr').all();
+  const prices: number[] = [];
+  for (const row of rows) {
+    const text = await row.locator('td').nth(2).textContent();   // e.g. "$24.99"
+    prices.push(Number(text!.replace('$', '')));                 // remove the $ before converting
+  }
+  expect(prices.filter((price) =&gt; price &lt; 0)).toHaveLength(0);   // finds the -$89 sleeping bag
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>page.route('**/api/admin/products', ...)</code> intercepts that API call (Phase 7 covers this properly). The handler waits one second with <code>setTimeout</code> inside a promise, then <code>route.continue()</code> lets the real request go ahead.</li>
+        <li><code>all()</code> straight after sign-in returns one row: the "Loading..." placeholder. <code>toHaveLength(1)</code> proves it.</li>
+        <li><code>expect(row).toBeVisible()</code> on a real product waits until the data has arrived. After that, reading all the rows is safe.</li>
+        <li>The second test loops down the Price column: <code>row.locator('td').nth(2)</code> is each row's price cell, <code>textContent()</code> reads text like "$24.99", and <code>replace('$', '')</code> removes the dollar sign so <code>Number(...)</code> can convert it (Part 3 of JavaScript for Testers).</li>
+        <li><code>test.fail()</code> tells Playwright this test is expected to fail. The seeded -$89 sleeping bag fails the check, so the test is reported as passing. When BUG-001 gets fixed, the test would start passing, Playwright would report that as a failure, and you'd remove the line.</li>
+      </ul>
+    </div>
+  </details>
+
+  <hr style="border:none;border-top:1px solid var(--border);margin:0">
+
+  <div class="assignment">
+    <div class="a-label">Assignment</div>
+    <h3>Filter the catalogue, check out with delivery choices, audit the admin table</h3>
+    <p>Create <code>recipes.spec.ts</code>, with <code>openCheckout</code> and <code>signInAsAdmin</code> from above, and write a test for each part. Run it with <code>npx playwright test recipes --headed</code> to watch.</p>
+    <p><strong>A. The product list</strong></p>
+    <ol style="margin:.5rem 0 0 1.2rem;">
+      <li>Type "tent" into the search box one key at a time, check its value, then clear it.</li>
+      <li>Tick the Camping category and check the result count says 2 of 10. Untick it.</li>
+      <li>Tick "In stock only" and check the count says 9. Then loop over every checkbox and untick it.</li>
+      <li>Sort by price, low to high, and check the sleeping bag is first. Then sort by label, high to low, and check the water bottle is first.</li>
+      <li>Set the price slider to $100 with the keyboard, and check the knob's value and the count (6 of 10). Then do the same by dragging.</li>
+    </ol>
+    <p><strong>B. Checkout</strong></p>
+    <ol start="6" style="margin:.5rem 0 0 1.2rem;">
+      <li>Hover the discount code help button, check the tooltip's text, then move away and check it's gone.</li>
+      <li>Choose Express delivery, check Standard is no longer chosen, and check Store pickup is disabled. Which method tells you a status without asserting it?</li>
+      <li>Pick a delivery date five days from today, whichever month that falls in, and check the field.</li>
+      <li>Choose the Evening delivery time and check the button's text.</li>
+      <li>Pay in the iframe, confirm the order, and check the confirmation names the method, date and time you chose.</li>
+    </ol>
+    <p><strong>C. The admin table</strong></p>
+    <ol start="11" style="margin:.5rem 0 0 1.2rem;">
+      <li>Find the Headlamp row and check its stock cell says 60.</li>
+      <li>Loop down the price column and check no price is negative. It will fail. What does that tell you, and how do you mark the test?</li>
+      <li>Slow the products API by a second. Show that reading the rows straight after sign-in gives one row, then add the wait that fixes it.</li>
+    </ol>
+
+  <details class="solution">
+    <summary>Show solution: try it yourself first</summary>
+    <div class="solution-body">
+  <pre><code>// recipes.spec.ts: uses openCheckout and signInAsAdmin from above
+
+test('exercise A: filter and order the catalogue', async ({ page }) =&gt; {
+  await page.goto('/');
+  await expect(page.getByTestId('product-card').first()).toBeVisible();
+
+  // 1. Search box
+  const search = page.getByPlaceholder('Search gear...');
+  await search.pressSequentially('tent', { delay: 50 });
+  expect(await search.inputValue()).toBe('tent');
+  await search.clear();
+  await expect(search).toHaveValue('');
+
+  // 2 and 3. Checkboxes
+  const camping = page.getByRole('checkbox', { name: 'Camping' });
+  await camping.check({ force: true });
+  await expect(page.getByTestId('result-count')).toHaveText('Showing 2 of 10 products');
+  await camping.uncheck({ force: true });
+  await page.getByRole('checkbox', { name: 'In stock only' }).check({ force: true });
+  await expect(page.getByTestId('result-count')).toHaveText('Showing 9 of 10 products');
+  for (const box of await page.getByRole('checkbox').all()) {
+    await box.uncheck({ force: true });
+    await expect(box).not.toBeChecked();
+  }
+
+  // 4. Native dropdown
+  const sort = page.getByRole('combobox', { name: 'Sort by' });
+  await sort.selectOption('price-asc');
+  await expect(page.getByTestId('product-card').first()).toContainText('Sleeping Bag');
+  await sort.selectOption({ label: 'Price: high to low' });
+  await expect(page.getByTestId('product-card').first()).toContainText('Insulated Water Bottle');
+
+  // 5. Slider, with the keyboard
+  const slider = page.getByRole('slider', { name: 'Maximum price' });
+  await slider.focus();
+  await slider.press('Home');
+  for (let i = 0; i &lt; 10; i++) {
+    await slider.press('ArrowRight');
+  }
+  await expect(slider).toHaveAttribute('aria-valuenow', '100');
+  await expect(page.getByTestId('result-count')).toHaveText('Showing 6 of 10 products');
+});
+
+test('exercise B: check out with delivery choices', async ({ page, request }) =&gt; {
+  await openCheckout(page, request);
+
+  // 6. Tooltips
+  await page.getByRole('button', { name: 'Discount code help' }).hover();
+  await expect(page.getByRole('tooltip')).toHaveText('Codes are case-sensitive');
+  await page.mouse.move(0, 0);
+
+  // 7. Radio buttons
+  await page.getByRole('radio', { name: 'Express (2 days)' }).check({ force: true });
+  await expect(page.getByRole('radio', { name: 'Express (2 days)' })).toBeChecked();
+  await expect(page.getByRole('radio', { name: /store pickup/i })).toBeDisabled();
+
+  // 8. Date picker, 5 days ahead
+  const date = new Date();
+  date.setDate(date.getDate() + 5);
+  const day = date.getDate().toString();
+  const monthLong = date.toLocaleString('en-US', { month: 'long' });
+  const expectedDate = `${date.toLocaleString('en-US', { month: 'short' })} ${day}, ${date.getFullYear()}`;
+  await page.getByLabel('Delivery date (optional)').click();
+  while (!(await page.locator('.calendar-title').textContent())!.includes(`${monthLong} ${date.getFullYear()}`)) {
+    await page.getByRole('button', { name: 'Next month' }).click();
+  }
+  await page.locator('.day-cell:not(.bounding-month)').getByText(day, { exact: true }).click();
+  await expect(page.getByLabel('Delivery date (optional)')).toHaveValue(expectedDate);
+
+  // 9. Custom dropdown
+  const timeButton = page.getByRole('button', { name: /delivery time/i });
+  await timeButton.click();
+  await page.getByRole('option', { name: 'Evening (17-21)' }).click();
+  await expect(timeButton).toHaveText('Delivery time: Evening (17-21)');
+
+  // 10. Pay, confirm, check the confirmation
+  const payment = page.frameLocator('iframe[title="Payment form"]');
+  await payment.getByLabel('Card number').fill('4111 1111 1111 1111');
+  await payment.getByLabel('Expiry').fill('12/28');
+  await payment.getByLabel('CVV').fill('123');
+  await payment.getByLabel('Cardholder name').fill('Test User');
+  await payment.getByRole('button', { name: 'Pay now' }).click();
+  await page.getByRole('button', { name: 'Confirm Order' }).click();
+  await expect(page.getByRole('heading', { name: 'Order placed!' })).toBeVisible();
+  await expect(page.getByText(`Delivery: Express, ${expectedDate}, Evening (17-21)`)).toBeVisible();
+});
+
+test('exercise C: audit the admin table', async ({ page }) =&gt; {
+  test.fail();    // step 12 fails while BUG-001 exists
+  await signInAsAdmin(page);
+
+  // 11. One row, one cell
+  const row = page.getByRole('row', { name: /Headlamp/ });
+  await expect(row.getByRole('cell').nth(3)).toHaveText('60');
+
+  // 12. The whole price column
+  const rows = await page.locator('#products-tbody tr').all();
+  const prices: number[] = [];
+  for (const r of rows) {
+    prices.push(Number((await r.locator('td').nth(2).textContent())!.replace('$', '')));
+  }
+  expect(prices.filter((price) =&gt; price &lt; 0)).toHaveLength(0);
+});
+
+test('exercise C2: a slow table needs a wait before all()', async ({ page }) =&gt; {
+  // 13. Slow the API by a second, then show the early read and the fix
+  await page.route('**/api/admin/products', async (route) =&gt; {
+    await new Promise((resolve) =&gt; setTimeout(resolve, 1000));
+    await route.continue();
+  });
+  await signInAsAdmin(page);
+  expect(await page.locator('#products-tbody tr').all()).toHaveLength(1);
+  await expect(page.getByRole('row', { name: /Trekking Poles/ })).toBeVisible();
+  expect(await page.locator('#products-tbody tr').all()).toHaveLength(10);
+});</code></pre>
+
+      <p><strong>What to notice.</strong></p>
+      <ul>
+        <li><strong>Step 7:</strong> <code>isChecked()</code> reads a status without asserting it. The assertion is <code>toBeChecked()</code>.</li>
+        <li><strong>Step 8:</strong> the <code>while</code> loop makes the test work in any month. It would pass on 31 December and on 1 January.</li>
+        <li><strong>Step 12:</strong> the test finds a real bug, the -$89 price. <code>test.fail()</code> records that you know about it, without hiding it. Don't change the assertion until it passes.</li>
+        <li><strong>Step 13:</strong> the early read returns one row, the "Loading..." placeholder. That's the reason <code>all()</code> must follow a wait.</li>
+      </ul>
+    </div>
+  </details>
+  </div>
+
+  <div class="series-nav">
+    <span class="label">Navigate the series</span>
+    <div class="nav-pair">
+      <a href="08-playwrightseries-advanced-scenarios.html" class="nav-blog"><span class="nav-blog-arrow" aria-hidden="true">&larr;</span><div><div class="nav-blog-title">Phase 8: Advanced Scenarios</div><div class="nav-blog-sub">Uploads, tabs, dialogs, iframes, drag and drop</div></div></a>
+      <a href="09-playwrightseries-page-objects.html" class="nav-blog"><div><div class="nav-blog-title">Phase 9: Page Object Model</div><div class="nav-blog-sub">Architecting a suite that scales</div></div><span class="nav-blog-arrow" aria-hidden="true">&rarr;</span></a>
+    </div>
+  </div>
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--text-3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; Playwright: Zero to Architect</p>
+  </div>
+</main>
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+<script>
+(function(){
+  var btn = document.getElementById('themeToggle');
+  function isLight(){ return document.documentElement.getAttribute('data-theme') === 'light'; }
+  function sync(){ btn.textContent = isLight() ? 'Dark' : 'Light'; }
+  sync();
+  btn.addEventListener('click', function(){
+    if(isLight()){
+      document.documentElement.removeAttribute('data-theme');
+      try{ localStorage.setItem('pw-theme','dark'); }catch(e){}
+    } else {
+      document.documentElement.setAttribute('data-theme','light');
+      try{ localStorage.setItem('pw-theme','light'); }catch(e){}
+    }
+    sync();
+  });
+})();
+</script>
+
+</body>
+</html>

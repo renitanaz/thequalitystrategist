@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>(function(){try{if(localStorage.getItem('pw-theme')==='light'){document.documentElement.setAttribute('data-theme','light');}}catch(e){}})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>In a View | JavaScript for Testers</title>
+<meta name="description" content="JavaScript for Testers on one page: a mind map of every part, and a cheat sheet of the code, what it does, and the trap to watch for.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+  --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+  --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.09); --purple-border:rgba(167,139,250,0.35);
+  --green:#4ade80; --green-bg:rgba(74,222,128,0.07); --green-border:rgba(74,222,128,0.25);
+  --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07); --blue-border:rgba(96,165,250,0.25);
+  --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07); --amber-border:rgba(251,191,36,0.25);
+  --red:#f87171; --red-bg:rgba(248,113,113,0.07); --red-border:rgba(248,113,113,0.25);
+  --ff-serif:'DM Serif Display',Georgia,serif; --ff-sans:'DM Sans',system-ui,sans-serif;
+}
+:root[data-theme="light"]{
+  --bg:#FAFCF5; --bg2:#F5F7F0; --bg3:#EDF0E4; --border:#DEE3D3;
+  --text:#1A1F14; --text-2:#3D4235; --text-3:#6B7060;
+  --purple:#7A4A9A; --purple-bg:#EDE0F5; --purple-border:rgba(122,74,154,0.35);
+  --green:#1A7A3A; --green-bg:#D8F0E0; --green-border:rgba(26,122,58,0.25);
+  --blue:#2A5C9A; --blue-bg:#DDE8F5; --blue-border:rgba(42,92,154,0.25);
+  --amber:#9A6E1A; --amber-bg:#F5EDD6; --amber-border:rgba(154,110,26,0.25);
+  --red:#B0402E; --red-bg:#F5DEDA; --red-border:rgba(176,64,46,0.25);
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body{background:var(--bg);color:var(--text);font-family:var(--ff-sans);font-size:16px;line-height:1.8;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.skip-link{position:absolute;top:-100%;left:1rem;background:var(--green);color:#000;padding:.5rem 1rem;border-radius:0 0 6px 6px;font-size:.85rem;font-weight:500;text-decoration:none;z-index:999}
+.skip-link:focus{top:0}
+nav.site-nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:56px}
+.nav-logo{font-family:var(--ff-serif);font-size:1rem;color:var(--text);text-decoration:none}
+.theme-toggle{background:var(--bg3);border:1px solid var(--border);color:var(--text-2);border-radius:8px;padding:.4rem .8rem;font-size:.78rem;cursor:pointer;font-family:var(--ff-sans);}
+.theme-toggle:hover{border-color:var(--purple);color:var(--text)}
+main{max-width:900px;margin:0 auto;padding:3rem 1.5rem 5rem}
+.breadcrumb{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.breadcrumb a{color:var(--text-3);text-decoration:none}
+.breadcrumb a:hover{color:var(--purple)}
+.series-tag{font-size:.7rem;padding:4px 11px;border-radius:99px;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);letter-spacing:.04em;text-transform:uppercase;font-weight:500;display:inline-block;margin-bottom:1.25rem}
+h1{font-family:var(--ff-serif);font-size:clamp(1.85rem,4vw,2.6rem);line-height:1.2;color:var(--purple);margin-bottom:.75rem;font-weight:400}
+.subtitle{font-family:var(--ff-serif);font-size:1.1rem;font-style:italic;color:var(--text-3);margin-bottom:1.5rem;max-width:680px}
+.meta-row{display:flex;align-items:center;gap:1.25rem;font-size:.82rem;color:var(--text-3);flex-wrap:wrap;margin-bottom:1.6rem;padding-bottom:1.3rem;border-bottom:1px solid var(--border)}
+h2{font-family:var(--ff-serif);font-size:1.5rem;font-weight:400;color:var(--text);margin:3.5rem 0 1.1rem;padding-top:1rem;border-top:1px solid var(--border)}
+h3{font-size:1rem;font-weight:500;color:var(--text);margin:1.75rem 0 .5rem}
+p{color:var(--text-2);margin-bottom:1.25rem;font-weight:300}
+strong{color:var(--text);font-weight:500}
+ul,ol{padding-left:1.4rem;margin-bottom:1.25rem;color:var(--text-2);font-weight:300}
+li{margin-bottom:.45rem}
+.goal-list{list-style:none;padding-left:1.4rem}
+.goal-list li{position:relative}
+.goal-list li::before{content:"";position:absolute;left:-1.3rem;top:.48em;width:.85rem;height:.85rem;border:1.5px solid var(--purple);border-radius:3px}
+code{background:var(--bg3);padding:1px 6px;border-radius:3px;font-size:.85em;color:var(--text-2);font-family:monospace}
+pre{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:1rem 1.1rem;font-family:monospace;font-size:.82rem;color:var(--text-2);line-height:1.65;overflow-x:auto;margin:1rem 0}
+pre code{background:none;padding:0;color:inherit}
+.callout{display:block;background:var(--blue-bg);border-left:3px solid var(--blue);border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.95rem;color:var(--text);line-height:1.7}
+.callout p{margin-bottom:0;color:var(--text-2)}
+.callout.amber{background:var(--amber-bg);border-color:var(--amber)}
+.callout.green{background:var(--green-bg);border-color:var(--green)}
+.callout.red{background:var(--red-bg);border-color:var(--red)}
+.callout.blue{background:var(--blue-bg);border-color:var(--blue)}
+.callout.purple{background:var(--purple-bg);border-color:var(--purple)}
+.table-wrap{display:block;overflow-x:auto;margin:1.5rem 0;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+thead th{background:var(--bg2);padding:9px 13px;text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);font-weight:500;border-bottom:1px solid var(--border)}
+tbody td{padding:9px 13px;border-bottom:1px solid var(--border);color:var(--text-2);vertical-align:top;line-height:1.55;font-size:.85rem}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--bg2)}
+/* Phase progress strip */
+.phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem}
+.phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--text-3);background:var(--bg2);text-decoration:none}
+.phase-pip:hover{border-color:var(--purple);color:var(--text)}
+.phase-pip.active{background:var(--purple);color:#0d0d0d;border-color:transparent}
+.phase-pip.done{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+/* Before/After blocks */
+.ba-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0}
+.ba-block{border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+.ba-label{padding:.4rem .8rem;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.ba-block.before .ba-label{background:var(--red-bg);color:var(--red)}
+.ba-block.after .ba-label{background:var(--green-bg);color:var(--green)}
+.ba-block pre{margin:0;border-radius:0;border:none}
+/* Assignment / bonus blocks */
+.assignment{background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:12px;padding:1.2rem 1.4rem;margin:4.5rem 0 1rem}
+.assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem}
+.assignment h3{font-family:var(--ff-serif);color:var(--text);margin-top:.2rem;margin-bottom:.5rem;font-weight:400}
+.bonus{background:var(--purple-bg);border:1px solid var(--purple-border);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem}
+.bonus .b-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--purple);margin-bottom:.4rem}
+/* Collapsible solution */
+details.solution{margin:1rem 0 2rem;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+details.solution summary{padding:.9rem 1.2rem;cursor:pointer;font-weight:700;font-size:.92rem;background:var(--bg2);list-style:none;display:flex;align-items:center;gap:.5rem;color:var(--text)}
+details.solution summary::-webkit-details-marker{display:none}
+details.solution summary::before{content:"\25B6";font-size:.7rem;color:var(--text-3);transition:transform .2s}
+details.solution[open] summary::before{transform:rotate(90deg)}
+.solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border)}
+.solution-body p{font-size:.92rem}
+.series-nav{margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border)}
+.series-nav .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);font-weight:500;margin-bottom:.75rem;display:block}
+.nav-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.nav-blog{display:flex;align-items:center;gap:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.25rem;text-decoration:none;transition:border-color .2s,background .2s}
+.nav-blog:hover{border-color:var(--purple);background:var(--bg3)}
+.nav-blog-arrow{color:var(--text-3);font-size:1rem;flex-shrink:0}
+.nav-blog-title{font-size:.88rem;font-weight:500;color:var(--text)}
+.nav-blog-sub{font-size:.75rem;color:var(--text-3);margin-top:2px}
+footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.8rem;color:var(--text-3)}
+footer a{color:var(--text-3);text-decoration:none}
+footer a:hover{color:var(--purple)}
+@media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
+.blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
+.blog-tags .series-tag{margin-bottom:0}
+.tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+.term-shot{margin:1.2rem 0}
+.term-shot img{display:block;max-width:100%;height:auto;border:1px solid var(--border);border-radius:8px}
+.term-shot figcaption{font-size:.8rem;color:var(--text-3);margin-top:.5rem;line-height:1.5}
+/* Collapsible code explanations */
+details.explain{margin:.5rem 0 1.5rem;border:1px solid var(--purple-border);border-radius:10px;background:var(--purple-bg)}
+details.explain summary{padding:.6rem 1rem;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--purple);list-style:none;display:flex;align-items:center;gap:.5rem}
+details.explain summary::-webkit-details-marker{display:none}
+details.explain summary::before{content:"\25B6";font-size:.65rem;transition:transform .2s}
+details.explain[open] summary::before{transform:rotate(90deg)}
+.explain-body{padding:.1rem 1.2rem 1rem;font-size:.92rem;line-height:1.7}
+.explain-body p{margin:.7rem 0}
+.explain-body ul{margin:.3rem 0 .7rem 1.2rem;padding-left:0}
+.explain-body li{margin-bottom:.35rem}
+.explain-body pre{margin:.6rem 0}
+</style>
+<meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Playwright: Zero to Architect, by The Quality Strategist. A complete automation series: 16 phases in 4 stages, built against a real app, PeakAndPack.">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+/* Diagrams */
+.dg{margin:1.4rem 0;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1rem 1rem .8rem;overflow-x:auto}
+.dg svg{display:block;width:100%;height:auto;max-width:700px;margin:0 auto;min-width:480px}
+.dg figcaption{font-size:.8rem;color:var(--text-3);text-align:center;margin-top:.6rem;line-height:1.5}
+.dg-box{fill:var(--bg);stroke:var(--border);stroke-width:1.5}
+.dg-acc{stroke:var(--purple)}
+.dg-dash{stroke-dasharray:6 5}
+.dg-okb{stroke:var(--green)}
+.dg-badb{stroke:var(--red)}
+.dg-t{fill:var(--text);font:13px var(--ff-sans)}
+.dg-h{fill:var(--text);font:700 13px var(--ff-sans)}
+.dg-c{fill:var(--text);font:13px ui-monospace,Consolas,monospace}
+.dg-cs{fill:var(--text);font:11.5px ui-monospace,Consolas,monospace}
+.dg-big{fill:var(--text);font:700 20px ui-monospace,Consolas,monospace}
+.dg-m{fill:var(--text-3);font:12px var(--ff-sans)}
+.dg-ms{fill:var(--text-3);font:11px var(--ff-sans)}
+.dg-p{fill:var(--purple)}
+.dg-ok{fill:var(--green)}
+.dg-bad{fill:var(--red)}
+.dg-amb{fill:var(--amber)}
+.dg-line{stroke:var(--text-3);stroke-width:1.5;fill:none}
+.dg-head{fill:var(--text-3)}
+.dg-fill-p{fill:var(--purple-bg);stroke:var(--purple);stroke-width:1.5}
+</style>
+<style>
+/* Mind map */
+.mm-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1rem;margin:1.2rem 0 2.5rem;overflow-x:auto}
+.mm-wrap svg{display:block;width:100%;height:auto;min-width:640px}
+.mm-line{stroke:var(--border);stroke-width:2}
+.mm-centre{fill:var(--purple-bg);stroke:var(--purple);stroke-width:2}
+.mm-centre-t{fill:var(--purple);font:700 17px var(--ff-sans)}
+.mm-box{fill:var(--bg);stroke-width:1.6}
+.mm-box.done{stroke:var(--purple)}
+.mm-box.todo{stroke:var(--text-3);stroke-dasharray:6 5}
+.mm-title{fill:var(--text);font:700 14px var(--ff-sans)}
+.mm-part{font:700 11px var(--ff-sans);letter-spacing:.06em}
+.mm-part.done{fill:var(--purple)}
+.mm-part.todo{fill:var(--text-3)}
+.mm-item{fill:var(--text-2);font:12.5px var(--ff-sans)}
+.mm-item.todo{fill:var(--text-3)}
+a.mm-link:hover .mm-box{fill:var(--bg3)}
+/* Cheat sheet */
+.cheat h2 a{color:inherit;text-decoration:none}
+.cheat h2 a:hover{color:var(--purple)}
+.cheat td code{white-space:nowrap}
+.cheat td:first-child{width:34%}
+.cheat td:last-child{color:var(--text-2)}
+.legend{font-size:.82rem;color:var(--text-3);margin-top:.4rem}
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a class="nav-logo" href="../../../index.html">The Quality Strategist</a>
+  <button class="theme-toggle" id="themeToggle" type="button">Light</button>
+</nav>
+
+<main id="main-content">
+
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="../../../blogs.html">Blogs</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <span>JavaScript for Testers</span>
+    <span aria-hidden="true">&rsaquo;</span>
+    <span aria-current="page">In a View</span>
+  </nav>
+
+  <div class="blog-tags" aria-label="Blog categories" role="group">
+    <span class="series-tag">JavaScript for Testers &middot; In a View</span>
+    <span class="tag">Mind Map</span>
+    <span class="tag">Cheat Sheet</span>
+  </div>
+
+  <h1>JavaScript for Testers, in a View</h1>
+  <p class="subtitle">Every part on one page: a map of how the topics fit together, and a cheat sheet to keep open while you write tests.</p>
+
+  <div class="callout amber">
+    <p><strong>Draft.</strong> All six parts are drafted and linked from the map.</p>
+  </div>
+
+  <h2 id="map">The map</h2>
+  <p>Values are what a test holds, data shapes are how they're grouped, and checks are what a test does with them. Click a part to open it.</p>
+  <div class="mm-wrap">
+<svg viewBox="0 0 980 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Mind map of JavaScript for Testers: All six parts are written.">
+<path class="mm-line" d="M490,280 C385,280 385,105 280,105" fill="none"/>
+<path class="mm-line" d="M490,280 C385,280 385,280 280,280" fill="none"/>
+<path class="mm-line" d="M490,280 C385,280 385,455 280,455" fill="none"/>
+<path class="mm-line" d="M490,280 C595,280 595,105 700,105" fill="none"/>
+<path class="mm-line" d="M490,280 C595,280 595,280 700,280" fill="none"/>
+<path class="mm-line" d="M490,280 C595,280 595,455 700,455" fill="none"/>
+<rect class="mm-centre" x="375" y="245" width="230" height="70" rx="35"/>
+<text class="mm-centre-t" x="490" y="276" text-anchor="middle">JavaScript</text>
+<text class="mm-centre-t" x="490" y="297" text-anchor="middle">for Testers</text>
+<a class="mm-link" href="js-for-testers-1-variables-and-strings.html"><rect class="mm-box done" x="30" y="30" width="250" height="150" rx="12"/><text class="mm-part done" x="46" y="54">PART 1</text><text class="mm-title" x="46" y="75">Values</text><text class="mm-item " x="46" y="100">&#8226; const and let</text><text class="mm-item " x="46" y="120">&#8226; Five data types, typeof</text><text class="mm-item " x="46" y="140">&#8226; Strings and templates</text><text class="mm-item " x="46" y="160">&#8226; The + trap</text></a>
+<a class="mm-link" href="js-for-testers-2-objects-and-arrays.html"><rect class="mm-box done" x="30" y="205" width="250" height="150" rx="12"/><text class="mm-part done" x="46" y="229">PART 2</text><text class="mm-title" x="46" y="250">Data shapes</text><text class="mm-item " x="46" y="275">&#8226; Objects: key and value</text><text class="mm-item " x="46" y="295">&#8226; Arrays: index from 0</text><text class="mm-item " x="46" y="315">&#8226; Nested API data</text><text class="mm-item " x="46" y="335">&#8226; Reading undefined</text></a>
+<a class="mm-link" href="js-for-testers-3-comparisons-and-conditions.html"><rect class="mm-box done" x="30" y="380" width="250" height="150" rx="12"/><text class="mm-part done" x="46" y="404">PART 3</text><text class="mm-title" x="46" y="425">Checks</text><text class="mm-item " x="46" y="450">&#8226; Comparisons, ===</text><text class="mm-item " x="46" y="470">&#8226; Number() conversion</text><text class="mm-item " x="46" y="490">&#8226; &amp;&amp;  ||  !  and falsy</text><text class="mm-item " x="46" y="510">&#8226; if / else, ? :</text></a>
+<a class="mm-link" href="js-for-testers-4-loops-and-functions.html"><rect class="mm-box done" x="700" y="30" width="250" height="150" rx="12"/><text class="mm-part done" x="716" y="54">PART 4</text><text class="mm-title" x="716" y="75">Repeat and reuse</text><text class="mm-item " x="716" y="100">&#8226; for and for...of loops</text><text class="mm-item " x="716" y="120">&#8226; Check, count, total</text><text class="mm-item " x="716" y="140">&#8226; Functions and return</text><text class="mm-item " x="716" y="160">&#8226; import and export</text></a>
+<a class="mm-link" href="js-for-testers-5-classes-and-typescript.html"><rect class="mm-box done" x="700" y="205" width="250" height="150" rx="12"/><text class="mm-part done" x="716" y="229">PART 5</text><text class="mm-title" x="716" y="250">Structure</text><text class="mm-item " x="716" y="275">&#8226; Classes, constructor, this</text><text class="mm-item " x="716" y="295">&#8226; Page object shape</text><text class="mm-item " x="716" y="315">&#8226; TypeScript types</text><text class="mm-item " x="716" y="335">&#8226; Page, Promise, private</text></a>
+<a class="mm-link" href="js-for-testers-6-async-and-await.html"><rect class="mm-box done" x="700" y="380" width="250" height="150" rx="12"/><text class="mm-part done" x="716" y="404">PART 6</text><text class="mm-title" x="716" y="425">Waiting</text><text class="mm-item " x="716" y="450">&#8226; Promises: pending, settled</text><text class="mm-item " x="716" y="470">&#8226; await and async</text><text class="mm-item " x="716" y="490">&#8226; try/catch on failure</text><text class="mm-item " x="716" y="510">&#8226; for...of, Promise.all</text></a>
+</svg>
+  </div>
+
+  <div class="cheat">
+  <h2 id="part-1"><a href="js-for-testers-1-variables-and-strings.html">Part 1: Values</a></h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Code</th><th>What it does</th><th>Watch out</th></tr></thead>
+      <tbody>
+        <tr><td><code>const total = 0;</code></td><td>A value that can't be replaced. The default in tests.</td><td>Must get a value when created.</td></tr>
+        <tr><td><code>let price = 34.99;</code><br><code>price = 29.99;</code></td><td>A value that can be replaced.</td><td>Never use <code>var</code>.</td></tr>
+        <tr><td><code>'text'</code> <code>34.99</code> <code>true</code> <code>null</code> <code>undefined</code></td><td>The five everyday types: string, number, boolean, deliberately empty, never set.</td><td>Quotes make it text: <code>'34.99'</code> isn't a number.</td></tr>
+        <tr><td><code>typeof value</code></td><td>The type's name, as text.</td><td><code>typeof null</code> is <code>'object'</code>: check with <code>=== null</code>.</td></tr>
+        <tr><td><code>'Total: ' + price</code></td><td>Joins text.</td><td>Spaces go inside the quotes.</td></tr>
+        <tr><td><code>`Total: ${price}`</code></td><td>Template literal: drops values into text.</td><td>Needs backticks, not quotes.</td></tr>
+        <tr><td><code>price.toFixed(2)</code></td><td>A number as text with two decimals.</td><td>Gives text, not a number.</td></tr>
+        <tr><td><code>`test-${Date.now()}@example.com`</code></td><td>A unique value every run.</td><td></td></tr>
+        <tr><td><code>'89.00' + 1</code></td><td>Gives <code>'89.001'</code>: if either side is text, <code>+</code> joins.</td><td>Convert page text before doing arithmetic.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="part-2"><a href="js-for-testers-2-objects-and-arrays.html">Part 2: Data shapes</a></h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Code</th><th>What it does</th><th>Watch out</th></tr></thead>
+      <tbody>
+        <tr><td><code>const p = { name: 'Tent', price: 320 };</code></td><td>An object: related values, each with a key.</td><td>Contents can change even with <code>const</code>.</td></tr>
+        <tr><td><code>p.name</code> &nbsp; <code>p['name']</code></td><td>Read a value: dot or bracket notation.</td><td>A misspelled key gives <code>undefined</code>, not an error.</td></tr>
+        <tr><td><code>h['Content-Type']</code> &nbsp; <code>p[field]</code></td><td>Brackets for keys with dashes, or a key held in a variable.</td><td><code>p[name]</code> without quotes reads a variable.</td></tr>
+        <tr><td><code>p.price = 300;</code> &nbsp; <code>p.tag = 'new';</code></td><td>Change a value, or add a key.</td><td></td></tr>
+        <tr><td><code>const list = ['a', 'b', 'c'];</code></td><td>An array: an ordered list.</td><td></td></tr>
+        <tr><td><code>list[0]</code> &nbsp; <code>list.length</code> &nbsp; <code>list[list.length - 1]</code></td><td>First item, how many, last item.</td><td>Counting starts at 0. Past the end gives <code>undefined</code>.</td></tr>
+        <tr><td><code>body.products[0].name</code></td><td>Nested data, read left to right.</td><td><em>Cannot read properties of undefined</em>: the step before is missing.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="part-3"><a href="js-for-testers-3-comparisons-and-conditions.html">Part 3: Checks</a></h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Code</th><th>What it does</th><th>Watch out</th></tr></thead>
+      <tbody>
+        <tr><td><code>&gt;  &lt;  &gt;=  &lt;=</code></td><td>Compare numbers; the answer is true or false.</td><td><code>&gt;</code> vs <code>&gt;=</code> differ only at the boundary.</td></tr>
+        <tr><td><code>===</code> &nbsp; <code>!==</code></td><td>Same value and type / different.</td><td>Avoid <code>==</code>: <code>0 == ''</code> is true.</td></tr>
+        <tr><td><code>Number('89.00')</code></td><td>Text to number.</td><td><code>'$34.99'</code> gives <code>NaN</code>; <code>''</code> gives <code>0</code>.</td></tr>
+        <tr><td><code>objA === objB</code></td><td>Is it the very same object?</td><td>Same contents still false: use <code>toEqual</code> in tests.</td></tr>
+        <tr><td><code>a &amp;&amp; b</code> &nbsp; <code>a || b</code> &nbsp; <code>!a</code></td><td>AND (all true), OR (any true), NOT (flip).</td><td><code>&amp;&amp;</code> runs before <code>||</code>: add brackets.</td></tr>
+        <tr><td><code>false 0 '' null undefined NaN</code></td><td>The falsy values; everything else counts as true.</td><td><code>'0'</code> is true-like: it's non-empty text.</td></tr>
+        <tr><td><code>!!value</code> &nbsp; <code>a || 'default'</code></td><td>Any value to true/false; a fallback value.</td><td><code>0 || 1</code> is <code>1</code>: a real 0 is replaced.</td></tr>
+        <tr><td><code>if (...) {} else if (...) {} else {}</code></td><td>Run one block: the first whose condition is true.</td><td>Put the most specific condition first.</td></tr>
+        <tr><td><code>isCI ? 2 : 0</code></td><td>One-line if/else that gives back a value.</td><td></td></tr>
+        <tr><td><code>if</code> around a test's checks</td><td>Skips the check when false.</td><td>The test passes without checking anything.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="part-4"><a href="js-for-testers-4-loops-and-functions.html">Part 4: Repeat and reuse</a></h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Code</th><th>What it does</th><th>Watch out</th></tr></thead>
+      <tbody>
+        <tr><td><code>for (let i = 0; i &lt; 5; i++) { }</code></td><td>Repeat a block: start, check, run, step.</td><td>Counts from 0. The counter must be <code>let</code>.</td></tr>
+        <tr><td><code>for (const item of list) { }</code></td><td>Each item of a list, in turn.</td><td>The usual loop in tests.</td></tr>
+        <tr><td><code>for (let i = 0; i &lt; list.length; i++)</code></td><td>Each position and item.</td><td><code>&lt;=</code> reads one past the end.</td></tr>
+        <tr><td><code>count++</code> &nbsp; <code>total += x</code></td><td>Add 1; add to a running total.</td><td>Create them before the loop.</td></tr>
+        <tr><td><code>0.1 + 0.2</code></td><td>Gives <code>0.30000000000000004</code>.</td><td>Round money with <code>toFixed(2)</code> before comparing.</td></tr>
+        <tr><td><code>break</code></td><td>Leave the loop now.</td><td></td></tr>
+        <tr><td><code>list.forEach((item) =&gt; { })</code></td><td>Run a function for each item.</td><td>Doesn't wait for <code>await</code>: use <code>for...of</code> in tests.</td></tr>
+        <tr><td>A loop that never ends</td><td>The check never becomes false.</td><td>Ctrl+C in the terminal stops it.</td></tr>
+        <tr><td><code>function f(x) { return x * 2; }</code></td><td>Write work once, call it anywhere: <code>f(5)</code>.</td><td>Without <code>return</code>, it gives back <code>undefined</code>.</td></tr>
+        <tr><td><code>const f = (x) =&gt; x * 2;</code></td><td>Arrow function; one line returns automatically.</td><td>Can't be called above its line.</td></tr>
+        <tr><td><code>export</code> / <code>import { f } from './f.js'</code></td><td>Share functions between files.</td><td>Keep the <code>.js</code>; plain Node needs <code>"type": "module"</code>.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="part-5"><a href="js-for-testers-5-classes-and-typescript.html">Part 5: Structure</a></h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Code</th><th>What it does</th><th>Watch out</th></tr></thead>
+      <tbody>
+        <tr><td><code>class Cart { constructor(o) { this.owner = o; } }</code></td><td>A blueprint; the constructor runs on <code>new</code>.</td><td>Use <code>this.</code> inside methods, or it's "not defined".</td></tr>
+        <tr><td><code>new Cart('Ana')</code></td><td>Build an instance with its own values.</td><td>Without <code>new</code>: TypeError.</td></tr>
+        <tr><td><code>export class CartPage</code></td><td>Share a class: the page-object pattern.</td><td>Each test builds its own instance.</td></tr>
+        <tr><td><code>let price: number</code> &nbsp; <code>type Product = {...}</code></td><td>Types: on values, and your own shapes.</td><td><code>?</code> marks a property optional.</td></tr>
+        <tr><td><code>f(p: number): string</code></td><td>Typed inputs and output.</td><td></td></tr>
+        <tr><td><code>constructor(private page: Page) {}</code></td><td>Stores <code>this.page</code> in one line.</td><td></td></tr>
+        <tr><td>Red underlines</td><td>TypeScript found a mistake.</td><td>Tests still run: fix them first.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="part-6"><a href="js-for-testers-6-async-and-await.html">Part 6: Waiting</a></h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Code</th><th>What it does</th><th>Watch out</th></tr></thead>
+      <tbody>
+        <tr><td><code>const p = page.goto('/');</code></td><td>A promise: an answer that arrives later.</td><td>Printed, it shows <code>Promise { &lt;pending&gt; }</code>: a missing await.</td></tr>
+        <tr><td><code>await page.goto('/')</code></td><td>Wait for it to settle, then carry on.</td><td>Only inside <code>async</code> functions (or a module's top level).</td></tr>
+        <tr><td><code>async function f() { return 1; }</code></td><td>Can use await; always returns a promise.</td><td>Its TypeScript type is <code>Promise&lt;number&gt;</code>.</td></tr>
+        <tr><td><code>try { await x; } catch (e) { e.message }</code></td><td>Handle a rejected promise.</td><td>Don't use it to keep a failing test going.</td></tr>
+        <tr><td><code>const r = page.waitForResponse(...)</code>, then click, then <code>await r</code></td><td>Start a wait before the action.</td><td>No await on the first line, on purpose.</td></tr>
+        <tr><td><code>for (const x of list) { await ... }</code></td><td>One at a time, in order.</td><td><code>forEach</code> doesn't wait.</td></tr>
+        <tr><td><code>await Promise.all([a, b])</code></td><td>Several at once; wait for all.</td><td>Only for independent work.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  </div>
+
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--text-3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; JavaScript for Testers</p>
+  </div>
+</main>
+
+<footer>
+  <p><a href="../../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+<script>
+(function(){
+  var btn = document.getElementById('themeToggle');
+  function isLight(){ return document.documentElement.getAttribute('data-theme') === 'light'; }
+  function sync(){ btn.textContent = isLight() ? 'Dark' : 'Light'; }
+  sync();
+  btn.addEventListener('click', function(){
+    if(isLight()){
+      document.documentElement.removeAttribute('data-theme');
+      try{ localStorage.setItem('pw-theme','dark'); }catch(e){}
+    } else {
+      document.documentElement.setAttribute('data-theme','light');
+      try{ localStorage.setItem('pw-theme','light'); }catch(e){}
+    }
+    sync();
+  });
+})();
+</script>
+
+</body>
+</html>
