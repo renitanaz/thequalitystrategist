@@ -354,7 +354,1230 @@ details.phase>summary .phase-link{margin-left:auto;font-family:var(--ff-sans);fo
     </div>
   </details>
 
-  <p class="coming">More phases are added here as each one is completed.</p>
+  <details class="phase">
+    <summary>Phase 1: Test Design Thinking <a class="phase-link" href="01-playwrightseries-test-design.html">Open phase</a></summary>
+    <div class="recall-outline">
+        <div class="recall-branch g1">
+          <div class="ro-head">1 &middot; The test pyramid</div>
+          <div class="ro-line">Name the three layers of the pyramid and what each one tests.</div>
+          <div class="ro-line">Why do most tests belong near the bottom?</div>
+          <div class="ro-line">What is the rule for choosing a layer?</div>
+          <div class="ro-line">Why does PeakAndPack have no unit layer to test directly?</div>
+          <div class="ro-line">What three costs does every test carry?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>Unit: a single function or component, in milliseconds. API (integration): the server and its responses, in seconds. UI or end-to-end: a full journey through a real browser, 10 to 60 seconds.</li>
+                <li>The lower layers are fast and rarely fail for reasons unrelated to the bug. Only journeys that genuinely need a browser belong at the top. It is a guide for where to put effort, not a strict rule.</li>
+                <li>Put each test at the lowest layer that still gives you confidence. A calculation does not need a browser. A user journey does.</li>
+                <li>The logic sits inside the server routes. The API layer is those routes, which Playwright can call with no browser, and the UI layer is the React store.</li>
+                <li>Time to write it, time it adds to every future run, and effort to keep it working when the app changes.</li>
+              </ul>
+              <span class="see">&rarr; <a href="01-playwrightseries-test-design.html#test-pyramid">See: Phase 1, section 1</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g2">
+          <div class="ro-head">2 &middot; Design principles</div>
+          <div class="ro-line">What does "one test, one scenario" mean for a journey with several steps?</div>
+          <div class="ro-line">Why not write 99 tests for a quantity from 1 to 99, and what replaces them?</div>
+          <div class="ro-line">What does a decision table show you?</div>
+          <div class="ro-line">What does "assert behaviour, not implementation" mean?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>A journey may need several steps just to reach the thing under test. What it must not do is verify unrelated things on the way, such as login, cart and email under one name.</li>
+                <li>Boundary value analysis: test the edges and one value in the middle, and test them below the UI layer.</li>
+                <li>Every combination of conditions and what should happen, so you can see which combinations are separate cases and which only repeat another.</li>
+                <li>Check what the user sees, such as the order confirmation heading, not a CSS class, a function call or the exact payload of a request.</li>
+              </ul>
+              <span class="see">&rarr; <a href="01-playwrightseries-test-design.html#test-design-principles">See: Phase 1, section 3</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g3">
+          <div class="ro-head">3 &middot; Running the design against the app</div>
+          <div class="ro-line">Which quantities did the BVA table test, and which should have been rejected?</div>
+          <div class="ro-line">Which row of the checkout decision table was a repeat, and why?</div>
+          <div class="ro-line">Why could clicking through the page never find the quantity bug?</div>
+          <div class="ro-line">The app disagrees with your table. What do you do?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>0, 1, 50, 99 and 100. The rule says 0 and 100 are rejected. PeakAndPack accepted both, and also accepted -1, 1000, 2.5 and "abc".</li>
+                <li>No valid code and an empty cart. An empty cart is refused before the code is looked at, so it is the same case as a valid code with an empty cart.</li>
+                <li>The page has no quantity box, so a tester who only clicks never tries 0 or -1. The cart API accepts them, and a test at the API layer finds the problem in seconds.</li>
+                <li>Treat it as a finding. Decide whether the table or the app is wrong, and if it is the app, mark the test <code>test.fail()</code> with a comment.</li>
+              </ul>
+              <span class="see">&rarr; <a href="01-playwrightseries-test-design.html#run-the-tables">See: Phase 1, section 6</a></span>
+            </div>
+          </details></div>
+        </div>
+    </div>
+  </details>
+
+  <details class="phase">
+    <summary>Phase 2: Locators <a class="phase-link" href="02-playwrightseries-locators.html">Open phase</a></summary>
+    <div class="recall-outline">
+        <div class="recall-branch g1">
+          <div class="ro-head">1 &middot; Reading a page, and the priority list</div>
+          <div class="ro-line">Why do locators care about parents, children and siblings?</div>
+          <div class="ro-line">What is the difference between an id and a class?</div>
+          <div class="ro-line">List the locator priority from best to last resort.</div>
+          <div class="ro-line">Why does <code>getByRole</code> survive a restyle?</div>
+          <div class="ro-line">Why can't PeakAndPack's login inputs be found by label, and what does the series use instead?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>They often describe an element by its relationships, such as "the button inside this card".</li>
+                <li>An id is meant to be unique and names one element. A class is shared by many elements, usually for styling. Both are chosen for styling and scripts, so refactors change them.</li>
+                <li><code>getByRole</code>, <code>getByLabel</code>, <code>getByPlaceholder</code>, <code>getByText</code>, <code>getByTestId</code>, then <code>locator('css')</code> as the last resort.</li>
+                <li>A role and an accessible name describe what an element is and says, not how it looks, so renaming a class or moving a <code>div</code> changes nothing the locator uses.</li>
+                <li>The visible labels are not linked to the inputs, and there is no aria-label or placeholder. It uses <code>input[type="email"]</code> and <code>input[type="password"]</code>, and the missing names are also an accessibility defect.</li>
+              </ul>
+              <span class="see">&rarr; <a href="02-playwrightseries-locators.html#locator-priority">See: Phase 2, section 3</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g2">
+          <div class="ro-head">2 &middot; The everyday family and CSS</div>
+          <div class="ro-line">When do you use <code>getByPlaceholder</code> instead of <code>getByLabel</code>?</div>
+          <div class="ro-line">Which locator finds the ↗ arrow link on a card, and why?</div>
+          <div class="ro-line">A plain string in <code>getByText</code> matches how? When do you add <code>exact: true</code>?</div>
+          <div class="ro-line">Read these aloud: <code>h1</code>, <code>#store-link</code>, <code>.btn-danger</code>, <code>a[download="products.csv"]</code>, <code>#products-tbody button</code>.</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>When the input has hint text but no label, such as the search box.</li>
+                <li><code>getByTitle('Open in new tab')</code>. The arrow has no text, only a title attribute.</li>
+                <li>It matches part of the text and ignores capitals. Add <code>exact: true</code> only when a partial match would hit the wrong element.</li>
+                <li>A tag, an id, a class, a tag with an attribute value, and a button inside the element with that id.</li>
+              </ul>
+              <span class="see">&rarr; <a href="02-playwrightseries-locators.html#other-locators">See: Phase 2, section 5</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g3">
+          <div class="ro-head">3 &middot; Scoping and narrowing</div>
+          <div class="ro-line">Why scope "Add to cart" to a card first?</div>
+          <div class="ro-line">Why not <code>locator('div').filter({ has: heading }).first()</code>?</div>
+          <div class="ro-line">Name the narrowing tools.</div>
+          <div class="ro-line">Which test ids does PeakAndPack have, and when should you add one?</div>
+          <div class="ro-line">When is picking by position a bad idea?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>Every card has the button, so the role alone matches several and Playwright throws a strict mode violation.</li>
+                <li>Four nested divs contain the heading. <code>first()</code> picks the outermost, React's root, which holds all eight buttons, so the same strict mode error returns.</li>
+                <li>Chaining, <code>filter</code> with <code>hasText</code> or <code>has</code>, the parent step <code>locator('..')</code>, and position with <code>nth</code>.</li>
+                <li><code>product-card</code> and <code>result-count</code>. Add one for an element with no stable role or text, as an agreed contract with the developer, not on everything.</li>
+                <li>Whenever the order can change, for example with the Sort by menu. Filter on what the element says instead.</li>
+              </ul>
+              <span class="see">&rarr; <a href="02-playwrightseries-locators.html#scoping">See: Phase 2, section 7</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g4">
+          <div class="ro-head">4 &middot; Tools, AI output and "self-healing"</div>
+          <div class="ro-line">Name two ways Playwright suggests a locator.</div>
+          <div class="ro-line">What must you do with a suggested or generated locator?</div>
+          <div class="ro-line">Name the red flags in AI-generated locators.</div>
+          <div class="ro-line">Which kind of "self-healing" does this phase teach, and does it run unattended?</div>
+          <div class="ro-line">Why is code-level auto-fix different?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>Pick locator in the VS Code extension, and codegen (<code>npx playwright codegen</code>, or Record new in the extension).</li>
+                <li>Review it against the priority list. A generator picks something that works now, and may use <code>nth</code> where a filter is safer, or CSS where a label exists.</li>
+                <li>A CSS class such as <code>.btn-primary</code>, a bare id, a structural selector such as <code>div &gt; span:nth-child(2)</code>, and a partial class match.</li>
+                <li>Resilient locators that describe meaning. They run unattended with no AI and no person, because there is nothing to repair. Runtime healing tools also run unattended, and neither is auto-fix.</li>
+                <li>A failing test can mean a real bug, an intended change or a bad test. An AI can propose a change, but a person must approve it, every time.</li>
+              </ul>
+              <span class="see">&rarr; <a href="02-playwrightseries-locators.html#self-healing">See: Phase 2, section 12</a></span>
+            </div>
+          </details></div>
+        </div>
+    </div>
+  </details>
+
+  <details class="phase">
+    <summary>Phase 3: Assertions &amp; Waits <a class="phase-link" href="03-playwrightseries-assertions-waits.html">Open phase</a></summary>
+    <div class="recall-outline">
+        <div class="recall-branch g1">
+          <div class="ro-head">1 &middot; Weak assertions and reading values</div>
+          <div class="ro-line">Why is <code>expect(page.getByTestId('product-card')).toBeTruthy()</code> useless?</div>
+          <div class="ro-line">Which four methods read a value out of the page?</div>
+          <div class="ro-line">What do you get if you forget <code>await</code> on a read?</div>
+          <div class="ro-line">Which reads do not wait, and what is the habit?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>A locator only describes where to look, and a description is always truthy, so it passes even when the page has no card at all.</li>
+                <li><code>textContent()</code>, <code>allTextContents()</code>, <code>inputValue()</code> and <code>getAttribute()</code>.</li>
+                <li>A pending promise, printed as <code>Promise { &lt;pending&gt; }</code>, not the text.</li>
+                <li><code>allTextContents()</code>, <code>count()</code> and <code>all()</code> look once. First wait for something from the list with a locator assertion.</li>
+              </ul>
+              <span class="see">&rarr; <a href="03-playwrightseries-assertions-waits.html#reading-values">See: Phase 3, section 2</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g2">
+          <div class="ro-head">2 &middot; Locator and generic assertions</div>
+          <div class="ro-line">How do locator and generic assertions differ?</div>
+          <div class="ro-line">When do you need a generic assertion?</div>
+          <div class="ro-line">What does <code>expect.soft</code> do, and when should you use it?</div>
+          <div class="ro-line">Why is <code>await expect(el).toBeVisible()</code> better than <code>expect(await el.isVisible()).toBe(true)</code>?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>A locator assertion checks the page and retries until it passes or times out, and needs <code>await</code>. A generic assertion checks a value you hold, once.</li>
+                <li>When one locator assertion cannot say it, for example prices in ascending order, which needs you to read them all and compare.</li>
+                <li>It records a failure and carries on, then fails the test with every problem listed. Use it for audits of independent checks, not for flows where step 3 depends on step 2.</li>
+                <li>The first retries until the timeout. The second looks once and fails if the element is still loading.</li>
+              </ul>
+              <span class="see">&rarr; <a href="03-playwrightseries-assertions-waits.html#generic-vs-locator">See: Phase 3, section 3</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g3">
+          <div class="ro-head">3 &middot; What Playwright waits for, and waitForResponse</div>
+          <div class="ro-line">What does Playwright check before a click?</div>
+          <div class="ro-line">What happened when the test tried to check the disabled "Store pickup" option?</div>
+          <div class="ro-line">Why set up <code>waitForResponse</code> before the click?</div>
+          <div class="ro-line">Add to cart changes nothing on the page. What is the signal to wait for?</div>
+          <div class="ro-line">Why is a UI assertion sometimes not enough?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>That the element is visible, stable, receives events and is enabled, retrying until they pass or time runs out.</li>
+                <li>Playwright kept retrying, then gave up with a "not enabled" error, and the radio stayed unchecked.</li>
+                <li>The response can arrive the moment the click lands. A listener registered afterwards can miss it and wait forever.</li>
+                <li>The network response for the POST to the cart address with status 200. Without a listener, the browser alert is dismissed automatically.</li>
+                <li>The page may show the item while the server does not hold it, or the reverse. You can assert the UI, the API, or both, depending on what you are testing.</li>
+              </ul>
+              <span class="see">&rarr; <a href="03-playwrightseries-assertions-waits.html#wait-for-meaning">See: Phase 3, section 6</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g4">
+          <div class="ro-head">4 &middot; The wait ladder</div>
+          <div class="ro-line">Put the waits in order: best, next, last resort, never.</div>
+          <div class="ro-line">Why is <code>networkidle</code> only a last resort?</div>
+          <div class="ro-line">Why is a fixed sleep always wrong sometimes?</div>
+          <div class="ro-line">Why does asserting that the URL contains "success" fall short?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>A locator assertion, then <code>waitFor()</code>, <code>waitForResponse()</code> or <code>waitForURL()</code>, then <code>waitForLoadState('networkidle')</code>, and never <code>waitForTimeout</code>.</li>
+                <li>It waits until no network calls happen for half a second, so a page that keeps polling or loads slow images from another host makes it slow or unreliable.</li>
+                <li>It is a guess: too short and the test is flaky, too long and the suite is slow.</li>
+                <li>It passes for any URL with that word, including an error page. Assert what the user sees, such as the heading.</li>
+              </ul>
+              <span class="see">&rarr; <a href="03-playwrightseries-assertions-waits.html#wait-ladder">See: Phase 3, section 9</a></span>
+            </div>
+          </details></div>
+        </div>
+    </div>
+  </details>
+
+  <details class="phase">
+    <summary>Phase 4: Debugging &amp; Flakiness <a class="phase-link" href="04-playwrightseries-debugging-flakiness.html">Open phase</a></summary>
+    <div class="recall-outline">
+        <div class="recall-branch g1">
+          <div class="ro-head">1 &middot; Finding out why a test failed</div>
+          <div class="ro-line">Why is rerunning a flaky test until it passes not a fix?</div>
+          <div class="ro-line">What is the first thing to open when a test fails, and why?</div>
+          <div class="ro-line">Why look at the step before the red one?</div>
+          <div class="ro-line">You want a trace of a failure you just saw, but retries are off. What do you do?</div>
+          <div class="ro-line">Which question separates an app failure from a test failure?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>It clears the red but leaves the cause, and the bug or timing gap the test was pointing at, in place.</li>
+                <li>The Trace Viewer. It records every action with a screenshot, the DOM, console logs and network requests, so it tells you why, where the terminal only tells you what.</li>
+                <li>The failure is often a symptom. The step before shows what state the page was in.</li>
+                <li>Run with <code>--trace on</code>. <code>trace: 'on-first-retry'</code> records nothing when there is no retry.</li>
+                <li>Is the product broken, or is the test wrong? The answer changes what you do next.</li>
+              </ul>
+              <span class="see">&rarr; <a href="04-playwrightseries-debugging-flakiness.html#trace-viewer">See: Phase 4, section 2</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g2">
+          <div class="ro-head">2 &middot; Making flakiness show itself</div>
+          <div class="ro-line">How do you surface a test that fails one run in ten?</div>
+          <div class="ro-line">How does the slow-server helper let you practise?</div>
+          <div class="ro-line">What did the sleeping version do against the fixed one?</div>
+          <div class="ro-line">What are the two usual causes when parallel runs suddenly show flakiness?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li><code>--repeat-each=20</code>. If any of the 20 runs fails, it is flaky, and you read the trace of the failing run before changing anything.</li>
+                <li>It delays the add-to-cart request by a random 0 to 2 seconds, so a sleeping test fails some of the time and the <code>waitForResponse</code> twin does not.</li>
+                <li>The sleeping version failed 11 and then 7 times out of 20. The version that waited for the response passed all 20 both times.</li>
+                <li>A machine too weak for the load (too many workers), or tests that share data and were only safe one at a time.</li>
+              </ul>
+              <span class="see">&rarr; <a href="04-playwrightseries-debugging-flakiness.html#surface-flakiness">See: Phase 4, section 5</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g3">
+          <div class="ro-head">3 &middot; Retries</div>
+          <div class="ro-line">What happens to the browser when a test fails and is retried?</div>
+          <div class="ro-line">What does the report call a test that failed and then passed?</div>
+          <div class="ro-line">When are retries legitimate?</div>
+          <div class="ro-line">Why is retries-first a bad response to flakiness?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>Playwright shuts the worker down and starts a fresh one, so the retry and the next test begin with a clean browser.</li>
+                <li>Flaky. It did not pass cleanly, so count those and look at them.</li>
+                <li>For environmental noise outside your control, such as a slow third-party API or a free-tier host that cold-starts. Not for a sleep that is too short, shared data or a real defect.</li>
+                <li>It hides the problem. The test still fails one run in three, silently, and a retry can mask a real bug.</li>
+              </ul>
+              <span class="see">&rarr; <a href="04-playwrightseries-debugging-flakiness.html#how-retries-work">See: Phase 4, section 6</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g4">
+          <div class="ro-head">4 &middot; Evidence beyond the trace</div>
+          <div class="ro-line">When do you reach for a screenshot or video instead of a trace?</div>
+          <div class="ro-line">Which config options keep them automatically?</div>
+          <div class="ro-line">Why add <code>screenshots/</code> to <code>.gitignore</code>?</div>
+          <div class="ro-line">Why can a screenshot mislead if taken too early?</div>
+          <div class="ro-line">Does a missing <code>await</code> on <code>goto</code> before an <code>expect</code> cause flakiness?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>For what a trace shows badly, such as an animation, or evidence for someone outside the run, such as a bug report.</li>
+                <li><code>screenshot: 'only-on-failure'</code> and <code>video: 'retain-on-failure'</code>.</li>
+                <li>Pictures taken by your own tests are output, not source code.</li>
+                <li>It shows a half-drawn page. Wait for something on the page first.</li>
+                <li>Not in the run that was tried: it passed 20 of 20, because the expect keeps checking. A missing await on a click or on a read such as <code>textContent()</code> is the dangerous one.</li>
+              </ul>
+              <span class="see">&rarr; <a href="04-playwrightseries-debugging-flakiness.html#evidence">See: Phase 4, section 8</a></span>
+            </div>
+          </details></div>
+        </div>
+    </div>
+  </details>
+
+  <details class="phase">
+    <summary>Phase 5: Test Data &amp; State <a class="phase-link" href="05-playwrightseries-test-data-state.html">Open phase</a></summary>
+    <div class="recall-outline">
+        <div class="recall-branch g1">
+          <div class="ro-head">1 &middot; Coupled and independent tests</div>
+          <div class="ro-line">Why can two "before" tests that share the demo account pass in one order and fail in the other?</div>
+          <div class="ro-line">State the independence rule.</div>
+          <div class="ro-line">Name the three things that break independence.</div>
+          <div class="ro-line">Why must the browser be signed in as well as the API user created?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>Test 2 depends on what test 1 left in the shared cart. Run the other way round it meets an empty cart.</li>
+                <li>Every test must run in isolation, in any order, on any worker, with the same result. If removing one test changes whether another passes, they are coupled.</li>
+                <li>Shared data, shared state, and a dependency on execution order.</li>
+                <li>PeakAndPack's UI reads its login from localStorage, which an API call never touches. Without that step the page says you need to log in.</li>
+              </ul>
+              <span class="see">&rarr; <a href="05-playwrightseries-test-data-state.html#test-independence">See: Phase 5, section 2</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g2">
+          <div class="ro-head">2 &middot; API setup and hooks</div>
+          <div class="ro-line">Why set up data through the API and keep the UI for what the test is about?</div>
+          <div class="ro-line">Name the four hooks and what each is for.</div>
+          <div class="ro-line">In what order do outer and inner hooks run?</div>
+          <div class="ro-line">Why keep cleanup next to the setup instead of in <code>afterEach</code>?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>The API is faster and more reliable, and the setup does not count as part of the test.</li>
+                <li><code>beforeAll</code> and <code>afterAll</code> run once around a group. <code>beforeEach</code> and <code>afterEach</code> run around every test.</li>
+                <li>Outer <code>beforeAll</code>, inner <code>beforeAll</code>, then outer and inner <code>beforeEach</code> before each test, and the matching <code>afterEach</code> hooks in reverse.</li>
+                <li>With two places, the data has to travel through a shared variable, and changing one while forgetting the other brings the leftovers back.</li>
+              </ul>
+              <span class="see">&rarr; <a href="05-playwrightseries-test-data-state.html#hooks">See: Phase 5, section 4</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g3">
+          <div class="ro-head">3 &middot; Sessions and unique data</div>
+          <div class="ro-line">What does <code>storageState</code> save and reuse?</div>
+          <div class="ro-line">Why is logging in through the UI in every test a performance killer?</div>
+          <div class="ro-line">Why does a timestamp or random number go on top of Faker's output?</div>
+          <div class="ro-line">Why do two workers need separate users?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>The browser's cookies and localStorage after one login, so other tests start signed in without repeating the login.</li>
+                <li>Each login takes seconds, and 50 tests can spend minutes only on login, plus one more place to fail.</li>
+                <li>Faker values are random, not guaranteed unique. A repeated email would get a 409 from PeakAndPack.</li>
+                <li>When two workers share an account they can interfere, for example by changing the same cart at the same time.</li>
+              </ul>
+              <span class="see">&rarr; <a href="05-playwrightseries-test-data-state.html#storage-state">See: Phase 5, section 5</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g4">
+          <div class="ro-head">4 &middot; Cleaning up</div>
+          <div class="ro-line">When does a test need to clean up?</div>
+          <div class="ro-line">Why does cleanup at the end of a test not always run?</div>
+          <div class="ro-line">How do you prove the cleanup worked?</div>
+          <div class="ro-line">Why check the status of a setup call?</div>
+          <div class="ro-line">In fully parallel mode, how often does <code>beforeAll</code> run?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>When it must use the shared account, or the data it creates would pile up. Most tests create their own data and leave it.</li>
+                <li>If an earlier check fails, the lines after it never execute. Put the cleanup in <code>finally</code>.</li>
+                <li>Check afterwards, for example reload the cart page and see it empty, or read the cart through the API.</li>
+                <li>A quietly failed setup request (a 409 or 401) shows up many steps later as a confusing page problem.</li>
+                <li>Once per worker, not once per suite. For real global setup use <code>globalSetup</code> in the config.</li>
+              </ul>
+              <span class="see">&rarr; <a href="05-playwrightseries-test-data-state.html#clean-up">See: Phase 5, section 7</a></span>
+            </div>
+          </details></div>
+        </div>
+    </div>
+  </details>
+
+  <details class="phase">
+    <summary>Phase 6: Auth &amp; Sessions <a class="phase-link" href="06-playwrightseries-auth-sessions.html">Open phase</a></summary>
+    <div class="recall-outline">
+        <div class="recall-branch g1">
+          <div class="ro-head">1 &middot; What a saved session is</div>
+          <div class="ro-line">What does <code>storageState</code> capture, and what does it miss?</div>
+          <div class="ro-line">Why does a saved session work for the store but not the admin panel?</div>
+          <div class="ro-line">What goes in <code>.gitignore</code>, and why?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>It captures cookies and localStorage for the page's origin, and IndexedDB if you opt in. It does not capture sessionStorage or in-memory state.</li>
+                <li>The store keeps its token in localStorage. The admin panel keeps it in a JavaScript variable, so every admin test signs in through the panel's own form.</li>
+                <li>The saved session files. They hold session tokens.</li>
+              </ul>
+              <span class="see">&rarr; <a href="06-playwrightseries-auth-sessions.html#storage-state-works">See: Phase 6, section 2</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g2">
+          <div class="ro-head">2 &middot; Setup projects and refreshing</div>
+          <div class="ro-line">What is a setup project?</div>
+          <div class="ro-line">How does a failing setup show up compared with a global setup file?</div>
+          <div class="ro-line">How long do PeakAndPack tokens last, and what is the cheap way to refresh a saved file?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>A group of tests that runs first, logs in and saves the session. The real project lists it under <code>dependencies</code>, so it starts only after setup passed and loads the saved file.</li>
+                <li>The tests that depend on it are reported as not run, with setup named as the cause, instead of a pile of unrelated failures.</li>
+                <li>24 hours. Ask the API for a new token and write it into the file, and go through the login page only when no file exists yet.</li>
+              </ul>
+              <span class="see">&rarr; <a href="06-playwrightseries-auth-sessions.html#setup-project">See: Phase 6, section 3</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g3">
+          <div class="ro-head">3 &middot; Roles and access</div>
+          <div class="ro-line">Why is the Admin link being hidden not a security control?</div>
+          <div class="ro-line">Why are 401 and 403 separate tests?</div>
+          <div class="ro-line">Why prove the session loaded before asserting "no Admin link"?</div>
+          <div class="ro-line">Why keep one JSON file per role?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>It is a convenience. The server refusing a customer's token is the actual control, so test both layers.</li>
+                <li>401 means "who are you?" and 403 means "I know who you are, and no." A server that answers either with 200 is broken in a different way.</li>
+                <li>A logged-out page also has no Admin link, so that check would pass without testing the role.</li>
+                <li>Loading the admin session in a customer test gives the test privileges it should not have.</li>
+              </ul>
+              <span class="see">&rarr; <a href="06-playwrightseries-auth-sessions.html#role-based-access">See: Phase 6, section 6</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g4">
+          <div class="ro-head">4 &middot; Expiry and two users</div>
+          <div class="ro-line">What does the response listener for 401 and 403 give you?</div>
+          <div class="ro-line">Where must you leave that listener out?</div>
+          <div class="ro-line">How can one test act as two users?</div>
+          <div class="ro-line">Why does the two-customer order test fail on PeakAndPack, and why test it through the API?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>A clear "session rejected" error naming the status and URL, instead of a confusing failure on an unrelated assertion.</li>
+                <li>In tests that expect a refusal, such as the 401 and 403 checks, or it fails them for doing their job.</li>
+                <li>Each browser context and each API request context is a separate session, so one test can hold both.</li>
+                <li><code>/api/orders</code> returns every customer's orders (BUG-010). The bug is in the API response, so the API test is faster and points at the cause.</li>
+              </ul>
+              <span class="see">&rarr; <a href="06-playwrightseries-auth-sessions.html#concurrent-sessions">See: Phase 6, section 8</a></span>
+            </div>
+          </details></div>
+        </div>
+    </div>
+  </details>
+
+  <details class="phase">
+    <summary>Phase 7: API Testing <a class="phase-link" href="07-playwrightseries-api-testing.html">Open phase</a></summary>
+    <div class="recall-outline">
+        <div class="recall-branch g1">
+          <div class="ro-head">1 &middot; API basics</div>
+          <div class="ro-line">Name the parts of <code>https://peakandpackshopdemo.onrender.com/api/search?q=tent</code>.</div>
+          <div class="ro-line">Which four methods cover most work, and what do they stand for?</div>
+          <div class="ro-line">What does the <code>Authorization: Bearer</code> header carry?</div>
+          <div class="ro-line">What does the first digit of a status code tell you?</div>
+          <div class="ro-line">Why look at the API in DevTools before coding a test?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>Base URL (the host), endpoint (<code>/api/search</code>) and query parameter (<code>?q=tent</code>, written name=value).</li>
+                <li>GET, POST, PUT and DELETE, which map to read, create, update and delete (CRUD).</li>
+                <li>Who you are. PeakAndPack gives a token at login, and the cart and order routes want it.</li>
+                <li>The story: 2 succeeded, 4 means the request was wrong or refused (401 not logged in, 403 not allowed, 404 missing, 409 already exists), 5 means the server failed.</li>
+                <li>Writing against an API you have not seen is guessing. The Network tab shows the address, method, status, headers, payload and response of the real call.</li>
+              </ul>
+              <span class="see">&rarr; <a href="07-playwrightseries-api-testing.html#api-basics">See: Phase 7, section 2</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g2">
+          <div class="ro-head">2 &middot; The request context</div>
+          <div class="ro-line">How does the <code>request</code> fixture start, with respect to login?</div>
+          <div class="ro-line">Why does <code>page.request</code> still need the token as a header on PeakAndPack?</div>
+          <div class="ro-line">Why check the status first?</div>
+          <div class="ro-line">Why assert types and ranges instead of exact values?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>Logged out, unless you configure <code>storageState</code> for the test.</li>
+                <li>It shares cookies with the browser, but the store's session lives in localStorage, which it cannot see.</li>
+                <li>A reply from a failed call often has no token or id, so the next line quietly gets <code>undefined</code> and the test fails somewhere else.</li>
+                <li>Exact values such as a price break the moment the catalog changes. A number that is at least zero does not.</li>
+              </ul>
+              <span class="see">&rarr; <a href="07-playwrightseries-api-testing.html#request-context">See: Phase 7, section 4</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g3">
+          <div class="ro-head">3 &middot; Mocking and forced errors</div>
+          <div class="ro-line">What does mocking do?</div>
+          <div class="ro-line">What are the two traps with a mock?</div>
+          <div class="ro-line">Why did the "no Mock Ice Axe" check pass for the wrong reason?</div>
+          <div class="ro-line">What did the page show when checkout was forced to return a 500?</div>
+          <div class="ro-line">Why use the full URL in a route pattern for the checkout call?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>It catches a request on its way out and answers it yourself, so the page receives data you choose.</li>
+                <li>Setting it up after <code>goto</code>, so the real request has already gone, and asserting something absent before the mocked answer has arrived, which passes during "Loading gear...".</li>
+                <li>The page was still loading, so the axe was not on it yet. The fix is to wait for the response, then assert.</li>
+                <li>The server's raw message, "Internal server error", in red and no confirmation. It is not a crash, but it does not say whether the customer was charged.</li>
+                <li>The API is on a different host. A relative pattern resolves against <code>baseURL</code> (the UI host) and never matches.</li>
+              </ul>
+              <span class="see">&rarr; <a href="07-playwrightseries-api-testing.html#mocking">See: Phase 7, section 6</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g4">
+          <div class="ro-head">4 &middot; Editing and reading real responses</div>
+          <div class="ro-line">How do you keep real data and change one thing?</div>
+          <div class="ro-line">What did a 20-times-repeated name and a $1000000 price show?</div>
+          <div class="ro-line">How do you read something only the page's own request knows?</div>
+          <div class="ro-line">Why not mix mocks and real API assertions in one test?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li><code>route.fetch()</code> sends the request to the real server. Edit the answer, then pass it to <code>route.fulfill()</code>.</li>
+                <li>The card grew very tall because the name wrapped. A finding you only get by pushing a value to an extreme.</li>
+                <li>Register <code>waitForResponse</code> before the action, then read the body with <code>json()</code>, for example the id to clean up with.</li>
+                <li>A mocked route replaces the real response, so you stop knowing what the test is actually checking.</li>
+              </ul>
+              <span class="see">&rarr; <a href="07-playwrightseries-api-testing.html#read-response">See: Phase 7, section 9</a></span>
+            </div>
+          </details></div>
+        </div>
+    </div>
+  </details>
+
+  <details class="phase">
+    <summary>Phase 8: Advanced Scenarios <a class="phase-link" href="08-playwrightseries-advanced-scenarios.html">Open phase</a></summary>
+    <div class="recall-outline">
+        <div class="recall-branch g1">
+          <div class="ro-head">1 &middot; Files and tabs</div>
+          <div class="ro-line">How do you upload a file without the operating system picker?</div>
+          <div class="ro-line">What if there is only a button that opens the picker?</div>
+          <div class="ro-line">How do you test a link that opens a new tab?</div>
+          <div class="ro-line">What are the two findings in the ↗ link?</div>
+          <div class="ro-line">How do two tabs share a login?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li><code>setInputFiles()</code> on the file input, with a path or an object holding a name, type and buffer.</li>
+                <li>Wait for the <code>filechooser</code> event, listening before the click, then give the files to the chooser.</li>
+                <li>Wait for the <code>popup</code> event before the click, then assert on the new page. The original tab stays as it was.</li>
+                <li>A screen reader announces it by its arrow character, because a title only names a link with no text. An <code>aria-label</code> would fix that for users.</li>
+                <li>Open the second with <code>context.newPage()</code>. Tabs in the same browser context share the login.</li>
+              </ul>
+              <span class="see">&rarr; <a href="08-playwrightseries-advanced-scenarios.html#file-upload-download">See: Phase 8, sections 2 and 3</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g2">
+          <div class="ro-head">2 &middot; Dialogs</div>
+          <div class="ro-line">What does Playwright do with a dialog nobody answers?</div>
+          <div class="ro-line">Why set up <code>page.once('dialog', ...)</code> before the click?</div>
+          <div class="ro-line">What is worse than having no dialog listener?</div>
+          <div class="ro-line">When do you use <code>page.on</code> instead of <code>page.once</code>?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>It dismisses it. For a <code>confirm()</code> that means Cancel, so a delete test can pass without deleting anything.</li>
+                <li>The dialog fires the moment the button is clicked.</li>
+                <li>A listener that never calls <code>accept()</code> or <code>dismiss()</code>. The page stays frozen and the click times out.</li>
+                <li>When a test has several dialogs. <code>on</code> answers every dialog until the test ends, and <code>dialog.type()</code> tells an alert from a confirm.</li>
+              </ul>
+              <span class="see">&rarr; <a href="08-playwrightseries-advanced-scenarios.html#dialogs">See: Phase 8, section 4</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g3">
+          <div class="ro-head">3 &middot; Iframes, drag and drop, scrolling</div>
+          <div class="ro-line">Why can't <code>page.getByLabel('Card number')</code> find the card field?</div>
+          <div class="ro-line">What did the "Confirm Order" button show before and after paying?</div>
+          <div class="ro-line">Why check that a drag was really saved?</div>
+          <div class="ro-line">When do you use the mouse version of the drag?</div>
+          <div class="ro-line">Why do you scroll before asserting on a long list?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>The field lives in a separate document inside an iframe. Scope with <code>page.frameLocator(...)</code> first.</li>
+                <li>Disabled, named "Complete payment above to continue", then enabled as "Confirm Order" after Pay now.</li>
+                <li>Rows can move on screen while the new order never reaches the server. Assert "Order saved." and reload to check the order.</li>
+                <li>When the page builds its drag from mouse events instead of the browser's own drag and drop: hover, mouse down, hover, mouse up.</li>
+                <li>Items that have not loaded are not in the page, so no locator can find them. PeakAndPack shows 8, then 8 more each time the marker scrolls into view.</li>
+              </ul>
+              <span class="see">&rarr; <a href="08-playwrightseries-advanced-scenarios.html#iframes">See: Phase 8, section 5</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g4">
+          <div class="ro-head">4 &middot; Test data and traps</div>
+          <div class="ro-line">Why import one uniquely named product instead of the sample file?</div>
+          <div class="ro-line">Why must a test delete what it imported?</div>
+          <div class="ro-line">What did a header-only CSV and a file with no price column do?</div>
+          <div class="ro-line">What does the import do with a negative price, or a short row?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>The sample adds five products that stay until the server restarts, and a later test that counts products then fails for no visible reason.</li>
+                <li>Left-behind data changes the next run. Delete the product, and prove the row is gone.</li>
+                <li>Header only said it imported 0 products and added no row. No price column was refused with "CSV must have name and price columns".</li>
+                <li>A negative price is accepted (BUG-001 can be created this way). A short row crashes with a 500 and a raw JavaScript error.</li>
+              </ul>
+              <span class="see">&rarr; <a href="08-playwrightseries-advanced-scenarios.html#deliverables">See: Phase 8, deliverables</a></span>
+            </div>
+          </details></div>
+        </div>
+    </div>
+  </details>
+
+  <details class="phase">
+    <summary>Phase 9: Page Object Model <a class="phase-link" href="09-playwrightseries-page-objects.html">Open phase</a></summary>
+    <div class="recall-outline">
+        <div class="recall-branch g1">
+          <div class="ro-head">1 &middot; Why page objects</div>
+          <div class="ro-line">Why is a locator written straight into a test a copy?</div>
+          <div class="ro-line">What if "Proceed to checkout" becomes "Go to checkout"?</div>
+          <div class="ro-line">What does a page object expose?</div>
+          <div class="ro-line">Why do methods return another page object?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>When the page changes, every copy has to be found and fixed, and a missed one fails for a reason that is not a real bug.</li>
+                <li>With page objects, only <code>CartPage</code> changes. Without them, every test that checks out breaks.</li>
+                <li>Methods for user actions, not Playwright calls. No locators appear in test files.</li>
+                <li>When an action moves to a new page, returning <code>new CheckoutPage(...)</code> keeps the chain readable and typed.</li>
+              </ul>
+              <span class="see">&rarr; <a href="09-playwrightseries-page-objects.html#cartpage">See: Phase 9, section 2</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g2">
+          <div class="ro-head">2 &middot; Naming, wrapping and inheritance</div>
+          <div class="ro-line">Which name is better, <code>applyDiscount('SAVE10')</code> or <code>fillDiscountInput('SAVE10')</code>?</div>
+          <div class="ro-line">How do you decide what to wrap?</div>
+          <div class="ro-line">What belongs in <code>BasePage</code>?</div>
+          <div class="ro-line">What does the checkout's three steps teach about method size?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>The first. It says what the customer does. The second describes the page's insides and needs renaming at the next redesign.</li>
+                <li>If a method makes a test read like a journey, or saves copying something painful to change, keep it. If it only renames one Playwright call, it costs more than it gives.</li>
+                <li>Behaviour common to all pages, such as navigation and the header, in a class every page object extends.</li>
+                <li>A discount code, card details in an iframe and Confirm Order each get their own method, instead of one method that does everything.</li>
+              </ul>
+              <span class="see">&rarr; <a href="09-playwrightseries-page-objects.html#naming">See: Phase 9, section 4</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g3">
+          <div class="ro-head">3 &middot; Sections, steps and the manager</div>
+          <div class="ro-line">Why can a section of a page be its own object?</div>
+          <div class="ro-line">Where do locators go, fields or inside methods?</div>
+          <div class="ro-line">What does <code>test.step</code> add to a report?</div>
+          <div class="ro-line">What does a <code>PageManager</code> do?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>The delivery choice and time dropdown form a unit, and it also shows parameters, state checks and private helpers.</li>
+                <li>Fields when reused, inside methods when not, and private either way so tests cannot reach them.</li>
+                <li>Named steps, so a failure points at "Pay with the test card", not at line 14 of a method.</li>
+                <li>Creates all the page objects once and hands them out by name, so a test does not build four or five of them itself.</li>
+              </ul>
+              <span class="see">&rarr; <a href="09-playwrightseries-page-objects.html#section-objects">See: Phase 9, section 6</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g4">
+          <div class="ro-head">4 &middot; Structure and when not to</div>
+          <div class="ro-line">Where do page actions, test logic and utilities each live?</div>
+          <div class="ro-line">Why must assertions stay out of page objects?</div>
+          <div class="ro-line">Why should a method not return a locator?</div>
+          <div class="ro-line">When is POM overkill?</div>
+          <div class="ro-line">Do page objects still pay off with AI assistants?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>Actions in page objects, scenarios and assertions in spec files, reusable utility code in helpers.</li>
+                <li>A page object that calls <code>expect()</code> hides test logic where no one looks for it. Expose actions and getters.</li>
+                <li>The locator has then leaked out of the page object. Return results, such as strings, numbers or booleans, or a new page object.</li>
+                <li>A small suite on an MVP that changes weekly, a one-off bug-fix test, or a learning project. It pays back on suites of 20 or more tests across stable pages.</li>
+                <li>The "one fix instead of twenty" argument is weaker, because an assistant can change twenty files quickly, but readability and named steps remain.</li>
+              </ul>
+              <span class="see">&rarr; <a href="09-playwrightseries-page-objects.html#pom-overkill">See: Phase 9, section 10</a></span>
+            </div>
+          </details></div>
+        </div>
+    </div>
+  </details>
+
+  <details class="phase">
+    <summary>Phase 10: Fixtures &amp; Config <a class="phase-link" href="10-playwrightseries-fixtures-config.html">Open phase</a></summary>
+    <div class="recall-outline">
+        <div class="recall-branch g1">
+          <div class="ro-head">1 &middot; Fixtures</div>
+          <div class="ro-line">Why does setup copied into each file's <code>beforeEach</code> go wrong?</div>
+          <div class="ro-line">What does a fixture give you that <code>beforeEach</code> does not?</div>
+          <div class="ro-line">Where does teardown go in a fixture?</div>
+          <div class="ro-line">Why does a signed-in fixture set both <code>token</code> and <code>user</code> in localStorage, before the page loads?</div>
+          <div class="ro-line">Why not make every page object a fixture?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>The copies drift apart, and a variable shared between tests can be overwritten when they run in parallel.</li>
+                <li>One typed home for setup and teardown. A test asks for it by name, and fixtures can build on each other.</li>
+                <li>After <code>await use(value)</code>. It runs when the test finishes, even if the test failed.</li>
+                <li>The UI reads both when it boots, and treats a missing user as logged out. <code>addInitScript</code> runs before any page script.</li>
+                <li>You end up with dozens to track and brackets full of names. Fixtures are for setup and teardown.</li>
+              </ul>
+              <span class="see">&rarr; <a href="10-playwrightseries-fixtures-config.html#composable-fixtures">See: Phase 10, section 3</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g2">
+          <div class="ro-head">2 &middot; Scope and timeouts</div>
+          <div class="ro-line">What is worker scope, and when is it safe?</div>
+          <div class="ro-line">Name the timeout layers and their defaults.</div>
+          <div class="ro-line">What message appears when an inner timeout is longer than the test's?</div>
+          <div class="ro-line">How do you give one test more time?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>The fixture runs once per worker and every test in that worker reuses it. Safe only for read-only resources, or when each test cleans up after itself.</li>
+                <li>A test, 30 seconds. An <code>expect</code> check, 5 seconds. An action, with no limit unless set. A navigation, 30 seconds by default.</li>
+                <li>"Test timeout of 3000ms exceeded", and it notes the check was waiting on a 10-second limit that never got to run out.</li>
+                <li><code>test.setTimeout(...)</code> for a number, or <code>test.slow()</code> to triple the test timeout.</li>
+              </ul>
+              <span class="see">&rarr; <a href="10-playwrightseries-fixtures-config.html#fixture-scope">See: Phase 10, sections 4 and 5</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g3">
+          <div class="ro-head">3 &middot; Scripts, projects and environments</div>
+          <div class="ro-line">How do you give a long command a short name, and how do you add options?</div>
+          <div class="ro-line">What happens in <code>npm run a &amp;&amp; npm run b</code> if <code>a</code> fails?</div>
+          <div class="ro-line">How do projects run smoke before regression?</div>
+          <div class="ro-line">How does the same suite run on a phone?</div>
+          <div class="ro-line">How does one suite run against live and local copies?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>An npm script in <code>package.json</code>, run with <code>npm run name</code>. Extra options go after <code>--</code>.</li>
+                <li>The chain stops and <code>b</code> never starts.</li>
+                <li>Regression lists smoke under <code>dependencies</code>, so it runs only if smoke passed.</li>
+                <li>Add a project that uses <code>devices['iPhone 13']</code>. A test can read <code>testInfo.project.name</code> to expect a different layout.</li>
+                <li>The address and credentials come from <code>.env</code> or <code>.env.local</code>, chosen with <code>TEST_ENV</code>, and one value can be overridden for a single run.</li>
+              </ul>
+              <span class="see">&rarr; <a href="10-playwrightseries-fixtures-config.html#projects">See: Phase 10, section 7</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g4">
+          <div class="ro-head">4 &middot; Global setup and the config</div>
+          <div class="ro-line">What is a global setup, and what runs it?</div>
+          <div class="ro-line">What happens if the setup throws?</div>
+          <div class="ro-line">Why is a config you can read in one go better?</div>
+          <div class="ro-line">Why is <code>retries: 2</code> in the config a risk?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>A function that runs once before the whole suite, outside any test and with no browser. Teardown runs once after.</li>
+                <li>The run stops before any test, with the error in the terminal and no test results at all.</li>
+                <li>You can trust it. Delete the settings you do not use.</li>
+                <li>Every flaky test silently retries twice in CI, so failures stay hidden until the problem gets bad. Set retries consciously and track them.</li>
+              </ul>
+              <span class="see">&rarr; <a href="10-playwrightseries-fixtures-config.html#global-setup">See: Phase 10, section 10</a></span>
+            </div>
+          </details></div>
+        </div>
+    </div>
+  </details>
+
+  <details class="phase">
+    <summary>Phase 11: Visual Regression <a class="phase-link" href="11-playwrightseries-visual-regression.html">Open phase</a></summary>
+    <div class="recall-outline">
+        <div class="recall-branch g1">
+          <div class="ro-head">1 &middot; Baselines</div>
+          <div class="ro-line">Why can every assertion pass while a visual bug ships?</div>
+          <div class="ro-line">What happens the first time <code>toHaveScreenshot()</code> runs?</div>
+          <div class="ro-line">Why does a baseline file name include the browser and the system?</div>
+          <div class="ro-line">Should baselines be committed?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>Functional tests check that the right things are on the page, not how it looks. A clipped price or a button pushed off-screen can still pass.</li>
+                <li>It fails, with a message that no snapshot exists, and writes the picture it took as the baseline. The second run compares against it.</li>
+                <li>Rendering differs between them, so a Windows baseline is never used on Linux.</li>
+                <li>Yes. They are the reference everyone compares against.</li>
+              </ul>
+              <span class="see">&rarr; <a href="11-playwrightseries-visual-regression.html#capturing-baselines">See: Phase 11, section 2</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g2">
+          <div class="ro-head">2 &middot; Reading a failure and tolerance</div>
+          <div class="ro-line">What does the failure message tell you at a glance?</div>
+          <div class="ro-line">Which three pictures does Playwright save for a failed comparison?</div>
+          <div class="ro-line">Which three options allow a little difference?</div>
+          <div class="ro-line">Why is a percentage tolerance risky on a full-page picture?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>The image sizes and how many pixels differ, with the ratio. 245,572 pixels (16%) is a broken page. 1,178 pixels (under 1%) is one changed element.</li>
+                <li>Expected (the baseline), actual (the page now) and diff (the differing pixels, highlighted).</li>
+                <li><code>maxDiffPixels</code>, <code>maxDiffPixelRatio</code> and <code>threshold</code> (how different one pixel's colour must be).</li>
+                <li>Two percent of a page is thousands of pixels, so a whole card can change colour and still pass. Use a small pixel count.</li>
+              </ul>
+              <span class="see">&rarr; <a href="11-playwrightseries-visual-regression.html#reading-a-failure">See: Phase 11, sections 3 and 4</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g3">
+          <div class="ro-head">3 &middot; Stability, masking and scope</div>
+          <div class="ro-line">Why stub the product images?</div>
+          <div class="ro-line">What does <code>mask</code> do, and what did the order id show?</div>
+          <div class="ro-line">Why not use the order history page for a visual test?</div>
+          <div class="ro-line">Why prefer a component screenshot to a full-page one?</div>
+          <div class="ro-line">Why does the phone project make its own baselines?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>They load from another host, which can change or load late and so decide what your baseline looks like.</li>
+                <li>It paints over an area in both pictures. Without the mask, a new order id failed with 52 pixels different, just the digits.</li>
+                <li>It grows every time anyone orders, because <code>/api/orders</code> returns everyone's orders (BUG-010). Pick pages whose data you set up yourself.</li>
+                <li>A full-page picture fails when anything on the page changes. A card picture only fails if that card changes.</li>
+                <li>On a narrow window the cards stack in one column, so the page is much taller, and each project names its own file.</li>
+              </ul>
+              <span class="see">&rarr; <a href="11-playwrightseries-visual-regression.html#masking">See: Phase 11, section 6</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g4">
+          <div class="ro-head">4 &middot; Deciding, and CI</div>
+          <div class="ro-line">When do you re-baseline, and when do you file a bug?</div>
+          <div class="ro-line">Why is <code>--update-snapshots</code> dangerous?</div>
+          <div class="ro-line">Why make the baselines on the same system that compares them?</div>
+          <div class="ro-line">What does a failed CI run upload for you?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>Re-baseline when the change is intentional. File a bug when it is not. Look at the diff picture first.</li>
+                <li>It accepts whatever the page looks like now, bugs included.</li>
+                <li>A Linux build server needs Linux baselines. A separate manual workflow can create them there.</li>
+                <li>The report and <code>test-results/</code> with the expected, actual and diff pictures, which is the evidence for the decision.</li>
+              </ul>
+              <span class="see">&rarr; <a href="11-playwrightseries-visual-regression.html#when-to-rebaseline">See: Phase 11, section 8</a></span>
+            </div>
+          </details></div>
+        </div>
+    </div>
+  </details>
+
+  <details class="phase">
+    <summary>Phase 12: CI/CD &amp; Flaky Tests <a class="phase-link" href="12-playwrightseries-cicd-flaky-tests.html">Open phase</a></summary>
+    <div class="recall-outline">
+        <div class="recall-branch g1">
+          <div class="ro-head">1 &middot; Where the tests live, and tagging</div>
+          <div class="ro-line">What does the choice of where tests live decide?</div>
+          <div class="ro-line">When does the app's repo fit, and when a separate one?</div>
+          <div class="ro-line">How do you tag a test, and how do you run a tag?</div>
+          <div class="ro-line">Why is "run every test on every PR" a problem?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>What can start a run, which version of the app they test, and what a failure can block.</li>
+                <li>The app's repo when developers share the end-to-end tests and you want failures before merge. A separate repo when QA owns the suite without app access, or the tests need a deployed environment.</li>
+                <li><code>{ tag: '@critical' }</code> in the test details, or in the title, then <code>--grep @critical</code>. <code>--grep-invert</code> excludes a tag.</li>
+                <li>A slow pipeline with vague failures teaches people to merge around it. Run the critical tests on PRs and the full suite nightly.</li>
+              </ul>
+              <span class="see">&rarr; <a href="12-playwrightseries-cicd-flaky-tests.html#where-tests-live">See: Phase 12, section 2</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g2">
+          <div class="ro-head">2 &middot; Reporters and sharding</div>
+          <div class="ro-line">Name the reporters in this phase and when each is used.</div>
+          <div class="ro-line">What does the custom reporter add?</div>
+          <div class="ro-line">What does sharding do, and what must follow it?</div>
+          <div class="ro-line">Two ways a sharded upload goes wrong?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li><code>list</code> in the terminal, <code>html</code> for the report, <code>json</code> and <code>junit</code> for tools, <code>blob</code> for sharded CI, and a custom one for actionable output.</li>
+                <li>It lists the tests that passed only on retry, which is the flaky list, so you do not have to find them by hand.</li>
+                <li>It splits the suite across machines, each running one part. A final job must merge the blob reports into one, or you have partial reports and no overview.</li>
+                <li>A slash in the artifact name (name shards by index alone), and downloading without <code>merge-multiple</code>, which leaves each in its own sub-folder.</li>
+              </ul>
+              <span class="see">&rarr; <a href="12-playwrightseries-cicd-flaky-tests.html#reporters">See: Phase 12, section 4</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g3">
+          <div class="ro-head">3 &middot; Flaky tests</div>
+          <div class="ro-line">How many retries does CI use here, and why?</div>
+          <div class="ro-line">What does the flaky gate do?</div>
+          <div class="ro-line">Why does quarantine exist?</div>
+          <div class="ro-line">What are the three parts of quarantine?</div>
+          <div class="ro-line">Which two projects implement it?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>One. It is enough to catch real intermittency, and a pass on retry is what marks the test as flaky.</li>
+                <li>A script reads the JSON results, works out the flaky share, and exits with a failure when it is too high.</li>
+                <li>A test that fails one run in three blocks merges for nothing and trains people to rerun until green. A quarantined test leaves the required check but keeps running.</li>
+                <li>It comes out of the required check, keeps running in a separate job, and gets an issue so a person owns the fix.</li>
+                <li><code>gate</code> runs everything except the quarantined tests, and <code>quarantine</code> runs only those, from a list in <code>quarantine.json</code>.</li>
+              </ul>
+              <span class="see">&rarr; <a href="12-playwrightseries-cicd-flaky-tests.html#flaky-management">See: Phase 12, sections 6 and 7</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g4">
+          <div class="ro-head">4 &middot; Accessibility in the pipeline</div>
+          <div class="ro-line">Which package runs an accessibility scan in a Playwright test?</div>
+          <div class="ro-line">What did the scan find on the product list?</div>
+          <div class="ro-line">Why is that test marked <code>test.fail()</code>?</div>
+          <div class="ro-line">What share of WCAG issues do automated scans catch, and what does a green tag mean?</div>
+          <div class="ro-line">What do you still do by hand?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li><code>@axe-core/playwright</code>, asserted against like any other test.</li>
+                <li>One serious violation, <code>color-contrast</code>, on 9 elements: the grey "category, Stock" line is #888888 on white, a ratio of 3.54 where WCAG asks for 4.5.</li>
+                <li>The finding is real and still there. The pipeline stays green while it exists, and the test turns red the day it is fixed, which is the cue to remove the line. Fix the finding, not the test.</li>
+                <li>Roughly 30 to 50%. A green tag means "nothing obvious", not "accessible". It is a floor.</li>
+                <li>A keyboard-only walkthrough of browse, add to cart and checkout, and one screen reader pass over the checkout form, where automated tools are weakest.</li>
+              </ul>
+              <span class="see">&rarr; <a href="12-playwrightseries-cicd-flaky-tests.html#accessibility-in-pipeline">See: Phase 12, section 8</a></span>
+            </div>
+          </details></div>
+        </div>
+    </div>
+  </details>
+
+  <details class="phase">
+    <summary>Phase 13: AI-Assisted Automation <a class="phase-link" href="13-playwrightseries-ai-assisted.html">Open phase</a></summary>
+    <div class="recall-outline">
+        <div class="recall-branch g1">
+          <div class="ro-head">1 &middot; Green is not good</div>
+          <div class="ro-line">Why is "the test passes" not proof an AI-written test is good?</div>
+          <div class="ro-line">Name the three problems in that test and where each was taught.</div>
+          <div class="ro-line">What is the easy AI mistake to catch?</div>
+          <div class="ro-line">Which mistake should you fear more?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>A test can pass and still be fragile and low-value. The example never logged in, slept for two seconds and asserted that at least one button exists, which is true of every page.</li>
+                <li>It never logged in (Phase 5), used a fixed sleep (Phase 3), and made an assertion that cannot fail (Phase 3).</li>
+                <li>Inventing what the app "should" have, such as a cart badge or a <code>cart-total</code> test id. PeakAndPack has only <code>product-card</code> and <code>result-count</code>, so it fails loudly.</li>
+                <li>The one that goes green: a test that passes whatever the app does.</li>
+              </ul>
+              <span class="see">&rarr; <a href="13-playwrightseries-ai-assisted.html#before-accepting-ai">See: Phase 13, section 1</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g2">
+          <div class="ro-head">2 &middot; AI as a reviewer</div>
+          <div class="ro-line">Why give the AI six named rules instead of "improve this code"?</div>
+          <div class="ro-line">State the six rules in short.</div>
+          <div class="ro-line">What does the reviewer return for each violation?</div>
+          <div class="ro-line">Why does rule 6 matter most?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>A general prompt restructures and renames, and buries the violations you care about. Named rules return a findings list you can act on.</li>
+                <li>No CSS or structural selectors. No <code>waitForTimeout</code>. Assertions about what a user sees. Own data, never the shared account. Wait for the response after a request. Every test must be able to fail.</li>
+                <li>The quoted line, the rule it breaks, and a suggested fix, without rewriting the whole file.</li>
+                <li>A reviewer that only reads style would pass a tidy line that checks nothing. "What would turn this red?" exposes it.</li>
+              </ul>
+              <span class="see">&rarr; <a href="13-playwrightseries-ai-assisted.html#ai-as-reviewer">See: Phase 13, section 2</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g3">
+          <div class="ro-head">3 &middot; AI as a generator</div>
+          <div class="ro-line">What are the three steps for AI-generated tests, with no exceptions?</div>
+          <div class="ro-line">What fault do the rules not catch in a typical first draft?</div>
+          <div class="ro-line">What is the reviewed replacement?</div>
+          <div class="ro-line">Why scope every prompt to specific rule violations?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>Put the constraints in the prompt, generate the test, then review it against the six rules and run it against the real app.</li>
+                <li>It asserts something PeakAndPack does not have, such as a <code>cart-total</code> test id. Only running it against the app shows that.</li>
+                <li>The real heading, found by role and text, such as "Total: $80.98".</li>
+                <li>An unscoped "improve this" touches things you did not ask about and makes the diff hard to review.</li>
+              </ul>
+              <span class="see">&rarr; <a href="13-playwrightseries-ai-assisted.html#ai-as-generator">See: Phase 13, section 3</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g4">
+          <div class="ro-head">4 &middot; Can it fail, and AI-assisted fixing</div>
+          <div class="ro-line">What is a mutation check?</div>
+          <div class="ro-line">What three things can a failing test mean?</div>
+          <div class="ro-line">Why must a person approve every AI-suggested fix, and for how long?</div>
+          <div class="ro-line">What do you give the AI before asking for a fix?</div>
+          <div class="ro-line">What should you search for in a diff from a "healer"?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>Break the app in the way the test claims to guard against, and see whether the test goes red. If it stays green, it does not test that.</li>
+                <li>A real regression, an intended change nobody updated the test for, or a bad test. Only the first is a bug.</li>
+                <li>An AI asked to make a test pass will find a way, which for a real regression means changing the test to accept the bug. The approval is permanent, like code review.</li>
+                <li>The evidence (error, failing step, trace, relevant response) and a request for a diagnosis among the three possibilities first.</li>
+                <li>Changed expected values and new <code>test.fixme</code> lines.</li>
+              </ul>
+              <span class="see">&rarr; <a href="13-playwrightseries-ai-assisted.html#ai-assisted-fix">See: Phase 13, section 6</a></span>
+            </div>
+          </details></div>
+        </div>
+    </div>
+  </details>
+
+  <details class="phase">
+    <summary>Phase 14: Automation Leadership <a class="phase-link" href="14-playwrightseries-automation-leadership.html">Open phase</a></summary>
+    <div class="recall-outline">
+        <div class="recall-branch g1">
+          <div class="ro-head">1 &middot; Writing the standard down</div>
+          <div class="ro-line">Why can a disciplined engineer's suite still fail with a second contributor?</div>
+          <div class="ro-line">What did the "before" test cost compared with the "after" one?</div>
+          <div class="ro-line">Why does the conventions file state rules and not reasons?</div>
+          <div class="ro-line">Where do conventions get stale?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>The standard existed only as one person's habit. Writing it down makes it enforceable by anyone, including a reviewer facing a more senior author.</li>
+                <li>A took 1.4 seconds and B took 2.8, because of a 1.5 second sleep. B also leaned on an internal id.</li>
+                <li>The reasons are in Phases 2 to 12 and it points at them. It stays short enough to read before a first pull request.</li>
+                <li>A document that does not reflect a rule the team started enforcing last month trains people to ignore it.</li>
+              </ul>
+              <span class="see">&rarr; <a href="14-playwrightseries-automation-leadership.html#suite-conventions">See: Phase 14, section 2</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g2">
+          <div class="ro-head">2 &middot; The checklist and the script</div>
+          <div class="ro-line">Why a checklist?</div>
+          <div class="ro-line">Which checklist items need a person, and which need none?</div>
+          <div class="ro-line">What did the convention script report?</div>
+          <div class="ro-line">Why not apply the checklist more loosely to senior engineers?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>It turns "does this look right", which varies by reviewer and tiredness, into fixed yes/no checks anyone applies the same way.</li>
+                <li>Whether an assertion is about something a user sees, or could be an API test, needs judgement. Whether a <code>waitForTimeout</code> is in the diff needs none, so a script checks it.</li>
+                <li>All seven problems on a spec written to break every rule. On the real suite it found five CSS selectors with no comment, all in the login and register forms.</li>
+                <li>The moment a senior's PR skips it, it stops being a standard and becomes a suggestion for juniors.</li>
+              </ul>
+              <span class="see">&rarr; <a href="14-playwrightseries-automation-leadership.html#automate-checks">See: Phase 14, section 3</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g3">
+          <div class="ro-head">3 &middot; Suite health</div>
+          <div class="ro-line">Which three numbers does the health script report?</div>
+          <div class="ro-line">Why does <code>--record</code> matter?</div>
+          <div class="ro-line">Why is the journeys list written by you?</div>
+          <div class="ro-line">What did the report show for order history?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>Flake rate per test, runtime and its trend, and coverage of the journeys you list.</li>
+                <li>A single run says nothing about direction. Recording each run into a history is what makes a trend and a per-test flake count exist.</li>
+                <li>Only you know which journeys matter, and coverage means a journey with a passing test.</li>
+                <li>No passing test, because the only test touching orders was the API check for BUG-010. A pass rate could never have shown it.</li>
+              </ul>
+              <span class="see">&rarr; <a href="14-playwrightseries-automation-leadership.html#suite-health">See: Phase 14, section 4</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g4">
+          <div class="ro-head">4 &middot; Saying no</div>
+          <div class="ro-line">What is the rule for a new test that belongs at another layer?</div>
+          <div class="ro-line">Why is saying no without an alternative harmful?</div>
+          <div class="ro-line">Why is health measured by more than pass or fail?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>Say no with evidence and with a path: here is how to test it at the layer where the rule lives.</li>
+                <li>It just discourages testing the behaviour at all.</li>
+                <li>A suite that is green with a 15% flake rate people just rerun is one nobody trusts.</li>
+              </ul>
+              <span class="see">&rarr; <a href="14-playwrightseries-automation-leadership.html#when-to-say-no">See: Phase 14, section 5</a></span>
+            </div>
+          </details></div>
+        </div>
+    </div>
+  </details>
+
+  <details class="phase">
+    <summary>Phase 15: Capstone Projects <a class="phase-link" href="15-playwrightseries-capstone-projects.html">Open phase</a></summary>
+    <div class="recall-outline">
+        <div class="recall-branch g1">
+          <div class="ro-head">1 &middot; Projects 1 and 2</div>
+          <div class="ro-line">Project 1: what is the measure of "done" for the page object rebuild?</div>
+          <div class="ro-line">What is the most common mistake in Project 1?</div>
+          <div class="ro-line">Project 2: why baseline the negative-price and unnamed-product bugs?</div>
+          <div class="ro-line">What three Phase 11 points matter in Project 2?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>Count the locator calls inside <code>tests/</code>. The goal is zero.</li>
+                <li>A page object that wraps locators one-to-one, such as <code>getEmailField()</code>, instead of real actions such as <code>login(email, password)</code>.</li>
+                <li>A baseline records current reality, and updating it when the bugs are fixed is a one-line change. Assert the bugs are on screen first, so the baseline cannot silently accept a different problem.</li>
+                <li>Make the baselines where CI compares them, stub the product images, and keep the pixel allowance small.</li>
+              </ul>
+              <span class="see">&rarr; <a href="15-playwrightseries-capstone-projects.html#approach-notes">See: Phase 15, approach notes</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g2">
+          <div class="ro-head">2 &middot; Projects 3 and 4</div>
+          <div class="ro-line">Project 3: what does the nightly quarantine job do?</div>
+          <div class="ro-line">Why must every quarantined test have an issue?</div>
+          <div class="ro-line">Which detail decides whether <code>@critical</code> is really protected?</div>
+          <div class="ro-line">Project 4: why is "decided not to fix, and why" as valuable as the fixes?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>It counts how often each test was flaky, moves a test to the list on its third time, never quarantines a <code>@critical</code> test, and opens an issue for each one it moves.</li>
+                <li>A quarantine list that only grows hides real regressions behind old, ignored ones. The issue forces a review.</li>
+                <li>In the JSON report a spec's tags are written without the <code>@</code>, so the script has to compare accordingly.</li>
+                <li>A reviewer that agrees with every finding has not used judgement. The record shows the suite was reviewed against a stated standard.</li>
+              </ul>
+              <span class="see">&rarr; <a href="15-playwrightseries-capstone-projects.html#approach-notes">See: Phase 15, approach notes</a></span>
+            </div>
+          </details></div>
+        </div>
+        <div class="recall-branch g3">
+          <div class="ro-head">3 &middot; Projects 5 and 6</div>
+          <div class="ro-line">Project 5: what is the failure mode?</div>
+          <div class="ro-line">Which findings did the scan give for the login and register forms, and why do they matter twice?</div>
+          <div class="ro-line">Project 6: how do you test the architecture report?</div>
+          <div class="ro-line">Which section of the report can only you write?</div>
+          <div class="recap-toggle-row"><details class="recap-toggle">
+            <summary><span class="recap-show">Recap</span><span class="recap-hide">Hide</span></summary>
+            <div class="recap">
+              <ul>
+                <li>Running the accessibility check as a separate, ignorable job. It must block the same way a broken login blocks.</li>
+                <li>A critical <code>label</code> violation on the fields. The same unlinked labels sent your tests to <code>input[type="email"]</code>, so one cause is both a test hack and a real accessibility bug.</li>
+                <li>Have someone unfamiliar with the project read it and answer "where would my first test go" from the document alone.</li>
+                <li>Section 6, what you would do differently starting over.</li>
+              </ul>
+              <span class="see">&rarr; <a href="15-playwrightseries-capstone-projects.html#approach-notes">See: Phase 15, approach notes</a></span>
+            </div>
+          </details></div>
+        </div>
+    </div>
+  </details>
+
 
 </main>
 

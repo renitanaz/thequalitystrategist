@@ -228,7 +228,7 @@ grep -rEo "\.(getBy[A-Za-z]+|locator)\(" tests | wc -l
 # Windows PowerShell
 (Get-ChildItem tests -Recurse -Filter *.ts | Select-String -Pattern '\.(getBy\w+|locator)\(' -AllMatches |
   ForEach-Object { $_.Matches.Count } | Measure-Object -Sum).Sum</code></pre>
-      <p>PeakAndPack's own end-to-end suite has the page objects but not the zero: it has <strong>43</strong> locator calls inside its tests against 31 inside its page objects. Most are in the admin panel tests (10, the panel has no page object yet), the auth tests (12) and the browse tests (9). That list is the project's work, in the order to do it.</p>
+      <p>PeakAndPack's own end-to-end suite has the page objects but not the zero: it has <strong>43</strong> locator calls inside its tests against 34 inside its page objects. Most are in the admin panel tests (10, the panel has no page object yet), the auth tests (12) and the browse tests (9). That list is the project's work, in the order to do it.</p>
 
       <p><strong>Project 2:</strong> baselining a bug feels wrong the first time you do it. It isn't: the baseline records current reality, and updating it when BUG-001 (the negative price) and BUG-002 (the empty name) get fixed is a one-line change, not a redesign. Assert that the bugs are on screen before the screenshot, so the baseline cannot silently start recording a page that has lost them. I ran the three pages at desktop width and on an emulated phone: each of the six baselines was written on the first run and passed on the second.</p>
 <pre><code>// tests/visual-pages.spec.ts: the three pages, with the two known data bugs on screen
@@ -398,7 +398,7 @@ for (const { name, path } of [{ name: 'login form', path: '/login' }, { name: 'r
 <pre><code># PeakAndPack end-to-end suite: architecture report
 
 ## 1. What the suite tests, and why
-39 tests across eight areas: smoke (3), shop (13: browse 5, cart 4, checkout 4), auth (5), api (8), admin (2),
+42 tests across eight areas: smoke (3), shop (16: browse 5, cart 4, checkout 4, orders 3), auth (5), api (8), admin (2),
 known-bugs (6), a11y (1), mobile (1). The weight is on the journeys where a bug costs money or trust: checkout,
 login, and the cart. The API tests carry the rules (status codes, validation, who may see what), because a rule
 belongs where it is enforced.
@@ -411,7 +411,7 @@ See CONTRIBUTING.md. In short: role/label/text locators, no sleeps, every test t
 |---|---|---|
 | BUG-008 no stock check | checkout | known-bugs: an out-of-stock product cannot be ordered |
 | BUG-009 SAVE10 = 100% off | checkout | known-bugs: a 10% discount code takes 10% off |
-| BUG-010 everyone's orders | /api/orders | known-bugs: a customer's order list shows only their own |
+| BUG-010 everyone's orders | /api/orders | known-bugs: a customer's order list shows only their own, and shop/orders: the same bug seen in the browser |
 | Negative price, empty name | catalogue | known-bugs, plus the visual baseline |
 | Colour contrast, unlinked labels | UI | a11y |
 
