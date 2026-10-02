@@ -116,6 +116,16 @@ footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;
 footer a{color:var(--text-3);text-decoration:none}
 footer a:hover{color:var(--purple)}
 @media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
+details.explain{margin:.5rem 0 1.5rem;border:1px solid var(--purple-border);border-radius:10px;background:var(--purple-bg)}
+details.explain summary{padding:.6rem 1rem;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--purple);list-style:none;display:flex;align-items:center;gap:.5rem}
+details.explain summary::-webkit-details-marker{display:none}
+details.explain summary::before{content:"\25B6";font-size:.65rem;transition:transform .2s}
+details.explain[open] summary::before{transform:rotate(90deg)}
+.explain-body{padding:.1rem 1.2rem 1rem;font-size:.92rem;line-height:1.7}
+.explain-body p{margin:.7rem 0}
+.explain-body ul{margin:.3rem 0 .7rem 1.2rem;padding-left:0}
+.explain-body li{margin-bottom:.35rem}
+.explain-body pre{margin:.6rem 0}
 </style>
 <meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
 <meta property="og:image:width" content="1200">
@@ -156,7 +166,7 @@ footer a:hover{color:var(--purple)}
   <div class="meta-row">
     <span><strong>Series: Playwright: Zero to Architect</strong></span>
     <span>Demo: PeakAndPack</span>
-    <span>9 min read</span>
+    <span>18 min read</span>
     <span>By: RN</span>
   </div>
 
@@ -181,6 +191,13 @@ footer a:hover{color:var(--purple)}
 
   <h2>Goal</h2>
   <p>Decide what belongs in each test layer before you write any code. Most automation problems aren't Playwright problems, they're test design problems. A badly designed test breaks all the time, checks the wrong thing, or tells you nothing useful when it fails.</p>
+  <p>By the end of this phase you can:</p>
+  <ul>
+    <li>choose the lowest layer that still gives you confidence in a rule</li>
+    <li>explain why a test at the wrong layer costs more and tells you less</li>
+    <li>use boundary values and a decision table to choose which cases to test</li>
+    <li>run a table against the real app, and treat a difference as a finding</li>
+  </ul>
 
   <h2 id="test-pyramid">1. The test pyramid</h2>
   <p>Most features can be tested at more than one level. A discount calculation, for example, can be checked by calling the function directly, by sending a request to the server, or by clicking through checkout in a real browser. All three can catch the same bug. What differs is how fast each one runs, and how often it fails for reasons that have nothing to do with the bug.</p>
@@ -196,6 +213,7 @@ footer a:hover{color:var(--purple)}
     </table>
   </div>
   <p><strong>The key idea:</strong> put each test at the lowest layer that still gives you confidence. A calculation doesn't need a browser. A user journey does.</p>
+  <p><strong>On PeakAndPack,</strong> the layers look like this. There is no unit layer to test directly: the logic sits inside the server's routes. The API layer is those routes, which Playwright can call with no browser. The UI layer is the React store. In my runs, an API check took between 17 and 230 milliseconds, and a browser journey through checkout took a second or more. Against the deployed site, on a free hosting plan, both are slower, and the browser one far more.</p>
 
   <h2 id="why-test-design">2. Why do we need to think through test design?</h2>
   <p>Every test costs three things:</p>
@@ -206,24 +224,25 @@ footer a:hover{color:var(--purple)}
   </ul>
   <p>A test at the wrong layer pays all three without giving much back. It's slow for no reason. It breaks on changes unrelated to what it's meant to check. And when it fails, it doesn't tell you what actually went wrong.</p>
   <p>Test design is what keeps a test's cost proportional to what it protects. The most common way it goes wrong: a full browser test for every scenario, including ones that have nothing to do with the browser.</p>
-  <p>Don't worry about understanding every line of the code below yet, Phases 2 and 3 cover that in depth. Just count the steps: five clicks and fills, all to check one number.</p>
+  <p>Don't worry about understanding every line of the code below yet, Phases 2 and 3 cover that in depth. Just count the steps, and watch what each version tells you when it fails. Both examples check the same rule: the discount code <code>SAVE10</code> should take 10% off.</p>
 
   <div class="ba-wrap">
     <div class="ba-block before">
-      <div class="ba-label">Before: E2E test for a calculation</div>
-<pre><code>// Testing discount calculation logic in a browser test.
-// This opens a browser, loads the page, adds items, applies
-// a code, and checks the maths. Slow, fragile, wrong layer.
-test('10% discount reduces total correctly', async ({ page }) => {
-  await page.goto('https://peakandpack-ui.onrender.com/login');
-  await page.locator('input[type="email"]').fill('test@peakandpack.com');
+      <div class="ba-label">Before: a calculation checked through the browser</div>
+<pre><code>// Checking a discount calculation through the browser.
+// It registers, adds an item, opens checkout, enters a code, pays, confirms,
+// and only then looks at the total. About fifteen steps to check one number.
+test('10% discount reduces the total', async ({ page }) =&gt; {
+  await page.goto('/register');
+  await page.locator('input[type="text"]').fill('QA Tester');
+  await page.locator('input[type="email"]').fill(`qa-${Date.now()}@peakandpack.test`);
   await page.locator('input[type="password"]').fill('password123');
-  await page.getByRole('button', { name: /log in/i }).click();
+  await page.getByRole('button', { name: 'Register', exact: true }).click();
   // The "Added to cart" alert appears once the server has saved the item
   const added = page.waitForEvent('dialog');
   await page.getByRole('button', { name: /add to cart/i }).first().click();
   await (await added).accept();
-  await page.goto('https://peakandpack-ui.onrender.com/cart');
+  await page.goto('/cart');
   await page.getByRole('button', { name: /proceed to checkout/i }).click();
   // The "Discount code" label isn't linked to its input, so the placeholder is the hook
   await page.getByPlaceholder('e.g. SAVE10').fill('SAVE10');
@@ -236,51 +255,54 @@ test('10% discount reduces total correctly', async ({ page }) => {
   await payment.getByLabel('Cardholder name').fill('Test User');
   await payment.getByRole('button', { name: 'Pay now' }).click();
   await page.getByRole('button', { name: /confirm order/i }).click();
-  await expect(page.getByRole('heading', { name: /order placed/i })).toBeVisible();
-});
-</code></pre>
+  // Trekking Poles cost $34.99, so 10% off is $31.49
+  await expect(page.getByText(/^Total charged:/)).toHaveText('Total charged: $31.49');
+});</code></pre>
     </div>
     <div class="ba-block after">
-      <div class="ba-label">After: logic tested as a unit, UI tested for the journey</div>
-<pre><code>// The discount calculation belongs in a unit test.
-// The UI test only checks that the journey works end to end.
+      <div class="ba-label">After: the same rule checked at the API</div>
+<pre><code>// The same rule, checked where it lives: the server.
+// Four calls, no browser, and the failure names the number it got.
+const API = 'https://peakandpackshopdemo.onrender.com';
 
-// Unit test (fast, no browser):
-test('applyDiscount reduces total by 10%', () => {
-  expect(applyDiscount(100, 'SAVE10')).toBe(90);
-});
+test('10% discount reduces the total', async ({ request }) =&gt; {
+  // A new customer, so the cart starts empty
+  const registered = await request.post(`${API}/api/auth/register`, {
+    data: { name: 'QA Tester', email: `qa-${Date.now()}@peakandpack.test`, password: 'password123' },
+  });
+  const { token } = await registered.json();
+  const auth = { Authorization: `Bearer ${token}` };
 
-// UI test (checks the journey, not the maths):
-test('checkout with discount code completes', async ({ page }) => {
-  await page.goto('https://peakandpack-ui.onrender.com/login');
-  await page.locator('input[type="email"]').fill('test@peakandpack.com');
-  await page.locator('input[type="password"]').fill('password123');
-  await page.getByRole('button', { name: /log in/i }).click();
-  // The "Added to cart" alert appears once the server has saved the item
-  const added = page.waitForEvent('dialog');
-  await page.getByRole('button', { name: /add to cart/i }).first().click();
-  await (await added).accept();
-  await page.goto('https://peakandpack-ui.onrender.com/cart');
-  await page.getByRole('button', { name: /proceed to checkout/i }).click();
-  // The "Discount code" label isn't linked to its input, so the placeholder is the hook
-  await page.getByPlaceholder('e.g. SAVE10').fill('SAVE10');
-  // Pay in the checkout's payment iframe first: "Confirm Order" stays
-  // disabled until it's done (Phase 8 explains iframes)
-  const payment = page.frameLocator('iframe[title="Payment form"]');
-  await payment.getByLabel('Card number').fill('4111 1111 1111 1111');
-  await payment.getByLabel('Expiry').fill('12/28');
-  await payment.getByLabel('CVV').fill('123');
-  await payment.getByLabel('Cardholder name').fill('Test User');
-  await payment.getByRole('button', { name: 'Pay now' }).click();
-  await page.getByRole('button', { name: /confirm order/i }).click();
-  await expect(page.getByRole('heading', { name: /order placed/i })).toBeVisible();
-});
-</code></pre>
+  await request.post(`${API}/api/cart`, { headers: auth, data: { product_id: 1, quantity: 1 } });
+  const checkout = await request.post(`${API}/api/orders/checkout`, {
+    headers: auth,
+    data: { discount_code: 'SAVE10' },
+  });
+
+  expect((await checkout.json()).total).toBeCloseTo(31.49, 2);   // $34.99 less 10%
+});</code></pre>
     </div>
   </div>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <p><strong>In plain words:</strong> the same check as a few calls to the server, with no page involved.</p>
+      <ul>
+        <li><code>const API = '...'</code> names the address of PeakAndPack's server once. The pages are on a different address, which Phase 3 explains.</li>
+        <li><code>async ({ request })</code> asks Playwright for <code>request</code>: a tool that sends requests to a server directly, with no browser (Phase 7 covers it fully).</li>
+        <li><code>request.post(url, { data: ... })</code> sends information to the server. Here the first call creates a customer, so the cart starts empty and the numbers are known. Registering returns a <strong>token</strong>, the server's proof of who you are.</li>
+        <li><code>headers: auth</code> sends the token with each later call, as the browser would.</li>
+        <li>The second call puts one Trekking Poles in the cart. The third asks to check out, with the code <code>SAVE10</code>.</li>
+        <li><code>(await checkout.json()).total</code> reads the total from the server's reply. <code>toBeCloseTo(31.49, 2)</code> compares numbers allowing for rounding in the second decimal place.</li>
+        <li><strong>Look at what each version tells you when it fails.</strong> Run today, both fail, because PeakAndPack's <code>SAVE10</code> takes 100% off (BUG-009). The browser version says the total on the page was <code>$0.00</code> after about fifteen steps. The API version says <code>Expected: 31.49, Received: 0</code> after four calls, in a fraction of a second.</li>
+      </ul>
+    </div>
+  </details>
+
+  <p>The UI test is not wrong to exist. A journey test that places an order with a code is worth having, and it stays, with a plain "order placed" check at the end. What does not belong in the browser is the arithmetic. The rule lives in the server, so the server is where to check it.</p>
 
   <div class="callout red">
-    <p><strong>These two examples include a step this phase doesn't teach:</strong> PeakAndPack's checkout has a payment form inside an iframe, and its button only turns on once that form is filled in. The payment lines are there so the examples run as written. Phase 8 (Iframes) explains how they work.</p>
+    <p><strong>The first example includes a step this phase doesn't teach:</strong> PeakAndPack's checkout has a payment form inside an iframe, and its button only turns on once that form is filled in. The payment lines are there so the example runs as written. Phase 8 (Iframes) explains how they work.</p>
   </div>
 
   <h2 id="test-design-principles">3. Test design principles</h2>
@@ -297,12 +319,12 @@ test('checkout with discount code completes', async ({ page }) => {
 
   <div class="principle-card">
     <div class="principle-title"><span class="principle-num">2</span>Do not test every permutation at the UI layer</div>
-    <p>PeakAndPack's quantity field accepts numbers from 1 to 99. You do not need 99 UI tests for that. Use <strong>Boundary Value Analysis (BVA)</strong> instead: test the edges and one value in the middle. See the worked BVA table in section 6.</p>
+    <p>Take a quantity that should be a whole number from 1 to 99. You do not need 99 tests for that, and certainly not 99 browser tests. Use <strong>Boundary Value Analysis (BVA)</strong> instead: test the edges and one value in the middle. See the worked BVA table in section 6, which also runs it against PeakAndPack's cart.</p>
   </div>
 
   <div class="principle-card">
     <div class="principle-title"><span class="principle-num">3</span>Decision tables for multi-condition logic</div>
-    <p>PeakAndPack's discount code logic depends on more than one thing: the code can be valid or invalid, and the cart can be empty or full. A decision table lists every combination and what should happen for each, so you know exactly which cases are worth testing and which ones just repeat another case. See the worked decision table in section 6.</p>
+    <p>PeakAndPack's checkout depends on more than one thing: the discount code can be valid or invalid, and the cart can be empty or full. A decision table lists every combination and what should happen for each, so you know exactly which cases are worth testing and which ones just repeat another case. See the worked decision table in section 6, where two of its four rows turn out to be the same case.</p>
   </div>
 
   <div class="principle-card">
@@ -320,48 +342,151 @@ test('checkout with discount code completes', async ({ page }) => {
     <ul style="margin:0 0 0 1.2rem;">
       <li><strong>Writing browser tests for everything.</strong> This is the most common mistake. Calculations, validation rules, and error messages all belong at the unit or API layer, not in a browser test.</li>
       <li><strong>Testing how the code works instead of what it does.</strong> Checking a specific CSS class, a function call, or a network request's exact payload. These break every time the code changes on the inside, even when the actual behaviour is still correct.</li>
-      <li><strong>One giant test.</strong> A test that logs in and checks out, then separately asserts the login redirect worked, the cart count updated, <em>and</em> a confirmation email arrived, is really four tests glued together under one name. When it fails in CI, you'll spend an hour figuring out which of the four checks actually broke.</li>
+      <li><strong>One giant test.</strong> A test that logs in and checks out, then separately asserts the login redirect worked, the cart total was right, <em>and</em> a confirmation email arrived, is really four tests glued together under one name. When it fails in CI, you'll spend an hour figuring out which of the four checks actually broke.</li>
       <li><strong>Skipping the decision table.</strong> Without mapping out the combinations first, most teams end up testing the same scenario twice while missing an important edge case.</li>
+    <li><strong>Designing from the page instead of the rule.</strong> PeakAndPack's page has no quantity box, so a tester who only clicks would never try a quantity of 0 or -1. The API accepts both. Write the rule down first, then test it at the layer where it is enforced.</li>
+    <li><strong>Treating a design as proof.</strong> A table says what should happen. Only running it tells you what does. When the two differ, that is a finding, not a mistake in the table.</li>
     </ul>
   </div>
 
   <h2 id="worked-example">6. Worked example: writing up the reasoning</h2>
-  <p>This is what a written test design record actually looks like, not a separate summary bolted on at the end, just the right frame around each table.</p>
-  <p>Start by naming the layer each table is deciding for: unit tests for logic, API tests for contracts, E2E tests for critical journeys only. Then the boundary values for the one field that has them:</p>
-  <p><strong>Boundary Value Analysis: quantity field</strong></p>
+  <p>This is what a written test design record looks like: the tables, with the layer for each row. Then you run it, because a design on paper only becomes useful when you compare it with the app.</p>
+  <p>Start with the one field that has boundaries. A quantity is a whole number from 1 to 99 (this is the rule you would write down from a requirement; PeakAndPack's page has no quantity box, but its cart API takes a <code>quantity</code>, so the rule applies there). Test the edges and one value in the middle:</p>
+  <p><strong>Boundary Value Analysis: quantity</strong></p>
   <div class="table-wrap">
     <table>
-      <thead><tr><th>Input</th><th>Why test it</th><th>Layer</th></tr></thead>
+      <thead><tr><th>Input</th><th>Why test it</th><th>Should be</th><th>Layer</th></tr></thead>
       <tbody>
-        <tr><td><code>0</code></td><td>Below the minimum, should be rejected</td><td>API or unit</td></tr>
-        <tr><td><code>1</code></td><td>The minimum valid value</td><td>API</td></tr>
-        <tr><td><code>50</code></td><td>A representative mid-range value</td><td>Unit</td></tr>
-        <tr><td><code>99</code></td><td>The maximum valid value</td><td>API</td></tr>
-        <tr><td><code>100</code></td><td>Above the maximum, should be rejected</td><td>API or unit</td></tr>
-        <tr><td>Add to cart journey</td><td>Does the UI flow complete?</td><td>UI / E2E</td></tr>
+        <tr><td><code>0</code></td><td>Below the minimum</td><td>Rejected</td><td>API or unit</td></tr>
+        <tr><td><code>1</code></td><td>The minimum valid value</td><td>Accepted</td><td>API</td></tr>
+        <tr><td><code>50</code></td><td>A representative mid-range value</td><td>Accepted</td><td>Unit</td></tr>
+        <tr><td><code>99</code></td><td>The maximum valid value</td><td>Accepted</td><td>API</td></tr>
+        <tr><td><code>100</code></td><td>Above the maximum</td><td>Rejected</td><td>API or unit</td></tr>
+        <tr><td>Add to cart journey</td><td>Does the UI flow complete?</td><td>Completes</td><td>UI / E2E</td></tr>
       </tbody>
     </table>
   </div>
-  <p>Then the combinations that only show up once more than one condition is involved:</p>
-  <p><strong>Decision table: discount code logic</strong></p>
+  <p>Then the combinations that only show up when more than one condition is involved. Checkout depends on the discount code (valid or not) and on the cart (items or empty):</p>
+  <p><strong>Decision table: checkout</strong></p>
   <div class="table-wrap">
     <table>
-      <thead><tr><th>Code valid?</th><th>Cart has items?</th><th>Expected outcome</th><th>Test needed?</th></tr></thead>
+      <thead><tr><th>Code valid?</th><th>Cart has items?</th><th>Should happen</th><th>Test needed?</th></tr></thead>
       <tbody>
         <tr><td>Yes</td><td>Yes</td><td>Discount applied, order completes</td><td>Yes, the happy path</td></tr>
         <tr><td>Yes</td><td>No</td><td>Error: cart is empty</td><td>Yes, edge case</td></tr>
         <tr><td>No</td><td>Yes</td><td>Error: invalid code</td><td>Yes, negative case</td></tr>
-        <tr><td>No</td><td>No</td><td>Error: invalid code</td><td>No, duplicate of row 3</td></tr>
+        <tr><td>No</td><td>No</td><td>Error: cart is empty</td><td>No, the same case as row 2</td></tr>
       </tbody>
     </table>
   </div>
+  <p>Notice the last row. An empty cart is refused before the code is even looked at, so the code makes no difference, and rows 2 and 4 are one test. That is what a decision table is for: it shows which combinations are separate cases and which only repeat another.</p>
   <p>Close with the rule that stops this from turning into one giant test: each test asserts one outcome. Setup steps like logging in or adding an item are fine, they're just how you reach the thing you're testing. Multiple unrelated assertions in one test are not.</p>
-  <p>That's the whole habit this phase is teaching: write the reasoning down before the code exists, so it's reusable the next time you test something similar.</p>
+
+  <h3 id="run-the-tables">Run the tables against PeakAndPack</h3>
+  <p>Here are both tables as tests at the API layer, where none of them needs a browser:</p>
+<pre><code>// tests/design-tables.spec.ts: the two tables of this section, as API tests
+import { test, expect, APIRequestContext } from '@playwright/test';
+
+const API = 'https://peakandpackshopdemo.onrender.com';
+
+// A brand-new customer, so every test starts with an empty cart
+async function newCustomer(request: APIRequestContext) {
+  const res = await request.post(`${API}/api/auth/register`, {
+    data: {
+      name: 'QA Tester',
+      email: `qa-${Date.now()}-${Math.floor(Math.random() * 100000)}@peakandpack.test`,
+      password: 'password123',
+    },
+  });
+  expect(res.status()).toBe(201);
+  const { token } = await res.json();
+  return { Authorization: `Bearer ${token}` };
+}
+
+// Boundary value analysis: the rule says a quantity is 1 to 99
+for (const { quantity, accepted } of [
+  { quantity: 0, accepted: false },
+  { quantity: 1, accepted: true },
+  { quantity: 50, accepted: true },
+  { quantity: 99, accepted: true },
+  { quantity: 100, accepted: false },
+]) {
+  test(`quantity ${quantity} is ${accepted ? 'accepted' : 'rejected'}`, async ({ request }) =&gt; {
+    if (!accepted) test.fail();   // PeakAndPack accepts every quantity, so the "rejected" tests fail today
+    const auth = await newCustomer(request);
+    const res = await request.post(`${API}/api/cart`, { headers: auth, data: { product_id: 1, quantity } });
+    expect(res.ok()).toBe(accepted);
+  });
+}
+
+// Decision table: discount code (valid or not) by cart (items or empty)
+async function checkout(request: APIRequestContext, withItem: boolean, code?: string) {
+  const auth = await newCustomer(request);
+  if (withItem) {
+    await request.post(`${API}/api/cart`, { headers: auth, data: { product_id: 1, quantity: 1 } });
+  }
+  return request.post(`${API}/api/orders/checkout`, {
+    headers: auth,
+    data: code ? { discount_code: code } : {},
+  });
+}
+
+test('valid code, cart has items: the discount is applied', async ({ request }) =&gt; {
+  test.fail();   // BUG-009: SAVE10 takes 100% off, not 10%
+  const res = await checkout(request, true, 'SAVE10');
+  expect(res.status()).toBe(201);
+  expect((await res.json()).total).toBeCloseTo(34.99 * 0.9, 2);
+});
+
+test('an empty cart cannot be checked out, whatever the code', async ({ request }) =&gt; {
+  for (const code of ['SAVE10', 'BOGUS']) {          // rows 2 and 4 of the table, in one test
+    const res = await checkout(request, false, code);
+    expect(res.status()).toBe(400);
+    expect((await res.json()).error).toBe('Cart is empty');
+  }
+});
+
+test('invalid code, cart has items: the code is refused', async ({ request }) =&gt; {
+  test.fail();   // the code is silently ignored and the order goes through at full price
+  const res = await checkout(request, true, 'BOGUS');
+  expect(res.status()).toBe(400);
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <p><strong>In plain words:</strong> the two tables of this section, written as tests against the server.</p>
+      <ul>
+        <li><code>for (const { quantity, accepted } of [ ... ])</code> repeats the test once for each row of the list. Each pass makes its own test, named from the row: "quantity 99 is accepted". It is the table, written as data.</li>
+        <li><code>newCustomer</code> registers a brand-new customer and returns the header that proves who they are. A fresh customer means each test starts with an empty cart, whatever ran before.</li>
+        <li><code>test.fail()</code> says "this test is expected to fail". It sits behind <code>if (!accepted)</code>, so only the "rejected" rows are marked: the rule says they should be refused, PeakAndPack accepts them, and the test fails. The run stays green, and the day the app is fixed, the test starts passing and turns red, which is your cue to remove the line.</li>
+        <li><code>res.ok()</code> is true for any 2xx status. The test checks the outcome the rule predicts: refused or accepted.</li>
+        <li><code>checkout(request, withItem, code?)</code> is a helper that tries to place an order. The <code>?</code> makes the code optional.</li>
+        <li>The empty-cart test loops over two codes inside one test, because rows 2 and 4 of the decision table turn out to be the same case: with an empty cart the server answers 400 whatever the code is.</li>
+        <li>The table's own claims become tests, and the tests that disagree with the app become findings.</li>
+      </ul>
+    </div>
+  </details>
+  <p>I ran them against the app, and the tables paid for themselves:</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Case</th><th>The rule says</th><th>PeakAndPack does</th></tr></thead>
+      <tbody>
+        <tr><td>Quantity 0</td><td>Rejected</td><td>Accepted (200)</td></tr>
+        <tr><td>Quantity 100</td><td>Rejected</td><td>Accepted (200)</td></tr>
+        <tr><td>Quantity 1, 50, 99</td><td>Accepted</td><td>Accepted</td></tr>
+        <tr><td>Also tried: -1, 1000, 2.5, "abc"</td><td>Rejected</td><td>All accepted, and the cart stores them as given</td></tr>
+        <tr><td>Valid code, items in cart</td><td>10% off</td><td>100% off (BUG-009): the total is $0</td></tr>
+        <tr><td>Valid or invalid code, empty cart</td><td>Cart is empty</td><td>400, "Cart is empty"</td></tr>
+        <tr><td>Invalid code, items in cart</td><td>Refused</td><td>Ignored: the order goes through at full price</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>A cart that holds a quantity of <code>"abc"</code> or <code>-1</code> is a defect the BVA table found in seconds, without a browser. Nobody would have found it by clicking through the page, because the page never offers a way to type a quantity. That is the pyramid working: the bottom layer found what the top layer cannot reach.</p>
 
   <hr style="border:none;border-top:1px solid var(--border);margin:0">
 
   <div class="assignment">
-    <div class="a-label">Assignment</div>
+    <div class="a-label">Assignment, part 1</div>
     <h3>Design the test coverage for PeakAndPack login</h3>
     <p>PeakAndPack's login has two inputs (email, password) and two outcomes (success, failure). Use a decision table to map out the combinations, and decide which ones need a test and at which layer. Then pick out the one test that actually belongs at the UI layer.</p>
     <p>Think about: what happens with an empty email? A valid email but wrong password? A valid email that does not exist? Which of these needs a browser test and which is better as an API test?</p>
@@ -372,19 +497,81 @@ test('checkout with discount code completes', async ({ page }) => {
       <h3>Decision table for PeakAndPack login</h3>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Email</th><th>Password</th><th>Expected outcome</th><th>Layer</th><th>Test?</th></tr></thead>
+          <thead><tr><th>Email</th><th>Password</th><th>Should happen</th><th>Layer</th><th>Test?</th></tr></thead>
           <tbody>
             <tr><td>Valid, exists</td><td>Correct</td><td>200, token returned, redirect to home</td><td>E2E (the happy path journey)</td><td>Yes</td></tr>
             <tr><td>Valid, exists</td><td>Wrong</td><td>401, error message shown</td><td>API</td><td>Yes</td></tr>
             <tr><td>Valid, not registered</td><td>Any</td><td>401, error message shown</td><td>API</td><td>Yes</td></tr>
             <tr><td>Empty</td><td>Any</td><td>400, validation error</td><td>API or unit</td><td>Yes</td></tr>
-            <tr><td>Invalid format</td><td>Any</td><td>400, validation error</td><td>API or unit</td><td>Yes</td></tr>
+            <tr><td>Invalid format</td><td>Any</td><td>400, validation error</td><td>API or unit</td><td>Yes (see part 2: the app answers 401)</td></tr>
             <tr><td>Valid, exists</td><td>Empty</td><td>400, validation error</td><td>API or unit</td><td>Yes</td></tr>
           </tbody>
         </table>
       </div>
       <p style="margin-top:.8rem;"><strong>The one E2E test:</strong> the happy path, valid email, correct password, redirect to home. Everything else is an API or unit test, because none of them need a browser to check the outcome.</p>
       <p><strong>Why this matters:</strong> if you wrote all six as E2E tests, you'd end up with five slow browser tests just to check server-side validation. The server doesn't care whether a request comes from a browser or from curl. Testing it with a browser adds cost, not confidence.</p>
+    </div>
+  </details>
+  </div>
+
+  <div class="assignment" style="margin-top:2rem">
+    <div class="a-label">Assignment, part 2</div>
+    <h3>Run your decision table</h3>
+    <p>Turn your table into tests: the rows that need no browser as API tests, and the one journey as a browser test. Run them. Where the app does something different from your table, decide whether your table or the app is wrong, and mark the test <code>test.fail()</code> with a comment if it is the app. Then compare: which layer found most of the problems, and how long did the whole set take?</p>
+
+  <details class="solution">
+    <summary>Show solution: try it yourself first</summary>
+    <div class="solution-body">
+      <h3>The table as tests</h3>
+<pre><code>// tests/login-design.spec.ts
+import { test, expect } from '@playwright/test';
+
+const API = 'https://peakandpackshopdemo.onrender.com';
+
+// Rows of the decision table that need no browser: the server decides, so ask the server
+const refused = [
+  { name: 'a wrong password', email: 'test@peakandpack.com', password: 'nope', status: 401 },
+  { name: 'an email that is not registered', email: 'nobody@peakandpack.com', password: 'password123', status: 401 },
+  { name: 'an empty email', email: '', password: 'password123', status: 400 },
+  { name: 'an empty password', email: 'test@peakandpack.com', password: '', status: 400 },
+];
+
+for (const { name, email, password, status } of refused) {
+  test(`login with ${name} is refused with ${status}`, async ({ request }) =&gt; {
+    const res = await request.post(`${API}/api/auth/login`, { data: { email, password } });
+    expect(res.status()).toBe(status);
+    expect((await res.json()).token).toBeUndefined();     // and no token is handed out
+  });
+}
+
+test('login with a malformed email is refused with 400', async ({ request }) =&gt; {
+  test.fail();   // there is no format check: the server just answers 401, "who are you?"
+  const res = await request.post(`${API}/api/auth/login`, { data: { email: 'not-an-email', password: 'password123' } });
+  expect(res.status()).toBe(400);
+});
+
+// The one row that needs a browser: the whole journey, from the form to being signed in
+test('login with valid details signs the customer in', async ({ page }) =&gt; {
+  await page.goto('/login');
+  await page.locator('input[type="email"]').fill('test@peakandpack.com');
+  await page.locator('input[type="password"]').fill('password123');
+  await page.getByRole('button', { name: /log in/i }).click();
+  await expect(page.getByRole('button', { name: /log out/i })).toBeVisible();
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li>The first block loops over four rows that a server decides on its own: a wrong password, an unknown email, an empty email and an empty password. Each is refused with a specific status, and the reply carries no <code>token</code>.</li>
+        <li><code>expect(...token).toBeUndefined()</code> checks that a refused login hands out no token. A refusal that still returned a token would be a security bug.</li>
+        <li>The malformed-email row is marked <code>test.fail()</code>: a sensible rule says 400 (the request is wrong), but PeakAndPack does no format check and answers 401. The test records the gap.</li>
+        <li>The last test is the only one that opens a browser: the happy path, from the form to being signed in. <code>input[type="email"]</code> is a CSS selector (Phase 2), because the form's labels aren't linked to their fields.</li>
+        <li>Five of the six rows never needed a browser. The server doesn't care whether a request came from a page or from a script.</li>
+      </ul>
+    </div>
+  </details>
+      <p><strong>What you will see.</strong> Six tests, all green: the four server refusals pass, the malformed-email test is an expected failure (the app answers 401, not 400), and the journey passes. On my computer the five API checks together took about a quarter of a second, and the single browser journey took about a second.</p>
+      <p><strong>Which layer found the problem.</strong> The API layer. The one deviation, no format check on the email, is invisible in the browser, because the form's email box refuses a malformed address in the browser, so no request is ever sent (I checked: submitting <code>not-an-email</code> sends nothing). The server's own gap only shows when you talk to the server directly.</p>
     </div>
   </details>
   </div>

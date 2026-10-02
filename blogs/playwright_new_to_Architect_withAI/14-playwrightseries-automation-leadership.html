@@ -118,6 +118,16 @@ footer a:hover{color:var(--purple)}
 .principle-card p:last-child,.principle-card ul:last-child,.principle-card pre:last-child{margin-bottom:0}
 .principle-num{display:inline-flex;align-items:center;justify-content:center;width:1.7rem;height:1.7rem;border-radius:50%;background:var(--purple);color:#0d0d0d;font-family:var(--ff-serif);font-weight:700;font-size:.82rem;margin-right:.6rem;flex-shrink:0}
 .principle-title{display:flex;align-items:center;font-family:var(--ff-serif);font-size:1.05rem;font-weight:400;color:var(--text);margin:0 0 .7rem}
+details.explain{margin:.5rem 0 1.5rem;border:1px solid var(--purple-border);border-radius:10px;background:var(--purple-bg)}
+details.explain summary{padding:.6rem 1rem;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--purple);list-style:none;display:flex;align-items:center;gap:.5rem}
+details.explain summary::-webkit-details-marker{display:none}
+details.explain summary::before{content:"\25B6";font-size:.65rem;transition:transform .2s}
+details.explain[open] summary::before{transform:rotate(90deg)}
+.explain-body{padding:.1rem 1.2rem 1rem;font-size:.92rem;line-height:1.7}
+.explain-body p{margin:.7rem 0}
+.explain-body ul{margin:.3rem 0 .7rem 1.2rem;padding-left:0}
+.explain-body li{margin-bottom:.35rem}
+.explain-body pre{margin:.6rem 0}
 </style>
 <meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
 <meta property="og:image:width" content="1200">
@@ -158,7 +168,7 @@ footer a:hover{color:var(--purple)}
   <div class="meta-row">
     <span><strong>Series: Playwright: Zero to Architect</strong></span>
     <span>Demo: PeakAndPack</span>
-    <span>9 min read</span>
+    <span>22 min read</span>
     <span>By: RN</span>
   </div>
 
@@ -183,6 +193,13 @@ footer a:hover{color:var(--purple)}
 
   <h2>Goal</h2>
   <p>Produce two documents most solo-written suites never have: a written conventions standard, and a PR review checklist that enforces it. Leave able to answer "should this new test exist at all" as confidently as "is this test written well."</p>
+  <p>By the end of this phase you can:</p>
+  <ul>
+    <li>write conventions a new contributor can follow, and a checklist a reviewer applies the same way every time</li>
+    <li>automate the checklist items that need no judgement, and keep people for the rest</li>
+    <li>measure suite health from real run data: flake rate per test, runtime trend, and journey coverage</li>
+    <li>decline a test that belongs at another layer, and hand the person a better path</li>
+  </ul>
 
   <h2 id="before-conventions">1. Before: conventions that only live in one person's head</h2>
   <p>A suite written entirely by one disciplined engineer can look excellent and still fail the moment a second person contributes to it, because the standard was never written down anywhere a new contributor could find it.</p>
@@ -190,31 +207,28 @@ footer a:hover{color:var(--purple)}
   <div class="ba-wrap">
     <div class="ba-block before">
       <div class="ba-label">Before: two contributors, two styles</div>
-<pre><code>// contributor-a.spec.ts (Phase 2-3 conventions)
-test('checkout completes', async ({ page }) => {
-  await page.getByRole('button', { name: /checkout/i }).click();
-});
+<pre><code>// contributor-a.spec.ts (the conventions of Phases 2 and 3)
+const done = page.waitForResponse((r) =&gt; r.url().includes('/api/orders/checkout') &amp;&amp; r.status() === 201);
+await page.getByRole('button', { name: /confirm order/i }).click();
+await done;
 
-// contributor-b.spec.ts (never read Phase 2-3, no one told them)
-test('checkout completes', async ({ page }) => {
-  await page.locator('#checkout-btn').click();
-  await page.waitForTimeout(1500);
-});
-</code></pre>
+// contributor-b.spec.ts (never read Phases 2 and 3, and nobody told them)
+await page.locator('#place-order-btn').click();
+await page.waitForTimeout(1500);</code></pre>
     </div>
     <div class="ba-block after">
       <div class="ba-label">After: one standard, enforced at review, not just known</div>
 <pre><code>// CONTRIBUTING.md, section 2: Locators and waits
-// - getByRole/getByLabel/getByText only, CSS selectors
-//   need a comment explaining why nothing else worked.
-// - No waitForTimeout. Ever. PR review blocks on it.
+// - getByRole/getByLabel/getByText only. A CSS selector needs a comment
+//   explaining why nothing else worked.
+// - No waitForTimeout. Ever. The convention check and PR review both block on it.
 // Both contributors' PRs are checked against this file,
-// not against whatever the reviewer happens to remember.
-</code></pre>
+// not against whatever the reviewer happens to remember.</code></pre>
     </div>
   </div>
 
   <p>The difference isn't that contributor B is careless, it's that the standard existed only as contributor A's personal habit. Writing it down is what makes it enforceable by anyone, including someone reviewing a PR from a person more senior than them.</p>
+  <p>Both versions pass on PeakAndPack today, which is why B's gets approved. I ran them against the same checkout: A took 1.4 seconds and B took 2.8, because of the 1.5 second sleep. B also leans on <code>#place-order-btn</code>, an id that is internal to the page and that nobody promised to keep. The day someone renames it, B's test breaks with nothing wrong in the app, and the sleep guess is wrong on a slow day. Neither problem shows in review unless a standard says to look.</p>
 
   <h2 id="suite-conventions">2. Suite-wide conventions worth writing down</h2>
   <p>Five conventions do most of the work. Each needs writing down for its own reason:</p>
@@ -244,6 +258,48 @@ test('checkout completes', async ({ page }) => {
     <p>Without a rule, every missing role/label becomes a testid request, and the app fills up with test-only attributes.</p>
   </div>
 
+  <p>Here is a conventions file for the real PeakAndPack suite. Every rule in it is one the suite actually follows today (I checked the folders, tags, fixtures and test ids against the files), and the numbered sections are the five conventions above plus layout and known bugs:</p>
+<pre><code># Contributing to the PeakAndPack tests
+
+## 1. Layout
+- `tests/&lt;area&gt;/&lt;name&gt;.spec.ts`: areas are `smoke`, `shop`, `auth`, `api`, `admin`, `known-bugs`, `a11y`, `mobile`.
+- `pages/`: page objects. `fixtures/`: fixtures. `helpers/`: helpers. Nothing else goes in `tests/`.
+
+## 2. Locators and waits
+- `getByRole`, `getByLabel`, `getByText` only. `getByTestId` only when nothing else can identify the element (section 6).
+- A CSS selector (`page.locator('...')`) needs a comment saying why nothing else worked.
+- No `waitForTimeout`, no `networkidle`. Wait for a response (`waitForResponse`) or an assertion that retries.
+
+## 3. Names
+- A test name describes behaviour: "removing the last item empties the cart", never "test 14".
+- A known-bug test starts with its bug id when it has one: "BUG-009: a 10% discount code takes 10% off".
+
+## 4. Tags: every test has at least one
+| Tag | Meaning | Runs |
+|---|---|---|
+| `@critical` | A journey that must work for the store to be usable | Every PR |
+| `@regression` | Everything else that should keep working | Every PR, nightly |
+| `@api` | A check made at the API, with no browser | Every PR |
+| `@a11y` | An automated accessibility scan | Every PR |
+| `@known-bug` | Describes correct behaviour the app does not have yet | Every PR (expected to fail) |
+
+## 5. Data and fixtures
+- Every test creates its own customer: use the `customer`, `loggedInPage`, `seededCart` and `pm` fixtures.
+- Never log in as the shared demo account in a test that changes data.
+
+## 6. Test ids
+A `data-testid` is requested only when no role, label or visible text can identify the element on its own.
+PeakAndPack has two: `product-card` (a repeated container with nothing to name it) and `result-count`.
+
+## 7. Known bugs
+A test for a bug is written to describe the correct behaviour and marked `test.fail()`.
+It is never edited to match the broken behaviour. When the bug is fixed the test turns red:
+delete the `test.fail()` line.
+
+## 8. Before you open a PR
+Run `node scripts/check-conventions.js` and fix what it reports. Then go through the PR checklist.</code></pre>
+  <p>Notice what the file does and does not do. It states rules, not reasons for every rule: the reasons are in Phases 2 to 12, and it points at them. And it is short enough to read before a first pull request, which is the only way it gets read.</p>
+
   <h2 id="pr-review-checklist">3. A PR review checklist for new tests</h2>
   <p>A checklist turns "does this look right" (which varies by reviewer and by how tired they are) into a fixed set of yes/no checks anyone on the team can apply the same way.</p>
   <ul class="checklist">
@@ -258,6 +314,108 @@ test('checkout completes', async ({ page }) => {
   <div class="callout amber">
     <p><strong>The checklist is also the onboarding doc.</strong> A new engineer joining the project doesn't need a separate "how we write tests" conversation if the PR checklist already states the rules and the reviewer applies them consistently. The first PR review they get is the training. This is worth more than a wiki page nobody reads before their first contribution.</p>
   </div>
+
+  <h3 id="automate-checks">Let a script check what needs no judgement</h3>
+  <p>Look at the checklist again. Some items need a person: is this assertion about something a user sees, could this be an API test? Others need no judgement at all: is there a <code>waitForTimeout</code> in the diff? Asking a reviewer to look for something a script finds in a second wastes their attention, and a tired reviewer misses it. Split the checklist in two, and let a script do the first half:</p>
+<pre><code>## New test checklist
+
+Checked by a script (node scripts/check-conventions.js):
+- [ ] No waitForTimeout or networkidle anywhere in this diff
+- [ ] No .only or test.fixme left in
+- [ ] Every CSS selector has a comment saying why
+- [ ] Every test has a tag, and its name describes behaviour
+
+Checked by a person:
+- [ ] Locators are role, label or text-based
+- [ ] Assertions check what a user sees, not internal state or a status code alone
+- [ ] If this covers a known bug, it fails until the bug is fixed (test.fail() with the bug id)
+- [ ] Could this be a unit or API test instead, with no loss of confidence?
+- [ ] Could this test fail? Say what change to the app would turn it red.</code></pre>
+<pre><code>// scripts/check-conventions.js
+// Checks the rules in CONTRIBUTING.md that a machine can check, so a reviewer doesn't have to.
+// Run it from the e2e folder (or pass the folder): node scripts/check-conventions.js [folder]
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
+
+const root = process.argv[2] || '.';
+const problems = [];
+
+function listFiles(dir) {
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) =&gt; {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) return listFiles(full);
+    return entry.name.endsWith('.ts') ? [full] : [];
+  });
+}
+
+// 1. Lines that are never acceptable
+const banned = [
+  { pattern: /waitForTimeout\(/, rule: 'waitForTimeout: wait for a real signal instead' },
+  { pattern: /waitForLoadState\(\s*['"]networkidle/, rule: 'networkidle: wait for a real signal instead' },
+  { pattern: /\btest(\.describe)?\.only\(/, rule: '.only left in the suite' },
+  { pattern: /\btest\.fixme\(/, rule: 'test.fixme hides a test: use test.fail() with a bug id, or fix it' },
+];
+
+// 2. A CSS selector, locator('...'), needs a comment saying why nothing better worked
+const cssSelector = /\.locator\(\s*['"`](?!\.\.)/;
+// A comment on the line, or in the three lines above it (one comment can explain a group of selectors)
+const hasComment = (lines, i) =&gt; [lines[i], lines[i - 1], lines[i - 2], lines[i - 3]].some((l) =&gt; l &amp;&amp; /\/\//.test(l));
+
+for (const file of [...listFiles(path.join(root, 'tests')), ...listFiles(path.join(root, 'pages'))]) {
+  const lines = fs.readFileSync(file, 'utf8').split('\n');
+  lines.forEach((line, i) =&gt; {
+    for (const { pattern, rule } of banned) {
+      if (pattern.test(line)) problems.push(`${file}:${i + 1}  ${rule}`);
+    }
+    if (cssSelector.test(line) &amp;&amp; !hasComment(lines, i)) {
+      problems.push(`${file}:${i + 1}  CSS selector without a comment saying why: ${line.trim()}`);
+    }
+  });
+}
+
+// 3. Every test carries a tag, and no title is just "test 14". The test list comes from Playwright itself.
+const listed = JSON.parse(execSync('npx playwright test --list --reporter=json', { cwd: root, encoding: 'utf8', maxBuffer: 1 &lt;&lt; 26 }));
+(function walk(suite) {
+  (suite.specs || []).forEach((spec) =&gt; {
+    if (!spec.tags || spec.tags.length === 0) problems.push(`${spec.file}:${spec.line}  no tag: "${spec.title}"`);
+    if (/^(test|spec)\s*\d+$/i.test(spec.title.trim())) problems.push(`${spec.file}:${spec.line}  title does not describe behaviour: "${spec.title}"`);
+  });
+  (suite.suites || []).forEach(walk);
+})({ suites: listed.suites });
+
+if (problems.length) {
+  console.log(`${problems.length} convention problem(s):\n`);
+  problems.forEach((p) =&gt; console.log('  ' + p));
+  process.exit(1);
+}
+console.log('No convention problems found.');</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <p><strong>In plain words:</strong> a script that applies the part of the PR checklist that needs no judgement.</p>
+      <ul>
+        <li>The script reads the suite's files and Playwright's own list of tests. It checks only what a machine can check without judgement: the same items as the first half of the checklist.</li>
+        <li><code>banned</code> is a list of patterns that are never acceptable: <code>waitForTimeout</code>, <code>networkidle</code>, a leftover <code>.only</code>, and <code>test.fixme</code>, which silently stops a test running. Each has the rule's message.</li>
+        <li><code>cssSelector</code> finds <code>.locator('...')</code> calls (CSS selectors, Phase 2). <code>hasComment</code> accepts a <code>//</code> comment on the line or in the three lines above it, so one comment can explain a group of selectors. <code>locator('..')</code>, the step up to a parent, is allowed.</li>
+        <li><code>npx playwright test --list --reporter=json</code> asks Playwright for every test with its tags, instead of guessing by reading the code. Any test with no tags, or a title like "test 14", is reported.</li>
+        <li>The script exits with <code>1</code> when it finds anything, so a CI step that runs it fails the pull request. It prints file and line for each problem, so the fix is quick.</li>
+      </ul>
+    </div>
+  </details>
+  <p>I tested it two ways. On a spec written to break every rule, it reported all seven problems:</p>
+<pre><code>7 convention problem(s):
+
+  tests\bad.spec.ts:5  CSS selector without a comment saying why: await page.locator('#place-order-btn').click();
+  tests\bad.spec.ts:6  waitForTimeout: wait for a real signal instead
+  tests\bad.spec.ts:9  .only left in the suite
+  tests\bad.spec.ts:10  networkidle: wait for a real signal instead
+  tests\bad.spec.ts:13  test.fixme hides a test: use test.fail() with a bug id, or fix it
+  bad.spec.ts:3  no tag: "checkout completes"
+  bad.spec.ts:9  title does not describe behaviour: "test 14"</code></pre>
+  <p>Then on the real PeakAndPack suite, as a reviewer would on a pull request. It found five problems: the login and register forms use CSS selectors with no comment saying why (their labels aren't linked to their inputs). The suite I had written failed its own checklist. Each fix was one line, a comment saying why, and the second run printed <code>No convention problems found.</code> That is the checklist working: not a rule for juniors, but one that catches whoever wrote the suite.</p>
+  <p>Run it in the pipeline from Phase 12 before the tests (<code>node scripts/check-conventions.js</code>), so a pull request that breaks a convention fails in seconds, not after a review round trip.</p>
 
   <h2 id="suite-health">4. Measuring suite health</h2>
   <p>"How's the suite doing" needs a real answer, not a feeling. Three numbers matter more than raw test count:</p>
@@ -276,11 +434,183 @@ test('checkout completes', async ({ page }) => {
     <p>"80% code coverage" says nothing about whether checkout, the flow where a bug costs real money, actually has a test. Track coverage against a list of the user journeys that matter most, not against a percentage a linter reports.</p>
   </div>
 
+  <p>These three numbers come from data, and the data has to be kept. A single run can tell you what passed today and nothing about whether it is getting worse. This script reads the JSON results of Phase 12 and, with <code>--record</code>, adds each run to a history file:</p>
+<pre><code>// scripts/suite-health.js
+// Turns results.json into the three numbers that matter: flake rate per test, runtime and its trend,
+// and coverage of the journeys you list in journeys.json.
+//   node scripts/suite-health.js [folder] [--record]
+// --record adds this run to health-history.json, which is how a trend (and a per-test flake count) exists.
+const fs = require('fs');
+const path = require('path');
+
+const args = process.argv.slice(2);
+const record = args.includes('--record');
+const dir = args.find((a) =&gt; !a.startsWith('--')) || '.';
+
+const report = JSON.parse(fs.readFileSync(path.join(dir, 'results.json'), 'utf8'));
+const tests = [];
+(function walk(suite) {
+  (suite.specs || []).forEach((spec) =&gt; spec.tests.forEach((t) =&gt; tests.push({
+    key: `${spec.file} &gt; ${spec.title} [${t.projectName}]`,
+    file: spec.file,
+    title: spec.title,
+    tags: spec.tags || [],
+    status: t.status,                       // expected | unexpected | flaky | skipped
+    knownBug: t.expectedStatus === 'failed',
+    ms: (t.results[t.results.length - 1] || {}).duration || 0,
+  })));
+  (suite.suites || []).forEach(walk);
+})({ suites: report.suites });
+
+// ---- history
+const historyFile = path.join(dir, 'health-history.json');
+const history = fs.existsSync(historyFile) ? JSON.parse(fs.readFileSync(historyFile, 'utf8')) : [];
+const thisRun = {
+  date: new Date().toISOString().slice(0, 16).replace('T', ' '),
+  seconds: Math.round(report.stats.duration / 1000),
+  tests: Object.fromEntries(tests.map((t) =&gt; [t.key, t.status])),
+};
+if (record) fs.writeFileSync(historyFile, JSON.stringify([...history, thisRun], null, 1));
+const runs = record ? [...history, thisRun] : history.length ? history : [thisRun];
+
+// ---- numbers
+const count = (f) =&gt; tests.filter(f).length;
+const passed = count((t) =&gt; t.status === 'expected' &amp;&amp; !t.knownBug);
+const flaky = count((t) =&gt; t.status === 'flaky');
+const failed = count((t) =&gt; t.status === 'unexpected');
+const knownBugs = count((t) =&gt; t.knownBug);
+
+const out = [];
+out.push(`# Suite health, ${thisRun.date}`, '');
+out.push(`${tests.length} tests: ${passed} passed, ${failed} failed, ${flaky} flaky, ${knownBugs} known bugs still present.`, '');
+
+// Flake rate per test: how often each test needed a retry, or failed one run and passed another
+const flakeCount = {};
+runs.forEach((run) =&gt; Object.entries(run.tests).forEach(([key, status]) =&gt; { if (status === 'flaky') flakeCount[key] = (flakeCount[key] || 0) + 1; }));
+const statuses = {};
+runs.forEach((run) =&gt; Object.entries(run.tests).forEach(([key, status]) =&gt; { (statuses[key] = statuses[key] || new Set()).add(status === 'unexpected' ? 'fail' : status === 'flaky' ? 'flaky' : 'pass'); }));
+Object.entries(statuses).forEach(([key, set]) =&gt; { if (set.has('fail') &amp;&amp; set.has('pass')) flakeCount[key] = Math.max(flakeCount[key] || 0, 1); });
+const offenders = Object.entries(flakeCount).sort((a, b) =&gt; b[1] - a[1]);
+out.push(`## Flake rate (over ${runs.length} run${runs.length === 1 ? '' : 's'})`, '');
+if (offenders.length === 0) out.push('No test was flaky in any recorded run.', '');
+else {
+  out.push('| Test | Runs where it was flaky |', '|---|---|');
+  offenders.forEach(([key, n]) =&gt; out.push(`| ${key} | ${n} of ${runs.length} |`));
+  out.push('');
+}
+
+// Runtime and its trend
+out.push('## Runtime', '');
+out.push('| Run | Tests | Seconds |', '|---|---|---|');
+runs.slice(-6).forEach((run) =&gt; out.push(`| ${run.date} | ${Object.keys(run.tests).length} | ${run.seconds} |`));
+if (runs.length &gt;= 2) {
+  const change = runs[runs.length - 1].seconds - runs[0].seconds;
+  out.push('', `Since the first recorded run: ${change &gt;= 0 ? '+' : ''}${change} seconds.`);
+}
+out.push('', 'Slowest tests this run:', '');
+[...tests].sort((a, b) =&gt; b.ms - a.ms).slice(0, 5).forEach((t) =&gt; out.push(`- ${(t.ms / 1000).toFixed(1)} s  ${t.title}`));
+out.push('');
+
+// Coverage by journey, from journeys.json: a journey is covered by a passing test that is not a known bug
+const journeysFile = path.join(dir, 'journeys.json');
+if (fs.existsSync(journeysFile)) {
+  const journeys = JSON.parse(fs.readFileSync(journeysFile, 'utf8'));
+  out.push('## Coverage by user journey', '', '| Journey | Passing tests | |', '|---|---|---|');
+  journeys.forEach(({ journey, files }) =&gt; {
+    const n = count((t) =&gt; t.status === 'expected' &amp;&amp; !t.knownBug &amp;&amp; files.some((f) =&gt; t.file.replace(/\\/g, '/').includes(f)));
+    out.push(`| ${journey} | ${n} | ${n === 0 ? 'NOT COVERED' : ''} |`);
+  });
+  out.push('');
+}
+
+// Tags
+const tagCounts = {};
+tests.forEach((t) =&gt; t.tags.forEach((tag) =&gt; { tagCounts[tag] = (tagCounts[tag] || 0) + 1; }));
+out.push('## Tests by tag', '', Object.entries(tagCounts).sort((a, b) =&gt; b[1] - a[1]).map(([tag, n]) =&gt; `${tag}: ${n}`).join(', '), '');
+
+console.log(out.join('\n'));</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <p><strong>In plain words:</strong> a script that turns the last run, and the history of runs, into the numbers a lead reports.</p>
+      <ul>
+        <li>It reads <code>results.json</code>, which the JSON reporter writes (Phase 12), and flattens it into one list of tests with their status, tags and time.</li>
+        <li><code>--record</code> adds this run to <code>health-history.json</code>. That file is what makes a trend, and a per-test flake count, possible: one run can't tell you whether something is getting worse.</li>
+        <li><strong>Flake rate per test:</strong> a test counts as flaky in a run if it passed only on a retry, and also if it failed in one recorded run and passed in another. The table lists each offender with how many runs it was flaky in.</li>
+        <li><strong>Runtime and its trend:</strong> the seconds of each recorded run, and the change since the first, plus the five slowest tests, which is where any cleanup should start.</li>
+        <li><strong>Coverage by journey:</strong> <code>journeys.json</code> lists the journeys you decided matter most, each with part of a file path. A journey is covered if at least one test that is not a known bug and is passing lives in a matching file. A journey with none is printed as NOT COVERED.</li>
+        <li>Known-bug tests are counted separately and never count as coverage: a test that is expected to fail does not prove the journey works.</li>
+      </ul>
+    </div>
+  </details>
+  <p>The journeys are a file you write, because only you know which ones matter. Mine for PeakAndPack:</p>
+<pre><code>[
+  { "journey": "Browse and search the catalogue", "files": ["shop/browse"] },
+  { "journey": "Add to cart and manage the cart", "files": ["shop/cart"] },
+  { "journey": "Check out", "files": ["shop/checkout"] },
+  { "journey": "Register and log in", "files": ["auth/auth"] },
+  { "journey": "See order history", "files": ["orders"] },
+  { "journey": "Admin manages the catalogue", "files": ["admin/"] }
+]</code></pre>
+  <p>I ran the real suite three times, recording each run. This is the report:</p>
+<pre><code># Suite health, 2026-10-01 19:31
+
+39 tests: 32 passed, 0 failed, 0 flaky, 7 known bugs still present.
+
+## Flake rate (over 3 runs)
+
+No test was flaky in any recorded run.
+
+## Runtime
+
+| Run | Tests | Seconds |
+|---|---|---|
+| 2026-10-01 19:30 | 39 | 16 |
+| 2026-10-01 19:31 | 39 | 16 |
+| 2026-10-01 19:31 | 39 | 16 |
+
+## Coverage by user journey
+
+| Journey | Passing tests | |
+|---|---|---|
+| Browse and search the catalogue | 5 |  |
+| Add to cart and manage the cart | 4 |  |
+| Check out | 4 |  |
+| Register and log in | 5 |  |
+| See order history | 0 | NOT COVERED |
+| Admin manages the catalogue | 2 |  |</code></pre>
+  <p>Two things in it are worth a lead's attention. The suite is stable: three runs, no flaky test, 16 seconds each. And one critical journey has <strong>no passing test</strong>: order history. The only test that touches orders is the API check for BUG-010, which is a known bug and so doesn't count. A green suite with a journey nobody tests is the "100% green and not covered" case from the mistakes list, and no pass-rate number would have shown it.</p>
+  <p>All three of my runs were clean, so I checked that the flake detection works by feeding it a history I edited: one test flaky in two runs, another failing in one run and passing in the others, and one slower run. It reported both tests with their counts, and the runtime change:</p>
+<pre><code>## Flake rate (over 3 runs)
+
+| Test | Runs where it was flaky |
+|---|---|
+| shop/checkout.spec.ts &gt; a customer can check out [chromium] | 2 of 3 |
+| shop/browse.spec.ts &gt; sorting by price puts the cheapest first [chromium] | 1 of 3 |
+
+Since the first recorded run: +8 seconds.</code></pre>
+  <p>That second report is from edited data, not a real run. The point is that the script finds what it should.</p>
+
   <h2 id="when-to-say-no">5. When to say no to a new E2E test</h2>
   <p>Phase 1 introduced the test pyramid: put a test at the lowest layer that still gives confidence. Automation leadership means enforcing that at review time, not just knowing it. A PR that adds a full browser test for a pure calculation, exactly the "before" example from Phase 1, is a test the suite would be healthier without.</p>
   <div class="callout blue">
     <p><strong>Ask this at review, every time:</strong> "Could this be a unit or API test instead, and lose nothing?" If yes, that's the conversation to have before the PR merges, not a retrospective six months later when the suite has grown slow and nobody remembers why half of it is E2E.</p>
   </div>
+  <p>The way to say no that people accept is to say it with evidence and with a path. Here is how it reads for the case in Phase 1, a teammate who wants a browser test for the discount percentage. Every number in it is from the runs in that phase:</p>
+<pre><code>Thanks for picking this up. I'd keep the discount check out of the browser, and here is why and what to do instead.
+
+The rule "SAVE10 takes 10% off" lives in the server. A browser test for it needs about fifteen steps (register, add an item, open
+checkout, enter the code, pay in the iframe, confirm, read the total), takes a couple of seconds, and when it fails it can only say
+the page showed the wrong total. An API test needs four calls, runs in about 200 ms, and fails with "Expected: 31.49, Received: 0",
+which is exactly what we need to see.
+
+This one is already written: it's "BUG-009: a 10% discount code takes 10% off" in tests/known-bugs. It is marked test.fail() because
+SAVE10 currently takes 100% off. If you want more cases (an invalid code, an empty cart), add rows to that file. They are two-line
+tests there.
+
+We do still want one browser test that places an order with a code, because the journey (the code field, the payment, the
+confirmation) is worth protecting. It just doesn't need to check the arithmetic. Want me to pair on it?</code></pre>
+
 
   <div class="callout red">
     <p><strong>Common mistakes in Phase 14.</strong></p>
@@ -288,6 +618,9 @@ test('checkout completes', async ({ page }) => {
       <li><strong>Writing the standard once and never updating it.</strong> A conventions doc that doesn't reflect a rule the team actually started enforcing last month trains people to ignore it.</li>
       <li><strong>Measuring suite health only by pass/fail count.</strong> A suite that's 100% green with a 15% flake rate people have learned to just rerun is not healthy, it's a suite nobody trusts and everyone routes around.</li>
       <li><strong>Applying the PR checklist inconsistently by seniority.</strong> The moment a senior engineer's PR skips the checklist "because they know what they're doing," the checklist stops being a standard and becomes a suggestion for juniors only.</li>
+      <li><strong>Asking people to check what a script can.</strong> A reviewer scanning a diff for <code>waitForTimeout</code> will miss it on a bad day. Automate the checkable half of the checklist and keep people for judgement.</li>
+      <li><strong>Reporting health from one run.</strong> Pass rate today says nothing about the trend. Keep a history, or you will find out the suite got slow when it is already slow.</li>
+      <li><strong>Counting a green suite as covered.</strong> Coverage is a list of journeys with passing tests. A journey with none, like PeakAndPack's order history, is invisible in a pass rate.</li>
       <li><strong>Saying no to new E2E tests without offering the alternative.</strong> "Don't test this at the UI layer" without "here's how to test it at the unit/API layer instead" just discourages testing the behaviour at all.</li>
     </ul>
   </div>
@@ -296,13 +629,15 @@ test('checkout completes', async ({ page }) => {
   <ul>
     <li><code>CONTRIBUTING.md</code>: locator, wait, naming, and tagging conventions, written for a new contributor</li>
     <li><code>pr-checklist.md</code>: the review checklist, ready to paste into a PR template</li>
+    <li><code>scripts/check-conventions.js</code>: the checkable half of the checklist, run in CI</li>
+    <li><code>scripts/suite-health.js</code>, <code>journeys.json</code> and <code>health-history.json</code>: the health numbers, kept over time</li>
     <li><code>suite-health.md</code>: current flake rate, runtime trend, and journey coverage against your list of critical journeys</li>
   </ul>
 
   <hr style="border:none;border-top:1px solid var(--border);margin:0">
 
   <div class="assignment">
-    <div class="a-label">Assignment</div>
+    <div class="a-label">Assignment, part 1</div>
     <h3>Review a real PR against the checklist</h3>
     <p>Take any spec file you wrote in an earlier phase (before you knew this checklist existed) and review it as if it were a teammate's PR. List every checklist item it fails. Then fix it. This is the fastest way to feel how much the checklist changes what "good enough" means once it's written down.</p>
 
@@ -317,26 +652,45 @@ test('checkout completes', async ({ page }) => {
 - [ ] No waitForTimeout anywhere in this diff
 - [ ] Assertions check what a user sees, not internal state or a status
       code alone
-- [ ] Tagged correctly (@critical / @regression / @visual / @admin)
+- [ ] Tagged correctly (@critical / @regression / @a11y / @api)
 - [ ] If this covers a known bug, it fails until the bug is fixed
 - [ ] Test name describes behaviour, not implementation
 - [ ] Could this be a unit or API test instead, with no loss of confidence?
+- [ ] Could this test fail? What change to the app would turn it red?
 </code></pre>
+      <p>Section 3 splits this list in two: the items a script can check, and the items that need a person.</p>
       <p><strong>Why "tagged correctly" is on a leadership-phase checklist, not just a technical one.</strong> Tagging is easy to skip because an untagged test still runs and still passes review by every other line item. It's exactly the kind of small omission that only costs something later, when Phase 12's selective CI runs quietly miss it. A checklist's job is to catch the things that are easy to forget precisely because they don't fail anything today.</p>
+    </div>
+  </details>
+  </div>
+
+  <div class="assignment" style="margin-top:2rem">
+    <div class="a-label">Assignment, part 2</div>
+    <h3>Run the checks on your own suite</h3>
+    <p>Run the convention check and the health report against your suite, and write a journeys file of the six journeys you would protect first. Fix what the check finds, and say which journey, if any, has no passing test and what you would test first.</p>
+
+  <details class="solution">
+    <summary>Show solution: try it yourself first</summary>
+    <div class="solution-body">
+<pre><code># Run from the e2e folder, after a run has written results.json
+node scripts/check-conventions.js
+node scripts/suite-health.js --record</code></pre>
+      <p><strong>What I found on PeakAndPack's suite.</strong> The convention check reported five CSS selectors with no comment, all in the login and register forms. One comment above each group fixed them. The health report showed a stable suite (no flaky test in three runs, 16 seconds each) and one gap: no passing test for the order history journey. The first test to write is a UI test that places an order and then opens the order history, and the bug it will meet is BUG-010: the list shows every customer's orders.</p>
+      <p><strong>What to look for in yours.</strong> A check that finds nothing in a suite you wrote yourself usually means the rules are too loose, not that the suite is perfect. A journey list with no gap usually means the list is too short.</p>
     </div>
   </details>
   </div>
 
   <div class="bonus">
     <div class="b-label">Bonus challenge</div>
-    <p><strong>Draft the "no" conversation.</strong> Write out, as if messaging a teammate, how you'd explain declining to add a full E2E test for validating that a discount percentage calculates correctly, and what you'd suggest instead. The goal is a response that doesn't just say no, it hands them a better path.</p>
+    <p><strong>Draft the "no" conversation.</strong> Write out, as if messaging a teammate, how you'd explain declining to add a full E2E test for validating that a discount percentage calculates correctly, and what you'd suggest instead. The goal is a response that doesn't just say no, it hands them a better path. Section 5 has one for the discount percentage: write yours for a different case, such as validating that a malformed login email is refused.</p>
   </div>
 
   <div class="series-nav">
     <span class="label">Navigate the series</span>
     <div class="nav-pair">
       <a href="13-playwrightseries-ai-assisted.html" class="nav-blog"><span class="nav-blog-arrow" aria-hidden="true">&larr;</span><div><div class="nav-blog-title">Phase 13: AI-Assisted Automation</div><div class="nav-blog-sub">Where AI genuinely helps, and where it doesn't</div></div></a>
-      <a href="15-playwrightseries-capstone-projects.html" class="nav-blog"><div><div class="nav-blog-title">Phase 15: Capstone Projects</div><div class="nav-blog-sub">Putting all fourteen phases together</div></div><span class="nav-blog-arrow" aria-hidden="true">&rarr;</span></a>
+      <a href="15-playwrightseries-capstone-projects.html" class="nav-blog"><div><div class="nav-blog-title">Phase 15: Capstone Projects</div><div class="nav-blog-sub">Putting the whole series together</div></div><span class="nav-blog-arrow" aria-hidden="true">&rarr;</span></a>
     </div>
   </div>
 

@@ -140,7 +140,7 @@ footer a:hover{color:var(--purple)}
   <div class="meta-row">
     <span><strong>Series: Playwright: Zero to Architect</strong></span>
     <span>Demo: PeakAndPack</span>
-    <span>9 min read</span>
+    <span>16 min read</span>
     <span>By: RN</span>
   </div>
 
@@ -197,7 +197,7 @@ footer a:hover{color:var(--purple)}
   <div class="project-card">
     <div class="project-title"><span class="project-num">4</span>An AI-reviewed suite pass</div>
     <div class="project-meta">Draws on: Phase 13</div>
-    <p>Run every spec file in your suite through the Phase 13 reviewer prompt. Document every finding, which ones you fixed, and which ones you decided not to and why (not every finding deserves a fix; that judgment call is the point).</p>
+    <p>Run every spec file in your suite through the Phase 13 reviewer prompt, all six rules. Document every finding, which ones you fixed, and which ones you decided not to and why (not every finding deserves a fix; that judgment call is the point). For the tests you trust least, run the mutation check as well.</p>
     <p><strong>Done looks like:</strong> a written record showing the suite was reviewed against a stated standard, not just "looks fine to me."</p>
   </div>
 
@@ -215,58 +215,116 @@ footer a:hover{color:var(--purple)}
     <p><strong>Done looks like:</strong> someone who has never seen this suite could read the report and know where to add their first test without asking you a single question.</p>
   </div>
 
-  <details class="solution">
+  <details class="solution" id="approach-notes">
     <summary>Show approach notes for all six: try them yourself first</summary>
     <div class="solution-body">
+      <p>These notes come from building the six against PeakAndPack. Where a number appears, I ran it.</p>
       <h3>What tends to go wrong in each</h3>
-      <p><strong>Project 1:</strong> the most common mistake is a page object that just wraps locators one-to-one with no real actions (<code>getEmailField()</code> instead of <code>login(email, password)</code>). A good page object hides the steps, not just the selectors.</p>
-      <p><strong>Project 2:</strong> baselining a bug feels wrong the first time you do it. It isn't, the baseline records current reality, and updating it when BUG-011 gets fixed is a one-line change, not a redesign.</p>
+
+      <p><strong>Project 1:</strong> the most common mistake is a page object that just wraps locators one-to-one with no real actions (<code>getEmailField()</code> instead of <code>login(email, password)</code>). A good page object hides the steps, not just the selectors. Measure "done" instead of feeling it: count the locator calls inside <code>tests/</code>. The goal is zero.</p>
+<pre><code># Git Bash, macOS or Linux: count the locator calls inside the tests folder
+grep -rEo "\.(getBy[A-Za-z]+|locator)\(" tests | wc -l
+
+# Windows PowerShell
+(Get-ChildItem tests -Recurse -Filter *.ts | Select-String -Pattern '\.(getBy\w+|locator)\(' -AllMatches |
+  ForEach-Object { $_.Matches.Count } | Measure-Object -Sum).Sum</code></pre>
+      <p>PeakAndPack's own end-to-end suite has the page objects but not the zero: it has <strong>43</strong> locator calls inside its tests against 31 inside its page objects. Most are in the admin panel tests (10, the panel has no page object yet), the auth tests (12) and the browse tests (9). That list is the project's work, in the order to do it.</p>
+
+      <p><strong>Project 2:</strong> baselining a bug feels wrong the first time you do it. It isn't: the baseline records current reality, and updating it when BUG-001 (the negative price) and BUG-002 (the empty name) get fixed is a one-line change, not a redesign. Assert that the bugs are on screen before the screenshot, so the baseline cannot silently start recording a page that has lost them. I ran the three pages at desktop width and on an emulated phone: each of the six baselines was written on the first run and passed on the second.</p>
+<pre><code>// tests/visual-pages.spec.ts: the three pages, with the two known data bugs on screen
+import { test, expect } from '../fixtures';
+import { stubImages } from '../helpers/visual';
+
+test('product listing', async ({ page }) =&gt; {
+  await stubImages(page);
+  await page.goto('/');
+  await expect(page.getByTestId('product-card').first()).toBeVisible();
+  await expect(page.getByText('$-89.00')).toBeVisible();            // the negative price is part of the baseline
+  await expect(page.getByText('(no name)').first()).toBeVisible();   // and so is the product with no name
+  await expect(page).toHaveScreenshot('listing.png', { fullPage: true, maxDiffPixels: 100 });
+});
+
+test('cart page', async ({ seededCart, loggedInPage }) =&gt; {
+  await stubImages(loggedInPage);
+  await seededCart.goto();
+  await expect(loggedInPage.getByText('Trekking Poles (Pair)')).toBeVisible();
+  await expect(loggedInPage).toHaveScreenshot('cart.png', { fullPage: true, maxDiffPixels: 100 });
+});
+
+test('checkout page', async ({ seededCart, loggedInPage }) =&gt; {
+  await stubImages(loggedInPage);
+  await seededCart.goto();
+  await seededCart.proceedToCheckout();
+  await expect(loggedInPage.frameLocator('iframe[title="Payment form"]').getByLabel('Card number')).toBeVisible();
+  await expect(loggedInPage).toHaveScreenshot('checkout.png', { fullPage: true, maxDiffPixels: 100 });
+});</code></pre>
+      <p>Three things from Phase 11 matter here. Baselines belong to an operating system, so make the ones CI uses in CI. Stub the product images, or the outside host decides what your baseline looks like. And keep the pixel allowance small: a percentage tolerance on a full page would let a whole card change colour and still pass.</p>
+
       <p><strong>Project 3:</strong> quarantine only works if something forces a review of what's in it. A quarantine list that only grows is worse than no quarantine: it hides real regressions behind old, ignored ones. That's why each quarantined test gets an issue. One way to build it, in two pieces:</p>
-      <p>A script that reads the JSON report after each nightly run (add <code>['json', { outputFile: 'results.json' }]</code> to the config's reporters, and install <code>tsx</code> with <code>npm install -D tsx</code> to run it):</p>
-      <pre><code>// scripts/quarantine-flaky.ts
+      <p>A script that reads the JSON report after each nightly run (add <code>['json', { outputFile: 'results.json' }]</code> to the config's reporters, and install <code>tsx</code> with <code>npm install -D tsx</code> to run it). One detail decides whether <code>@critical</code> tests are really protected: in the JSON report, a spec's tags are written <em>without</em> the <code>@</code> (<code>critical</code>), and a test tagged with Phase 12's <code>tag</code> option has no tag in its title at all. A check like <code>title.includes('@critical')</code> never matches, so a flaky critical test would be quarantined. Read the tags instead:</p>
+<pre><code>// scripts/quarantine-flaky.ts
 // Reads the JSON report from the last run, counts which tests were flaky,
 // and moves any test that has now been flaky THRESHOLD times into quarantine.json.
 import fs from 'fs';
 
 const THRESHOLD = 3; // flaky runs before a test is quarantined
 
-type Spec = { title: string; tests: { status: string }[] };
-type Suite = { specs: Spec[]; suites?: Suite[] };
+// In the JSON report, a spec's tags are written without the @: '@critical' appears as 'critical'
+type Spec = { title: string; tags?: string[]; tests: { status: string }[] };
+type Suite = { specs?: Spec[]; suites?: Suite[] };
+type Flaky = { title: string; critical: boolean };
 
 // 'flaky' is Playwright's status for a test that failed, then passed on retry
-function flakyTitles(suite: Suite): string[] {
-  const here = suite.specs
-    .filter(spec => spec.tests.some(t => t.status === 'flaky'))
-    .map(spec => spec.title);
-  // Suites nest (file > describe > describe), so walk the children too
-  return here.concat(...(suite.suites ?? []).map(flakyTitles));
+function flakyTests(suite: Suite): Flaky[] {
+  const here = (suite.specs ?? [])
+    .filter((spec) =&gt; spec.tests.some((t) =&gt; t.status === 'flaky'))
+    .map((spec) =&gt; ({ title: spec.title, critical: (spec.tags ?? []).includes('critical') }));
+  // Suites nest (file &gt; describe &gt; describe), so walk the children too
+  return here.concat(...(suite.suites ?? []).map(flakyTests));
 }
 
 const report = JSON.parse(fs.readFileSync('results.json', 'utf8'));
-const flaky: string[] = report.suites.flatMap(flakyTitles);
+const flaky: Flaky[] = report.suites.flatMap(flakyTests);
 
-// Keep a running count per test, across CI runs
+// Keep a running count per test, across CI runs, and remember which ones are critical
 const historyFile = 'flaky-history.json';
-const history: Record&lt;string, number> = fs.existsSync(historyFile)
+const history: Record&lt;string, { count: number; critical: boolean }&gt; = fs.existsSync(historyFile)
   ? JSON.parse(fs.readFileSync(historyFile, 'utf8'))
   : {};
-for (const title of flaky) history[title] = (history[title] ?? 0) + 1;
+for (const { title, critical } of flaky) {
+  history[title] = { count: (history[title]?.count ?? 0) + 1, critical };
+}
 fs.writeFileSync(historyFile, JSON.stringify(history, null, 2));
 
 // Past the threshold goes into quarantine, except @critical tests:
 // a flaky critical test keeps blocking, because someone needs to look at it now
-const quarantine: string[] = JSON.parse(fs.readFileSync('quarantine.json', 'utf8'));
+const quarantineFile = 'quarantine.json';
+const quarantine: string[] = fs.existsSync(quarantineFile)
+  ? JSON.parse(fs.readFileSync(quarantineFile, 'utf8'))
+  : [];
 const newlyQuarantined = Object.entries(history)
-  .filter(([title, count]) => count >= THRESHOLD &amp;&amp; !title.includes('@critical'))
-  .map(([title]) => title)
-  .filter(title => !quarantine.includes(title));
-fs.writeFileSync('quarantine.json', JSON.stringify([...quarantine, ...newlyQuarantined], null, 2));
+  .filter(([title, { count, critical }]) =&gt; count &gt;= THRESHOLD &amp;&amp; !critical &amp;&amp; !quarantine.includes(title))
+  .map(([title]) =&gt; title);
+fs.writeFileSync(quarantineFile, JSON.stringify([...quarantine, ...newlyQuarantined], null, 2));
 
 // Print the new ones so the workflow can open an issue for each
-console.log(JSON.stringify(newlyQuarantined));
-</code></pre>
+console.log(JSON.stringify(newlyQuarantined));</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>THRESHOLD = 3</code> is how many flaky nights it takes to quarantine a test. Change it to suit your suite.</li>
+        <li>The <code>type</code> lines describe the shape of the JSON report: suites hold specs, specs have a title, tags and tests. <code>tags?</code> with the question mark means a spec may have none.</li>
+        <li><code>flakyTests</code> walks the report and returns the title of every spec whose test status is <code>flaky</code> (failed, then passed on retry, Phase 4), with whether it is critical. It calls itself on the child suites, because a suite can hold suites.</li>
+        <li><code>history</code> is a file that remembers a count per test between nightly runs. Each flaky test gets one more, and its <code>critical</code> flag is stored beside it.</li>
+        <li>The filter keeps a test only if its count has reached the threshold, it is <strong>not</strong> critical, and it is not already in the list. <code>!critical</code> is what keeps a flaky <code>@critical</code> test blocking merges.</li>
+        <li><code>console.log(JSON.stringify(newlyQuarantined))</code> prints the new titles as data, so the next workflow step can read them and open an issue for each.</li>
+      </ul>
+    </div>
+  </details>
+      <p>I ran it on a report where three tests were flaky: two <code>@regression</code> tests and the <code>@critical</code> checkout test. After three nightly runs, the two regression tests were in <code>quarantine.json</code> and the checkout test, flaky three times, was left in the gate. The first run printed nothing new, the second nothing, and the third printed the two titles.</p>
       <p>And a nightly job that runs it, saves the lists and opens the issues:</p>
-      <pre><code># In .github/workflows/playwright.yml, alongside the test jobs
+<pre><code># In .github/workflows/playwright.yml, alongside the test jobs
   quarantine-check:
     if: github.event_name == 'schedule'  # nightly only
     runs-on: ubuntu-latest
@@ -284,7 +342,7 @@ console.log(JSON.stringify(newlyQuarantined));
 
       - name: Quarantine tests that keep flaking
         id: quarantine
-        run: echo "new=$(npx tsx scripts/quarantine-flaky.ts)" >> "$GITHUB_OUTPUT"
+        run: echo "new=$(npx tsx scripts/quarantine-flaky.ts)" &gt;&gt; "$GITHUB_OUTPUT"
 
       - name: Commit the updated lists
         run: |
@@ -302,25 +360,83 @@ console.log(JSON.stringify(newlyQuarantined));
           echo "$NEW" | jq -r '.[]' | while read -r title; do
             gh issue create --title "Quarantined flaky test: $title" \
               --body "Flaky in 3 nightly runs, so it no longer blocks merges. Find the root cause, fix it, and remove it from quarantine.json."
-          done
-</code></pre>
-      <p>The job pushes to your main branch, so branch protection has to allow the Actions bot to push, or you can have it open a pull request instead.</p>
-      <p><strong>Project 4:</strong> the value is in the "decided not to fix" column as much as the fixes. A reviewer that agrees with every finding without pushback hasn't actually exercised judgment.</p>
-      <p><strong>Project 5:</strong> the failure mode is running the accessibility check as a separate, ignorable job. If it doesn't block the same way a broken login blocks, it will get muted the first time it's inconvenient.</p>
-      <p><strong>Project 6:</strong> the report is often written for yourself, dense with context only you have. Test it by having someone unfamiliar with the project read it and try to answer "where would my first test go" from the document alone.</p>
+          done</code></pre>
+      <p>The job pushes to your main branch, so branch protection has to allow the Actions bot to push, or you can have it open a pull request instead. I parsed this workflow as YAML and ran the script locally, but I have not run the job on GitHub: the first nightly run is the real test, including the <code>git push</code>, the <code>jq</code> step and the issue creation. It also assumes the <code>gate</code> and <code>quarantine</code> projects from Phase 12's config.</p>
+
+      <p><strong>Project 4:</strong> use all six rules of Phase 13's reviewer prompt, and add the mutation check for the tests you trust least. The value is in the "decided not to fix" column as much as the fixes. A reviewer that agrees with every finding without pushback hasn't actually exercised judgment. Record, for each test you audited, the break you tried and whether it went red.</p>
+
+      <p><strong>Project 5:</strong> the failure mode is running the accessibility check as a separate, ignorable job. If it doesn't block the same way a broken login blocks, it will get muted the first time it's inconvenient. I scanned the pages the project names, and added the register form and cart. Failing on serious and critical violations only:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Page</th><th>Serious or critical</th><th>Moderate (backlog)</th></tr></thead>
+          <tbody>
+            <tr><td>Product list</td><td><code>color-contrast</code> on 9 elements: the grey line under each product is #888 on white, 3.54:1</td><td>heading order, no main landmark, content outside landmarks</td></tr>
+            <tr><td>Login form</td><td><code>label</code> (critical) on 2 fields</td><td>no main landmark, content outside landmarks</td></tr>
+            <tr><td>Register form</td><td><code>label</code> (critical) on 3 fields</td><td>same</td></tr>
+            <tr><td>Cart</td><td>none</td><td>same</td></tr>
+            <tr><td>Checkout</td><td>none</td><td>same</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>The login and register findings are the same defect that sent your tests to <code>input[type="email"]</code> back in Phase 2: the labels are not linked to their fields, so <code>getByLabel</code> can't find them, and a screen reader can't announce them either. A test hack and a real accessibility bug had the same cause. Each page that fails today becomes a test marked <code>test.fail()</code>, so the pipeline stays green while the bug exists and goes red when it is fixed:</p>
+<pre><code>// tests/a11y/forms.spec.ts: one scan per page, in the same run as everything else
+import { test, expect } from '../../fixtures';
+import AxeBuilder from '@axe-core/playwright';
+
+for (const { name, path } of [{ name: 'login form', path: '/login' }, { name: 'register form', path: '/register' }]) {
+  test(`the ${name} has no serious accessibility violations`, { tag: ['@a11y', '@known-bug'] }, async ({ page }) =&gt; {
+    test.fail();   // the labels aren't linked to their fields: axe reports 'label' as critical
+    await page.goto(path);
+    await expect(page.getByRole('button').first()).toBeVisible();
+    const results = await new AxeBuilder({ page }).analyze();
+    const serious = results.violations.filter((v) =&gt; v.impact === 'critical' || v.impact === 'serious');
+    expect(serious.map((v) =&gt; `${v.id} (${v.impact}): ${v.nodes.length} element(s)`)).toEqual([]);
+  });
+}</code></pre>
+
+      <p><strong>Project 6:</strong> the report is often written for yourself, dense with context only you have. Test it by having someone unfamiliar with the project read it and try to answer "where would my first test go" from the document alone. Here is an outline, filled in with the facts of PeakAndPack's suite so you can see the level of detail. Section 6 is the one only you can write:</p>
+<pre><code># PeakAndPack end-to-end suite: architecture report
+
+## 1. What the suite tests, and why
+39 tests across eight areas: smoke (3), shop (13: browse 5, cart 4, checkout 4), auth (5), api (8), admin (2),
+known-bugs (6), a11y (1), mobile (1). The weight is on the journeys where a bug costs money or trust: checkout,
+login, and the cart. The API tests carry the rules (status codes, validation, who may see what), because a rule
+belongs where it is enforced.
+
+## 2. Conventions
+See CONTRIBUTING.md. In short: role/label/text locators, no sleeps, every test tagged, every test owns its data.
+
+## 3. What it is designed to catch: the known bugs
+| Bug | Where | Test |
+|---|---|---|
+| BUG-008 no stock check | checkout | known-bugs: an out-of-stock product cannot be ordered |
+| BUG-009 SAVE10 = 100% off | checkout | known-bugs: a 10% discount code takes 10% off |
+| BUG-010 everyone's orders | /api/orders | known-bugs: a customer's order list shows only their own |
+| Negative price, empty name | catalogue | known-bugs, plus the visual baseline |
+| Colour contrast, unlinked labels | UI | a11y |
+
+## 4. What is deliberately out of scope
+Security testing beyond access control, performance, and the native app. Not because they don't matter: because
+this suite answers "does the store work", and each of those needs its own approach.
+
+## 5. Where to add your first test
+A new journey: tests/&lt;area&gt;/, using the fixtures. A new rule: tests/api/. A new bug: tests/known-bugs/, marked test.fail().
+
+## 6. What I would do differently
+(Yours to write. This is the section that shows judgement.)</code></pre>
     </div>
   </details>
 
   <div class="series-complete">
     <h3>Series complete</h3>
-    <p><strong>Playwright: Zero to Architect is done.</strong> You've gone from a hardcoded URL and a CSS selector in Phase 0 to a suite with conventions, CI, AI-assisted review, and a documented architecture. Every phase built on the one before it: locators fed assertions, assertions fed debugging, page objects fed fixtures, and all of it fed the leadership and capstone work here. The bugs seeded into PeakAndPack (the negative price, the empty product name, the discount-code miscalculation tracked as BUG-009, the order-history authorization gap, the visual regression tracked as BUG-011) were never the point on their own, they were the proof, at every phase, that the tests you were writing could actually tell the difference between working and broken.</p>
+    <p><strong>Playwright: Zero to Architect is done.</strong> You've gone from a hardcoded URL and a CSS selector in Phase 0 to a suite with conventions, CI, AI-assisted review, and a documented architecture. Every phase built on the one before it: locators fed assertions, assertions fed debugging, page objects fed fixtures, and all of it fed the leadership and capstone work here. The bugs seeded into PeakAndPack (the negative price, the empty product name, the discount-code miscalculation tracked as BUG-009, the order-history authorization gap, the colour-contrast and unlinked-label accessibility defects) were never the point on their own, they were the proof, at every phase, that the tests you were writing could actually tell the difference between working and broken.</p>
   </div>
 
   <div class="series-nav">
     <span class="label">Navigate the series</span>
     <div class="nav-pair">
       <a href="14-playwrightseries-automation-leadership.html" class="nav-blog"><span class="nav-blog-arrow" aria-hidden="true">&larr;</span><div><div class="nav-blog-title">Phase 14: Automation Leadership</div><div class="nav-blog-sub">Making the standard a team's, not just yours</div></div></a>
-      <a href="00-playwrightseries-landing.html" class="nav-blog"><div><div class="nav-blog-title">Back to Series Overview</div><div class="nav-blog-sub">All fifteen phases, start to finish</div></div><span class="nav-blog-arrow" aria-hidden="true">&rarr;</span></a>
+      <a href="00-playwrightseries-landing.html" class="nav-blog"><div><div class="nav-blog-title">Back to Series Overview</div><div class="nav-blog-sub">All sixteen phases, start to finish</div></div><span class="nav-blog-arrow" aria-hidden="true">&rarr;</span></a>
     </div>
   </div>
 

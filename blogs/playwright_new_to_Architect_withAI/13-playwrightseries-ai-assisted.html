@@ -111,6 +111,16 @@ footer a:hover{color:var(--purple)}
 .blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
 .blog-tags .series-tag{margin-bottom:0}
 .tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+details.explain{margin:.5rem 0 1.5rem;border:1px solid var(--purple-border);border-radius:10px;background:var(--purple-bg)}
+details.explain summary{padding:.6rem 1rem;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--purple);list-style:none;display:flex;align-items:center;gap:.5rem}
+details.explain summary::-webkit-details-marker{display:none}
+details.explain summary::before{content:"\25B6";font-size:.65rem;transition:transform .2s}
+details.explain[open] summary::before{transform:rotate(90deg)}
+.explain-body{padding:.1rem 1.2rem 1rem;font-size:.92rem;line-height:1.7}
+.explain-body p{margin:.7rem 0}
+.explain-body ul{margin:.3rem 0 .7rem 1.2rem;padding-left:0}
+.explain-body li{margin-bottom:.35rem}
+.explain-body pre{margin:.6rem 0}
 </style>
 <meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
 <meta property="og:image:width" content="1200">
@@ -151,7 +161,7 @@ footer a:hover{color:var(--purple)}
   <div class="meta-row">
     <span><strong>Series: Playwright: Zero to Architect</strong></span>
     <span>Demo: PeakAndPack</span>
-    <span>9 min read</span>
+    <span>20 min read</span>
     <span>By: RN</span>
   </div>
 
@@ -176,79 +186,169 @@ footer a:hover{color:var(--purple)}
 
   <h2>Goal</h2>
   <p>Use AI two ways against your existing PeakAndPack suite: as a reviewer that audits code you already wrote, and as a generator for new tests you review before they count. Leave with a documented review checklist and at least one AI-drafted test that passed your own bar, not the model's.</p>
+  <p>By the end of this phase you can:</p>
+  <ul>
+    <li>spot a test that is green and protects nothing</li>
+    <li>write a reviewer prompt with named rules, and read what it returns</li>
+    <li>generate a test with the constraints in the prompt, and review it against the running app</li>
+    <li>check that a test can fail, by breaking the app on purpose</li>
+    <li>use AI to read a failure without letting it decide what the failure means</li>
+  </ul>
 
   <h2 id="before-accepting-ai">1. Before: accepting AI output because it runs</h2>
   <p>The most common mistake with AI-assisted automation isn't using it, it's treating "the test passes" as proof it's good. A test can pass and still be exactly the fragile, low-value test Phases 1 through 3 taught you to avoid.</p>
 
   <div class="ba-wrap">
     <div class="ba-block before">
-      <div class="ba-label">Before: accepted as-is because it ran green</div>
-<pre><code>// AI-generated, pasted in, never reviewed against
-// the priority table from Phase 2.
-test('add to cart works', async ({ page }) => {
-  await page.goto('https://peakandpack-ui.onrender.com/');
-  await page.click('.product-card:nth-child(1) .btn-cart');
+      <div class="ba-label">Before: accepted because it ran green</div>
+<pre><code>// AI-generated, pasted in, ran green, never reviewed.
+test('add to cart works', async ({ page }) =&gt; {
+  await page.goto('/');
+  await page.getByRole('button', { name: /add to cart/i }).first().click();
   await page.waitForTimeout(2000);
-  expect(await page.locator('.cart-badge').count()).toBeGreaterThan(0);
-});
-</code></pre>
+  expect(await page.getByRole('button').count()).toBeGreaterThan(0);
+});</code></pre>
     </div>
     <div class="ba-block after">
-      <div class="ba-label">After: same intent, reviewed against Phase 1-3 standards</div>
-<pre><code>// Reviewed: role-based locator, scoped, no sleep,
-// asserts something that actually exists on PeakAndPack.
-test('add to cart updates the cart page', async ({ page }) => {
-  await page.goto('https://peakandpack-ui.onrender.com/');
-  await page.getByRole('button', { name: /add to cart/i }).first().click();
-  await page.goto('/cart');
-  await expect(page.getByText('Trekking Poles (Pair)')).toBeVisible();
-});
-</code></pre>
+      <div class="ba-label">After: same intent, reviewed against the series' standards</div>
+<pre><code>// Reviewed: signed-in customer from a fixture, waits for the server's answer,
+// and checks the product is really in the cart.
+test('adding a product puts it in the cart', async ({ loggedInPage }) =&gt; {
+  const added = loggedInPage.waitForResponse(
+    (res) =&gt; res.url().includes('/api/cart') &amp;&amp; res.request().method() === 'POST' &amp;&amp; res.status() === 200
+  );
+  await loggedInPage.getByRole('button', { name: /add to cart/i }).first().click();
+  await added;                                  // the server accepted it
+
+  await loggedInPage.goto('/cart');
+  await expect(loggedInPage.getByText('Trekking Poles (Pair)')).toBeVisible();
+});</code></pre>
     </div>
   </div>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <p><strong>In plain words:</strong> a test an AI could plausibly write: it passes, and checks nothing.</p>
+      <ul>
+        <li>The test opens the store as an anonymous visitor and presses the first "Add to cart" button. It never logs in.</li>
+        <li><code>waitForTimeout(2000)</code> is a fixed sleep (Phase 3). It waits two seconds whatever happens.</li>
+        <li><code>getByRole('button').count()</code> counts every button on the page, and the assertion is that there is at least one. A page always has buttons.</li>
+        <li><strong>It runs green.</strong> I ran it. It passes even though the add to cart <em>failed</em>: without a login the server refuses the request, and the page shows an alert that Playwright dismisses on its own. The test never notices, because nothing it checks could change. A test like this is worse than no test, because it looks like coverage.</li>
+      </ul>
+    </div>
+  </details>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>async ({ loggedInPage })</code> asks for the fixture from Phase 10: a browser already signed in as a brand-new customer, so the add can succeed and nothing else touches this customer's cart.</li>
+        <li><code>waitForResponse(...)</code> is set up <em>before</em> the click (Phase 3) and matches the add's response: the cart address, a POST, status 200. The status matters: a refused add would not match, and the test would fail.</li>
+        <li><code>await added</code> waits for the server's answer instead of sleeping.</li>
+        <li>Then the test opens the cart and checks the product's name is visible, which is what a customer would look for.</li>
+        <li>Ask Rule 6's question of this test: what would make it fail? A refused add (no matching 200), an item that is not saved, or a missing product name would each turn it red. The next section proves the first one.</li>
+      </ul>
+    </div>
+  </details>
 
-  <p>The "before" version has three problems Phases 2 and 3 already named:</p>
+  <p>The "before" version has three problems, each of which an earlier phase named:</p>
   <ul>
-    <li><strong>A structural CSS selector</strong> (<code>nth-child</code>), which breaks on any layout change.</li>
-    <li><strong>A fixed sleep</strong> instead of a wait tied to a real signal.</li>
-    <li><strong>An assertion on <code>.cart-badge</code></strong>, an element that doesn't exist. PeakAndPack has no live cart-count indicator anywhere, as Phase 3 showed.</li>
+    <li><strong>It never logs in</strong> (Phase 5): the add is refused, and the test doesn't know.</li>
+    <li><strong>A fixed sleep</strong> (Phase 3) instead of a wait tied to a real signal.</li>
+    <li><strong>An assertion that cannot fail</strong> (Phase 3): "there is at least one button" is true of every page.</li>
   </ul>
-  <p>It runs. It would have failed the first time someone actually added an item, because that badge is never there to find.</p>
+  <p>It runs, and it passes, and it would keep passing if add to cart were removed from the app.</p>
+  <p>There is a second kind of AI mistake, and it is the easy one to catch. A model that has not seen PeakAndPack tends to invent what a store "should" have: a <code>.cart-badge</code> counter, a <code>getByTestId('cart-total')</code>. PeakAndPack has neither (it has exactly two test ids, <code>product-card</code> and <code>result-count</code>). I ran a test that waits for a <code>cart-total</code> test id, and it fails at once, with <code>element(s) not found</code>. A mistake that fails loudly costs you a minute. The mistake to fear is the one that goes green.</p>
 
   <h2 id="ai-as-reviewer">2. AI as a reviewer</h2>
-  <p>Point AI at a spec file you already wrote and ask it to audit the locators and waits against a stated standard, not a generic "improve this code" prompt.</p>
-  <pre><code>You are reviewing a Playwright spec file for a QA team that requires:
+  <p>Point AI at a spec file you already wrote and ask it to audit the locators, waits and assertions against a stated standard, not a generic "improve this code" prompt. The first three rules are from Phases 2 and 3. Rules 4 to 6 are what the series taught afterwards, and they catch the failures that go green.</p>
+<pre><code>You are reviewing a Playwright spec file for a QA team that requires:
 1. No CSS class or structural selectors (getByRole, getByLabel, getByText only,
    or getByTestId when there is genuinely no role or text to use).
 2. No waitForTimeout. Every wait must be tied to a real signal: an assertion
    with auto-retry, or waitForResponse.
 3. Every assertion must check something visible to the user, not just that
    an element exists in the DOM.
+4. Every test creates its own data, through a fixture or the API. Never the
+   shared demo account.
+5. After any action that sends a request, the test waits for the response
+   before it leaves the page.
+6. Every test must be able to fail. For each assertion, say what change to
+   the app would turn it red. If nothing realistic would, say so.
 
 Here is the file: [paste your spec file]
 
-For each violation, quote the line, name which of the three rules it breaks,
-and suggest a fix. Do not rewrite the whole file, list the findings.</code></pre>
-  <p>This is deliberately narrower than "review my code." A model asked to generally improve a test will restructure it, rename things, and bury the three violations you actually care about inside stylistic opinions. A model asked to check three named rules gives you a findings list you can act on in minutes.</p>
+For each violation, quote the line, name which rule it breaks, and suggest a
+fix. Do not rewrite the whole file, list the findings.</code></pre>
+  <p>This is deliberately narrower than "review my code." A model asked to generally improve a test will restructure it, rename things, and bury the violations you actually care about inside stylistic opinions. A model asked to check six named rules gives you a findings list you can act on in minutes.</p>
+  <p>Here is what the prompt returns for the "before" test of section 1 (an answer from Claude, with the prompt above and the test pasted in):</p>
+<pre><code>1. `await page.goto('/'); await page.getByRole('button', { name: /add to cart/i }).first().click();`
+   Rule 4. The visitor is not logged in, so the server refuses the add (401) and
+   the page shows an alert instead. Use a signed-in customer from a fixture.
+
+2. `await page.waitForTimeout(2000);`
+   Rule 2. A fixed sleep. Set up waitForResponse for POST /api/cart before the
+   click, and wait for it.
+
+3. `expect(await page.getByRole('button').count()).toBeGreaterThan(0);`
+   Rules 3 and 6. Every page has buttons, so nothing the app could do would turn
+   this red. Open /cart and check that the product's name is visible.</code></pre>
+  <p>Notice rule 6. A reviewer that only reads style would pass line 3, because it is tidy and uses a role locator. The question "what would turn this red?" is the one that exposes it.</p>
 
   <h2 id="ai-as-generator">3. AI as a generator, with guardrails</h2>
   <p>Generating a new test from a requirement follows the same three steps every time, with no exceptions for AI-authored code:</p>
   <ol>
     <li>Put the constraints in the prompt, up front.</li>
     <li>Generate the test.</li>
-    <li>Review the result against the same three rules as the reviewer prompt.</li>
+    <li>Review the result against the same six rules as the reviewer prompt, then check it against the running app.</li>
   </ol>
-  <pre><code>Write a Playwright test for: a logged-in user removes an item from their
-PeakAndPack cart and the total recalculates.
+<pre><code>Write a Playwright test for: a logged-in customer removes one item from a cart
+that holds two, and the total recalculates.
 
 Constraints: getByRole/getByLabel/getByText locators only. No waitForTimeout.
-Assert what the user would see on screen, not an internal state.
-I will log in and add an item in a beforeEach, you only need the removal
-and the total-recalculation check.</code></pre>
-
+Assert what the customer would see on screen, not an internal state.
+The test creates its own data: use the loggedInPage and customer fixtures
+(import { test, expect } from '../fixtures'), and add the two items through the API.
+Wait for the new total before you check that the removed item is gone.</code></pre>
   <div class="callout amber">
     <p><strong>Why the constraints go in the prompt, not the review.</strong> It's tempting to just generate freely and clean up after. In practice, a model told the rules upfront produces far fewer violations than one corrected after the fact. Put the standard in the prompt; use the review pass to catch what still slips through, not to do the whole job.</p>
   </div>
+  <p>The first draft of a test like this often has one fault the rules cannot see: it asserts something PeakAndPack does not have. A typical first draft ends with a line like this:</p>
+<pre><code>await expect(page.getByTestId('cart-total')).toHaveText('$0.00');</code></pre>
+  <p>It reads well and follows the style rules, and it fails the first time it runs, because there is no <code>cart-total</code> test id. The reviewed version checks the real heading, "Total: $80.98", which has a role and text:</p>
+<pre><code>// tests/cart-removal.spec.ts
+import { test, expect } from '../fixtures';
+
+const API = 'https://peakandpackshopdemo.onrender.com';
+
+test('removing an item recalculates the total', async ({ loggedInPage, customer, request }) =&gt; {
+  const auth = { Authorization: `Bearer ${customer.token}` };
+  await request.post(`${API}/api/cart`, { headers: auth, data: { product_id: 1, quantity: 1 } });   // Trekking Poles, $34.99
+  await request.post(`${API}/api/cart`, { headers: auth, data: { product_id: 3, quantity: 1 } });   // Camping Stove, $45.99
+
+  await loggedInPage.goto('/cart');
+  const total = loggedInPage.getByRole('heading', { name: /^Total:/ });
+  await expect(total).toHaveText('Total: $80.98');
+
+  // Remove the poles: the row that names them, and that row's own Remove button
+  const poles = loggedInPage.getByText('Trekking Poles (Pair)').locator('..');
+  await poles.getByRole('button', { name: 'Remove' }).click();
+
+  await expect(total).toHaveText('Total: $45.99');                                  // wait for the new total first
+  await expect(loggedInPage.getByText('Trekking Poles (Pair)')).toHaveCount(0);      // then check the item is gone
+  await expect(loggedInPage.getByText('Camping Stove')).toBeVisible();               // and the other one stayed
+});</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>customer</code> and <code>loggedInPage</code> come from the fixtures of Phase 10. The two <code>request.post</code> calls put the poles and the stove in this customer's cart through the API, so the page only has to show them.</li>
+        <li><code>getByRole('heading', { name: /^Total:/ })</code> finds the "Total: $80.98" heading. PeakAndPack has no test id for it, but it has a role and text, which is what Rule 1 asks for.</li>
+        <li><code>getByText('Trekking Poles (Pair)').locator('..')</code> finds the text and steps up to its parent: the cart row (Phase 2). The <code>Remove</code> button is then found <em>inside that row</em>, so it is the poles' button and not the stove's.</li>
+        <li><strong>The order of the last three lines matters.</strong> Removing an item reloads the cart, and for a moment the page shows "Loading cart...". If the test checked "the poles are gone" first, it would pass during that moment, before the cart is back (Phase 7's trap). Waiting for the new total first means the cart has reloaded.</li>
+      </ul>
+    </div>
+  </details>
+  <p>I ran it, and it passed. The review took three steps: read the draft against the rules, run it against the app, and fix what the app disagreed with. The second step is the one only a person who has looked at PeakAndPack can do.</p>
 
   <h2 id="what-ai-gets-wrong">4. What AI gets wrong by default, and why</h2>
   <div class="table-wrap">
@@ -258,7 +358,8 @@ and the total-recalculation check.</code></pre>
         <tr><td>CSS class or <code>nth-child</code> locators</td><td>These are the most common pattern in public training data and tutorials</td><td>Rule 1: reject, replace with role/label/text</td></tr>
         <tr><td><code>waitForTimeout</code> after an action</td><td>It's the simplest thing that makes a flaky demo pass once</td><td>Rule 2: reject, replace with an auto-retrying assertion or <code>waitForResponse</code></td></tr>
         <tr><td>Asserting a status code or DOM presence instead of visible outcome</td><td>Easier to generate without seeing the actual rendered app</td><td>Rule 3: reject, assert what a user would see</td></tr>
-        <tr><td>Inventing an element that doesn't exist (a cart badge, a toast)</td><td>The model is pattern-matching against typical e-commerce apps, not the real PeakAndPack DOM</td><td>Caught only by checking the real app, not by re-reading the code</td></tr>
+        <tr><td>Inventing an element that doesn't exist (a cart badge, a toast, a test id)</td><td>The model is pattern-matching against typical e-commerce apps, not the real PeakAndPack DOM</td><td>Caught only by running it against the real app, not by re-reading the code. It fails loudly, so it is the easy one.</td></tr>
+        <tr><td>A test that passes whatever the app does</td><td>A model that wants a green run will pick an assertion that is always true, and skip the login that makes the feature work</td><td>Rule 6 and the mutation check: break the app and see whether the test notices</td></tr>
       </tbody>
     </table>
   </div>
@@ -266,14 +367,38 @@ and the total-recalculation check.</code></pre>
   <div class="callout red">
     <p><strong>Common mistakes in Phase 13.</strong></p>
     <ul style="margin:.5rem 0 0 1.2rem;">
-      <li><strong>Reviewing the code but not the app.</strong> A locator can look perfectly resilient (role-based, scoped) and still target an element that doesn't exist on PeakAndPack. Rule 1-3 review catches style; only checking the live app catches invented elements.</li>
+      <li><strong>Reviewing the code but not the app.</strong> A locator can look perfectly resilient (role-based, scoped) and still target an element that doesn't exist on PeakAndPack. Rules 1 to 3 catch style; only running it against the live app catches invented elements, and rule 6 catches tests that pass whatever the app does.</li>
       <li><strong>Letting AI restructure working tests "while it's in there."</strong> Scope every prompt to the specific rule violations. An unscoped "improve this" prompt touches things you didn't ask about and makes the diff hard to review.</li>
       <li><strong>Treating a passing AI-generated test as reviewed.</strong> Passing and reviewed are different claims. Every AI-generated test needs the same locator/wait/assertion check as human-written code, no exceptions.</li>
+      <li><strong>Trusting a green test.</strong> The most dangerous AI test is the one that passes and checks nothing. Ask what would turn it red, then break the app and see.</li>
+      <li><strong>Letting a healer or a fixer edit expected values unread.</strong> Tools built to make a test pass will change what the test expects. Read the diff, and search for new <code>test.fixme</code> lines.</li>
       <li><strong>Not keeping the constraint prompt.</strong> If the rules only live in your head, every teammate using AI reinvents them differently. Save the review prompt as a checked-in file, Phase 14 covers making this a team standard.</li>
     </ul>
   </div>
 
-  <h2 id="ai-assisted-fix">5. AI-assisted fixing: a person approves every change</h2>
+  <h2 id="can-it-fail">5. The check no reviewer can skip: can this test fail?</h2>
+  <p>Every rule so far is about how a test is written. Rule 6 is about whether it protects anything, and the way to check is to break the app on purpose and see whether the test notices. This is called a <strong>mutation check</strong>. It takes a minute, and it catches the green test that cannot fail.</p>
+<pre><code>// The break: paste this at the top of the test under review, run it, then delete it.
+// It makes the server refuse every add to the cart.
+await loggedInPage.route('**/api/cart', (route) =&gt;
+  route.request().method() === 'POST'
+    ? route.fulfill({ status: 500, json: { error: 'boom' } })
+    : route.fallback()
+);</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>loggedInPage.route('**/api/cart', handler)</code> catches every request to the cart address (Phase 7). The handler checks the method: for a <code>POST</code>, the add, it answers with a 500 error instead of letting the request through.</li>
+        <li><code>route.fallback()</code> lets every other request (the page reading the cart with a GET) carry on as usual, so only the add is broken.</li>
+        <li>Run the test with the break in place. If it stays green, the test cannot see a failed add, and it needs fixing. If it goes red, it is protecting something.</li>
+        <li>I ran this on the reviewed test: it failed, waiting for a 200 response that never came. The unreviewed "before" test was green with or without the break, because nothing it checks depends on the add.</li>
+      </ul>
+    </div>
+  </details>
+  <p>Do it for any test an AI wrote before you trust it, and for any test that has only ever been green. If a test passes with the app broken in the way it claims to guard against, it is not a test of that.</p>
+
+  <h2 id="ai-assisted-fix">6. AI-assisted fixing: a person approves every change</h2>
   <p>Some failures take a while to diagnose. AI can speed up the reading: give it the error and the trace, and it will suggest what went wrong and how to fix it. What it can't do is decide what the failure means. A failing test means one of three things:</p>
   <ul>
     <li><strong>A real regression:</strong> the app broke, and the test is right to fail.</li>
@@ -301,56 +426,88 @@ Error and trace notes:
     <li><strong>Check the verdict against what you know about the product</strong>, then review any code change against the three rules from section 2.</li>
     <li><strong>Apply it and rerun</strong> the test with <code>--repeat-each=10</code> before it merges.</li>
   </ol>
-  <p><strong>Try it on Phase 6's failing test.</strong> The two-customer test fails because Bob's order list includes Alice's order. A bare "make this test pass" invites exactly the wrong fix: flip the assertion, or filter other customers' orders out of the list before checking it. Both turn the test green and hide a privacy bug. The right answer is option 1: the test is correct, BUG-010 is real, and the fix belongs in the API.</p>
-  <p>The same rule covers tools that apply fixes for you, such as Playwright's healer agent: read the diff and the reasoning before anything merges. An agent that files bugs and proposes fixes on its own, still with a person approving the merge, is covered in the Agentic SDLC series, coming later.</p>
+  <p><strong>Try it on Phase 6's failing test.</strong> The two-customer test fails because Bob's order list includes Alice's order. A bare "make this test pass" invites exactly the wrong fix: flip the assertion, or filter other customers' orders out of the list before checking it. Both turn the test green and hide a privacy bug. The right answer is option 1: the test is correct, BUG-010 is real, and the fix belongs in the API. The worked example below shows what that diagnosis looks like.</p>
+  <p><strong>The agents Playwright ships.</strong> Playwright can set up three agents in your repository: <code>npx playwright init-agents --loop claude</code> (other loops, such as <code>codex</code> and <code>vscode</code>, are listed in the command's help). I ran it in an empty folder. It created a <em>planner</em> (writes a test plan from the app), a <em>generator</em> (turns a plan into tests) and a <em>healer</em> (debugs and fixes failing tests), as definition files plus an MCP configuration. I have not run the agents themselves, but I read the healer's instructions. They tell it to fix assertions and expected values, and "do not ask user questions, you are not interactive tool, do the most reasonable thing possible to pass the test". Its escape hatch is to mark a test <code>test.fixme()</code> when it is sure the test is right, with a comment, so the test is skipped.</p>
+  <p>That is the failure this section describes, built into the tool: it is designed to make the run green. Treat a healer's output the way you treat any other change that edits expected values. Read the diff and the reasoning before anything merges, and search for new <code>test.fixme</code> lines, because each one is a test that stopped running.</p>
+  <p><strong>What a good diagnosis looks like.</strong> Here is the real failure of Phase 6's two-customer test as evidence, and an answer that follows the prompt:</p>
+<pre><code>Test: "a customer's order list shows only their own orders"
 
-  <h2 id="deliverables">6. Deliverables</h2>
+Error:
+  expect(received).not.toContain(expected)
+  Expected value: not 3
+  Received array:     [3, 2, 1]
+
+Failing step: the last line, after Alice checked out (order 3) and Bob asked for his orders
+Network: GET /api/orders with Bob's token returned 200 with orders 3, 2 and 1</code></pre>
+<pre><code>Verdict: 1. The app has a bug, and the test is right to fail.
+
+Evidence: Bob has ordered nothing, yet GET /api/orders with Bob's token returned
+Alice's order 3 and two others. The test asks exactly what it should: "is Alice's
+order in Bob's list?" The answer is yes, and it should be no.
+
+Not option 2: nothing suggests orders are meant to be shared between customers.
+Not option 3: the locator and the checks are sound, the data comes from the API.
+
+Do not change the assertion, and do not filter the list in the test. Either turns
+the test green and hides a privacy bug. The fix belongs in the API: filter the
+orders by the logged-in customer. Keep the test as it is, marked test.fail() with
+a link to the bug until the API is fixed.</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li>The first block is the evidence you would paste into the prompt: the test name, the error, the failing step and what the network showed. It is the real failure of the two-customer test from Phase 6.</li>
+        <li>The second block is an answer that follows the prompt: a verdict first, the reasons from the evidence, a reason each of the other two options doesn't fit, and what to do. The verdict is yours to check against what you know the product should do.</li>
+        <li>It ends by refusing the easy fix. A model asked only to make the test pass could flip the assertion, and the test would be green with the privacy bug still there.</li>
+      </ul>
+    </div>
+  </details>
+  <p>An agent that files bugs and proposes fixes on its own, still with a person approving the merge, is covered in the Agentic SDLC series, coming later.</p>
+
+  <h2 id="deliverables">7. Deliverables</h2>
   <ul>
-    <li><code>ai-review-checklist.md</code>: the three-rule review prompt, saved as a reusable file</li>
-    <li><code>tests/cart-removal.spec.ts</code>: one AI-generated test, reviewed and corrected against the checklist</li>
+    <li><code>ai-review-checklist.md</code>: the six-rule review prompt, saved as a reusable file</li>
+    <li><code>tests/cart-removal.spec.ts</code>: one AI-generated test, reviewed and corrected against the checklist and the running app</li>
+    <li><code>mutation-checks.md</code>: for each test you audited, the break you tried and whether the test went red</li>
     <li><code>ai-fix-log.md</code>: one failing test diagnosed with AI help: the evidence, the AI's verdict, your decision, and why</li>
   </ul>
 
   <hr style="border:none;border-top:1px solid var(--border);margin:0">
 
   <div class="assignment">
-    <div class="a-label">Assignment</div>
-    <h3>Audit an existing spec file</h3>
-    <p>Take any spec file from an earlier phase (Phase 9's page objects are a good candidate) and run it through the reviewer prompt above. Document every finding, whether you agree with it, and whether you'd have caught it yourself without the prompt.</p>
+    <div class="a-label">Assignment, part 1</div>
+    <h3>Generate a test, then review it against the app</h3>
+    <p>Use the generator prompt from section 3 (or write your own with the same constraints) to get a cart-removal test from an AI. Review the result against the six rules, run it against PeakAndPack, and correct what the app disagrees with. Write down what the first draft got wrong and which rule or check caught each problem.</p>
 
   <details class="solution">
     <summary>Show solution: try it yourself first</summary>
     <div class="solution-body">
       <h3>The reviewed cart-removal test</h3>
-      <pre><code>import { test, expect } from '@playwright/test';
+      <p>The solution is the test in section 3. These are the findings a first draft typically has, and what caught each:</p>
+      <ul>
+        <li><strong>The invented total.</strong> <code>getByTestId('cart-total')</code> does not exist. The first run caught it. The fix is the real heading, found by role and text.</li>
+        <li><strong>The shared account.</strong> A draft that logs in as <code>test@peakandpack.com</code> shares its cart with every other run, so "the cart is empty afterwards" can be wrong for reasons that have nothing to do with the test. Rule 4 caught it. The fix is a fixture customer.</li>
+        <li><strong>The check order.</strong> Asserting that the removed item is gone before the cart has reloaded passes during the "Loading cart..." moment. Rule 6 caught it, by asking when the assertion could first be true. The fix is to wait for the new total first.</li>
+      </ul>
+      <p><strong>Why this still needs a human.</strong> Knowing which test ids PeakAndPack really has, and that its cart briefly shows "Loading cart...", is not something a model could know from the requirement text. It is something you know from having looked at the running app. That gap, between what is written down and what is true of the system, is what the review exists to close.</p>
+    </div>
+  </details>
+  </div>
 
-test('removing an item takes it out of the cart', async ({ page }) => {
-  // Log in. PeakAndPack's labels aren't linked to their inputs, so getByLabel
-  // can't find them; the input type is the next most stable hook.
-  await page.goto('https://peakandpack-ui.onrender.com/login');
-  await page.locator('input[type="email"]').fill('test@peakandpack.com');
-  await page.locator('input[type="password"]').fill('password123');
-  await page.getByRole('button', { name: /log in/i }).click();
+  <div class="assignment" style="margin-top:2rem">
+    <div class="a-label">Assignment, part 2</div>
+    <h3>Audit a spec and break it</h3>
+    <p>Take any spec file from an earlier phase (Phase 9's page objects are a good candidate) and run it through the six-rule reviewer prompt. Document every finding, whether you agree, and whether you would have caught it yourself. Then pick the two tests you trust least and run the mutation check on each: break the app in the way the test claims to guard against, and see whether it goes red.</p>
 
-  // Put one item in the cart. The "Added to cart" alert only appears once the
-  // server has saved it, so wait for it before leaving the page
-  const added = page.waitForEvent('dialog');
-  await page.getByRole('button', { name: /add to cart/i }).first().click();
-  await (await added).accept();
-
-  // Then remove it
-  await page.goto('/cart');
-  await page.getByRole('button', { name: /remove/i }).click();
-
-  // Still on the cart page, and the removed item is gone. Not "cart is empty":
-  // everyone shares this demo account, so other items may be in its cart.
-  // No cart-total check: the AI's draft used a test ID PeakAndPack doesn't have.
-  await expect(page.getByRole('heading', { name: 'Your Cart' })).toBeVisible();
-  await expect(page.getByText('Trekking Poles (Pair)')).not.toBeVisible();
-});
-</code></pre>
-      <p><strong>What the first draft got wrong.</strong> The initial AI output asserted <code>page.getByTestId('cart-total')).toHaveText('$0.00')</code>. PeakAndPack has exactly two test IDs, <code>product-card</code> and <code>result-count</code> (both in Phase 2), and nothing on the cart total, so the model invented a hook that doesn't exist. The reviewed version drops that assertion and checks something real: the removed item's name is no longer visible.</p>
-      <p><strong>Why this still needs a human.</strong> Knowing which test IDs PeakAndPack actually has isn't something the model could know from the requirements text alone, it's something you know from having actually looked at the app. That gap, between what's written down and what's true of the running system, is exactly what the review pass exists to close.</p>
+  <details class="solution">
+    <summary>Show solution: try it yourself first</summary>
+    <div class="solution-body">
+      <p>Findings differ by file, so there is no fixed answer. What to look for, and what the mutation check shows:</p>
+      <ul>
+        <li><strong>A finding you disagree with is still useful.</strong> Say why. A reviewer prompt that flags a role-based locator on a button whose text changes (as checkout's does) is wrong, and writing down why keeps the standard honest.</li>
+        <li><strong>Choose mutations that match the test's name.</strong> A test called "adding a product puts it in the cart" should fail when the add is refused (the break above). A test called "search finds a tent" should fail when the search returns nothing. A test that stays green under the break is a candidate for rewriting or deleting.</li>
+        <li><strong>Record both results.</strong> "Went red" is the good outcome. "Stayed green" is the finding.</li>
+      </ul>
     </div>
   </details>
   </div>
