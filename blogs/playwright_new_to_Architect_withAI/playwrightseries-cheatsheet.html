@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cheat Sheet | Playwright: Zero to Architect</title>
+<meta name="description" content="A printable two-page A4 cheat sheet for Playwright: locators, actions, assertions, waiting, test data, sessions, API calls, mocking, structure, config, commands and CI, with the traps to watch for.">
+<meta name="robots" content="noindex">
+<style>
+@page{size:A4;margin:6mm}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--ink:#1A1F14;--ink2:#3D4235;--ink3:#6B7060;--line:#D9DECF;--accent:#7A4A9A;--accent-bg:#F3ECF8;--code-bg:#F4F6EF;--warn:#9A3A2A}
+body{background:#E9ECE3;color:var(--ink);font-family:'Segoe UI',system-ui,sans-serif;font-size:7.5pt;line-height:1.22}
+.toolbar{max-width:210mm;margin:12px auto;display:flex;justify-content:space-between;align-items:center;font-size:10pt;gap:12px;flex-wrap:wrap;padding:0 4px}
+.toolbar a{color:var(--accent)}
+.toolbar button{font:inherit;padding:6px 14px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer}
+.sheet{width:210mm;height:297mm;margin:0 auto 24px;background:#fff;padding:6mm 7mm;box-shadow:0 2px 12px rgba(0,0,0,.12);display:flex;flex-direction:column;overflow:hidden}
+header{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid var(--accent);padding-bottom:2mm;margin-bottom:2.5mm}
+h1{font-size:15pt;color:var(--accent);letter-spacing:-.01em}
+header p{font-size:7.8pt;color:var(--ink3);text-align:right}
+.cols{display:grid;grid-template-columns:1fr 1fr;column-gap:5mm;align-items:start;flex:1;min-height:0}
+.col{min-width:0}
+section{break-inside:avoid;margin-bottom:1.8mm;border:1px solid var(--line);border-radius:2.5mm;overflow:hidden}
+h2{font-size:8.8pt;background:var(--accent-bg);color:var(--accent);padding:.9mm 2.2mm;border-bottom:1px solid var(--line)}
+h2 span{font-weight:400;color:var(--ink3);font-size:7.6pt;margin-left:1.5mm}
+table{width:100%;border-collapse:collapse}
+td{padding:.4mm 1.8mm;vertical-align:top;border-bottom:1px solid #EEF1E8}
+tr:last-child td{border-bottom:none}
+td:first-child{width:53%}
+code{font-family:Consolas,'Cascadia Mono',ui-monospace,monospace;font-size:6.8pt;background:var(--code-bg);padding:0 .7mm;border-radius:.6mm;white-space:pre-wrap}
+td:first-child code{background:none;padding:0;color:var(--ink)}
+.w{color:var(--warn);font-weight:600}
+.note{padding:.9mm 2.2mm;color:var(--ink2);font-size:7.6pt}
+.err td:first-child{width:52%}
+footer{margin-top:2mm;padding-top:2mm;border-top:1px solid var(--line);font-size:7.2pt;color:var(--ink3);display:flex;justify-content:space-between}
+@media print{
+  body{background:#fff}
+  .toolbar{display:none}
+  .sheet{width:auto;height:auto;min-height:0;overflow:visible;margin:0;padding:0;box-shadow:none;break-after:page}
+  .sheet:last-of-type{break-after:auto}
+}
+@media screen and (max-width:820px){
+  .sheet{width:auto;height:auto;margin:0 8px 16px;padding:14px;overflow:visible}
+  .cols{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <span><a href="00-playwrightseries-landing.html">Playwright: Zero to Architect</a> &middot; Cheat sheet (draft)</span>
+  <button type="button" onclick="window.print()">Print or save as PDF</button>
+</div>
+
+<!-- ============ PAGE 1 ============ -->
+<main class="sheet">
+  <header>
+    <h1>Playwright Cheat Sheet &middot; 1 of 2: write the test</h1>
+    <p>Phases 0&ndash;4, 8, 10<br>The Quality Strategist</p>
+  </header>
+
+  <div class="cols">
+<div class="col">
+<section>
+      <h2>A test <span>Phase 0</span></h2>
+      <table>
+        <tr><td><code>import { test, expect } from '@playwright/test';</code></td><td>Top of every spec file</td></tr>
+        <tr><td><code>test('name', async ({ page }) =&gt; { })</code></td><td>One test. <code>page</code> is a fresh browser tab.</td></tr>
+        <tr><td><code>test.describe('group', () =&gt; { })</code></td><td>Group tests in the report</td></tr>
+        <tr><td><code>await page.goto('/')</code></td><td>Joined to <code>baseURL</code> from the config</td></tr>
+        <tr><td><code>test.only(..)</code> &nbsp; <code>test.skip(..)</code></td><td class="w">Only: runs nothing else. Skip: hides a test.</td></tr>
+        <tr><td><code>test.fail()</code> inside a test</td><td>Known bug: expected to fail. Passing then turns red.</td></tr>
+      </table>
+    </section>
+<section>
+      <h2>Find it <span>Phase 2: best first</span></h2>
+      <table>
+        <tr><td><code>getByRole('button', { name: /add to cart/i })</code></td><td><b>First choice.</b> Role + visible name.</td></tr>
+        <tr><td><code>getByRole('heading', { level: 1 })</code></td><td>Roles: link, textbox, checkbox, radio, combobox, slider, img, navigation</td></tr>
+        <tr><td><code>getByRole('button', { name: 'Search', exact: true })</code></td><td><code>exact</code>: full match, not "contains"</td></tr>
+        <tr><td><code>getByLabel('In stock only')</code></td><td>Field linked to its label</td></tr>
+        <tr><td><code>getByPlaceholder('Search gear...')</code></td><td>No label? The hint text</td></tr>
+        <tr><td><code>getByText('Showing 10 of 10 products')</code></td><td>Words on the page</td></tr>
+        <tr><td><code>getByTitle(..)</code> &nbsp; <code>getByAltText(..)</code></td><td>Hover title / image alt text</td></tr>
+        <tr><td><code>getByTestId('product-card')</code></td><td>Ask the developer for <code>data-testid</code></td></tr>
+        <tr><td><code>locator('input[type="email"]')</code></td><td>CSS: last resort, when nothing else names it</td></tr>
+      </table>
+      <p class="note"><span class="w">Avoid</span> <code>.btn-add</code> or <code>#submit-btn</code>: a restyle breaks them. A locator is a <b>description</b>, not a search: it looks again every time it's used.</p>
+    </section>
+<section>
+      <h2>Narrow it down <span>Phase 2</span></h2>
+      <table>
+        <tr><td><code>page.getByRole('navigation').getByRole('link', { name: 'Cart' })</code></td><td>Chain: a link, only inside the nav</td></tr>
+        <tr><td><code>cards.filter({ hasText: 'Camping Stove' })</code></td><td>Keep matches that contain text</td></tr>
+        <tr><td><code>cards.filter({ has: page.getByRole('heading', { name: 'X' }) })</code></td><td>Keep matches that contain an element</td></tr>
+        <tr><td><code>heading.locator('..')</code></td><td>Parent: from the heading up to its card</td></tr>
+        <tr><td><code>.first()  .last()  .nth(1)</code></td><td class="w">By position: breaks when the order changes</td></tr>
+      </table>
+    </section>
+<section>
+      <h2>Do something <span>Phases 2, 8</span></h2>
+      <table>
+        <tr><td><code>await loc.click()</code></td><td>Waits until it's visible, stable and enabled, then clicks</td></tr>
+        <tr><td><code>await loc.fill('tent')</code></td><td>Clear, then type. Typed text: <code>pressSequentially</code></td></tr>
+        <tr><td><code>await loc.check()  .uncheck()</code></td><td>Tick boxes and radios. Hidden input: <code>{ force: true }</code></td></tr>
+        <tr><td><code>await loc.selectOption('price-asc')</code></td><td>Pick from a dropdown, by value</td></tr>
+        <tr><td><code>await loc.hover()</code> &nbsp; <code>loc.press('Home')</code></td><td>Tooltips / one key (sliders)</td></tr>
+        <tr><td><code>await from.dragTo(to)</code></td><td>Drag. Or <code>hover</code>, <code>mouse.down()</code>, <code>hover</code>, <code>mouse.up()</code></td></tr>
+        <tr><td><code>await loc.setInputFiles('a.csv')</code></td><td>Upload, no file picker. Or <code>{ name, mimeType, buffer }</code></td></tr>
+        <tr><td><code>page.frameLocator('iframe[title="Payment form"]')</code></td><td>Start here for anything inside an iframe</td></tr>
+      </table>
+    </section>
+</div><!--col-->
+<div class="col">
+<section>
+      <h2>Check it <span>Phase 3</span></h2>
+      <table>
+        <tr><td><code>await expect(loc).toBeVisible()</code></td><td><b>Retries</b> until it passes or times out</td></tr>
+        <tr><td><code>toHaveText('..')  toContainText('..')</code></td><td>Whole text / part of it</td></tr>
+        <tr><td><code>toHaveCount(3)  toHaveValue('x')</code></td><td>How many / what's typed</td></tr>
+        <tr><td><code>toHaveAttribute('href', '/cart')</code></td><td>One attribute</td></tr>
+        <tr><td><code>toBeEnabled()  toBeDisabled()  toBeChecked()</code></td><td>State</td></tr>
+        <tr><td><code>expect(page).toHaveURL(..)  .toHaveTitle(..)</code></td><td>The page itself</td></tr>
+        <tr><td><code>await expect(loc).not.toBeVisible()</code></td><td class="w">Prove the page loaded first</td></tr>
+        <tr><td><code>expect.soft(a).toBe(b)</code></td><td>Records a failure, keeps going: for audits</td></tr>
+        <tr><td><code>expect(price).toBeGreaterThan(0)</code></td><td>Generic: checks a value you hold, <b>once</b></td></tr>
+        <tr><td><code>expect(locator).toBeTruthy()</code></td><td class="w">Can never fail: a locator is always truthy</td></tr>
+      </table>
+    </section>
+<section>
+      <h2>Read values <span>Phase 3</span></h2>
+      <table>
+        <tr><td><code>await loc.textContent()</code></td><td>Text of one element</td></tr>
+        <tr><td><code>await loc.allTextContents()</code></td><td>Array of every match. <span class="w">Doesn't wait: [] if too early.</span></td></tr>
+        <tr><td><code>await loc.count()</code></td><td>How many matches. <span class="w">Doesn't wait for the list.</span></td></tr>
+        <tr><td><code>await loc.inputValue()</code></td><td>What's typed in a field</td></tr>
+        <tr><td><code>await loc.getAttribute('href')</code></td><td>One attribute</td></tr>
+      </table>
+      <p class="note">Wait for something visible <b>first</b>, then read. Prefer a locator assertion over read-then-<code>expect</code>.</p>
+    </section>
+<section>
+      <h2>Wait, best choice first <span>Phase 3</span></h2>
+      <table>
+        <tr><td><code>await expect(loc).toBeVisible()</code></td><td><b>1.</b> Assert what the user will see</td></tr>
+        <tr><td><code>const r = page.waitForResponse(res =&gt; res.url().includes('/api/cart') &amp;&amp; res.request().method() === 'POST');
+await btn.click();
+await r;</code></td><td><b>2.</b> Wait for one signal. Start the wait <b>before</b> the click.</td></tr>
+        <tr><td><code>await loc.waitFor({ state: 'hidden' })</code></td><td><b>2.</b> A loading message going away</td></tr>
+        <tr><td><code>await page.waitForURL('/')</code></td><td>After login or a redirect</td></tr>
+        <tr><td><code>page.waitForLoadState('networkidle')</code></td><td><b>3.</b> Last resort</td></tr>
+        <tr><td><code>page.waitForTimeout(3000)</code></td><td class="w">Never: a guess that's too slow or too short</td></tr>
+        <tr><td><code>waitForEvent('filechooser' | 'download' | 'popup' | 'dialog')</code></td><td>Listen <b>before</b> the click</td></tr>
+        <tr><td><code>page.once('dialog', d =&gt; d.accept())</code></td><td>Answer a confirm. <span class="w">No answer: dismissed (Cancel).</span> A listener that never answers hangs the click.</td></tr>
+      </table>
+    </section>
+<section>
+      <h2>Slow tests <span>Phase 10</span></h2>
+      <table>
+        <tr><td><code>timeout: 30_000</code></td><td>One test (config)</td></tr>
+        <tr><td><code>expect: { timeout: 5_000 }</code></td><td>One <code>expect</code> check</td></tr>
+        <tr><td><code>actionTimeout  navigationTimeout</code></td><td>One click / one <code>goto</code> (under <code>use</code>)</td></tr>
+        <tr><td><code>test.setTimeout(60_000)</code> &nbsp; <code>test.slow()</code></td><td>This test only / triple its time</td></tr>
+      </table>
+      <p class="note"><span class="w">An inner timeout can't outlast the test.</span> Raise the right layer, not all of them.</p>
+    </section>
+</div><!--col-->
+  </div>
+
+  <footer>
+    <span>Run with <code>npx playwright test</code> &middot; Page 2 has the commands</span>
+    <span>Playwright: Zero to Architect &middot; Draft</span>
+  </footer>
+</main>
+
+<!-- ============ PAGE 2 ============ -->
+<main class="sheet">
+  <header>
+    <h1>Playwright Cheat Sheet &middot; 2 of 2: make it solid</h1>
+    <p>Phases 4&ndash;7, 9&ndash;12<br>The Quality Strategist</p>
+  </header>
+
+  <div class="cols">
+<div class="col">
+<section>
+      <h2>Test data <span>Phase 5</span></h2>
+      <table>
+        <tr><td><code>`qa-${Date.now()}@peakandpack.test`</code></td><td>A new, unique user every run</td></tr>
+        <tr><td><code>request.post(`${API}/api/auth/register`, { data })</code></td><td>Set up through the API: fast, no browser</td></tr>
+        <tr><td><code>expect(res.status()).toBe(201)</code></td><td>Check the status <b>first</b>, always</td></tr>
+        <tr><td><code>test.beforeEach(async ({ request }) =&gt; { })</code></td><td>Per-test setup. Also <code>afterEach</code>, <code>beforeAll</code>, <code>afterAll</code>.</td></tr>
+        <tr><td><code>try { .. } finally { await request.delete(..) }</code></td><td>Clean up even if the checks fail</td></tr>
+      </table>
+      <p class="note"><b>Rule:</b> each test makes its own data and runs in any order.</p>
+    </section>
+<section>
+      <h2>Sessions &amp; roles <span>Phase 6</span></h2>
+      <table>
+        <tr><td><code>page.addInitScript(..localStorage.setItem('token', t)..)</code></td><td>Sign the browser in as an API user, before <code>goto</code></td></tr>
+        <tr><td><code>await page.context().storageState({ path })</code></td><td>Save a login to a file</td></tr>
+        <tr><td><code>{ name: 'setup', testMatch: /.*\.setup\.ts/ }</code></td><td>Log in once; the real project adds <code>dependencies: ['setup']</code></td></tr>
+        <tr><td><code>use: { storageState: '..customer.json' }</code></td><td>Every test in the project starts signed in</td></tr>
+        <tr><td><code>test.use({ storageState: '..admin.json' })</code></td><td>Switch role for one group</td></tr>
+        <tr><td><code>browser.newContext()</code></td><td>A second, separate user in one test</td></tr>
+      </table>
+      <p class="note"><span class="w">Add <code>playwright/.auth</code> to <code>.gitignore</code>.</span> Prove who's signed in first: "no Admin link" passes logged out too.</p>
+    </section>
+<section>
+      <h2>API &amp; mocking <span>Phase 7</span></h2>
+      <table>
+        <tr><td><code>request.get(url, { params: { q: 'tent' } })</code></td><td>Query string: <code>?q=tent</code></td></tr>
+        <tr><td><code>request.post(url, { headers, data })</code></td><td><code>headers: { Authorization: `Bearer ${t}` }</code></td></tr>
+        <tr><td><code>401 / 403 / 404 / 409</code></td><td>Not logged in / not allowed / missing / already exists</td></tr>
+        <tr><td><code>page.route('**/api/products', r =&gt; r.fulfill({ json }))</code></td><td>Fake the answer. Set up <b>before</b> <code>goto</code>.</td></tr>
+        <tr><td><code>route.fulfill({ status: 500, body: '..' })</code></td><td>Force an error the app must handle</td></tr>
+        <tr><td><code>route.fetch()</code> then <code>route.fulfill({ response, json })</code></td><td>Real answer, edit one field</td></tr>
+      </table>
+      <p class="note"><span class="w">API on another host? Use the full URL:</span> a relative pattern resolves against <code>baseURL</code>.</p>
+    </section>
+<section>
+      <h2>Structure <span>Phases 9&ndash;10</span></h2>
+      <table>
+        <tr><td><code>class CartPage { constructor(private readonly page: Page) {} }</code></td><td>Page object: a page's locators in one place</td></tr>
+        <tr><td><code>proceedToCheckout(): Promise&lt;CheckoutPage&gt;</code></td><td>Return the next page object</td></tr>
+        <tr><td><code>base.extend&lt;{ customer: Customer }&gt;({ .. })</code></td><td>Fixture: setup, <code>await use(x)</code>, then teardown (runs even on failure)</td></tr>
+        <tr><td><code>{ scope: 'worker' }</code></td><td>Once per worker, not per test</td></tr>
+        <tr><td><code>import { test, expect } from '../fixtures';</code></td><td>Specs import yours, not Playwright's</td></tr>
+      </table>
+      <p class="note">Assertions stay in the <b>test</b>; the page object only finds and does. <span class="w">Don't hide <code>expect</code> inside helpers.</span></p>
+    </section>
+</div><!--col-->
+<div class="col">
+<section>
+      <h2>Config <span>Phases 0, 10</span></h2>
+      <table>
+        <tr><td><code>testDir  fullyParallel  workers</code></td><td>Where tests live; run in parallel</td></tr>
+        <tr><td><code>retries: process.env.CI ? 2 : 0</code></td><td>Retry in CI only, never on your machine</td></tr>
+        <tr><td><code>use: { baseURL, trace, screenshot, video }</code></td><td>Trace on first retry; screenshot and video on failure</td></tr>
+        <tr><td><code>projects: [{ name, use: { ...devices['iPhone 13'] } }]</code></td><td>Same tests on a phone</td></tr>
+        <tr><td><code>testMatch  testIgnore  dependencies  teardown</code></td><td>Which files, and what runs after what</td></tr>
+        <tr><td><code>dotenv.config({ path: '.env.local' })</code></td><td>Address + credentials from a file</td></tr>
+      </table>
+    </section>
+<section>
+      <h2>Commands <span>Phases 0, 4, 12</span></h2>
+      <table>
+        <tr><td><code>npx playwright test</code></td><td>Run everything, headless</td></tr>
+        <tr><td><code>--headed</code> &nbsp; <code>--ui</code> &nbsp; <code>--debug</code></td><td>Watch / UI mode / step through in the Inspector</td></tr>
+        <tr><td><code>tests/cart.spec.ts</code> &nbsp; <code>-g "search"</code></td><td>One file / titles containing a word</td></tr>
+        <tr><td><code>--project=chromium</code> &nbsp; <code>--list</code></td><td>One project / show what would run</td></tr>
+        <tr><td><code>--grep @critical</code> &nbsp; <code>--grep-invert @slow</code></td><td>By tag: <code>test('x', { tag: '@critical' }, ..)</code></td></tr>
+        <tr><td><code>--repeat-each=20</code></td><td>1 failure in 20 = flaky</td></tr>
+        <tr><td><code>--retries=2</code> &nbsp; <code>--trace on</code></td><td>Retry / record a trace for every test</td></tr>
+        <tr><td><code>--update-snapshots</code></td><td>Replace visual baselines: only if the page looks right</td></tr>
+        <tr><td><code>--shard=1/4</code> &nbsp; <code>--reporter=blob</code></td><td>Split across machines</td></tr>
+        <tr><td><code>npx playwright show-report</code></td><td>Open the HTML report</td></tr>
+        <tr><td><code>npx playwright merge-reports ./dir</code></td><td>Join the shards' reports (<code>--reporter html</code>)</td></tr>
+      </table>
+    </section>
+<section>
+      <h2>Visual <span>Phase 11</span></h2>
+      <table>
+        <tr><td><code>expect(page).toHaveScreenshot('home.png', { fullPage: true })</code></td><td>Compare to a saved baseline. First run writes it, and fails.</td></tr>
+        <tr><td><code>expect(card).toHaveScreenshot('card.png')</code></td><td>Just one element</td></tr>
+        <tr><td><code>maxDiffPixels: 100</code></td><td>A little difference is fine</td></tr>
+        <tr><td><code>mask: [page.getByText(/^Order ID/)]</code></td><td>Paint over what changes each run</td></tr>
+      </table>
+      <p class="note">Baselines are per <b>browser and OS</b>: make them where CI runs. Stub images with <code>page.route</code> first.</p>
+    </section>
+<section>
+      <h2>CI <span>Phase 12</span></h2>
+      <table>
+        <tr><td><code>npm ci</code> &nbsp; <code>npx playwright install --with-deps chromium</code></td><td>Exact versions; only the browser you use</td></tr>
+        <tr><td><code>upload-artifact</code> with <code>if: always()</code></td><td>Keep the report on failure too</td></tr>
+        <tr><td><code>on: schedule: - cron: '0 2 * * *'</code></td><td>Nightly, 02:00 UTC</td></tr>
+        <tr><td>Pass only on retry</td><td>That's <b>flaky</b>: log it and fix it. Don't hide it with more retries.</td></tr>
+      </table>
+    </section>
+<section class="err">
+      <h2>Messages, decoded</h2>
+      <table>
+        <tr><td><code>strict mode violation</code></td><td>Locator matched several: narrow it</td></tr>
+        <tr><td><code>Timeout 5000ms exceeded</code></td><td>Never became true: wrong text or page</td></tr>
+        <tr><td><code>element is not enabled</code></td><td>Disabled: finish the step before it (payment, login)</td></tr>
+        <tr><td><code>A snapshot doesn't exist</code></td><td>Visual test's first run: run again</td></tr>
+        <tr><td>Passes, but nothing was checked</td><td>No <code>await</code>, or a check wrapped in <code>if</code></td></tr>
+      </table>
+    </section>
+</div><!--col-->
+  </div>
+
+  <footer>
+    <span>Examples run against PeakAndPack</span>
+    <span>Playwright: Zero to Architect &middot; Draft</span>
+  </footer>
+</main>
+
+</body>
+</html>

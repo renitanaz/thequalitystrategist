@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>(function(){try{if(localStorage.getItem('pw-theme')==='light'){document.documentElement.setAttribute('data-theme','light');}}catch(e){}})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>What Agentic SDLC Means | Agentic SDLC, Part 1</title>
+<meta name="description" content="Phase 1 of Agentic SDLC, Part 1. A lifecycle map, three questions for deciding who does a task, and the difference between automation and an agent.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+  --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+  --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.09); --purple-border:rgba(167,139,250,0.35);
+  --green:#4ade80; --green-bg:rgba(74,222,128,0.07); --green-border:rgba(74,222,128,0.25);
+  --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07); --blue-border:rgba(96,165,250,0.25);
+  --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07); --amber-border:rgba(251,191,36,0.25);
+  --red:#f87171; --red-bg:rgba(248,113,113,0.07); --red-border:rgba(248,113,113,0.25);
+  --ff-serif:'DM Serif Display',Georgia,serif; --ff-sans:'DM Sans',system-ui,sans-serif;
+}
+:root[data-theme="light"]{
+  --bg:#FAFCF5; --bg2:#F5F7F0; --bg3:#EDF0E4; --border:#DEE3D3;
+  --text:#1A1F14; --text-2:#3D4235; --text-3:#6B7060;
+  --purple:#7A4A9A; --purple-bg:#EDE0F5; --purple-border:rgba(122,74,154,0.35);
+  --green:#1A7A3A; --green-bg:#D8F0E0; --green-border:rgba(26,122,58,0.25);
+  --blue:#2A5C9A; --blue-bg:#DDE8F5; --blue-border:rgba(42,92,154,0.25);
+  --amber:#9A6E1A; --amber-bg:#F5EDD6; --amber-border:rgba(154,110,26,0.25);
+  --red:#B0402E; --red-bg:#F5DEDA; --red-border:rgba(176,64,46,0.25);
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body{background:var(--bg);color:var(--text);font-family:var(--ff-sans);font-size:16px;line-height:1.8;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.skip-link{position:absolute;top:-100%;left:1rem;background:var(--green);color:#000;padding:.5rem 1rem;border-radius:0 0 6px 6px;font-size:.85rem;font-weight:500;text-decoration:none;z-index:999}
+.skip-link:focus{top:0}
+nav.site-nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:56px}
+.nav-logo{font-family:var(--ff-serif);font-size:1rem;color:var(--text);text-decoration:none}
+.theme-toggle{background:var(--bg3);border:1px solid var(--border);color:var(--text-2);border-radius:8px;padding:.4rem .8rem;font-size:.78rem;cursor:pointer;font-family:var(--ff-sans);}
+.theme-toggle:hover{border-color:var(--purple);color:var(--text)}
+main{max-width:900px;margin:0 auto;padding:3rem 1.5rem 5rem}
+.breadcrumb{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.breadcrumb a{color:var(--text-3);text-decoration:none}
+.breadcrumb a:hover{color:var(--purple)}
+.series-tag{font-size:.7rem;padding:4px 11px;border-radius:99px;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);letter-spacing:.04em;text-transform:uppercase;font-weight:500;display:inline-block;margin-bottom:1.25rem}
+h1{font-family:var(--ff-serif);font-size:clamp(1.85rem,4vw,2.6rem);line-height:1.2;color:var(--purple);margin-bottom:.75rem;font-weight:400}
+.subtitle{font-family:var(--ff-serif);font-size:1.1rem;font-style:italic;color:var(--text-3);margin-bottom:1.5rem;max-width:680px}
+.meta-row{display:flex;align-items:center;gap:1.25rem;font-size:.82rem;color:var(--text-3);flex-wrap:wrap;margin-bottom:1.6rem;padding-bottom:1.3rem;border-bottom:1px solid var(--border)}
+h2{font-family:var(--ff-serif);font-size:1.5rem;font-weight:400;color:var(--text);margin:3.5rem 0 1.1rem;padding-top:1rem;border-top:1px solid var(--border)}
+h3{font-size:1rem;font-weight:500;color:var(--text);margin:1.75rem 0 .5rem}
+p{color:var(--text-2);margin-bottom:1.25rem;font-weight:300}
+strong{color:var(--text);font-weight:500}
+ul,ol{padding-left:1.4rem;margin-bottom:1.25rem;color:var(--text-2);font-weight:300}
+li{margin-bottom:.45rem}
+code{background:var(--bg3);padding:1px 6px;border-radius:3px;font-size:.85em;color:var(--text-2);font-family:monospace}
+pre{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:1rem 1.1rem;font-family:monospace;font-size:.82rem;color:var(--text-2);line-height:1.65;overflow-x:auto;margin:1rem 0}
+pre code{background:none;padding:0;color:inherit}
+.callout{display:block;background:var(--blue-bg);border-left:3px solid var(--blue);border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.95rem;color:var(--text);line-height:1.7}
+.callout p{margin-bottom:0;color:var(--text-2)}
+.callout.amber{background:var(--amber-bg);border-color:var(--amber)}
+.callout.green{background:var(--green-bg);border-color:var(--green)}
+.callout.red{background:var(--red-bg);border-color:var(--red)}
+.callout.blue{background:var(--blue-bg);border-color:var(--blue)}
+.callout.purple{background:var(--purple-bg);border-color:var(--purple)}
+.table-wrap{display:block;overflow-x:auto;margin:1.5rem 0;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+thead th{background:var(--bg2);padding:9px 13px;text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);font-weight:500;border-bottom:1px solid var(--border)}
+tbody td{padding:9px 13px;border-bottom:1px solid var(--border);color:var(--text-2);vertical-align:top;line-height:1.55;font-size:.85rem}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--bg2)}
+/* Phase progress strip */
+.phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem}
+.phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--text-3);background:var(--bg2);text-decoration:none}
+.phase-pip:hover{border-color:var(--purple);color:var(--text)}
+.phase-pip.active{background:var(--purple);color:#0d0d0d;border-color:transparent}
+.phase-pip.done{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+/* Before/After blocks */
+.ba-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0}
+.ba-block{border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+.ba-label{padding:.4rem .8rem;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.ba-block.before .ba-label{background:var(--red-bg);color:var(--red)}
+.ba-block.after .ba-label{background:var(--green-bg);color:var(--green)}
+.ba-block pre{margin:0;border-radius:0;border:none}
+/* Assignment / bonus blocks */
+.assignment{background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:12px;padding:1.2rem 1.4rem;margin:4.5rem 0 1rem}
+.assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem}
+.assignment h3{font-family:var(--ff-serif);color:var(--text);margin-top:.2rem;margin-bottom:.5rem;font-weight:400}
+.bonus{background:var(--purple-bg);border:1px solid var(--purple-border);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem}
+.bonus .b-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--purple);margin-bottom:.4rem}
+/* Collapsible solution */
+details.solution{margin:1rem 0 2rem;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+details.solution summary{padding:.9rem 1.2rem;cursor:pointer;font-weight:700;font-size:.92rem;background:var(--bg2);list-style:none;display:flex;align-items:center;gap:.5rem;color:var(--text)}
+details.solution summary::-webkit-details-marker{display:none}
+details.solution summary::before{content:"\25B6";font-size:.7rem;color:var(--text-3);transition:transform .2s}
+details.solution[open] summary::before{transform:rotate(90deg)}
+.solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border)}
+.solution-body p{font-size:.92rem}
+.series-nav{margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border)}
+.series-nav .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);font-weight:500;margin-bottom:.75rem;display:block}
+.nav-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.nav-blog{display:flex;align-items:center;gap:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.25rem;text-decoration:none;transition:border-color .2s,background .2s}
+.nav-blog:hover{border-color:var(--purple);background:var(--bg3)}
+.nav-blog-arrow{color:var(--text-3);font-size:1rem;flex-shrink:0}
+.nav-blog-title{font-size:.88rem;font-weight:500;color:var(--text)}
+.nav-blog-sub{font-size:.75rem;color:var(--text-3);margin-top:2px}
+footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.8rem;color:var(--text-3)}
+footer a{color:var(--text-3);text-decoration:none}
+footer a:hover{color:var(--purple)}
+@media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
+.blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
+.blog-tags .series-tag{margin-bottom:0}
+.tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+details.explain{margin:.5rem 0 1.5rem;border:1px solid var(--purple-border);border-radius:10px;background:var(--purple-bg)}
+details.explain summary{padding:.6rem 1rem;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--purple);list-style:none;display:flex;align-items:center;gap:.5rem}
+details.explain summary::-webkit-details-marker{display:none}
+details.explain summary::before{content:"\25B6";font-size:.65rem;transition:transform .2s}
+details.explain[open] summary::before{transform:rotate(90deg)}
+.explain-body{padding:.1rem 1.2rem 1rem;font-size:.92rem;line-height:1.7}
+.explain-body p{margin:.7rem 0}
+.explain-body ul{margin:.3rem 0 .7rem 1.2rem;padding-left:0}
+.explain-body li{margin-bottom:.35rem}
+.explain-body pre{margin:.6rem 0}
+.todo-image{display:none}
+
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a class="nav-logo" href="../../index.html">The Quality Strategist</a>
+  <button class="theme-toggle" id="themeToggle" type="button">Light</button>
+</nav>
+
+<main id="main-content">
+
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="../../blogs.html">Blogs</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <a href="00-agenticseries-landing.html">Agentic SDLC, Part 1</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <span aria-current="page">Phase 1 of Part 1</span>
+  </nav>
+
+  <div class="blog-tags" aria-label="Blog categories" role="group">
+    <span class="series-tag">Phase 1 &middot; What Agentic SDLC Means</span>
+    <span class="tag">Concepts</span>
+    <span class="tag">Boundaries</span>
+    <span class="tag">Delivery Cycle</span>
+    <span class="tag">Judgement</span>
+  </div>
+
+  <h1>Where an Agent Helps, and Where a Person Decides</h1>
+  <p class="subtitle">A delivery cycle with agents in it keeps the same stages. What changes is who drafts and who decides. Three questions sort any task.</p>
+
+  <div class="meta-row">
+    <span><strong>Series: Agentic SDLC, Part 1</strong></span>
+    <span>Demo: PeakAndPack</span>
+    <span>16 min read</span>
+    <span>By: RN</span>
+  </div>
+
+  <div class="phase-strip" aria-label="Series progress">
+    <a href="00-agenticseries-setup-foundations.html" class="phase-pip" title="Phase 0: Setup &amp; Agentic Foundations">0</a>
+    <span class="phase-pip active" title="Phase 1: What Agentic SDLC Means">1</span>
+    <a href="02-agenticseries-mcp-tools.html" class="phase-pip" title="Phase 2: MCP &amp; Tool Integration">2</a>
+    <a href="04-agenticseries-test-generation.html" class="phase-pip" title="Phase 4: Agentic Test Generation">4</a>
+    <a href="06-agenticseries-regression.html" class="phase-pip" title="Phase 6: Agentic Regression Selection">6</a>
+    <a href="09-agenticseries-full-pipeline.html" class="phase-pip" title="Phase 9: The Full Pipeline">9</a>
+  </div>
+
+
+  <div class="callout amber">
+    <p><strong>Draft.</strong> Written before the steps have been run end to end, so it is marked and kept out of the site index.</p>
+    <p><strong>Checked:</strong> The table of PeakAndPack tasks and the claims about Playwright locators and flaky-test quarantine against the earlier Series 5 phases.</p>
+    <p><strong>Not checked:</strong> This phase has no code. The lifecycle map and the sorting solution are one reading of the problem and are meant to be argued with, not checked.</p>
+  </div>
+
+
+  <h2>Goal</h2>
+  <p>Draw the line between work an agent can take on and work a person must keep. Phase 0 showed one agent doing one small task. This phase zooms out: across a delivery cycle, where does an agent save real effort, where does it add risk, and who is accountable at each step? There is no code here. The output is a map and a set of boundaries you can defend.</p>
+  <p>By the end of this phase you can:</p>
+  <ul>
+    <li>describe a delivery cycle with agents in it, and name who owns each decision</li>
+    <li>tell an agent task from an automation task, and say why the difference matters</li>
+    <li>apply three questions to any task to decide whether an agent should do it, propose it, or stay out</li>
+    <li>write the boundaries down so a team can argue with them</li>
+  </ul>
+
+  <h2 id="traditional-vs-agentic">1. The same cycle, with and without agents</h2>
+  <p>A software delivery cycle has the same stages whether or not AI is involved. What changes is who does the first draft of each stage. In a traditional cycle, a person drafts and a person decides. In an agentic one, an agent drafts more of it, and the person's job shifts toward <em>deciding and checking</em>.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Stage</th><th>Traditional</th><th>With agents</th></tr></thead>
+    <tbody>
+      <tr><td>Requirements</td><td>A person reads the story and spots gaps</td><td>An agent lists possible gaps. A person decides which are real.</td></tr>
+      <tr><td>Test design</td><td>A person writes test ideas</td><td>An agent drafts ideas from the story. A person keeps, edits or drops them.</td></tr>
+      <tr><td>Test building</td><td>A person writes the automated test</td><td>An agent drafts the test. A person reviews it against the team's standard.</td></tr>
+      <tr><td>Test selection</td><td>Run everything, or a person picks</td><td>Code and an agent propose which tests a change can affect. A safe fallback runs everything.</td></tr>
+      <tr><td>Triage</td><td>A person reads each failure and files a bug</td><td>An agent drafts the report. A person approves before it is filed.</td></tr>
+      <tr><td>Release</td><td>A person weighs the evidence and signs off</td><td>An agent summarises the evidence. A person signs off.</td></tr>
+    </tbody>
+  </table></div>
+  <p>Notice the pattern in the right-hand column: the agent produces, the person decides. That pattern is the whole series in one sentence. It is not caution for its own sake. It follows from what each side is good at.</p>
+
+  <h2 id="three-questions">2. Three questions for any task</h2>
+  <p>Instead of memorising a list of "good agent tasks", ask three questions of a task. They explain <em>why</em> a task lands where it does, so you can sort tasks nobody has listed yet.</p>
+  <ol>
+    <li><strong>Can the result be checked?</strong> A test idea can be checked against the app. "This feature is low risk" can only be argued. Agents are strong where checking is cheap and weak where the only check is a person's judgement.</li>
+    <li><strong>Can the action be undone?</strong> A draft in a folder can be thrown away. A bug filed in a shared tracker, a message sent, a release shipped cannot be quietly un-done, and other people have already seen it.</li>
+    <li><strong>Who is accountable if it is wrong?</strong> If the answer is "a named person, to a customer or a regulator", that person makes the decision. The agent can bring the evidence.</li>
+  </ol>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Checkable?</th><th>Reversible?</th><th>Accountable person needed?</th><th>Where the task lands</th></tr></thead>
+    <tbody>
+      <tr><td>Yes</td><td>Yes</td><td>No</td><td><strong>Agent does it</strong>, a person skims the result</td></tr>
+      <tr><td>Yes</td><td>Yes</td><td>Yes</td><td><strong>Agent drafts</strong>, a person decides</td></tr>
+      <tr><td>Yes</td><td>No</td><td>Either</td><td><strong>Agent drafts, a person approves before the action</strong></td></tr>
+      <tr><td>No</td><td>Either</td><td>Yes</td><td><strong>A person does it.</strong> The agent may supply evidence.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="automation-vs-agent">3. Automation and an agent are not the same thing</h2>
+  <p>A Playwright test is <strong>automation</strong>: it does the same steps every run, and if the page changes in a way the test did not expect, it fails. An <strong>agent</strong> can adapt: it looks at the page, decides what to do, and can cope with a change nobody planned for. Both are useful. They fail differently, and picking the wrong one for a job is a common mistake.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th></th><th>Automation (a test, a script)</th><th>Agent</th></tr></thead>
+    <tbody>
+      <tr><td>Steps</td><td>Fixed, written by a person</td><td>Chosen by the model as it goes</td></tr>
+      <tr><td>Same input, twice</td><td>Same result</td><td>Possibly a different result</td></tr>
+      <tr><td>Cost per run</td><td>Almost nothing</td><td>A model call each turn, so real money</td></tr>
+      <tr><td>Speed</td><td>Seconds</td><td>Slower: thinking, then tool calls</td></tr>
+      <tr><td>When it fails</td><td>Loudly, at a known step</td><td>It may go confidently down the wrong path</td></tr>
+      <tr><td>Best for</td><td>Checks you repeat on every build</td><td>Work with no fixed steps: reading, drafting, judging fit</td></tr>
+    </tbody>
+  </table></div>
+  <p>One rule follows: <strong>do not use an agent where a script will do.</strong> Running the same 40 regression tests is a script's job. Choosing which of them a change could affect is the kind of job an agent can help with. Phase 6 does exactly that split.</p>
+  <div class="callout purple">
+    <p><strong>Two meanings of "self-healing".</strong> Locator-level self-healing, such as Playwright's role-based locators, is an algorithm: it runs unattended, with no AI model and no person involved. Code-level auto-fix, where an agent proposes a change to a test after a failure, needs a person's approval every time. A failing test can mean a real bug, a change nobody updated the test for, or a bad test. Telling them apart needs product knowledge. The series says which one it means each time it comes up.</p>
+  </div>
+
+  <h2 id="map">4. The lifecycle map</h2>
+  <p>This is the map the series builds against. Each row is a stage, the agent's job in it, what it reads, what it produces, the human gate, and the phase where you build it. Part 1 builds the rows marked with its own phase numbers. The others come in Part 2.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Stage</th><th>Agent's job</th><th>Reads</th><th>Produces</th><th>Human gate</th><th>Built in</th></tr></thead>
+    <tbody>
+      <tr><td>Requirements</td><td>Find gaps and unclear criteria</td><td>User stories</td><td>A gap report</td><td>A person decides which gaps are real</td><td>Part 2</td></tr>
+      <tr><td>Test design and building</td><td>Draft tests from a story</td><td>Story, the live app</td><td>Draft spec files</td><td>Curated by a person before they count</td><td>Phase 4</td></tr>
+      <tr><td>Test selection</td><td>Name the tests a change can affect</td><td>A list of changed files</td><td>A list of spec files, with confidence</td><td>The fallback runs everything when unsure</td><td>Phase 6</td></tr>
+      <tr><td>Triage</td><td>Draft a bug report per failure</td><td>The test report</td><td>Bug drafts</td><td>A person approves before filing</td><td>Phases 2 and 9</td></tr>
+      <tr><td>Release</td><td>Summarise evidence</td><td>Results, open bugs</td><td>A readiness summary</td><td>A person signs off</td><td>Part 2</td></tr>
+      <tr><td>Whole pipeline</td><td>Connect the stages</td><td>The deploy event</td><td>A run with gates</td><td>Approval environments</td><td>Phase 9</td></tr>
+    </tbody>
+  </table></div>
+  <!-- IMAGE TODO: agentic-sdlc-map.png. Draw the six stages left to right as boxes, with the agent's output and the human gate between each pair. Deliverable for this phase. -->
+
+  <h2 id="failure-modes">5. How agents go wrong in a delivery cycle</h2>
+  <p>The risks are specific, and each later phase guards against one of them:</p>
+  <ul>
+    <li><strong>Making a check pass instead of making the product right.</strong> Asked to fix a failing test, an agent may change what the test expects, so a real bug becomes the new normal. Nobody looks at a green test again. For a smaller version of the same habit, see <a href="../Mind_On_QA_WithAI/phase7/07-phase7-ai-agent.html" style="color:var(--purple)">AI-Augmented QA, Phase 7</a>, where an agent writes a bug-detection report and the reader confirms every finding against the evidence before it counts.</li>
+    <li><strong>Inventing what it cannot see.</strong> An agent that has not seen the app will describe a cart badge or a test id that does not exist. This fails loudly, which is the cheap kind of mistake.</li>
+    <li><strong>Sounding more certain than it is.</strong> A bug report that states a cause nobody has verified sends the next person the wrong way. Phases 2 and 9 tell the agent to write "cause not yet known".</li>
+    <li><strong>Doing too much.</strong> An agent with write access to everything can change everything. The tool list is the limit, not the instructions.</li>
+  </ul>
+
+  <h2 id="deliverables">6. Deliverables</h2>
+  <ul>
+    <li><code>agentic-sdlc-map.png</code>: the lifecycle map from section 4, drawn as a picture with your own examples</li>
+    <li><code>agent-boundaries.md</code>: your answers to the three questions for the tasks in the assignment, in this shape:</li>
+  </ul>
+  <pre><code># Agent boundaries
+
+| Task | Checkable? | Reversible? | Person accountable? | Who does it |
+|---|---|---|---|---|
+| Draft test ideas from a story | | | | |
+
+## Rules I will hold to
+1.
+2.</code></pre>
+
+  <hr style="border:none;border-top:1px solid var(--border);margin:0">
+
+  <div class="assignment">
+    <div class="a-label">Assignment</div>
+    <h3>Sort twelve PeakAndPack tasks</h3>
+    <p>For each task, answer the three questions, then decide: <strong>agent does it</strong>, <strong>agent drafts and a person decides</strong>, <strong>a person does it</strong>, or <strong>neither (a script)</strong>. Write one sentence of reasoning for each. Disagreeing with the solution is fine. A reasoned disagreement is the goal.</p>
+    <ol>
+      <li>Draft test ideas from a user story</li>
+      <li>Decide which risks matter most this release</li>
+      <li>Write a Playwright test from an approved test idea</li>
+      <li>Decide that a failing test is a product bug</li>
+      <li>Choose which tests to run for a small change</li>
+      <li>File a bug report from a failing test</li>
+      <li>Close a bug as "won't fix"</li>
+      <li>Summarise last night's test results</li>
+      <li>Approve a release</li>
+      <li>Keep a test working after a harmless class rename</li>
+      <li>Notice that a story has no error-handling criteria</li>
+      <li>Quarantine a test that fails one run in ten</li>
+    </ol>
+    <details class="solution">
+      <summary>Show solution: try it yourself first</summary>
+      <div class="solution-body">
+        <div class="table-wrap"><table>
+          <thead><tr><th>#</th><th>Who</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Agent drafts, person decides</td><td>Checkable against the app, reversible, and the person owns what counts as a good test idea.</td></tr>
+            <tr><td>2</td><td>Person</td><td>Not checkable, and someone is accountable. The agent can bring evidence (what changed, what failed before).</td></tr>
+            <tr><td>3</td><td>Agent drafts, person decides</td><td>The test can be run and its failure checked, but only a person knows whether it protects anything. Phase 4.</td></tr>
+            <tr><td>4</td><td>Person</td><td>It could be a bug, a change nobody told the test about, or a bad test. Telling them apart needs product knowledge.</td></tr>
+            <tr><td>5</td><td>Agent proposes, with a fallback</td><td>Checkable and reversible: a wrong pick is caught by running everything on a schedule. When unsure, run all. Phase 6.</td></tr>
+            <tr><td>6</td><td>Agent drafts, person approves</td><td>Filing is visible to others and awkward to undo, so the gate sits before the action. Phases 2 and 9.</td></tr>
+            <tr><td>7</td><td>Person</td><td>A decision about what the product will and will not do, with accountability.</td></tr>
+            <tr><td>8</td><td>Agent does it, person skims</td><td>Checkable against the results, reversible, low stakes. The summary does not decide anything.</td></tr>
+            <tr><td>9</td><td>Person</td><td>Accountable, and hard to reverse. The agent may summarise evidence.</td></tr>
+            <tr><td>10</td><td>Neither: a script</td><td>Role-based locators already handle this with no AI model at all. Using an agent here adds cost and variation for no gain.</td></tr>
+            <tr><td>11</td><td>Agent drafts, person decides</td><td>An agent is good at noticing what is absent. Whether the gap matters is a product call.</td></tr>
+            <tr><td>12</td><td>A rule set by people, applied by code</td><td>The threshold ("one in ten") is a team decision. Applying it is mechanical, and Playwright Phase 12 does it without an agent.</td></tr>
+          </tbody>
+        </table></div>
+        <p>Where you landed differently, check which of the three questions you answered differently. That is usually the real disagreement, and writing it down is what makes a team's boundaries workable.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="bonus">
+    <div class="b-label">Bonus challenge</div>
+    <p><strong>Move one task and defend it.</strong> Pick the task you think the solution places too cautiously. Describe what would have to be true for the agent to do it alone: what check would catch a wrong answer, and what would an undo look like? If you cannot describe both, the boundary is right where it is.</p>
+  </div>
+
+
+  <div class="series-nav">
+    <span class="label">Navigate the series</span>
+    <div class="nav-pair">
+      <a href="00-agenticseries-setup-foundations.html" class="nav-blog"><span class="nav-blog-arrow" aria-hidden="true">&larr;</span><div><div class="nav-blog-title">Phase 0: Setup &amp; Agentic Foundations</div><div class="nav-blog-sub">Install, first agent run, permissions</div></div></a>
+      <a href="02-agenticseries-mcp-tools.html" class="nav-blog"><div><div class="nav-blog-title">Phase 2: MCP &amp; Tool Integration</div><div class="nav-blog-sub">Giving an agent safe, named tools</div></div><span class="nav-blog-arrow" aria-hidden="true">&rarr;</span></a>
+    </div>
+  </div>
+
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--text-3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; Agentic SDLC, Part 1</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+<script>
+(function(){
+  var btn = document.getElementById('themeToggle');
+  function isLight(){ return document.documentElement.getAttribute('data-theme') === 'light'; }
+  function sync(){ btn.textContent = isLight() ? 'Dark' : 'Light'; }
+  sync();
+  btn.addEventListener('click', function(){
+    if(isLight()){
+      document.documentElement.removeAttribute('data-theme');
+      try{ localStorage.setItem('pw-theme','dark'); }catch(e){}
+    } else {
+      document.documentElement.setAttribute('data-theme','light');
+      try{ localStorage.setItem('pw-theme','light'); }catch(e){}
+    }
+    sync();
+  });
+})();
+</script>
+
+</body>
+</html>

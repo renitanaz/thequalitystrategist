@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>(function(){try{if(localStorage.getItem('pw-theme')==='light'){document.documentElement.setAttribute('data-theme','light');}}catch(e){}})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>MCP &amp; Tool Integration | Agentic SDLC, Part 1</title>
+<meta name="description" content="Phase 2 of Agentic SDLC, Part 1. Connect Playwright, GitHub and Atlassian MCP servers and build an agent that drafts a bug report from a failed test, filed only after approval.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+  --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+  --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.09); --purple-border:rgba(167,139,250,0.35);
+  --green:#4ade80; --green-bg:rgba(74,222,128,0.07); --green-border:rgba(74,222,128,0.25);
+  --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07); --blue-border:rgba(96,165,250,0.25);
+  --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07); --amber-border:rgba(251,191,36,0.25);
+  --red:#f87171; --red-bg:rgba(248,113,113,0.07); --red-border:rgba(248,113,113,0.25);
+  --ff-serif:'DM Serif Display',Georgia,serif; --ff-sans:'DM Sans',system-ui,sans-serif;
+}
+:root[data-theme="light"]{
+  --bg:#FAFCF5; --bg2:#F5F7F0; --bg3:#EDF0E4; --border:#DEE3D3;
+  --text:#1A1F14; --text-2:#3D4235; --text-3:#6B7060;
+  --purple:#7A4A9A; --purple-bg:#EDE0F5; --purple-border:rgba(122,74,154,0.35);
+  --green:#1A7A3A; --green-bg:#D8F0E0; --green-border:rgba(26,122,58,0.25);
+  --blue:#2A5C9A; --blue-bg:#DDE8F5; --blue-border:rgba(42,92,154,0.25);
+  --amber:#9A6E1A; --amber-bg:#F5EDD6; --amber-border:rgba(154,110,26,0.25);
+  --red:#B0402E; --red-bg:#F5DEDA; --red-border:rgba(176,64,46,0.25);
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body{background:var(--bg);color:var(--text);font-family:var(--ff-sans);font-size:16px;line-height:1.8;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.skip-link{position:absolute;top:-100%;left:1rem;background:var(--green);color:#000;padding:.5rem 1rem;border-radius:0 0 6px 6px;font-size:.85rem;font-weight:500;text-decoration:none;z-index:999}
+.skip-link:focus{top:0}
+nav.site-nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:56px}
+.nav-logo{font-family:var(--ff-serif);font-size:1rem;color:var(--text);text-decoration:none}
+.theme-toggle{background:var(--bg3);border:1px solid var(--border);color:var(--text-2);border-radius:8px;padding:.4rem .8rem;font-size:.78rem;cursor:pointer;font-family:var(--ff-sans);}
+.theme-toggle:hover{border-color:var(--purple);color:var(--text)}
+main{max-width:900px;margin:0 auto;padding:3rem 1.5rem 5rem}
+.breadcrumb{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.breadcrumb a{color:var(--text-3);text-decoration:none}
+.breadcrumb a:hover{color:var(--purple)}
+.series-tag{font-size:.7rem;padding:4px 11px;border-radius:99px;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);letter-spacing:.04em;text-transform:uppercase;font-weight:500;display:inline-block;margin-bottom:1.25rem}
+h1{font-family:var(--ff-serif);font-size:clamp(1.85rem,4vw,2.6rem);line-height:1.2;color:var(--purple);margin-bottom:.75rem;font-weight:400}
+.subtitle{font-family:var(--ff-serif);font-size:1.1rem;font-style:italic;color:var(--text-3);margin-bottom:1.5rem;max-width:680px}
+.meta-row{display:flex;align-items:center;gap:1.25rem;font-size:.82rem;color:var(--text-3);flex-wrap:wrap;margin-bottom:1.6rem;padding-bottom:1.3rem;border-bottom:1px solid var(--border)}
+h2{font-family:var(--ff-serif);font-size:1.5rem;font-weight:400;color:var(--text);margin:3.5rem 0 1.1rem;padding-top:1rem;border-top:1px solid var(--border)}
+h3{font-size:1rem;font-weight:500;color:var(--text);margin:1.75rem 0 .5rem}
+p{color:var(--text-2);margin-bottom:1.25rem;font-weight:300}
+strong{color:var(--text);font-weight:500}
+ul,ol{padding-left:1.4rem;margin-bottom:1.25rem;color:var(--text-2);font-weight:300}
+li{margin-bottom:.45rem}
+code{background:var(--bg3);padding:1px 6px;border-radius:3px;font-size:.85em;color:var(--text-2);font-family:monospace}
+pre{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:1rem 1.1rem;font-family:monospace;font-size:.82rem;color:var(--text-2);line-height:1.65;overflow-x:auto;margin:1rem 0}
+pre code{background:none;padding:0;color:inherit}
+.callout{display:block;background:var(--blue-bg);border-left:3px solid var(--blue);border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.95rem;color:var(--text);line-height:1.7}
+.callout p{margin-bottom:0;color:var(--text-2)}
+.callout.amber{background:var(--amber-bg);border-color:var(--amber)}
+.callout.green{background:var(--green-bg);border-color:var(--green)}
+.callout.red{background:var(--red-bg);border-color:var(--red)}
+.callout.blue{background:var(--blue-bg);border-color:var(--blue)}
+.callout.purple{background:var(--purple-bg);border-color:var(--purple)}
+.table-wrap{display:block;overflow-x:auto;margin:1.5rem 0;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+thead th{background:var(--bg2);padding:9px 13px;text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);font-weight:500;border-bottom:1px solid var(--border)}
+tbody td{padding:9px 13px;border-bottom:1px solid var(--border);color:var(--text-2);vertical-align:top;line-height:1.55;font-size:.85rem}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--bg2)}
+/* Phase progress strip */
+.phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem}
+.phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--text-3);background:var(--bg2);text-decoration:none}
+.phase-pip:hover{border-color:var(--purple);color:var(--text)}
+.phase-pip.active{background:var(--purple);color:#0d0d0d;border-color:transparent}
+.phase-pip.done{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+/* Before/After blocks */
+.ba-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0}
+.ba-block{border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+.ba-label{padding:.4rem .8rem;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.ba-block.before .ba-label{background:var(--red-bg);color:var(--red)}
+.ba-block.after .ba-label{background:var(--green-bg);color:var(--green)}
+.ba-block pre{margin:0;border-radius:0;border:none}
+/* Assignment / bonus blocks */
+.assignment{background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:12px;padding:1.2rem 1.4rem;margin:4.5rem 0 1rem}
+.assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem}
+.assignment h3{font-family:var(--ff-serif);color:var(--text);margin-top:.2rem;margin-bottom:.5rem;font-weight:400}
+.bonus{background:var(--purple-bg);border:1px solid var(--purple-border);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem}
+.bonus .b-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--purple);margin-bottom:.4rem}
+/* Collapsible solution */
+details.solution{margin:1rem 0 2rem;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+details.solution summary{padding:.9rem 1.2rem;cursor:pointer;font-weight:700;font-size:.92rem;background:var(--bg2);list-style:none;display:flex;align-items:center;gap:.5rem;color:var(--text)}
+details.solution summary::-webkit-details-marker{display:none}
+details.solution summary::before{content:"\25B6";font-size:.7rem;color:var(--text-3);transition:transform .2s}
+details.solution[open] summary::before{transform:rotate(90deg)}
+.solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border)}
+.solution-body p{font-size:.92rem}
+.series-nav{margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border)}
+.series-nav .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);font-weight:500;margin-bottom:.75rem;display:block}
+.nav-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.nav-blog{display:flex;align-items:center;gap:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.25rem;text-decoration:none;transition:border-color .2s,background .2s}
+.nav-blog:hover{border-color:var(--purple);background:var(--bg3)}
+.nav-blog-arrow{color:var(--text-3);font-size:1rem;flex-shrink:0}
+.nav-blog-title{font-size:.88rem;font-weight:500;color:var(--text)}
+.nav-blog-sub{font-size:.75rem;color:var(--text-3);margin-top:2px}
+footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.8rem;color:var(--text-3)}
+footer a{color:var(--text-3);text-decoration:none}
+footer a:hover{color:var(--purple)}
+@media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
+.blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
+.blog-tags .series-tag{margin-bottom:0}
+.tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+details.explain{margin:.5rem 0 1.5rem;border:1px solid var(--purple-border);border-radius:10px;background:var(--purple-bg)}
+details.explain summary{padding:.6rem 1rem;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--purple);list-style:none;display:flex;align-items:center;gap:.5rem}
+details.explain summary::-webkit-details-marker{display:none}
+details.explain summary::before{content:"\25B6";font-size:.65rem;transition:transform .2s}
+details.explain[open] summary::before{transform:rotate(90deg)}
+.explain-body{padding:.1rem 1.2rem 1rem;font-size:.92rem;line-height:1.7}
+.explain-body p{margin:.7rem 0}
+.explain-body ul{margin:.3rem 0 .7rem 1.2rem;padding-left:0}
+.explain-body li{margin-bottom:.35rem}
+.explain-body pre{margin:.6rem 0}
+.todo-image{display:none}
+
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a class="nav-logo" href="../../index.html">The Quality Strategist</a>
+  <button class="theme-toggle" id="themeToggle" type="button">Light</button>
+</nav>
+
+<main id="main-content">
+
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="../../blogs.html">Blogs</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <a href="00-agenticseries-landing.html">Agentic SDLC, Part 1</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <span aria-current="page">Phase 2 of Part 1</span>
+  </nav>
+
+  <div class="blog-tags" aria-label="Blog categories" role="group">
+    <span class="series-tag">Phase 2 &middot; MCP &amp; Tool Integration</span>
+    <span class="tag">MCP</span>
+    <span class="tag">Playwright MCP</span>
+    <span class="tag">GitHub</span>
+    <span class="tag">Jira</span>
+    <span class="tag">Approval Gates</span>
+  </div>
+
+  <h1>Giving an Agent Tools, With a Person at the Gate</h1>
+  <p class="subtitle">An agent acts only through tools. Connect them one by one, allow reading freely, and make every write wait for a yes.</p>
+
+  <div class="meta-row">
+    <span><strong>Series: Agentic SDLC, Part 1</strong></span>
+    <span>Demo: PeakAndPack</span>
+    <span>32 min read</span>
+    <span>By: RN</span>
+  </div>
+
+  <div class="phase-strip" aria-label="Series progress">
+    <a href="00-agenticseries-setup-foundations.html" class="phase-pip" title="Phase 0: Setup &amp; Agentic Foundations">0</a>
+    <a href="01-agenticseries-what-it-means.html" class="phase-pip" title="Phase 1: What Agentic SDLC Means">1</a>
+    <span class="phase-pip active" title="Phase 2: MCP &amp; Tool Integration">2</span>
+    <a href="04-agenticseries-test-generation.html" class="phase-pip" title="Phase 4: Agentic Test Generation">4</a>
+    <a href="06-agenticseries-regression.html" class="phase-pip" title="Phase 6: Agentic Regression Selection">6</a>
+    <a href="09-agenticseries-full-pipeline.html" class="phase-pip" title="Phase 9: The Full Pipeline">9</a>
+  </div>
+
+
+  <div class="callout amber">
+    <p><strong>Draft.</strong> Written before the steps have been run end to end, so it is marked and kept out of the site index.</p>
+    <p><strong>Checked:</strong> The Atlassian, GitHub and Playwright MCP commands against each vendor's current instructions and <code>claude mcp add --help</code>. <code>failures.ts</code> run against a real Playwright JSON report from the PeakAndPack store. <code>ask-human.ts</code> and <code>simple-mcp-agent.ts</code> compiled against the Agent SDK type definitions.</p>
+    <p><strong>Not checked:</strong> Any agent run, any live MCP connection, the GitHub issue creation, the Jira flow, and the Zephyr reporter. The "what to expect" steps describe how the approval gate is designed to behave. The GitHub tool names (<code>list_issues</code>, <code>search_issues</code>, <code>issue_read</code>) were not confirmed against a live connection: <code>search_issues</code> in particular should be checked in <code>/mcp</code>.</p>
+  </div>
+
+
+  <h2>Goal</h2>
+  <p>Give an agent tools in other systems, with a limit on each, and use them to build a small agent that turns a failed Playwright test into a drafted bug report, filed only after you say yes. This is the phase where an agent first touches something outside your machine, so the controls from Phase 0 start to matter.</p>
+  <p>By the end of this phase you can:</p>
+  <ul>
+    <li>explain what MCP is and why an agent uses it instead of a free-for-all shell</li>
+    <li>connect Claude Code to the Playwright, GitHub and Atlassian MCP servers</li>
+    <li>read a Playwright JSON report and hand its failures to an agent</li>
+    <li>let an agent read freely but write only with a person's approval</li>
+    <li>compare an agent that calls Jira from outside with one that lives inside Jira</li>
+    <li>lay out a test repository so an agent can find its way around</li>
+  </ul>
+
+  <h2 id="what-is-mcp">1. What MCP is, in plain words</h2>
+  <p>An agent can only act through tools. A tool is a named action with defined inputs, such as "search issues in this repository" or "open this web page". Someone has to provide those tools. <strong>MCP (Model Context Protocol)</strong> is a standard way to do that: a program called an <strong>MCP server</strong> exposes a list of tools, and any MCP-aware agent, Claude Code included, can connect and use them.</p>
+  <p>Think of it as a standard socket. Before sockets were standard, every device needed its own plug. With MCP, the GitHub team builds one GitHub server, and every agent that speaks MCP can use it.</p>
+  <p><strong>Why not just let the agent run shell commands and call APIs itself?</strong> It could, but you would lose the things that make an agent safe to use at work:</p>
+  <ul>
+    <li><strong>Permission per tool.</strong> You can allow "search issues" and hold back "create issue". With a raw shell, you allow a command or you do not.</li>
+    <li><strong>Defined inputs and outputs.</strong> The agent cannot invent a malformed request, and you can read exactly what it asked for.</li>
+    <li><strong>One place to audit.</strong> Every action is a named tool call.</li>
+  </ul>
+  <p>The CCAR-F for QA series covers tool design and MCP from the exam angle: <a href="../ccarf-for-qa/d2-tool-design-mcp.html" style="color:var(--blue)">Domain 2</a>.</p>
+
+  <h2 id="connect">2. Connect three servers</h2>
+  <p>You add a server to Claude Code with <code>claude mcp add</code>. Do these three in your <code>peakandpack-tests</code> folder.</p>
+
+  <h3>Playwright MCP: a browser the agent can drive</h3>
+  <pre><code>claude mcp add playwright -- npx @playwright/mcp@latest</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>claude mcp add playwright</code> registers a server and gives it the name <code>playwright</code>. The name appears in every tool it provides, for example <code>mcp__playwright__...</code>, and you use it in permission rules.</li>
+        <li>Everything after <code>--</code> is the command that starts the server: <code>npx @playwright/mcp@latest</code> downloads and runs Microsoft's Playwright MCP server. The <code>--</code> separates Claude Code's own options from the server's command.</li>
+        <li>The server opens a real browser when the agent asks it to. By default you can watch it. Later phases add <code>--headless</code> for pipelines, where there is no screen.</li>
+      </ul>
+    </div>
+  </details>
+  <p><strong>Try it.</strong> Start your PeakAndPack store locally, run <code>claude</code>, and ask: "Open http://localhost:3000 in the browser and list the names of the first four products." Type <code>/mcp</code> to see the connected servers and their tools. Why a local copy rather than the live demo: the agent may click things, and a local copy is yours to change.</p>
+
+  <h3>GitHub MCP: issues and pull requests</h3>
+  <p>First, a token. In your GitHub settings, create a <strong>fine-grained personal access token</strong> that can reach <em>one</em> throwaway repository, <code>peakandpack-bugs</code> (create it empty), with only the Issues permission set to read and write. <strong>Why so narrow:</strong> an agent acts with whatever the token allows. If the token can reach one practice repository, the worst outcome is a mess in one practice repository.</p>
+  <pre><code>claude mcp add --transport http github https://api.githubcopilot.com/mcp/ --header "Authorization: Bearer YOUR_TOKEN"</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>--transport http</code> says this server is reached over the web, not started as a local program. GitHub hosts it.</li>
+        <li>The URL is GitHub's own MCP server address.</li>
+        <li><code>--header "Authorization: Bearer YOUR_TOKEN"</code> sends your token with every request, which is how GitHub knows what the agent may do. Replace <code>YOUR_TOKEN</code> with the real one. By default this is saved in your own local Claude Code settings, not in the repository.</li>
+      </ul>
+    </div>
+  </details>
+  <p>Run <code>/mcp</code> again and open the GitHub server's tool list. <strong>Read the tool names there</strong> rather than trusting any list in a blog post, including this one: servers change. This phase's code uses <code>issue_read</code>, <code>list_issues</code> and <code>search_issues</code> as the read tools and <code>issue_write</code> for creating issues. Check they match what you see.</p>
+  <div class="callout amber">
+    <p>The <code>--scope</code> option (<code>local</code>, <code>user</code> or <code>project</code>) decides who gets the server. <code>local</code>, the default, is just you in this folder. <code>project</code> writes a <code>.mcp.json</code> file that is meant to be committed so the whole team shares the setup. Never put a token in a file you commit.</p>
+  </div>
+
+  <h3>Atlassian MCP: Jira and Confluence</h3>
+  <pre><code>claude mcp add --transport http atlassian https://mcp.atlassian.com/v2/mcp</code></pre>
+  <p>Then, inside a <code>claude</code> session, run <code>/mcp</code> and follow the prompt to sign in. This one uses a browser sign-in (OAuth) and acts with your own Jira permissions. Atlassian's page for it is <a href="https://support.atlassian.com/atlassian-rovo-mcp-server/docs/getting-started-with-the-atlassian-remote-mcp-server/" style="color:var(--purple)">Get started with the Atlassian MCP server</a>. Older addresses are being retired, so use the one on that page.</p>
+  <p><strong>This one is optional.</strong> You need a Jira site to try it, and if it is your employer's, follow your employer's rules about connecting AI tools to it. The agent below files its bug in GitHub so that anyone can follow along. The shape is identical for Jira: the agent searches for a duplicate, then asks to create an issue. Only the tool names change.</p>
+
+  <h2 id="agent">3. The agent: a failed test becomes a drafted bug</h2>
+  <p>The job: take a Playwright run's failures, check whether each is already reported, and propose a bug report for each new one. A person approves every report before it exists.</p>
+
+  <h3>Step 1: get the failures out of Playwright</h3>
+  <p>Playwright can write its results as JSON. Run your suite with the JSON reporter, writing to a file in the <code>agents</code> folder:</p>
+  <pre><code># macOS, Linux, or Git Bash
+PLAYWRIGHT_JSON_OUTPUT_NAME=agents/report.json npx playwright test --reporter=json
+
+# Windows PowerShell
+$env:PLAYWRIGHT_JSON_OUTPUT_NAME='agents/report.json'; npx playwright test --reporter=json</code></pre>
+  <p><strong>Why an environment variable, not <code>&gt; report.json</code>:</strong> in Windows PowerShell, <code>&gt;</code> saves the file in a different text encoding, and Node then cannot read it as JSON. The variable tells Playwright to write the file itself. To get a failure to practise on, make one test expect something untrue, for example a search for "tent" expecting two cards when the store has one.</p>
+
+  <h3>Step 2: read the report</h3>
+  <pre><code>import { readFileSync } from 'node:fs';
+
+export type Failure = {
+  title: string;
+  file: string;
+  line: number;
+  error: string;
+  attempts: number;
+};
+
+type Spec = {
+  title: string;
+  file: string;
+  line: number;
+  tests: { status: string; results: { error?: { message?: string } }[] }[];
+};
+type Suite = { specs?: Spec[]; suites?: Suite[] };
+
+const ANSI_COLOURS = /\u001b\[[0-9;]*m/g;
+
+// Reads the file that `npx playwright test --reporter=json` writes
+export function readFailures(reportPath: string): Failure[] {
+  const report = JSON.parse(readFileSync(reportPath, 'utf-8')) as { suites: Suite[] };
+  const failures: Failure[] = [];
+
+  const walk = (suite: Suite) =&gt; {
+    for (const spec of suite.specs ?? []) {
+      for (const t of spec.tests) {
+        // 'expected' passed, 'flaky' passed on a retry, 'skipped' did not run
+        if (t.status !== 'unexpected') continue;
+        const last = t.results[t.results.length - 1];
+        failures.push({
+          title: spec.title,
+          file: spec.file,
+          line: spec.line,
+          error: (last.error?.message ?? '').replace(ANSI_COLOURS, '').trim(),
+          attempts: t.results.length,
+        });
+      }
+    }
+    (suite.suites ?? []).forEach(walk);
+  };
+  report.suites.forEach(walk);
+  return failures;
+}</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li>The <code>type</code> declarations describe the part of Playwright's report this code uses. Suites can nest (a file contains groups, which contain tests), which is why <code>Suite</code> refers to itself.</li>
+        <li><code>ANSI_COLOURS</code> is a pattern matching the colour codes Playwright puts in error messages for the terminal. In a file they appear as junk characters, so they are removed.</li>
+        <li><code>readFailures</code> reads the file and walks every suite. <code>walk</code> calls itself on each nested suite, which is how it reaches tests at any depth.</li>
+        <li><code>t.status !== 'unexpected'</code> skips everything that is not a failure. In Playwright's report, <code>expected</code> means passed as planned, <code>flaky</code> means passed on a retry, and <code>skipped</code> means it did not run. <code>unexpected</code> is a real failure. Skipping <code>flaky</code> here is a choice: a test that passed on retry is not a bug report yet.</li>
+        <li><code>t.results[t.results.length - 1]</code> takes the last attempt, because a retried test has one result per attempt.</li>
+      </ul>
+      <p>This file does no AI work at all. <strong>Why keep it separate:</strong> reading a report is a job for plain code. It is fast, free and identical every time. The agent is used only for what code cannot do.</p>
+    </div>
+  </details>
+
+  <h3>Step 3: the approval gate</h3>
+  <pre><code>import { createInterface } from 'node:readline/promises';
+import type { CanUseTool } from '@anthropic-ai/claude-agent-sdk';
+
+// Called for every tool the agent wants that is NOT on its allowedTools list.
+// Anything that is not a plain "yes" from a person is a "no".
+export const askHuman: CanUseTool = async (toolName, input) =&gt; {
+  console.log(`\nThe agent wants to use: ${toolName}`);
+  console.log(JSON.stringify(input, null, 2));
+
+  const terminal = createInterface({ input: process.stdin, output: process.stdout });
+  const answer = await terminal.question('Allow this? (y/N) ');
+  terminal.close();
+
+  if (answer.trim().toLowerCase() === 'y') return { behavior: 'allow', updatedInput: input };
+  return { behavior: 'deny', message: 'A person declined this action. Do not retry it.' };
+};</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>CanUseTool</code> is the shape of a function the SDK calls when the agent wants a tool that is <em>not</em> on its pre-approved list. It receives the tool's name and the exact inputs.</li>
+        <li>The function prints both, so you see precisely what would be created, not just "the agent wants to create an issue".</li>
+        <li><code>terminal.question(...)</code> waits for you to type. Only <code>y</code> counts as yes. Anything else, including pressing Enter, is a no. <strong>Why default to no:</strong> an approval that is easy to give by accident is not a gate.</li>
+        <li>Returning <code>{ behavior: 'deny', message }</code> refuses the action and tells the agent why, in words. The message says not to retry, so the agent does not keep asking.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h3>Step 4: the agent</h3>
+  <pre><code>import { query } from '@anthropic-ai/claude-agent-sdk';
+import { readFailures } from './failures.js';
+import { askHuman } from './ask-human.js';
+
+const reportPath = process.argv[2] ?? 'test-results/report.json';
+const bugRepo = process.env.BUG_REPO;                 // for example "your-name/peakandpack-bugs"
+const token = process.env.GITHUB_TOKEN;
+if (!bugRepo || !token) throw new Error('Set BUG_REPO and GITHUB_TOKEN first.');
+
+const failures = readFailures(reportPath);
+if (failures.length === 0) {
+  console.log('No failed tests in the report. Nothing to file.');
+  process.exit(0);
+}
+
+const prompt = `You are helping a QA engineer triage failed Playwright tests for the PeakAndPack shop.
+Bugs go in the GitHub repository ${bugRepo}.
+
+Failed tests (from the Playwright JSON report):
+${JSON.stringify(failures, null, 2)}
+
+For each failed test:
+1. Search the repository's open issues for the same test title. If one exists, say so and do not file another.
+2. Otherwise, create one issue. Title: "Failing test: &lt;test title&gt;". Body: the file and line, the error text,
+   and one sentence on what the test was checking. Say plainly that the cause is not yet known.
+3. Do not guess whether this is a product bug, a changed feature or a bad test. That is the human's call.
+
+When you are finished, list what you filed and what you skipped.`;
+
+const run = query({
+  prompt,
+  options: {
+    mcpServers: {
+      github: {
+        type: 'http',
+        url: 'https://api.githubcopilot.com/mcp/',
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    },
+    // Reading is allowed without asking. Creating an issue is not on this list,
+    // so it goes to askHuman first.
+    allowedTools: ['mcp__github__list_issues', 'mcp__github__search_issues', 'mcp__github__issue_read'],
+    canUseTool: askHuman,
+    maxTurns: 15,
+    maxBudgetUsd: 1,
+  },
+});
+
+for await (const message of run) {
+  if (message.type === 'result') {
+    console.log(`\n${message.subtype}: ${message.num_turns} turns, about $${message.total_cost_usd.toFixed(3)}`);
+    if (message.subtype === 'success') console.log(message.result);
+  }
+}</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li>The first lines read two settings from the environment, <code>BUG_REPO</code> (for example <code>your-name/peakandpack-bugs</code>) and <code>GITHUB_TOKEN</code>, and stop with a clear message if either is missing. <strong>Why:</strong> a missing token should fail at once, not halfway through a run.</li>
+        <li>If the report has no failures, the script exits before calling any model. <strong>Why:</strong> every model call costs money, and "nothing to do" needs no AI.</li>
+        <li>The prompt gives the agent the failures as data and a numbered procedure: search first, file only if new, and <em>do not guess the cause</em>. That last rule matters because a failing test could be a real bug, an intended change, or a bad test, and the agent cannot tell which.</li>
+        <li><code>mcpServers</code> connects the GitHub server for this run only. The SDK's version of the <code>claude mcp add</code> command from section 2.</li>
+        <li><code>allowedTools</code> lists the three read tools. <strong>Reading needs no question. Creating an issue is not on the list</strong>, so the SDK passes it to <code>askHuman</code> instead. That one list is the whole safety design: what the agent may do alone, versus what needs you.</li>
+        <li><code>maxTurns</code> and <code>maxBudgetUsd</code> are the Phase 0 limits. A triage run is a handful of searches and one or two issues, so 15 turns and a dollar are generous.</li>
+        <li>The final loop prints how the run ended, the cost, and the agent's own summary of what it filed and skipped.</li>
+      </ul>
+    </div>
+  </details>
+  <pre><code>cd agents
+npx tsx simple-mcp-agent.ts report.json</code></pre>
+  <p>Set <code>BUG_REPO</code> and <code>GITHUB_TOKEN</code> first. In bash: <code>export GITHUB_TOKEN=your_token</code>. In PowerShell: <code>$env:GITHUB_TOKEN='your_token'</code>.</p>
+  <p><strong>What to expect and what to do:</strong></p>
+  <ol>
+    <li>The agent searches for an existing issue. No question is asked, because search is read-only.</li>
+    <li>It then asks to create an issue and prints the title and body. <strong>Type <code>n</code> once.</strong> Check the agent accepted the refusal and did not try again, and that no issue exists.</li>
+    <li>Run it again and type <code>y</code>. Check the issue in GitHub: title, body, and above all the cause line. It should say the cause is not yet known.</li>
+    <li>Run it a third time. A good run finds the issue and skips it. Notice whether it did. The agent doing this check is the weakest part of the design, and you are about to see why.</li>
+  </ol>
+  <!-- IMAGE TODO: terminal showing the approval prompt with the proposed issue; and the created issue in GitHub (mask repo and account details) -->
+  <div class="callout amber">
+    <p><strong>What this agent can get wrong.</strong> It might file a duplicate, because "is this the same issue?" is a judgement made by a model reading titles. It might state a cause with more confidence than the evidence supports. It might write an issue that reads well and describes the wrong step. The approval gate catches these only if you read the proposal instead of pressing <code>y</code>. A tired reviewer is the real failure mode of every human gate, so keep proposals short enough to read.</p>
+  </div>
+
+  <h2 id="rovo">4. An agent from outside, and one inside the tool</h2>
+  <p>The agent above is <strong>external</strong>: it runs on your machine and reaches into GitHub or Jira through MCP. Atlassian's <strong>Rovo</strong> offers the opposite shape: agents that live inside Jira and Confluence and act there. Both can draft a bug report or a test case. They differ in who controls them.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th></th><th>External agent plus MCP (this phase)</th><th>Agent inside the tool (Rovo)</th></tr></thead>
+    <tbody>
+      <tr><td>Where it runs</td><td>Your machine or a pipeline</td><td>Inside Jira and Confluence</td></tr>
+      <tr><td>Who sets its permissions</td><td>You, in code and tool lists</td><td>The tool's administrators</td></tr>
+      <tr><td>What it can see</td><td>What its tools expose, plus your files</td><td>What the tool's own data holds</td></tr>
+      <tr><td>Triggered by</td><td>A command, a pipeline, a schedule</td><td>Events and actions inside the tool, such as a status change</td></tr>
+      <tr><td>Good fit</td><td>Work that spans several systems, such as your test results and a tracker</td><td>Work that lives entirely inside one tool and should follow that tool's access rules</td></tr>
+    </tbody>
+  </table></div>
+  <p>Neither is better. Choose by where the data lives and who needs to control the agent. Check the details of your own Jira site's AI features against what your administrators have turned on, because that varies between organisations.</p>
+
+  <h2 id="zephyr">5. Test management: Zephyr Scale</h2>
+  <p>If your team keeps test cases and run results in <strong>Zephyr Scale</strong>, a Jira app for test management, two things connect it to Playwright: reporting results, and creating test cases. Reporting is a Playwright reporter, <a href="https://www.npmjs.com/package/playwright-zephyr" style="color:var(--purple)"><code>playwright-zephyr</code></a>, added in <code>playwright.config.ts</code>:</p>
+  <pre><code>reporter: [
+  ['playwright-zephyr/lib/src/cloud', {
+    projectKey: 'YOUR-KEY',                         // your Zephyr project's key
+    authorizationToken: process.env.ZEPHYR_AUTH_TOKEN,   // from the environment, never typed in the file
+  }],
+],</code></pre>
+  <p>That is the cloud version, from the package's own instructions. A self-hosted Server install uses a different reporter name and a <code>host</code> option, which the package documents. Creating test cases from an agent's output comes up in Phase 4. This section is deliberately short: it needs a Zephyr instance to try, so treat it as a pointer until you have one.</p>
+
+  <h2 id="navigable">6. Make your test repository easy for an agent to read</h2>
+  <p>An agent finds its way by reading file names and a few instruction files. A repository an agent can navigate is also one a new teammate can navigate. Four habits help both:</p>
+  <ul>
+    <li><strong>Predictable folders.</strong> <code>tests/shop/cart.spec.ts</code> tells a reader what it covers before it opens. <code>tests/new2.spec.ts</code> does not.</li>
+    <li><strong>One page of instructions at the root.</strong> Claude Code reads a file called <code>CLAUDE.md</code> at the start of a session. Put the commands and rules there so you do not repeat them in every prompt.</li>
+    <li><strong>Stable hooks in the app.</strong> Role-based locators and test ids from Phase 2 of the Playwright series give the agent something solid to point at.</li>
+    <li><strong>Small files with one job.</strong> Easier to read in full, and easier to review a change to.</li>
+  </ul>
+  <pre><code># CLAUDE.md
+
+This is the QA repository for the PeakAndPack shop. Tests are Playwright and TypeScript.
+
+## Commands
+- Run all tests: `npx playwright test`
+- Run one file: `npx playwright test tests/shop/cart.spec.ts`
+- Agent scripts live in `agents/`. Run them with `npx tsx` from that folder.
+
+## Rules for any test you write
+- Locators: getByRole, getByLabel, getByText. Test ids only when nothing else names the element.
+- No `waitForTimeout`. Wait on an assertion or on `waitForResponse`.
+- Each test creates its own customer through the API. Never the shared demo account.
+- Every test states what change to the app would make it fail.
+
+## Do not
+- Edit anything outside `generated-tests/` unless asked.
+- Commit secrets. Keys come from environment variables.</code></pre>
+  <p>The CCAR-F for QA series explains <code>CLAUDE.md</code> and how teams share it in <a href="../ccarf-for-qa/d3-claude-code-configuration.html" style="color:var(--blue)">Domain 3</a>.</p>
+
+  <h2 id="mistakes">7. Common mistakes</h2>
+  <ul>
+    <li><strong>A token with too much reach.</strong> Scope it to one practice repository and one permission.</li>
+    <li><strong>Trusting a tool list from a blog post.</strong> Read the names from <code>/mcp</code> on your own machine.</li>
+    <li><strong>Pressing <code>y</code> without reading.</strong> The gate is only as good as the reading.</li>
+    <li><strong>Using an agent to read a JSON file.</strong> Code reads files for free. Spend the model on judgement.</li>
+    <li><strong>Committing <code>.mcp.json</code> with a token inside it.</strong></li>
+  </ul>
+
+  <h2 id="deliverables">8. Deliverables</h2>
+  <ul>
+    <li><code>mcp-setup.md</code>: which servers you connected, with the exact commands, the token's scope, and the tools each exposed (copied from <code>/mcp</code>)</li>
+    <li><code>agents/simple-mcp-agent.ts</code>: the agent above, working against your own practice repository</li>
+    <li><code>mcp-architecture.md</code>: a diagram or short description of what talks to what, and where the approval gate sits</li>
+  </ul>
+
+  <hr style="border:none;border-top:1px solid var(--border);margin:0">
+
+  <div class="assignment">
+    <div class="a-label">Assignment</div>
+    <h3>Close the duplicate gap, and prove it</h3>
+    <p>Run the agent twice against the same failure and note whether it files a duplicate. Then change one thing so a duplicate cannot be filed without a person noticing, and show it works. Write down what you changed and why you did not fix it by adding "do not file duplicates" in capital letters to the prompt.</p>
+    <details class="solution">
+      <summary>Show solution: try it yourself first</summary>
+      <div class="solution-body">
+        <p>Two sensible changes, and the reasoning that separates them:</p>
+        <ul>
+          <li><strong>Make the title predictable and the check mechanical.</strong> Have the agent always use <code>Failing test: &lt;exact test title&gt;</code>, and look for that exact string. An exact-match check is code, not judgement.</li>
+          <li><strong>Move the duplicate check out of the model entirely.</strong> Search for the title in the script before the agent is asked to do anything, and only pass it failures with no open issue. Then a duplicate cannot be filed, whatever the model does.</li>
+        </ul>
+        <p><strong>Why not a stronger prompt:</strong> a prompt is a request. The model may follow it ninety-nine times and ignore it on the hundredth, and you cannot tell which run that is. A check written in code runs every time. Use the prompt for judgement and code for rules.</p>
+        <p>Show it works by running the agent twice on the same report and confirming one issue exists afterwards.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="bonus">
+    <div class="b-label">Bonus challenge</div>
+    <p><strong>Read the tool list as an attacker would, and as a reviewer would.</strong> Open <code>/mcp</code> for the GitHub server and count how many tools it offers. For each one you did not allow, say what the worst case would be if the agent used it. Which of those would you be comfortable allowing without asking, and which never?</p>
+  </div>
+
+
+  <div class="series-nav">
+    <span class="label">Navigate the series</span>
+    <div class="nav-pair">
+      <a href="01-agenticseries-what-it-means.html" class="nav-blog"><span class="nav-blog-arrow" aria-hidden="true">&larr;</span><div><div class="nav-blog-title">Phase 1: What Agentic SDLC Means</div><div class="nav-blog-sub">Where agents help and where people decide</div></div></a>
+      <a href="04-agenticseries-test-generation.html" class="nav-blog"><div><div class="nav-blog-title">Phase 4: Agentic Test Generation</div><div class="nav-blog-sub">Drafts that a person curates</div></div><span class="nav-blog-arrow" aria-hidden="true">&rarr;</span></a>
+    </div>
+  </div>
+
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--text-3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; Agentic SDLC, Part 1</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+<script>
+(function(){
+  var btn = document.getElementById('themeToggle');
+  function isLight(){ return document.documentElement.getAttribute('data-theme') === 'light'; }
+  function sync(){ btn.textContent = isLight() ? 'Dark' : 'Light'; }
+  sync();
+  btn.addEventListener('click', function(){
+    if(isLight()){
+      document.documentElement.removeAttribute('data-theme');
+      try{ localStorage.setItem('pw-theme','dark'); }catch(e){}
+    } else {
+      document.documentElement.setAttribute('data-theme','light');
+      try{ localStorage.setItem('pw-theme','light'); }catch(e){}
+    }
+    sync();
+  });
+})();
+</script>
+
+</body>
+</html>

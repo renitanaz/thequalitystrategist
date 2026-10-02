@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>(function(){try{if(localStorage.getItem('pw-theme')==='light'){document.documentElement.setAttribute('data-theme','light');}}catch(e){}})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Agentic SDLC, Part 1</title>
+<meta name="description" content="Agentic SDLC, Part 1: six phases that build QA agents against PeakAndPack with tool limits, spending caps and human approval gates.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+  --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+  --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.09); --purple-border:rgba(167,139,250,0.35);
+  --green:#4ade80; --green-bg:rgba(74,222,128,0.07); --green-border:rgba(74,222,128,0.25);
+  --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07); --blue-border:rgba(96,165,250,0.25);
+  --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07); --amber-border:rgba(251,191,36,0.25);
+  --red:#f87171; --red-bg:rgba(248,113,113,0.07); --red-border:rgba(248,113,113,0.25);
+  --ff-serif:'DM Serif Display',Georgia,serif; --ff-sans:'DM Sans',system-ui,sans-serif;
+}
+:root[data-theme="light"]{
+  --bg:#FAFCF5; --bg2:#F5F7F0; --bg3:#EDF0E4; --border:#DEE3D3;
+  --text:#1A1F14; --text-2:#3D4235; --text-3:#6B7060;
+  --purple:#7A4A9A; --purple-bg:#EDE0F5; --purple-border:rgba(122,74,154,0.35);
+  --green:#1A7A3A; --green-bg:#D8F0E0; --green-border:rgba(26,122,58,0.25);
+  --blue:#2A5C9A; --blue-bg:#DDE8F5; --blue-border:rgba(42,92,154,0.25);
+  --amber:#9A6E1A; --amber-bg:#F5EDD6; --amber-border:rgba(154,110,26,0.25);
+  --red:#B0402E; --red-bg:#F5DEDA; --red-border:rgba(176,64,46,0.25);
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body{background:var(--bg);color:var(--text);font-family:var(--ff-sans);font-size:16px;line-height:1.8;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.skip-link{position:absolute;top:-100%;left:1rem;background:var(--green);color:#000;padding:.5rem 1rem;border-radius:0 0 6px 6px;font-size:.85rem;font-weight:500;text-decoration:none;z-index:999}
+.skip-link:focus{top:0}
+nav.site-nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:56px}
+.nav-logo{font-family:var(--ff-serif);font-size:1rem;color:var(--text);text-decoration:none}
+.theme-toggle{background:var(--bg3);border:1px solid var(--border);color:var(--text-2);border-radius:8px;padding:.4rem .8rem;font-size:.78rem;cursor:pointer;font-family:var(--ff-sans);}
+.theme-toggle:hover{border-color:var(--purple);color:var(--text)}
+main{max-width:900px;margin:0 auto;padding:3rem 1.5rem 5rem}
+.breadcrumb{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.breadcrumb a{color:var(--text-3);text-decoration:none}
+.breadcrumb a:hover{color:var(--purple)}
+.series-tag{font-size:.7rem;padding:4px 11px;border-radius:99px;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);letter-spacing:.04em;text-transform:uppercase;font-weight:500;display:inline-block;margin-bottom:1.25rem}
+h1{font-family:var(--ff-serif);font-size:clamp(1.85rem,4vw,2.6rem);line-height:1.2;color:var(--purple);margin-bottom:.75rem;font-weight:400}
+.subtitle{font-family:var(--ff-serif);font-size:1.1rem;font-style:italic;color:var(--text-3);margin-bottom:1.5rem;max-width:680px}
+.meta-row{display:flex;align-items:center;gap:1.25rem;font-size:.82rem;color:var(--text-3);flex-wrap:wrap;margin-bottom:1.6rem;padding-bottom:1.3rem;border-bottom:1px solid var(--border)}
+h2{font-family:var(--ff-serif);font-size:1.5rem;font-weight:400;color:var(--text);margin:3.5rem 0 1.1rem;padding-top:1rem;border-top:1px solid var(--border)}
+h3{font-size:1rem;font-weight:500;color:var(--text);margin:1.75rem 0 .5rem}
+p{color:var(--text-2);margin-bottom:1.25rem;font-weight:300}
+strong{color:var(--text);font-weight:500}
+ul,ol{padding-left:1.4rem;margin-bottom:1.25rem;color:var(--text-2);font-weight:300}
+li{margin-bottom:.45rem}
+code{background:var(--bg3);padding:1px 6px;border-radius:3px;font-size:.85em;color:var(--text-2);font-family:monospace}
+pre{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:1rem 1.1rem;font-family:monospace;font-size:.82rem;color:var(--text-2);line-height:1.65;overflow-x:auto;margin:1rem 0}
+pre code{background:none;padding:0;color:inherit}
+.callout{display:block;background:var(--blue-bg);border-left:3px solid var(--blue);border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.95rem;color:var(--text);line-height:1.7}
+.callout p{margin-bottom:0;color:var(--text-2)}
+.callout.amber{background:var(--amber-bg);border-color:var(--amber)}
+.callout.green{background:var(--green-bg);border-color:var(--green)}
+.callout.red{background:var(--red-bg);border-color:var(--red)}
+.callout.blue{background:var(--blue-bg);border-color:var(--blue)}
+.callout.purple{background:var(--purple-bg);border-color:var(--purple)}
+.table-wrap{display:block;overflow-x:auto;margin:1.5rem 0;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+thead th{background:var(--bg2);padding:9px 13px;text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);font-weight:500;border-bottom:1px solid var(--border)}
+tbody td{padding:9px 13px;border-bottom:1px solid var(--border);color:var(--text-2);vertical-align:top;line-height:1.55;font-size:.85rem}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--bg2)}
+/* Phase progress strip */
+.phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem}
+.phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--text-3);background:var(--bg2);text-decoration:none}
+.phase-pip:hover{border-color:var(--purple);color:var(--text)}
+.phase-pip.active{background:var(--purple);color:#0d0d0d;border-color:transparent}
+.phase-pip.done{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+/* Before/After blocks */
+.ba-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0}
+.ba-block{border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+.ba-label{padding:.4rem .8rem;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.ba-block.before .ba-label{background:var(--red-bg);color:var(--red)}
+.ba-block.after .ba-label{background:var(--green-bg);color:var(--green)}
+.ba-block pre{margin:0;border-radius:0;border:none}
+/* Assignment / bonus blocks */
+.assignment{background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:12px;padding:1.2rem 1.4rem;margin:4.5rem 0 1rem}
+.assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem}
+.assignment h3{font-family:var(--ff-serif);color:var(--text);margin-top:.2rem;margin-bottom:.5rem;font-weight:400}
+.bonus{background:var(--purple-bg);border:1px solid var(--purple-border);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem}
+.bonus .b-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--purple);margin-bottom:.4rem}
+/* Collapsible solution */
+details.solution{margin:1rem 0 2rem;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+details.solution summary{padding:.9rem 1.2rem;cursor:pointer;font-weight:700;font-size:.92rem;background:var(--bg2);list-style:none;display:flex;align-items:center;gap:.5rem;color:var(--text)}
+details.solution summary::-webkit-details-marker{display:none}
+details.solution summary::before{content:"\25B6";font-size:.7rem;color:var(--text-3);transition:transform .2s}
+details.solution[open] summary::before{transform:rotate(90deg)}
+.solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border)}
+.solution-body p{font-size:.92rem}
+.series-nav{margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border)}
+.series-nav .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);font-weight:500;margin-bottom:.75rem;display:block}
+.nav-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.nav-blog{display:flex;align-items:center;gap:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.25rem;text-decoration:none;transition:border-color .2s,background .2s}
+.nav-blog:hover{border-color:var(--purple);background:var(--bg3)}
+.nav-blog-arrow{color:var(--text-3);font-size:1rem;flex-shrink:0}
+.nav-blog-title{font-size:.88rem;font-weight:500;color:var(--text)}
+.nav-blog-sub{font-size:.75rem;color:var(--text-3);margin-top:2px}
+footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.8rem;color:var(--text-3)}
+footer a{color:var(--text-3);text-decoration:none}
+footer a:hover{color:var(--purple)}
+@media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
+.blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
+.blog-tags .series-tag{margin-bottom:0}
+.tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+details.explain{margin:.5rem 0 1.5rem;border:1px solid var(--purple-border);border-radius:10px;background:var(--purple-bg)}
+details.explain summary{padding:.6rem 1rem;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--purple);list-style:none;display:flex;align-items:center;gap:.5rem}
+details.explain summary::-webkit-details-marker{display:none}
+details.explain summary::before{content:"\25B6";font-size:.65rem;transition:transform .2s}
+details.explain[open] summary::before{transform:rotate(90deg)}
+.explain-body{padding:.1rem 1.2rem 1rem;font-size:.92rem;line-height:1.7}
+.explain-body p{margin:.7rem 0}
+.explain-body ul{margin:.3rem 0 .7rem 1.2rem;padding-left:0}
+.explain-body li{margin-bottom:.35rem}
+.explain-body pre{margin:.6rem 0}
+.todo-image{display:none}
+
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a class="nav-logo" href="../../index.html">The Quality Strategist</a>
+  <button class="theme-toggle" id="themeToggle" type="button">Light</button>
+</nav>
+
+<main id="main-content">
+
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="../../blogs.html">Blogs</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    
+    <span aria-current="page">Agentic SDLC, Part 1</span>
+  </nav>
+
+  <div class="blog-tags" aria-label="Blog categories" role="group">
+    <span class="series-tag">Part 1 of 2 &middot; Agentic SDLC</span>
+    <span class="tag">Agents</span>
+    <span class="tag">Claude Code</span>
+    <span class="tag">MCP</span>
+    <span class="tag">Playwright</span>
+    <span class="tag">TypeScript</span>
+  </div>
+
+  <h1>Agentic SDLC, Part 1: Agents a QA Team Can Trust</h1>
+  <p class="subtitle">Build agents that draft tests, choose regression runs and write bug reports against a real app, with a limit on what each one can do and a person at every gate.</p>
+
+  <div class="meta-row">
+    <span><strong>Series: Agentic SDLC, Part 1</strong></span>
+    <span>Demo: PeakAndPack</span>
+    <span>8 min read</span>
+    <span>By: RN</span>
+  </div>
+
+
+
+  <div class="callout amber">
+    <p><strong>Draft.</strong> Written before the steps have been run end to end, so it is marked and kept out of the site index.</p>
+    <p><strong>Checked:</strong> The TypeScript in Phases 0, 2, 4, 6 and 9 compiles against the Claude Agent SDK type definitions. The test-selection logic, the failure parser, the commit helper and the bug-filing script were run for real (the last against a fake GitHub). Both workflow files parse as valid YAML.</p>
+    <p><strong>Not checked:</strong> Every step that needs a signed-in Claude Code, a live MCP server, GitHub Actions or a Jira site. Nothing in the series has been run end to end yet, so treat every "you should see" line as the intended behaviour. Images are marked with <code>IMAGE TODO</code> comments in the page source. The series is not linked from the home page.</p>
+  </div>
+
+
+  <h2>1. What this series is</h2>
+  <p>An <strong>agent</strong> is a program where an AI model chooses its own next step, using tools you give it. A QA team can use one to draft test ideas, pick which regression tests to run, or write a first bug report. This series builds each of those against a real app, PeakAndPack, and spends as much time on the limits as on the agents: what each agent may touch, what it may spend, and where a person has to say yes.</p>
+  <p>The idea running through every phase is a split between two steps that are easy to blur. <strong>The agent produced an answer</strong> is one step. <strong>The answer is safe to act on</strong> is another. The code in each phase keeps them apart, with a tool list, a folder rule, a fallback or an approval gate between them.</p>
+
+  <h2 id="who">2. Who it is for</h2>
+  <p>Testers and QA engineers who write Playwright tests (or have worked through <a href="../playwright_new_to_Architect_withAI/00-playwrightseries-landing.html" style="color:var(--purple)">Playwright: Zero to Architect</a>) and want to know what an agent can safely do in their delivery cycle, and what it cannot. You do not need any prior experience with Claude, Claude Code or agents. Phase 0 starts from the beginning.</p>
+  <p>The Playwright series is the recommended background. Phase 5 (test data), Phase 7 (calling APIs) and Phase 12 (pipelines) are the three this series leans on most.</p>
+
+  <h2 id="parts">3. Why it comes in two parts</h2>
+  <p>Part 1 needs only PeakAndPack, so you can build all of it now. Part 2 covers the phases that need other demo apps or earlier series to exist first (requirements analysis, bug detection on other apps, reporting and release readiness, local models, and the capstone). The phase numbers keep their original numbering across both parts, so Part 1 skips some numbers on purpose.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Phase</th><th>What you build</th><th>Time</th></tr></thead>
+    <tbody>
+      <tr><td><a href="00-agenticseries-setup-foundations.html" style="color:var(--purple)">0. Setup &amp; Agentic Foundations</a></td><td>A first agent run, from the terminal and from TypeScript, with tool limits and a spending cap</td><td>~2 hours</td></tr>
+      <tr><td><a href="01-agenticseries-what-it-means.html" style="color:var(--purple)">1. What Agentic SDLC Means</a></td><td>A lifecycle map and a written set of boundaries: where an agent helps and where a person decides</td><td>~3 hours</td></tr>
+      <tr><td><a href="02-agenticseries-mcp-tools.html" style="color:var(--purple)">2. MCP &amp; Tool Integration</a></td><td>An agent that turns a failed test into a drafted bug, filed only after you approve</td><td>~4 hours</td></tr>
+      <tr><td><a href="04-agenticseries-test-generation.html" style="color:var(--purple)">4. Agentic Test Generation</a></td><td>An agent that drafts Playwright tests from a story, and the curation step that makes them count</td><td>~5 hours</td></tr>
+      <tr><td><a href="06-agenticseries-regression.html" style="color:var(--purple)">6. Agentic Regression Selection</a></td><td>A mapping, an agent for the gaps, and a rule that runs everything when unsure</td><td>~5 hours</td></tr>
+      <tr><td><a href="09-agenticseries-full-pipeline.html" style="color:var(--purple)">9. The Full Pipeline</a></td><td>A GitHub pipeline that starts from the app repository and ends at a human approval</td><td>~6 hours</td></tr>
+    </tbody>
+  </table></div>
+  <p>That is about 25 hours of building, on top of reading. <strong>Part 2</strong> follows later with phases 3, 5, 7, 8 and 10.</p>
+
+  <h2 id="rules">4. Three rules every phase follows</h2>
+  <ol>
+    <li><strong>An agent drafts, a person decides, anything with a side effect waits for a yes.</strong> Filing, committing, publishing and releasing are never silent.</li>
+    <li><strong>When unsure, do more, not less.</strong> A selection the agent cannot place runs the full suite. A file it cannot judge is treated as unknown, not as safe.</li>
+    <li><strong>Every run has a ceiling.</strong> A cap on turns and on spend, set in the code, on every agent call.</li>
+  </ol>
+  <p>The series also names which kind of "self-fixing" it means each time it comes up. <strong>Locator-level self-healing</strong> is an algorithm that runs unattended, with no AI model and no person. <strong>Code-level auto-fix</strong> is an agent proposing a change, and a person approves it, always, because a failing test can mean a real bug, an intended change nobody updated the test for, or a bad test. The argument is in <a href="../playwright_new_to_Architect_withAI/13-playwrightseries-ai-assisted.html" style="color:var(--purple)">Playwright Phase 13</a>.</p>
+
+  <h2 id="layout">5. What you will have at the end</h2>
+  <p>Everything lives in your <code>peakandpack-tests</code> project, in its own <code>agents</code> folder, so the agent code does not change how your Playwright tests load:</p>
+  <pre><code>peakandpack-tests/
+  tests/                          your Playwright suite
+  agents/
+    package.json  tsconfig.json
+    hello-agent.ts                Phase 0: a first run
+    failures.ts  ask-human.ts     Phase 2: read a report, ask a person
+    simple-mcp-agent.ts           Phase 2: failed test to drafted bug
+    test-gen-agent.ts             Phase 4: story to draft test
+    stories/  generated-tests/  curated-tests/
+    test-mapping.json             Phase 6: files to tests
+    select-tests.ts  regression-agent.ts  commit-files.ts
+    draft-bugs.ts  file-bugs.ts   Phase 9: draft, then file
+  .github/workflows/
+    agentic-pipeline.yml          Phase 9</code></pre>
+
+  <h2 id="need">6. What you need</h2>
+  <ul>
+    <li><strong>Claude Code</strong>, signed in. Phase 0 checks this. A Claude account that includes Claude Code is required.</li>
+    <li><strong>Node.js 20 or later</strong> and the <code>peakandpack-tests</code> project from the Playwright series.</li>
+    <li><strong>A GitHub account</strong>, one practice repository for bug reports, and, for Phase 9, a second repository (the app) to play the development team.</li>
+    <li><strong>An Anthropic API key</strong> for Phase 9, because a pipeline cannot sign in as you.</li>
+    <li><strong>PeakAndPack running locally.</strong> The agents click through it, so use your own copy and not the shared live demo.</li>
+    <li><strong>A Jira site</strong> (optional, for Phase 2). Every example also works with GitHub.</li>
+  </ul>
+  <div class="callout amber">
+    <p><strong>Cost.</strong> Agent runs use paid model calls. Every script in this series sets a spending cap and a turn limit, and the early phases cap a run at well under a dollar. Check your own usage as you go, because costs depend on your plan and on how the agent behaves on your data.</p>
+  </div>
+
+  <h2 id="how-to-read">7. How each phase is written</h2>
+  <p>Every code block is followed by a collapsed "Explain this code, line by line" section, which says what each line does and why it is there. Every phase ends with deliverables, an assignment with a collapsed solution, and a bonus challenge. Try the assignment before opening the solution.</p>
+
+
+
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--text-3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; Agentic SDLC, Part 1</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+<script>
+(function(){
+  var btn = document.getElementById('themeToggle');
+  function isLight(){ return document.documentElement.getAttribute('data-theme') === 'light'; }
+  function sync(){ btn.textContent = isLight() ? 'Dark' : 'Light'; }
+  sync();
+  btn.addEventListener('click', function(){
+    if(isLight()){
+      document.documentElement.removeAttribute('data-theme');
+      try{ localStorage.setItem('pw-theme','dark'); }catch(e){}
+    } else {
+      document.documentElement.setAttribute('data-theme','light');
+      try{ localStorage.setItem('pw-theme','light'); }catch(e){}
+    }
+    sync();
+  });
+})();
+</script>
+
+</body>
+</html>

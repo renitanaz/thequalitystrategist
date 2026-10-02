@@ -111,6 +111,16 @@ footer a:hover{color:var(--purple)}
 .blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
 .blog-tags .series-tag{margin-bottom:0}
 .tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+details.explain{margin:.5rem 0 1.5rem;border:1px solid var(--purple-border);border-radius:10px;background:var(--purple-bg)}
+details.explain summary{padding:.6rem 1rem;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--purple);list-style:none;display:flex;align-items:center;gap:.5rem}
+details.explain summary::-webkit-details-marker{display:none}
+details.explain summary::before{content:"\25B6";font-size:.65rem;transition:transform .2s}
+details.explain[open] summary::before{transform:rotate(90deg)}
+.explain-body{padding:.1rem 1.2rem 1rem;font-size:.92rem;line-height:1.7}
+.explain-body p{margin:.7rem 0}
+.explain-body ul{margin:.3rem 0 .7rem 1.2rem;padding-left:0}
+.explain-body li{margin-bottom:.35rem}
+.explain-body pre{margin:.6rem 0}
 </style>
 <meta property="og:image" content="https://renitanaz.github.io/thequalitystrategist/blogs/playwright_new_to_Architect_withAI/playwright-zero-to-architect-thumbnail.png">
 <meta property="og:image:width" content="1200">
@@ -147,7 +157,7 @@ footer a:hover{color:var(--purple)}
   <div class="meta-row">
     <span><strong>Series: Playwright: Zero to Architect</strong></span>
     <span>Demo: PeakAndPack</span>
-    <span>9 min read</span>
+    <span>22 min read</span>
     <span>By: RN</span>
   </div>
   <div class="phase-strip" aria-label="Series progress">
@@ -171,6 +181,15 @@ footer a:hover{color:var(--purple)}
 
   <h2>Goal</h2>
   <p>Handle the parts of real applications that make most automation engineers give up. File uploads, multiple tabs, dialogs, iframes, drag and drop, and infinite scroll: each requires a specific Playwright pattern.</p>
+  <p>By the end of this phase you can:</p>
+  <ul>
+    <li>upload a file without touching the file picker, and read a file the page lets you download</li>
+    <li>test a link that opens a new tab</li>
+    <li>answer, dismiss and check the browser's alert and confirm boxes</li>
+    <li>reach fields inside an iframe</li>
+    <li>drag rows and check the new order was really saved</li>
+    <li>scroll to load more items before asserting on them</li>
+  </ul>
 
   <div class="callout blue">
     <p><strong>All six scenarios are on PeakAndPack.</strong></p>
@@ -199,8 +218,22 @@ async function signInAsAdmin(page: Page) {
   await expect(page.getByRole('heading', { name: 'Products' })).toBeVisible();
 }
 </code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <p><strong>In plain words:</strong> open the admin panel, sign in, and wait until the product table is there.</p>
+      <ul>
+        <li><code>import { test, expect, Page } ...</code> brings in the test tools. <code>Page</code> is the name of the browser tab's type, used below to say what kind of thing the helper receives.</li>
+        <li><code>const ADMIN = '...'</code> writes the panel's address once, so the helper and the tests share it.</li>
+        <li><code>async function signInAsAdmin(page: Page)</code> is a <strong>helper</strong>: a named block of steps any test can call. It is not a test itself. <code>async</code> lets it use <code>await</code>, and <code>page: Page</code> says it receives a browser tab.</li>
+        <li><code>getByPlaceholder(...)</code> finds a field by the hint text shown inside it while it is empty. The panel's fields have no labels, so the placeholder is the only text to hold on to. A field without a label is also a small accessibility problem worth reporting.</li>
+        <li><code>.fill(...)</code> types into the field, and <code>.click()</code> presses the button. The last line waits for the "Products" heading, which only appears after a successful sign-in, so any test that calls the helper starts from a signed-in panel.</li>
+      </ul>
+    </div>
+  </details>
+
   <div class="callout amber">
-    <p><strong>These tests change real data.</strong> PeakAndPack rebuilds its database every time its server restarts, but on the shared demo, everyone sees your changes until then. Clean up after yourself: import a product with a unique name and delete that same product, and drag rows back where they were.</p>
+    <p><strong>These tests change real data.</strong> PeakAndPack rebuilds its database every time its server restarts, but on the shared demo, everyone sees your changes until then. Clean up after yourself: import a product with a unique name and delete that same product, and drag rows back where they were. Two places in this phase can leave rows behind (the sample file in section 2 and the bad-file imports in assignment part 2), and each says how to clean up.</p>
   </div>
 
   <div class="callout blue">
@@ -253,12 +286,25 @@ test('an imported product can be deleted after confirming', async ({ page }) => 
     </div>
   </div>
   <p>Yes, "Imported 1 products." is the app's own wording. Small copy bugs like that are worth a note in your bug list too.</p>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>test.skip('admin CSV upload')</code> in the "before" tells Playwright to list the test and not run it. A <code>TODO</code> comment next to it is how a gap in coverage gets forgotten.</li>
+        <li><code>waitForTimeout(500)</code> pauses for half a second and hopes. Nothing is checked after it, so the "before" test passes whether or not the delete works.</li>
+        <li><code>`Test Lantern ${Date.now()}`</code> builds a name from the number of milliseconds since 1970, so every run imports a differently named product. The backticks and <code>${...}</code> are how JavaScript puts a value inside text.</li>
+        <li><code>setInputFiles({ name, mimeType, buffer })</code> hands the file input a file made on the spot. <code>Buffer.from(...)</code> turns text into the file's contents, and <code>\n</code> is a line break: a header row, then one product row.</li>
+        <li><code>page.once('dialog', dialog =&gt; dialog.accept())</code> says: the next time a browser dialog opens, press OK, then stop listening. It comes before the click because the dialog opens during the click.</li>
+        <li><code>getByRole('row', { name: new RegExp(name) })</code> finds the table row whose text contains that name (<code>new RegExp</code> turns text into a pattern). <code>.getByRole('button', { name: 'Delete' })</code> then looks only inside that row, so you press the right product's Delete.</li>
+        <li>The last line checks the page's own message, <code>"Test Lantern 1790921231320" deleted.</code>, which only appears after the server accepted the delete.</li>
+      </ul>
+    </div>
+  </details>
+
 
   <h2 id="file-upload-download">2. File upload and download</h2>
   <p>Import and export are how data enters and leaves a system in bulk, so one broken import can corrupt hundreds of records at once. <code>setInputFiles()</code> sets a file on a file input without opening the operating system's file picker, which Playwright can't control. PeakAndPack's file input is hidden inside the "Import CSV" label, and that's fine: <code>getByLabel</code> still finds it, and <code>setInputFiles</code> doesn't need it to be visible.</p>
-  <pre><code>import fs from 'fs';
-
-// Upload a file from disk (PeakAndPack serves a sample at /admin/sample-products.csv)...
+  <pre><code>// Upload a file from disk (PeakAndPack serves a sample at /admin/sample-products.csv)...
 await page.getByLabel('Import CSV').setInputFiles('fixtures/sample-products.csv');
 
 // ...or build the file inside the test, so the data sits next to the assertion
@@ -267,6 +313,44 @@ await page.getByLabel('Import CSV').setInputFiles({
   mimeType: 'text/csv',
   buffer: Buffer.from('name,price,stock,category\nTest Lantern,19.99,10,Camping\n'),
 });
+</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>page.getByLabel('Import CSV')</code> finds the file input through its label text. The input itself is hidden inside the label, which does not matter: <code>setInputFiles</code> works on hidden inputs.</li>
+        <li><code>.setInputFiles('fixtures/sample-products.csv')</code> gives the input that file, as if it had been chosen in the picker. The path is read from the folder you run the tests from.</li>
+        <li>The second form passes an object instead of a path: <code>name</code> is the file name, <code>mimeType</code> says what kind of file it is (<code>text/csv</code> for comma-separated values), and <code>buffer</code> is the file's contents, made from text with <code>Buffer.from</code>. No file on disk is needed.</li>
+        <li>The text <code>name,price,stock,category</code> is the header row. The import reads it to find the columns, and refuses a file without <code>name</code> and <code>price</code>.</li>
+      </ul>
+    </div>
+  </details>
+  <div class="callout amber">
+    <p><strong>The sample file adds five products.</strong> I imported it into a fresh copy of PeakAndPack: the catalogue went from 10 products to 15, and the store's product list then showed 15. A test that expects exactly 10 (like the scroll test in section 7) fails until the server restarts. For a test, build a one-product file with a unique name, as in section 1, and delete it afterwards.</p>
+  </div>
+  <p>If a page has no file input you can reach, only a button that opens the picker, wait for the <strong>file chooser</strong> that the click opens, and give the files to it. PeakAndPack's "Import CSV" label does this, so you can try it here:</p>
+  <pre><code>// Start waiting BEFORE the click that opens the picker
+const chooserPromise = page.waitForEvent('filechooser');
+await page.getByText('Import CSV').click();
+const chooser = await chooserPromise;
+await chooser.setFiles({
+  name: 'products.csv',
+  mimeType: 'text/csv',
+  buffer: Buffer.from('name,price,stock,category\nTest Lantern,19.99,10,Camping\n'),
+});
+</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>page.waitForEvent('filechooser')</code> starts listening for the moment the page asks for a file. It is stored in <code>chooserPromise</code> and not awaited yet, because the click that triggers it has not happened.</li>
+        <li><code>getByText('Import CSV').click()</code> presses the visible label, which makes the browser open its picker. Playwright catches that and never shows the operating system's window.</li>
+        <li><code>await chooserPromise</code> collects the chooser, and <code>chooser.setFiles(...)</code> answers it with the same kinds of file as <code>setInputFiles</code>.</li>
+      </ul>
+    </div>
+  </details>
+
+  <pre><code>import fs from 'fs';
 
 // Download: start waiting BEFORE the click, then read the saved file
 const downloadPromise = page.waitForEvent('download');
@@ -276,6 +360,18 @@ expect(download.suggestedFilename()).toBe('products.csv');
 const csv = fs.readFileSync(await download.path(), 'utf8');
 expect(csv.split('\n')[0].trim()).toBe('id,name,price,stock,category'); // the header row
 </code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>import fs from 'fs'</code> brings in Node's built-in file tools, so the test can read a file from disk.</li>
+        <li><code>page.waitForEvent('download')</code> starts listening for a download and keeps the listener in <code>downloadPromise</code>. The link is clicked only after that, so the download cannot be missed.</li>
+        <li><code>await downloadPromise</code> waits until the download has started, and gives you a <code>download</code> object.</li>
+        <li><code>download.suggestedFilename()</code> is the file name the server proposed, here <code>products.csv</code>. <code>download.path()</code> is where Playwright saved a temporary copy, and <code>fs.readFileSync(path, 'utf8')</code> reads it back as text.</li>
+        <li><code>csv.split('\n')[0]</code> cuts the text into lines and takes the first. <code>.trim()</code> removes stray spaces or line-end characters before the comparison.</li>
+      </ul>
+    </div>
+  </details>
 
   <h2 id="multi-tabs">3. Multiple tabs and windows</h2>
   <p>Links that open a new tab are easy to leave untested, yet the new tab starts its own page load and can land somewhere broken or empty. Every PeakAndPack product card has a small &#8599; link, titled "Open in new tab", that opens the product's page in a new tab. Playwright hands you the new tab through the <code>popup</code> event:</p>
@@ -294,6 +390,19 @@ await expect(newTab.getByRole('heading', { level: 1 })).toHaveText('Trekking Pol
 // ...and the original tab is still on the product list
 await expect(page.getByRole('heading', { name: 'PeakAndPack Gear' })).toBeVisible();
 </code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>page.getByTestId('product-card').filter({ has: ... })</code> takes every product card and keeps the one that contains a heading with that product's name (Phase 2).</li>
+        <li><code>page.waitForEvent('popup')</code> listens for a new tab opened by this page, and the listener is kept in <code>popupPromise</code> so the click can happen next.</li>
+        <li><code>getByTitle('Open in new tab')</code> finds the link by its <code>title</code> attribute, the text a browser shows when you hover. Its visible text is only an arrow.</li>
+        <li><code>newTab</code> is a normal page object, so everything you know works on it: <code>toHaveURL</code>, <code>getByRole</code>, <code>toHaveText</code>.</li>
+        <li><code>/\/product\?id=\d+/</code> is a pattern between slashes: <code>\/product\?id=</code> is that exact text (the backslashes switch off the special meaning of <code>/</code> and <code>?</code>), and <code>\d+</code> is one or more digits.</li>
+        <li>The last line asserts on <code>page</code>, the original tab, to show it stayed on the product list.</li>
+      </ul>
+    </div>
+  </details>
   <p><strong>Two findings in one link.</strong> A screen reader announces this link by its arrow character, not "Open in new tab", because a title only names a link that has no text of its own. An <code>aria-label="Open in new tab"</code> would fix that for users, and would let the test use <code>getByRole('link', { name: /open in new tab/i })</code> instead of <code>getByTitle</code>.</p>
   <p>To test two tabs of the same session, such as adding to the cart in one tab and checking it in another, open the second with <code>context.newPage()</code>. Both tabs share the browser context, so they share the login too.</p>
 
@@ -322,9 +431,30 @@ expect(alert.message()).toBe('Added "Trekking Poles (Pair)" to cart');
 await alert.accept();
 </code></pre>
 
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>page.once('dialog', handler)</code> runs <code>handler</code> the next time a dialog opens, then stops listening. <code>dialog =&gt; dialog.dismiss()</code> is a small function that receives the dialog and presses Cancel.</li>
+        <li><code>toBeVisible()</code> on the row afterwards proves Cancel really did nothing.</li>
+        <li>The second handler is <code>async</code> because <code>dialog.accept()</code> takes a moment and has to be awaited. <code>dialog.message()</code> is the question the dialog shows, so the test checks it before pressing OK (<code>accept</code>).</li>
+        <li><code>page.waitForEvent('dialog')</code> is the other way: wait for a dialog, keep it, and answer it later. It suits the add-to-cart alert because the test wants to read its message and use the alert as a signal that the cart changed.</li>
+        <li><code>toBe('Added "Trekking Poles (Pair)" to cart')</code> compares the whole message exactly.</li>
+      </ul>
+    </div>
+  </details>
+  <p>Two more things about dialog handlers, both measured on PeakAndPack:</p>
+  <ul>
+    <li><strong>A listener must answer.</strong> A listener that never calls <code>accept()</code> or <code>dismiss()</code> is worse than none. The page stays frozen on the dialog, and the click that opened it timed out in my test. With no listener at all, Playwright dismisses the dialog for you: the add-to-cart alert disappears and the item is still added to the cart.</li>
+    <li><strong>Once or on.</strong> <code>page.once</code> answers one dialog. <code>page.on('dialog', dialog =&gt; dialog.accept())</code> answers every dialog until the test ends, which is handy for a test with several deletes. <code>dialog.type()</code> tells the kinds apart: <code>'alert'</code> for the add-to-cart message, <code>'confirm'</code> for the delete question.</li>
+  </ul>
+
   <h2 id="iframes">5. Iframes</h2>
   <p>Payment forms often sit inside an iframe on purpose, so card details never touch the store's own page. Elements inside an iframe are in a separate document, so <code>page.getByLabel()</code> can't see them. Scope to the iframe first with <code>frameLocator()</code>:</p>
   <pre><code>// Scope every locator to the payment iframe first
+// Before paying, the store's own button is switched off and says what to do
+await expect(page.getByRole('button', { name: 'Complete payment above to continue' })).toBeDisabled();
+
 const frame = page.frameLocator('iframe[title="Payment form"]');
 await frame.getByLabel('Card number').fill('4111 1111 1111 1111');
 await frame.getByLabel('Expiry').fill('12/28');
@@ -332,9 +462,22 @@ await frame.getByLabel('CVV').fill('123');
 await frame.getByLabel('Cardholder name').fill('Test User');
 await frame.getByRole('button', { name: 'Pay now' }).click();
 
-// Back on the page itself: paying unlocks the store's own button
+// Back on the page itself: paying unlocks the store's own button, and its name changes
 await expect(page.getByRole('button', { name: 'Confirm Order' })).toBeEnabled();
 </code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>page.frameLocator('iframe[title="Payment form"]')</code> points Playwright at the iframe. <code>iframe[title="Payment form"]</code> is a CSS selector meaning "an iframe whose title is Payment form". Nothing is clicked yet: it only sets where the next locators will look.</li>
+        <li><code>frame.getByLabel('Card number')</code> works like <code>page.getByLabel</code> but searches only inside that iframe. <code>.fill(...)</code> types the value, spaces included, and the form accepts it.</li>
+        <li><code>getByRole('button', { name: 'Pay now' })</code> presses the iframe's own button. That is the step that tells the store's page the payment is done.</li>
+        <li>The two <code>expect</code> lines are on <code>page</code>, not the iframe. Before paying, the store's button is disabled and its name is "Complete payment above to continue". After paying, the same button reads "Confirm Order" and is enabled. Looking it up by an old name after the change would find nothing.</li>
+      </ul>
+    </div>
+  </details>
+  <p>The boundary works in both directions: on the checkout page, <code>page.getByLabel('Card number')</code> found zero matches in my test, even though the field is on screen, because it lives in the other document.</p>
+
 
   <h2 id="drag-drop">6. Drag and drop</h2>
   <p>Reordering is easy to break without noticing: rows can move on screen while the new order never reaches the server. The admin panel's product rows use the browser's built-in (HTML5) drag and drop, which <code>dragTo()</code> handles. For a custom drag built on mouse events, use <code>page.mouse.down()</code>, <code>move()</code> and <code>up()</code> instead.</p>
@@ -350,6 +493,35 @@ await expect(rows.nth(3)).toHaveText(firstRow!);
 await signInAsAdmin(page);
 await expect(rows.nth(3)).toHaveText(firstRow!);
 </code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>page.getByRole('row')</code> is every row in the table, and <code>.nth(1)</code> picks one by position, counting from 0. Row 0 is the header, so the first product is <code>nth(1)</code>.</li>
+        <li><code>await rows.nth(1).textContent()</code> reads the row's text before the move, so the test can recognise it afterwards. The <code>!</code> in <code>firstRow!</code> tells TypeScript the value is not empty.</li>
+        <li><code>rows.nth(1).dragTo(rows.nth(3))</code> presses on the first row, moves to the third and lets go. After it, the new first row is what used to be the second.</li>
+        <li><code>Order saved.</code> is the panel's own message after it sent the new order to the server. <code>toHaveText</code> ignores extra spaces and line breaks, which is why text read with <code>textContent()</code> still matches.</li>
+        <li>Signing in again loads the table fresh from the server. If the order is still there, it was saved, not just shown.</li>
+      </ul>
+    </div>
+  </details>
+  <p>The mouse version of the same drag, for a page whose drag is built from mouse events instead. It also works on these rows (I checked, and the order was saved):</p>
+  <pre><code>await rows.nth(1).hover();   // move onto the row
+await page.mouse.down();    // press and hold
+await rows.nth(3).hover();  // move onto the target while holding
+await page.mouse.up();      // let go: this is the drop
+</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>hover()</code> moves the mouse pointer onto an element without clicking. <code>page.mouse.down()</code> presses the button and holds it, and <code>page.mouse.up()</code> releases it.</li>
+        <li>Use this when <code>dragTo</code> does nothing: some drag libraries only react to a sequence of real mouse moves, and you may need an extra <code>hover()</code> or two in between to give them movement to react to.</li>
+      </ul>
+    </div>
+  </details>
+
+
 
   <h2 id="infinite-scroll">7. Infinite scroll and virtualized lists</h2>
   <p>Products that haven't loaded yet aren't in the page at all, so no locator can find them. PeakAndPack shows 8 products, then loads the rest when an invisible marker below the grid scrolls into view. Scroll first, then assert:</p>
@@ -366,7 +538,18 @@ await expect(cards).toHaveCount(10);
 // Check a product that wasn't in the first batch
 await expect(page.getByRole('heading', { name: 'Climbing Harness' })).toBeVisible();
 </code></pre>
-  <p>A hard-coded 10 breaks the day the catalog grows. It's fine here because the catalog is fixed. On a real store, assert that a specific later product appears, or that the count went up.</p>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>page.getByTestId('product-card')</code> is every product card currently on the page. <code>toHaveCount(8)</code> checks how many, and keeps checking until it matches or time runs out.</li>
+        <li><code>cards.last().scrollIntoViewIfNeeded()</code> scrolls until the last card is on screen. <code>page.mouse.wheel(0, 2000)</code> then turns the mouse wheel 2000 pixels down (0 across, 2000 down), which carries the invisible marker below the grid into view.</li>
+        <li><code>toHaveCount(10)</code> waits for the second batch to arrive. There is no fixed pause: the check passes the moment ten cards exist.</li>
+        <li>The last line looks for a product that was never in the first batch. Asserting on a specific later product is a stronger check than a count alone.</li>
+      </ul>
+    </div>
+  </details>
+  <p>The store shows 8 more products each time the marker comes into view, so with 10 products the second batch is the last two. A hard-coded 10 breaks the day the catalog grows: after the sample import from section 2 the same page shows 15. It's fine here because the catalog is fixed. On a real store, assert that a specific later product appears, or that the count went up.</p>
 
   <div class="callout amber">
     <p><strong>Register event listeners before the action, not after.</strong> This applies to dialogs, popups, downloads, and file choosers. Playwright events fire at the moment of the action. If you set up the listener a millisecond after the click, you've already missed it.</p>
@@ -378,6 +561,8 @@ await expect(page.getByRole('heading', { name: 'Climbing Harness' })).toBeVisibl
       <li><strong>Trying to click the OS file picker.</strong> Operating system dialogs cannot be automated by Playwright. Use <code>setInputFiles()</code> directly on the input element instead.</li>
       <li><strong>Handling dialogs after the click.</strong> The dialog fires immediately when the button is clicked. Set up <code>page.once('dialog', ...)</code> before clicking, not after.</li>
       <li><strong>Using page locators inside an iframe.</strong> Locators on <code>page</code> don't cross iframe boundaries. Always use <code>page.frameLocator('...')</code> first.</li>
+      <li><strong>A dialog listener that never answers.</strong> <code>page.on('dialog', ...)</code> with a body that neither accepts nor dismisses leaves the page frozen, and the click that opened the dialog times out. Always call <code>accept()</code> or <code>dismiss()</code>.</li>
+      <li><strong>Leaving test data behind.</strong> Importing the sample file adds five products that stay until the server restarts, so a later test that counts products fails for no visible reason. Import one uniquely named product and delete it.</li>
       <li><strong>Asserting virtualized list items before scrolling.</strong> Items that haven't been loaded into the DOM yet return "element not found". Scroll to load them first, then assert.</li>
     </ul>
   </div>
@@ -385,13 +570,14 @@ await expect(page.getByRole('heading', { name: 'Climbing Harness' })).toBeVisibl
   <h2 id="deliverables">8. Deliverables</h2>
   <ul>
     <li><code>tests/advanced.spec.ts</code>: one test per scenario, all six against PeakAndPack</li>
+    <li><code>tests/import-checks.spec.ts</code>: the assignment's part 2</li>
     <li><code>advanced-scenarios-guide.md</code>: which Playwright API to use for each scenario, and the trap each one sets</li>
   </ul>
 
   <hr style="border:none;border-top:1px solid var(--border);margin:0">
 
   <div class="assignment">
-    <div class="a-label">Assignment</div>
+    <div class="a-label">Assignment, part 1</div>
     <h3>Handle the delete confirmation on the real admin panel</h3>
     <p>Sign in to the admin panel and import one product with a unique name. Then write two tests: one dismisses the delete confirmation and asserts the product is still listed, the other accepts it and asserts the product is gone. Both must register the dialog handler before clicking, and both must leave the catalog as they found it.</p>
 
@@ -452,6 +638,141 @@ test('confirming deletes the product', async ({ page }) => {
 </code></pre>
       <p><strong>Why test Cancel at all.</strong> Cancel is the safety net: a Delete button that ignores Cancel destroys data the user meant to keep. It's also what Playwright does silently when you forget a handler, which is how the "before" test in section 1 passed without deleting anything.</p>
       <p><strong>Why each test imports its own product.</strong> Deleting one of the seeded products would break every other test that expects it, including other readers' runs on the shared demo. A product each test creates for itself makes the test independent, the rule from Phase 5.</p>
+    </div>
+  </details>
+  </div>
+
+  <div class="assignment" style="margin-top:2rem">
+    <div class="a-label">Assignment, part 2</div>
+    <h3>What does the import do with a bad file?</h3>
+    <p>A file import is a front door for data, so test the doors that should stay shut. Write <code>tests/import-checks.spec.ts</code> with these checks, using one helper that sends CSV text to the input:</p>
+    <ol>
+      <li><strong>Header only.</strong> A file with just <code>name,price,stock,category</code> should say it imported 0 products and add no row.</li>
+      <li><strong>No price column.</strong> A file with <code>name,stock</code> should be refused with the panel's message, and its product should not appear.</li>
+      <li><strong>A row with too few columns.</strong> Import <code>Test Bad Short</code> on its own line. What does the admin see? Write the test for the message a person should see, and mark it as a known bug if it fails.</li>
+      <li><strong>A negative price.</strong> Import a product priced <code>-5</code>. Should that be accepted? Decide, write the test for what you decided, and mark it as a known bug if the app disagrees. Phase 1's rule applies: the test states what <em>should</em> happen.</li>
+      <li><strong>The payment gate.</strong> On the checkout page, prove the store's button is disabled before the card is paid and enabled after.</li>
+    </ol>
+    <p>Give every product you import a name that starts with <code>Test Bad</code>, and add a clean-up so a failing test never leaves a row behind.</p>
+
+  <details class="solution">
+    <summary>Show solution: try it yourself first</summary>
+    <div class="solution-body">
+      <h3>Five checks and a clean-up</h3>
+<pre><code>// tests/import-checks.spec.ts
+// Needs signInAsAdmin from the top of this phase
+import { test, expect, Page } from '@playwright/test';
+
+const API = 'https://peakandpackshopdemo.onrender.com';
+
+// Send CSV text to the "Import CSV" input, and return what the server answered
+async function importCsv(page: Page, csv: string) {
+  // Start listening BEFORE the upload, so the answer can't be missed
+  const answered = page.waitForResponse(res =&gt; res.url().includes('/products/import'));
+  await page.getByLabel('Import CSV').setInputFiles({
+    name: 'import.csv',
+    mimeType: 'text/csv',
+    buffer: Buffer.from(csv),
+  });
+  return answered;
+}
+
+test.describe('the CSV import', () =&gt; {
+  test.beforeEach(async ({ page }) =&gt; {
+    await signInAsAdmin(page);
+  });
+
+  // Whatever a test imported, take it out again. Through the API: it is quick, and it
+  // doesn't depend on the page having finished redrawing its table.
+  test.afterEach(async ({ request }) =&gt; {
+    const login = await request.post(`${API}/api/auth/login`, {
+      data: { email: 'admin@peakandpack.com', password: 'adminpass123' },
+    });
+    const headers = { Authorization: `Bearer ${(await login.json()).token}` };
+    const { products } = await (await request.get(`${API}/api/admin/products`, { headers })).json();
+    for (const product of products.filter((p: { name: string }) =&gt; p.name.startsWith('Test Bad'))) {
+      await request.delete(`${API}/api/admin/products/${product.id}`, { headers });
+    }
+  });
+
+  test('a file with only a header imports nothing', async ({ page }) =&gt; {
+    const rowsBefore = await page.getByRole('row').count();
+    await importCsv(page, 'name,price,stock,category\n');
+    await expect(page.getByText('Imported 0 products.')).toBeVisible();
+    await expect(page.getByRole('row')).toHaveCount(rowsBefore);
+  });
+
+  test('a file with no price column is refused', async ({ page }) =&gt; {
+    const res = await importCsv(page, 'name,stock\nTest Bad NoPrice,3\n');
+    expect(res.status()).toBe(400);
+    await expect(page.getByText('CSV must have name and price columns')).toBeVisible();
+    await expect(page.getByRole('row', { name: /Test Bad NoPrice/ })).toHaveCount(0);
+  });
+
+  // Known bug: a bad row crashes the import (500) instead of being refused (400).
+  // test.fail() says "this should fail today".
+  test('a row with missing columns is refused, not a crash', async ({ page }) =&gt; {
+    test.fail();
+    const res = await importCsv(page, 'name,price,stock,category\nTest Bad Short\n');
+    expect(res.status()).toBe(400);
+  });
+
+  // Known bug: a negative price is accepted and imported
+  test('a negative price is refused', async ({ page }) =&gt; {
+    test.fail();
+    const res = await importCsv(page, 'name,price,stock,category\nTest Bad Negative,-5,3,Camping\n');
+    expect(res.status()).toBe(400);
+  });
+});
+
+// The store's own button, outside the admin panel, so outside the describe above
+test('Confirm Order stays off until the card is paid', async ({ page, request }) =&gt; {
+  // Sign up a customer and fill a cart through the API: quicker than clicking
+  const email = `gate-${Date.now()}@peakandpack.test`;
+  const register = await request.post(`${API}/api/auth/register`, {
+    data: { name: 'Gate Tester', email, password: 'password123' },
+  });
+  const { token, user } = await register.json();
+  await request.post(`${API}/api/cart`, {
+    headers: { Authorization: `Bearer ${token}` },
+    data: { product_id: 1, quantity: 1 },
+  });
+  // Make the browser believe it is signed in (the store keeps its login in localStorage)
+  await page.addInitScript(([t, u]) =&gt; {
+    localStorage.setItem('token', t);
+    localStorage.setItem('user', u);
+  }, [token, JSON.stringify(user)]);
+
+  await page.goto('/checkout');
+  await expect(page.getByRole('button', { name: /complete payment/i })).toBeDisabled();
+
+  const frame = page.frameLocator('iframe[title="Payment form"]');
+  await frame.getByLabel('Card number').fill('4111 1111 1111 1111');
+  await frame.getByLabel('Expiry').fill('12/28');
+  await frame.getByLabel('CVV').fill('123');
+  await frame.getByLabel('Cardholder name').fill('Gate Tester');
+  await frame.getByRole('button', { name: 'Pay now' }).click();
+
+  await expect(page.getByRole('button', { name: 'Confirm Order' })).toBeEnabled();
+});
+</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>importCsv(page, csv)</code> is one helper that wraps <code>setInputFiles</code> and returns the server's answer. <code>page.waitForResponse(...)</code> is started before the upload, the same listen-first rule as dialogs and downloads, so the answer can't be missed.</li>
+        <li><code>test.describe('the CSV import', ...)</code> groups the four admin checks so <code>beforeEach</code> (sign in) and <code>afterEach</code> (clean up) apply to them and not to the payment test.</li>
+        <li>The <code>afterEach</code> clean-up runs after every test, passed or failed. It signs in as the admin through the API, lists the products, and deletes every one whose name starts with "Test Bad". It uses the API and not the page because a failing test stops at once, often before the table has redrawn: my first version looked for the row on screen, found none, and left a negative-price product behind.</li>
+        <li><code>test.fail()</code> inside a test says "I expect this one to fail today". The run counts it as passing while the bug exists, and turns red the day someone fixes the bug, which is your cue to remove the line.</li>
+        <li>In the missing-columns test, a refusal should be a <code>400</code> (the file is wrong), and <code>res.status()</code> reads the number the server sent. PeakAndPack sent <code>500</code> (the program crashed) and the panel showed "Cannot read properties of undefined (reading 'trim')" to the admin, so the assertion fails and <code>test.fail()</code> makes that expected.</li>
+        <li>In the negative-price test, the app answered <code>200</code> and "Imported 1 products.", and the product was listed at $-5.00. The same import took a price of <code>abc</code> and showed $0.00, and a blank name was accepted too. So BUG-001 and BUG-002 can be created through the CSV import, not only seeded.</li>
+        <li>The last test registers a customer and fills the cart through the API, then makes the browser signed in with <code>addInitScript</code> (Phase 5). Its button is found by <code>/complete payment/i</code>, the beginning of the name it has before payment.</li>
+      </ul>
+    </div>
+  </details>
+
+      <p><strong>Why the unhappy files matter more than the happy one.</strong> A good file working is what the developer already tried. The refusals are where uploads usually fail: no validation, a crash with a stack message, a bad value saved quietly. Each check here costs one line of data and one assertion.</p>
+      <p><strong>How I checked.</strong> I ran each of these against a local copy of PeakAndPack, with the two known-bug tests failing for the stated reason and everything else passing, and every imported row deleted afterwards. I did not run them against the shared demo. My first draft of the two known-bug checks asserted that an error message was <em>absent</em> straight after the import. They passed when they should have failed, because the check ran before the panel had answered: the same trap as Phase 3's negative assertions. Waiting for the server's response first fixed it.</p>
     </div>
   </details>
   </div>

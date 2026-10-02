@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>(function(){try{if(localStorage.getItem('pw-theme')==='light'){document.documentElement.setAttribute('data-theme','light');}}catch(e){}})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Setup &amp; Agentic Foundations | Agentic SDLC, Part 1</title>
+<meta name="description" content="Phase 0 of Agentic SDLC, Part 1. Install Claude Code, run a first agent, and learn tool limits, budgets and human checkpoints before building anything.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+  --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+  --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.09); --purple-border:rgba(167,139,250,0.35);
+  --green:#4ade80; --green-bg:rgba(74,222,128,0.07); --green-border:rgba(74,222,128,0.25);
+  --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07); --blue-border:rgba(96,165,250,0.25);
+  --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07); --amber-border:rgba(251,191,36,0.25);
+  --red:#f87171; --red-bg:rgba(248,113,113,0.07); --red-border:rgba(248,113,113,0.25);
+  --ff-serif:'DM Serif Display',Georgia,serif; --ff-sans:'DM Sans',system-ui,sans-serif;
+}
+:root[data-theme="light"]{
+  --bg:#FAFCF5; --bg2:#F5F7F0; --bg3:#EDF0E4; --border:#DEE3D3;
+  --text:#1A1F14; --text-2:#3D4235; --text-3:#6B7060;
+  --purple:#7A4A9A; --purple-bg:#EDE0F5; --purple-border:rgba(122,74,154,0.35);
+  --green:#1A7A3A; --green-bg:#D8F0E0; --green-border:rgba(26,122,58,0.25);
+  --blue:#2A5C9A; --blue-bg:#DDE8F5; --blue-border:rgba(42,92,154,0.25);
+  --amber:#9A6E1A; --amber-bg:#F5EDD6; --amber-border:rgba(154,110,26,0.25);
+  --red:#B0402E; --red-bg:#F5DEDA; --red-border:rgba(176,64,46,0.25);
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body{background:var(--bg);color:var(--text);font-family:var(--ff-sans);font-size:16px;line-height:1.8;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.skip-link{position:absolute;top:-100%;left:1rem;background:var(--green);color:#000;padding:.5rem 1rem;border-radius:0 0 6px 6px;font-size:.85rem;font-weight:500;text-decoration:none;z-index:999}
+.skip-link:focus{top:0}
+nav.site-nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:56px}
+.nav-logo{font-family:var(--ff-serif);font-size:1rem;color:var(--text);text-decoration:none}
+.theme-toggle{background:var(--bg3);border:1px solid var(--border);color:var(--text-2);border-radius:8px;padding:.4rem .8rem;font-size:.78rem;cursor:pointer;font-family:var(--ff-sans);}
+.theme-toggle:hover{border-color:var(--purple);color:var(--text)}
+main{max-width:900px;margin:0 auto;padding:3rem 1.5rem 5rem}
+.breadcrumb{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.breadcrumb a{color:var(--text-3);text-decoration:none}
+.breadcrumb a:hover{color:var(--purple)}
+.series-tag{font-size:.7rem;padding:4px 11px;border-radius:99px;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);letter-spacing:.04em;text-transform:uppercase;font-weight:500;display:inline-block;margin-bottom:1.25rem}
+h1{font-family:var(--ff-serif);font-size:clamp(1.85rem,4vw,2.6rem);line-height:1.2;color:var(--purple);margin-bottom:.75rem;font-weight:400}
+.subtitle{font-family:var(--ff-serif);font-size:1.1rem;font-style:italic;color:var(--text-3);margin-bottom:1.5rem;max-width:680px}
+.meta-row{display:flex;align-items:center;gap:1.25rem;font-size:.82rem;color:var(--text-3);flex-wrap:wrap;margin-bottom:1.6rem;padding-bottom:1.3rem;border-bottom:1px solid var(--border)}
+h2{font-family:var(--ff-serif);font-size:1.5rem;font-weight:400;color:var(--text);margin:3.5rem 0 1.1rem;padding-top:1rem;border-top:1px solid var(--border)}
+h3{font-size:1rem;font-weight:500;color:var(--text);margin:1.75rem 0 .5rem}
+p{color:var(--text-2);margin-bottom:1.25rem;font-weight:300}
+strong{color:var(--text);font-weight:500}
+ul,ol{padding-left:1.4rem;margin-bottom:1.25rem;color:var(--text-2);font-weight:300}
+li{margin-bottom:.45rem}
+code{background:var(--bg3);padding:1px 6px;border-radius:3px;font-size:.85em;color:var(--text-2);font-family:monospace}
+pre{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:1rem 1.1rem;font-family:monospace;font-size:.82rem;color:var(--text-2);line-height:1.65;overflow-x:auto;margin:1rem 0}
+pre code{background:none;padding:0;color:inherit}
+.callout{display:block;background:var(--blue-bg);border-left:3px solid var(--blue);border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.95rem;color:var(--text);line-height:1.7}
+.callout p{margin-bottom:0;color:var(--text-2)}
+.callout.amber{background:var(--amber-bg);border-color:var(--amber)}
+.callout.green{background:var(--green-bg);border-color:var(--green)}
+.callout.red{background:var(--red-bg);border-color:var(--red)}
+.callout.blue{background:var(--blue-bg);border-color:var(--blue)}
+.callout.purple{background:var(--purple-bg);border-color:var(--purple)}
+.table-wrap{display:block;overflow-x:auto;margin:1.5rem 0;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+thead th{background:var(--bg2);padding:9px 13px;text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);font-weight:500;border-bottom:1px solid var(--border)}
+tbody td{padding:9px 13px;border-bottom:1px solid var(--border);color:var(--text-2);vertical-align:top;line-height:1.55;font-size:.85rem}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--bg2)}
+/* Phase progress strip */
+.phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem}
+.phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--text-3);background:var(--bg2);text-decoration:none}
+.phase-pip:hover{border-color:var(--purple);color:var(--text)}
+.phase-pip.active{background:var(--purple);color:#0d0d0d;border-color:transparent}
+.phase-pip.done{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+/* Before/After blocks */
+.ba-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0}
+.ba-block{border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+.ba-label{padding:.4rem .8rem;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.ba-block.before .ba-label{background:var(--red-bg);color:var(--red)}
+.ba-block.after .ba-label{background:var(--green-bg);color:var(--green)}
+.ba-block pre{margin:0;border-radius:0;border:none}
+/* Assignment / bonus blocks */
+.assignment{background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:12px;padding:1.2rem 1.4rem;margin:4.5rem 0 1rem}
+.assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem}
+.assignment h3{font-family:var(--ff-serif);color:var(--text);margin-top:.2rem;margin-bottom:.5rem;font-weight:400}
+.bonus{background:var(--purple-bg);border:1px solid var(--purple-border);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem}
+.bonus .b-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--purple);margin-bottom:.4rem}
+/* Collapsible solution */
+details.solution{margin:1rem 0 2rem;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+details.solution summary{padding:.9rem 1.2rem;cursor:pointer;font-weight:700;font-size:.92rem;background:var(--bg2);list-style:none;display:flex;align-items:center;gap:.5rem;color:var(--text)}
+details.solution summary::-webkit-details-marker{display:none}
+details.solution summary::before{content:"\25B6";font-size:.7rem;color:var(--text-3);transition:transform .2s}
+details.solution[open] summary::before{transform:rotate(90deg)}
+.solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border)}
+.solution-body p{font-size:.92rem}
+.series-nav{margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border)}
+.series-nav .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);font-weight:500;margin-bottom:.75rem;display:block}
+.nav-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.nav-blog{display:flex;align-items:center;gap:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.25rem;text-decoration:none;transition:border-color .2s,background .2s}
+.nav-blog:hover{border-color:var(--purple);background:var(--bg3)}
+.nav-blog-arrow{color:var(--text-3);font-size:1rem;flex-shrink:0}
+.nav-blog-title{font-size:.88rem;font-weight:500;color:var(--text)}
+.nav-blog-sub{font-size:.75rem;color:var(--text-3);margin-top:2px}
+footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.8rem;color:var(--text-3)}
+footer a{color:var(--text-3);text-decoration:none}
+footer a:hover{color:var(--purple)}
+@media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
+.blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
+.blog-tags .series-tag{margin-bottom:0}
+.tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+details.explain{margin:.5rem 0 1.5rem;border:1px solid var(--purple-border);border-radius:10px;background:var(--purple-bg)}
+details.explain summary{padding:.6rem 1rem;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--purple);list-style:none;display:flex;align-items:center;gap:.5rem}
+details.explain summary::-webkit-details-marker{display:none}
+details.explain summary::before{content:"\25B6";font-size:.65rem;transition:transform .2s}
+details.explain[open] summary::before{transform:rotate(90deg)}
+.explain-body{padding:.1rem 1.2rem 1rem;font-size:.92rem;line-height:1.7}
+.explain-body p{margin:.7rem 0}
+.explain-body ul{margin:.3rem 0 .7rem 1.2rem;padding-left:0}
+.explain-body li{margin-bottom:.35rem}
+.explain-body pre{margin:.6rem 0}
+.todo-image{display:none}
+
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a class="nav-logo" href="../../index.html">The Quality Strategist</a>
+  <button class="theme-toggle" id="themeToggle" type="button">Light</button>
+</nav>
+
+<main id="main-content">
+
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="../../blogs.html">Blogs</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <a href="00-agenticseries-landing.html">Agentic SDLC, Part 1</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <span aria-current="page">Phase 0 of Part 1</span>
+  </nav>
+
+  <div class="blog-tags" aria-label="Blog categories" role="group">
+    <span class="series-tag">Phase 0 &middot; Setup &amp; Agentic Foundations</span>
+    <span class="tag">Claude Code</span>
+    <span class="tag">Agent SDK</span>
+    <span class="tag">Permissions</span>
+    <span class="tag">Safety</span>
+  </div>
+
+  <h1>Your First Agent, and the Three Controls That Keep It Safe</h1>
+  <p class="subtitle">An agent chooses its own next step. Before it does anything useful, learn how to limit what it can use, what it can spend, and when a person has to say yes.</p>
+
+  <div class="meta-row">
+    <span><strong>Series: Agentic SDLC, Part 1</strong></span>
+    <span>Demo: PeakAndPack</span>
+    <span>22 min read</span>
+    <span>By: RN</span>
+  </div>
+
+  <div class="phase-strip" aria-label="Series progress">
+    <span class="phase-pip active" title="Phase 0: Setup &amp; Agentic Foundations">0</span>
+    <a href="01-agenticseries-what-it-means.html" class="phase-pip" title="Phase 1: What Agentic SDLC Means">1</a>
+    <a href="02-agenticseries-mcp-tools.html" class="phase-pip" title="Phase 2: MCP &amp; Tool Integration">2</a>
+    <a href="04-agenticseries-test-generation.html" class="phase-pip" title="Phase 4: Agentic Test Generation">4</a>
+    <a href="06-agenticseries-regression.html" class="phase-pip" title="Phase 6: Agentic Regression Selection">6</a>
+    <a href="09-agenticseries-full-pipeline.html" class="phase-pip" title="Phase 9: The Full Pipeline">9</a>
+  </div>
+
+
+  <div class="callout amber">
+    <p><strong>Draft.</strong> Written before the steps have been run end to end, so it is marked and kept out of the site index.</p>
+    <p><strong>Checked:</strong> The commands against <code>claude --help</code> for this version of Claude Code (flags and permission modes), and <code>hello-agent.ts</code> compiled against the Agent SDK type definitions.</p>
+    <p><strong>Not checked:</strong> Any run that calls the model. I cannot start a signed-in Claude Code from my side, so the outputs described here ("you should see...") are what the options say should happen. Your first run is the real test. The refusal in step 4 in particular is expected behaviour, not captured behaviour.</p>
+  </div>
+
+
+  <h2>Goal</h2>
+  <p>Get an agent running on your own machine, watch it work one small task, and learn the three controls that keep it safe: which tools it may use, how much it may spend, and when a person has to say yes. Nothing in this phase touches your tests yet. The point is to see the loop clearly before anything depends on it.</p>
+  <p>By the end of this phase you can:</p>
+  <ul>
+    <li>say what an agent is, and how it differs from a script that calls an AI model</li>
+    <li>run Claude Code once from the terminal, and from a TypeScript file</li>
+    <li>limit what an agent can do (tools), how long it runs (turns) and what it costs (budget)</li>
+    <li>explain why "the agent produced an answer" and "the answer is safe to act on" are two separate steps</li>
+  </ul>
+
+  <h2 id="what-is-an-agent">1. What an agent is, in plain words</h2>
+  <p>A <strong>script</strong> does the same steps in the same order every time. A Playwright test is a script. A <strong>workflow</strong> is a script that calls an AI model at some fixed step, for example "summarise this error", and then carries on down a path you wrote.</p>
+  <p>An <strong>agent</strong> is different in one way: the AI model chooses the next step itself. You give it a goal and a set of <strong>tools</strong> (actions it is allowed to take, such as "read a file" or "search issues"). It then repeats a loop until it decides it is done:</p>
+  <ol>
+    <li><strong>Observe.</strong> Look at what it has so far: your request, the files it has read, the results of earlier tool calls.</li>
+    <li><strong>Act.</strong> Pick a tool and use it.</li>
+    <li><strong>Evaluate.</strong> Look at the result and decide: is the goal met, or does it need another step?</li>
+  </ol>
+  <p>That choice is the useful part and the risky part. An agent can handle a task nobody wrote exact steps for. It can also take a step nobody expected. Every phase in this series is about getting the first benefit while keeping the second one under control.</p>
+  <div class="callout blue">
+    <p>The CCAR-F for QA series covers workflow versus agent in more depth, with an exam-style framing: <a href="../ccarf-for-qa/d1-agentic-architecture.html" style="color:var(--blue)">Domain 1: Workflow or Agent</a>. You do not need it to follow this phase.</p>
+  </div>
+
+  <h2 id="check-install">2. Check Claude Code is installed</h2>
+  <p><strong>Why start here:</strong> every agent in this series runs on Claude Code, the command-line tool. Playwright is the thing that drives the browser. Claude Code is the thing that drives the agent. If it is missing or out of date, nothing later will work, and the error messages will point at the wrong place.</p>
+  <pre><code>claude --version</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>claude</code> is the Claude Code program. <code>--version</code> asks it to print its version number and stop.</li>
+        <li>You should see a version number such as <code>2.1.235</code>. The exact number will differ. A number appearing means it is installed. "Command not found" means it is not: follow the installation steps in the <a href="https://docs.claude.com/en/docs/claude-code/overview" style="color:var(--purple)">Claude Code documentation</a>.</li>
+      </ul>
+    </div>
+  </details>
+  <p>The first time you run <code>claude</code> on its own (without <code>--version</code>), it asks you to sign in. Sign in once. The command-line runs in the next steps use that sign-in.</p>
+  <!-- IMAGE TODO: terminal showing `claude --version` and the first sign-in prompt (mask any account details) -->
+
+  <h2 id="first-run">3. Your first agent run</h2>
+  <p>Make a new, empty folder for experiments, for example <code>agent-sandbox</code>, and open a terminal in it. <strong>Why a separate folder:</strong> an agent works inside whatever folder you start it in. A throwaway folder means a mistake costs nothing.</p>
+  <p>Create a file called <code>notes.txt</code> with this content. These are real facts about PeakAndPack's checkout:</p>
+  <pre><code>PeakAndPack checkout notes
+- Confirm Order stays disabled until the card is paid
+- SAVE10 should take 10% off</code></pre>
+  <p>Now give the agent a task:</p>
+  <pre><code>claude -p "Read notes.txt. List each checkable statement as a one-line test idea. Do not change any files." --allowedTools Read --max-budget-usd 0.50</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>-p</code> (short for "print") runs one task, prints the answer and exits. There is no chat window. This is the mode every automated run in this series uses, because a pipeline cannot sit and chat.</li>
+        <li>The text in quotes is the task. It names the file, says what to produce, and says what <em>not</em> to do. A stated limit in the prompt is a request. The next flag is a rule.</li>
+        <li><code>--allowedTools Read</code> lists the tools the agent may use without asking. <code>Read</code> reads files. Nothing else is on the list, so it cannot edit a file or run a command.</li>
+        <li><code>--max-budget-usd 0.50</code> caps spending on this run at fifty cents. If the agent loops or wanders, it stops instead of spending without limit. Set a cap on every run from now on.</li>
+      </ul>
+      <p>You should see two test ideas, one per line, and <code>notes.txt</code> unchanged.</p>
+    </div>
+  </details>
+  <!-- IMAGE TODO: terminal with the command and the agent's answer -->
+
+  <p><strong>Now do the evaluate step yourself.</strong> The agent evaluates its own progress, but you are the one who decides whether the output is good. For each idea it listed, ask: could a test actually check this? "Confirm Order is disabled until payment" can: look at the button, pay, look again. "The checkout feels fast" cannot. This habit, reading an agent's output as a claim to check rather than a fact, is the most important skill in the series.</p>
+
+  <h2 id="permissions">4. What happens when the agent wants more than you allowed</h2>
+  <p>Run the same kind of task, but ask for something the allowed tool cannot do:</p>
+  <pre><code>claude -p "Read notes.txt and write the test ideas into a new file called ideas.md." --allowedTools Read --max-budget-usd 0.50</code></pre>
+  <p>Writing a file needs a different tool, which you did not allow. Because <code>-p</code> runs without anyone watching, there is nobody to ask, so the agent should be refused and should tell you it could not create the file. Check that <code>ideas.md</code> does not exist afterwards. If it does, your Claude Code settings are allowing more than this command says, and that is worth finding out now.</p>
+  <p>Then try the same request in interactive mode, by starting <code>claude</code> with no <code>-p</code> and typing the request. This time it should stop and ask permission before writing the file. This is the same safety idea in a different form: <strong>an action with side effects needs a yes from a person, or an explicit permission set in advance.</strong></p>
+  <p>Claude Code also has <strong>permission modes</strong>, chosen with <code>--permission-mode</code>. These are the ones <code>claude --help</code> lists:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Mode</th><th>What it does</th><th>When it fits</th></tr></thead>
+    <tbody>
+      <tr><td><code>plan</code></td><td>The agent plans but does not act</td><td>Reviewing an approach before letting anything run</td></tr>
+      <tr><td><code>acceptEdits</code></td><td>File edits are approved automatically</td><td>A throwaway folder where edits are the whole point</td></tr>
+      <tr><td><code>dontAsk</code></td><td>Anything not pre-approved is refused, with no question</td><td>Pipelines: nobody is there to ask</td></tr>
+      <tr><td><code>bypassPermissions</code></td><td>Skips every permission check</td><td>Almost never. Only inside a sandbox with no internet access.</td></tr>
+    </tbody>
+  </table></div>
+  <p>The list also includes <code>auto</code> and <code>manual</code>. This series sticks to explicit tool lists and <code>dontAsk</code> because they are easy to read in a pipeline file and easy to audit.</p>
+
+  <h2 id="from-code">5. The same loop from TypeScript</h2>
+  <p><strong>Why move to code:</strong> typing a command works for one task. A pipeline needs to start agents, read what they return, and decide what to do next. That needs code. Claude Code has a TypeScript kit for this, the <strong>Claude Agent SDK</strong>. Under the hood it runs the same agent you just used, so everything you learned above still applies.</p>
+  <p>Put the agent code in its own folder inside your test project, with its own <code>package.json</code>:</p>
+  <pre><code>cd peakandpack-tests
+mkdir agents
+cd agents
+npm init -y
+npm pkg set type=module
+npm install @anthropic-ai/claude-agent-sdk
+npm install --save-dev tsx typescript @types/node</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>mkdir agents</code> and <code>cd agents</code> make and enter a folder. <strong>Why a separate folder:</strong> it gets its own <code>package.json</code>, so the agent code does not change how your Playwright tests are loaded.</li>
+        <li><code>npm init -y</code> creates that <code>package.json</code> with default answers.</li>
+        <li><code>npm pkg set type=module</code> adds <code>"type": "module"</code>. Without it, the top-level <code>await</code> in the next file fails with "The current file is a CommonJS module and cannot use 'await' at the top level". That is the error to look for if you skip this line.</li>
+        <li><code>npm install @anthropic-ai/claude-agent-sdk</code> adds the SDK.</li>
+        <li>The second <code>install</code> adds development tools: <code>tsx</code> runs a TypeScript file directly, <code>typescript</code> checks types, and <code>@types/node</code> describes Node's built-in features to the checker.</li>
+      </ul>
+    </div>
+  </details>
+  <p>Add a <code>tsconfig.json</code> next to it, so the type checker agrees with how Node loads the files:</p>
+  <pre><code>{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "types": ["node"],
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "include": ["*.ts"]
+}</code></pre>
+  <p>Then create <code>hello-agent.ts</code> and keep <code>notes.txt</code> in the same folder:</p>
+  <pre><code>import { query } from '@anthropic-ai/claude-agent-sdk';
+
+// The same task as the terminal run in step 2, but started from code.
+const run = query({
+  prompt:
+    'Read notes.txt. List each checkable statement as a one-line test idea. Do not change any files.',
+  options: {
+    allowedTools: ['Read'],   // it may read files, nothing else
+    maxTurns: 4,              // stop after four turns, whatever happens
+    maxBudgetUsd: 0.5,        // and after fifty cents
+  },
+});
+
+for await (const message of run) {
+  if (message.type === 'assistant') {
+    // Each tool the agent uses shows up here: the "act" part of the loop
+    for (const block of message.message.content) {
+      if (block.type === 'tool_use') console.log(`ACT     ${block.name}`);
+    }
+  }
+  if (message.type === 'result') {
+    console.log(`RESULT  ${message.subtype}, ${message.num_turns} turns, about $${message.total_cost_usd.toFixed(3)}`);
+    if (message.subtype === 'success') console.log(message.result);
+  }
+}</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>query({ prompt, options })</code> starts an agent run. It does not return one answer. It returns a stream of messages, one for each thing that happens.</li>
+        <li><code>allowedTools: ['Read']</code>, <code>maxTurns: 4</code> and <code>maxBudgetUsd: 0.5</code> are the three controls from earlier, as options. A <strong>turn</strong> is one round of the agent thinking and then acting. Four is plenty for a one-file task.</li>
+        <li><code>for await (const message of run)</code> reads the stream as it arrives. <code>await</code> is Phase 6 of the Playwright series: wait for each message before taking the next.</li>
+        <li><code>message.type === 'assistant'</code> messages hold what the agent said or did. Inside, a block of type <code>tool_use</code> is the <strong>act</strong> step, so the loop prints <code>ACT Read</code>.</li>
+        <li><code>message.type === 'result'</code> arrives once, at the end. It says how the run ended (<code>subtype</code>), how many turns it took, and an estimated cost. Only a <code>success</code> result carries the final text, so the code checks before printing it.</li>
+      </ul>
+    </div>
+  </details>
+  <pre><code>npx tsx hello-agent.ts</code></pre>
+  <p>You should see one <code>ACT Read</code> line, then a <code>RESULT success</code> line with turns and cost, then the test ideas. If instead you see a sign-in or authentication error, run <code>claude</code> once and sign in. For unattended runs in a pipeline you use an API key instead, which Phase 9 sets up.</p>
+
+  <h2 id="checkpoints">6. Human checkpoints: the idea behind every later phase</h2>
+  <p>Look back at what you did in step 4. The agent produced something, and a person decided whether to act on it. Those are two separate steps, and it is tempting to merge them because the output looks finished. Every agent in this series keeps them apart. There are three places a person can stand in the way:</p>
+  <ul>
+    <li><strong>Before it writes anything.</strong> Edits, new files, new issues. Step 4 showed this.</li>
+    <li><strong>Before anything leaves your machine.</strong> A filed bug, a pull request, a message. These are hard to take back and other people see them.</li>
+    <li><strong>Before a release decision.</strong> An agent can summarise evidence. It does not sign off.</li>
+  </ul>
+  <p>Two kinds of "self-fixing" get mixed up, so this series names which one is meant every time. <strong>Locator-level self-healing</strong> (Playwright's role-based locators, or products such as Healenium) is an algorithm that runs unattended, with no AI model call and no person. <strong>Code-level auto-fix</strong> is an agent proposing a change to a test or the app after a failure, and a person must approve it, always. A failing test can mean a real bug, an intended change nobody updated the test for, or a bad test, and only someone who knows the product can tell which. See <a href="../playwright_new_to_Architect_withAI/13-playwrightseries-ai-assisted.html" style="color:var(--purple)">Playwright Phase 13</a> for the full argument.</p>
+
+  <h2 id="inventory">7. Your tool inventory</h2>
+  <p>You have used two tools so far. This table is the list you will fill in as you go. It is also a deliverable.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Tool</th><th>What it is for</th><th>You meet it in</th></tr></thead>
+    <tbody>
+      <tr><td>Claude Code CLI</td><td>Runs an agent from the terminal (<code>claude</code>, <code>claude -p</code>)</td><td>This phase</td></tr>
+      <tr><td>Claude Agent SDK</td><td>Starts and reads agents from TypeScript</td><td>This phase</td></tr>
+      <tr><td>Node.js, tsx</td><td>Runs the TypeScript files</td><td>This phase</td></tr>
+      <tr><td>MCP servers (Playwright, GitHub, Jira)</td><td>Give an agent named tools in other systems</td><td>Phase 2</td></tr>
+      <tr><td>Playwright Test</td><td>The test suite the agents work around</td><td>Phases 4 and 6</td></tr>
+      <tr><td>GitHub Actions</td><td>Runs the whole thing without you</td><td>Phase 9</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="mistakes">8. Common mistakes</h2>
+  <ul>
+    <li><strong>Running with no budget cap.</strong> An agent that gets stuck keeps trying. Always set <code>--max-budget-usd</code> (or <code>maxBudgetUsd</code>).</li>
+    <li><strong>Allowing more tools than the task needs.</strong> "It might need to write something" is not a reason to allow writing. Add a tool when a run proves it is needed.</li>
+    <li><strong>Reading the answer as finished.</strong> The first answer is a draft. Check it against the app, the way you would check a colleague's test.</li>
+    <li><strong>Putting a key in a file you commit.</strong> Keys go in environment variables or the CI secrets store, never in a file in the repo.</li>
+    <li><strong>Letting the agent run in a folder with real work in it.</strong> Use a sandbox folder until you trust the permissions.</li>
+  </ul>
+
+  <h2 id="deliverables">9. Deliverables</h2>
+  <ul>
+    <li><code>tool-setup.md</code>: your tool inventory table, with the version of each tool you installed and the date</li>
+    <li><code>first-agentic-loop.md</code>: the record of your first run (template below)</li>
+    <li><code>agentic-principles.md</code>: five rules you will hold every later agent to</li>
+  </ul>
+  <p>A starting shape for <code>first-agentic-loop.md</code>:</p>
+  <pre><code># First agentic loop
+
+Task given:
+Tools allowed:
+Budget and turn limit:
+
+Observe: what did the agent read?
+Act: which tools did it use, in order?
+Evaluate: did it decide it was done, and was it right?
+
+My check of the output:
+- Idea 1: checkable? (yes/no, and why)
+- Idea 2: checkable? (yes/no, and why)
+
+What happened when I asked for more than I allowed:
+What I would do differently next time:</code></pre>
+
+  <hr style="border:none;border-top:1px solid var(--border);margin:0">
+
+  <div class="assignment">
+    <div class="a-label">Assignment</div>
+    <h3>Run it on something real, and record the loop</h3>
+    <p>Pick a short piece of real PeakAndPack material, such as five lines from the README or the acceptance criteria for one feature, and save it as a file. Run the same kind of task from step 3 against it, once from the terminal and once from <code>hello-agent.ts</code> (change the prompt and file name). Fill in <code>first-agentic-loop.md</code> for each. Then write the five rules for <code>agentic-principles.md</code>.</p>
+    <details class="solution">
+      <summary>Show solution: try it yourself first</summary>
+      <div class="solution-body">
+        <p>Your outputs will differ from anyone else's, so there is no fixed answer. A good record has these things:</p>
+        <ul>
+          <li><strong>The three loop stages filled in from what you saw,</strong> not from what you expected. If the agent read the file and answered in one turn, write that. The loop can be one pass.</li>
+          <li><strong>A verdict on each idea with a reason.</strong> "Not checkable: no way to see 'fast' on the page" is a useful line. It shows you evaluated, not just read.</li>
+          <li><strong>What the refusal looked like in step 4,</strong> in the agent's own words. That wording is what you will look for later, when a pipeline agent is blocked by its tool list.</li>
+        </ul>
+        <p>Five principles most people end up with, in their own words:</p>
+        <ol>
+          <li>Give the agent only the tools the task needs.</li>
+          <li>Cap turns and spend on every run.</li>
+          <li>Anything with a side effect needs a person's yes, or a rule agreed in advance.</li>
+          <li>Treat output as a claim to check, never as a fact.</li>
+          <li>Keep the "produced it" step and the "act on it" step separate.</li>
+        </ol>
+      </div>
+    </details>
+  </div>
+
+  <div class="bonus">
+    <div class="b-label">Bonus challenge</div>
+    <p><strong>Find the wording that talks the agent past your rule.</strong> Keep <code>--allowedTools Read</code> and ask for the file to be written in three different ways, for example "just this once", "the user has approved this" and "it is only a text file". Does the tool list hold each time? What does that tell you about where a rule should live: in the prompt, or in the tool list?</p>
+  </div>
+
+
+  <div class="series-nav">
+    <span class="label">Navigate the series</span>
+    <div class="nav-pair">
+      <a href="00-agenticseries-landing.html" class="nav-blog"><span class="nav-blog-arrow" aria-hidden="true">&larr;</span><div><div class="nav-blog-title">Series overview</div><div class="nav-blog-sub">What Part 1 covers</div></div></a>
+      <a href="01-agenticseries-what-it-means.html" class="nav-blog"><div><div class="nav-blog-title">Phase 1: What Agentic SDLC Means</div><div class="nav-blog-sub">Where agents help and where people decide</div></div><span class="nav-blog-arrow" aria-hidden="true">&rarr;</span></a>
+    </div>
+  </div>
+
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--text-3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; Agentic SDLC, Part 1</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+<script>
+(function(){
+  var btn = document.getElementById('themeToggle');
+  function isLight(){ return document.documentElement.getAttribute('data-theme') === 'light'; }
+  function sync(){ btn.textContent = isLight() ? 'Dark' : 'Light'; }
+  sync();
+  btn.addEventListener('click', function(){
+    if(isLight()){
+      document.documentElement.removeAttribute('data-theme');
+      try{ localStorage.setItem('pw-theme','dark'); }catch(e){}
+    } else {
+      document.documentElement.setAttribute('data-theme','light');
+      try{ localStorage.setItem('pw-theme','light'); }catch(e){}
+    }
+    sync();
+  });
+})();
+</script>
+
+</body>
+</html>

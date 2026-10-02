@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>(function(){try{if(localStorage.getItem('pw-theme')==='light'){document.documentElement.setAttribute('data-theme','light');}}catch(e){}})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Agentic Regression Selection | Agentic SDLC, Part 1</title>
+<meta name="description" content="Phase 6 of Agentic SDLC, Part 1. Select the regression tests a change can affect with a mapping, an agent for the gaps, and a rule that runs everything when unsure.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d0d; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e;
+  --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#8a8a8a;
+  --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.09); --purple-border:rgba(167,139,250,0.35);
+  --green:#4ade80; --green-bg:rgba(74,222,128,0.07); --green-border:rgba(74,222,128,0.25);
+  --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.07); --blue-border:rgba(96,165,250,0.25);
+  --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.07); --amber-border:rgba(251,191,36,0.25);
+  --red:#f87171; --red-bg:rgba(248,113,113,0.07); --red-border:rgba(248,113,113,0.25);
+  --ff-serif:'DM Serif Display',Georgia,serif; --ff-sans:'DM Sans',system-ui,sans-serif;
+}
+:root[data-theme="light"]{
+  --bg:#FAFCF5; --bg2:#F5F7F0; --bg3:#EDF0E4; --border:#DEE3D3;
+  --text:#1A1F14; --text-2:#3D4235; --text-3:#6B7060;
+  --purple:#7A4A9A; --purple-bg:#EDE0F5; --purple-border:rgba(122,74,154,0.35);
+  --green:#1A7A3A; --green-bg:#D8F0E0; --green-border:rgba(26,122,58,0.25);
+  --blue:#2A5C9A; --blue-bg:#DDE8F5; --blue-border:rgba(42,92,154,0.25);
+  --amber:#9A6E1A; --amber-bg:#F5EDD6; --amber-border:rgba(154,110,26,0.25);
+  --red:#B0402E; --red-bg:#F5DEDA; --red-border:rgba(176,64,46,0.25);
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body{background:var(--bg);color:var(--text);font-family:var(--ff-sans);font-size:16px;line-height:1.8;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.skip-link{position:absolute;top:-100%;left:1rem;background:var(--green);color:#000;padding:.5rem 1rem;border-radius:0 0 6px 6px;font-size:.85rem;font-weight:500;text-decoration:none;z-index:999}
+.skip-link:focus{top:0}
+nav.site-nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:56px}
+.nav-logo{font-family:var(--ff-serif);font-size:1rem;color:var(--text);text-decoration:none}
+.theme-toggle{background:var(--bg3);border:1px solid var(--border);color:var(--text-2);border-radius:8px;padding:.4rem .8rem;font-size:.78rem;cursor:pointer;font-family:var(--ff-sans);}
+.theme-toggle:hover{border-color:var(--purple);color:var(--text)}
+main{max-width:900px;margin:0 auto;padding:3rem 1.5rem 5rem}
+.breadcrumb{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.breadcrumb a{color:var(--text-3);text-decoration:none}
+.breadcrumb a:hover{color:var(--purple)}
+.series-tag{font-size:.7rem;padding:4px 11px;border-radius:99px;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);letter-spacing:.04em;text-transform:uppercase;font-weight:500;display:inline-block;margin-bottom:1.25rem}
+h1{font-family:var(--ff-serif);font-size:clamp(1.85rem,4vw,2.6rem);line-height:1.2;color:var(--purple);margin-bottom:.75rem;font-weight:400}
+.subtitle{font-family:var(--ff-serif);font-size:1.1rem;font-style:italic;color:var(--text-3);margin-bottom:1.5rem;max-width:680px}
+.meta-row{display:flex;align-items:center;gap:1.25rem;font-size:.82rem;color:var(--text-3);flex-wrap:wrap;margin-bottom:1.6rem;padding-bottom:1.3rem;border-bottom:1px solid var(--border)}
+h2{font-family:var(--ff-serif);font-size:1.5rem;font-weight:400;color:var(--text);margin:3.5rem 0 1.1rem;padding-top:1rem;border-top:1px solid var(--border)}
+h3{font-size:1rem;font-weight:500;color:var(--text);margin:1.75rem 0 .5rem}
+p{color:var(--text-2);margin-bottom:1.25rem;font-weight:300}
+strong{color:var(--text);font-weight:500}
+ul,ol{padding-left:1.4rem;margin-bottom:1.25rem;color:var(--text-2);font-weight:300}
+li{margin-bottom:.45rem}
+code{background:var(--bg3);padding:1px 6px;border-radius:3px;font-size:.85em;color:var(--text-2);font-family:monospace}
+pre{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:1rem 1.1rem;font-family:monospace;font-size:.82rem;color:var(--text-2);line-height:1.65;overflow-x:auto;margin:1rem 0}
+pre code{background:none;padding:0;color:inherit}
+.callout{display:block;background:var(--blue-bg);border-left:3px solid var(--blue);border-radius:0 10px 10px 0;padding:1.05rem 1.3rem;margin:1.3rem 0;font-size:.95rem;color:var(--text);line-height:1.7}
+.callout p{margin-bottom:0;color:var(--text-2)}
+.callout.amber{background:var(--amber-bg);border-color:var(--amber)}
+.callout.green{background:var(--green-bg);border-color:var(--green)}
+.callout.red{background:var(--red-bg);border-color:var(--red)}
+.callout.blue{background:var(--blue-bg);border-color:var(--blue)}
+.callout.purple{background:var(--purple-bg);border-color:var(--purple)}
+.table-wrap{display:block;overflow-x:auto;margin:1.5rem 0;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+thead th{background:var(--bg2);padding:9px 13px;text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);font-weight:500;border-bottom:1px solid var(--border)}
+tbody td{padding:9px 13px;border-bottom:1px solid var(--border);color:var(--text-2);vertical-align:top;line-height:1.55;font-size:.85rem}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--bg2)}
+/* Phase progress strip */
+.phase-strip{display:flex;gap:.3rem;flex-wrap:wrap;margin:1.4rem 0 1.8rem}
+.phase-pip{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);color:var(--text-3);background:var(--bg2);text-decoration:none}
+.phase-pip:hover{border-color:var(--purple);color:var(--text)}
+.phase-pip.active{background:var(--purple);color:#0d0d0d;border-color:transparent}
+.phase-pip.done{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+/* Before/After blocks */
+.ba-wrap{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0}
+.ba-block{border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+.ba-label{padding:.4rem .8rem;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.ba-block.before .ba-label{background:var(--red-bg);color:var(--red)}
+.ba-block.after .ba-label{background:var(--green-bg);color:var(--green)}
+.ba-block pre{margin:0;border-radius:0;border:none}
+/* Assignment / bonus blocks */
+.assignment{background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:12px;padding:1.2rem 1.4rem;margin:4.5rem 0 1rem}
+.assignment .a-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem}
+.assignment h3{font-family:var(--ff-serif);color:var(--text);margin-top:.2rem;margin-bottom:.5rem;font-weight:400}
+.bonus{background:var(--purple-bg);border:1px solid var(--purple-border);border-radius:12px;padding:1rem 1.2rem;margin:.8rem 0 1.4rem}
+.bonus .b-label{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--purple);margin-bottom:.4rem}
+/* Collapsible solution */
+details.solution{margin:1rem 0 2rem;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+details.solution summary{padding:.9rem 1.2rem;cursor:pointer;font-weight:700;font-size:.92rem;background:var(--bg2);list-style:none;display:flex;align-items:center;gap:.5rem;color:var(--text)}
+details.solution summary::-webkit-details-marker{display:none}
+details.solution summary::before{content:"\25B6";font-size:.7rem;color:var(--text-3);transition:transform .2s}
+details.solution[open] summary::before{transform:rotate(90deg)}
+.solution-body{padding:1.2rem 1.4rem;border-top:1px solid var(--border)}
+.solution-body p{font-size:.92rem}
+.series-nav{margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border)}
+.series-nav .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);font-weight:500;margin-bottom:.75rem;display:block}
+.nav-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.nav-blog{display:flex;align-items:center;gap:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.25rem;text-decoration:none;transition:border-color .2s,background .2s}
+.nav-blog:hover{border-color:var(--purple);background:var(--bg3)}
+.nav-blog-arrow{color:var(--text-3);font-size:1rem;flex-shrink:0}
+.nav-blog-title{font-size:.88rem;font-weight:500;color:var(--text)}
+.nav-blog-sub{font-size:.75rem;color:var(--text-3);margin-top:2px}
+footer{border-top:1px solid var(--border);padding:2rem 1.5rem;text-align:center;font-size:.8rem;color:var(--text-3)}
+footer a{color:var(--text-3);text-decoration:none}
+footer a:hover{color:var(--purple)}
+@media(max-width:600px){h1{font-size:1.55rem}.ba-wrap{grid-template-columns:1fr}.meta-row{flex-wrap:wrap;gap:.5rem}.nav-pair{grid-template-columns:1fr}}
+.blog-tags{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.25rem}
+.blog-tags .series-tag{margin-bottom:0}
+.tag{font-size:.7rem;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text-3);border:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+details.explain{margin:.5rem 0 1.5rem;border:1px solid var(--purple-border);border-radius:10px;background:var(--purple-bg)}
+details.explain summary{padding:.6rem 1rem;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--purple);list-style:none;display:flex;align-items:center;gap:.5rem}
+details.explain summary::-webkit-details-marker{display:none}
+details.explain summary::before{content:"\25B6";font-size:.65rem;transition:transform .2s}
+details.explain[open] summary::before{transform:rotate(90deg)}
+.explain-body{padding:.1rem 1.2rem 1rem;font-size:.92rem;line-height:1.7}
+.explain-body p{margin:.7rem 0}
+.explain-body ul{margin:.3rem 0 .7rem 1.2rem;padding-left:0}
+.explain-body li{margin-bottom:.35rem}
+.explain-body pre{margin:.6rem 0}
+.todo-image{display:none}
+
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="site-nav" aria-label="Site navigation">
+  <a class="nav-logo" href="../../index.html">The Quality Strategist</a>
+  <button class="theme-toggle" id="themeToggle" type="button">Light</button>
+</nav>
+
+<main id="main-content">
+
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="../../blogs.html">Blogs</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <a href="00-agenticseries-landing.html">Agentic SDLC, Part 1</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <span aria-current="page">Phase 6 of Part 1</span>
+  </nav>
+
+  <div class="blog-tags" aria-label="Blog categories" role="group">
+    <span class="series-tag">Phase 6 &middot; Agentic Regression Selection</span>
+    <span class="tag">Regression</span>
+    <span class="tag">Test Selection</span>
+    <span class="tag">Structured Output</span>
+    <span class="tag">Fallback</span>
+  </div>
+
+  <h1>Run the Tests a Change Can Affect, and Everything When Unsure</h1>
+  <p class="subtitle">A mapping does most of the work, an agent covers the gaps, and one strict rule decides. When anything is unclear, the full suite runs.</p>
+
+  <div class="meta-row">
+    <span><strong>Series: Agentic SDLC, Part 1</strong></span>
+    <span>Demo: PeakAndPack</span>
+    <span>28 min read</span>
+    <span>By: RN</span>
+  </div>
+
+  <div class="phase-strip" aria-label="Series progress">
+    <a href="00-agenticseries-setup-foundations.html" class="phase-pip" title="Phase 0: Setup &amp; Agentic Foundations">0</a>
+    <a href="01-agenticseries-what-it-means.html" class="phase-pip" title="Phase 1: What Agentic SDLC Means">1</a>
+    <a href="02-agenticseries-mcp-tools.html" class="phase-pip" title="Phase 2: MCP &amp; Tool Integration">2</a>
+    <a href="04-agenticseries-test-generation.html" class="phase-pip" title="Phase 4: Agentic Test Generation">4</a>
+    <span class="phase-pip active" title="Phase 6: Agentic Regression Selection">6</span>
+    <a href="09-agenticseries-full-pipeline.html" class="phase-pip" title="Phase 9: The Full Pipeline">9</a>
+  </div>
+
+
+  <div class="callout amber">
+    <p><strong>Draft.</strong> Written before the steps have been run end to end, so it is marked and kept out of the site index.</p>
+    <p><strong>Checked:</strong> <code>select-tests.ts</code> run on seven scenarios (the table in section 5 is the observed output). <code>regression-agent.ts</code> run end to end on the no-agent path against PeakAndPack's real test folder (the output in section 7 is real). <code>commit-files.ts</code> run on the real repository, and the history table in section 8 is the real result for its last ten commits. All files compile against the Agent SDK type definitions.</p>
+    <p><strong>Not checked:</strong> The agent call itself: the prompt, the structured output coming back, and how confident the model is in practice. The seven scenarios used made-up agent answers. The deliberate-regression part of the assignment has not been done.</p>
+  </div>
+
+
+  <h2>Goal</h2>
+  <p>Run the tests a change could affect, and fall back to running everything whenever that is not clear. This is the phase where "agent" and "script" split the work: code does the part that is a rule, the agent handles only the files no rule covers, and a safety net catches what the agent cannot place.</p>
+  <p>By the end of this phase you can:</p>
+  <ul>
+    <li>explain why the QA pipeline works from a list of changed files, not the app's code</li>
+    <li>build a mapping from source files to the tests that cover them</li>
+    <li>use an agent for the gaps in the mapping, with a confidence score and a structured answer</li>
+    <li>write the rule that turns an agent's answer into a decision, and the fallback for when it is unclear</li>
+    <li>check the whole approach against your own project's history</li>
+  </ul>
+
+  <h2 id="problem">1. The regression problem</h2>
+  <p>Every change could break something that used to work, so in principle every change needs the whole suite. In practice a suite grows until running it on every change is slow, and teams start skipping it or running a hand-picked few. Either way, some risk goes unchecked without anyone deciding it should.</p>
+  <p>Choosing which tests a change can affect is a real skill: you read what changed, you know the product, you judge which areas it touches. It is also a task that fits an agent, if two conditions hold. A wrong answer must be <strong>caught</strong> (the full suite still runs on a schedule), and a wrong answer must be <strong>cheap</strong> (an extra test costs seconds, a missed one costs a bug in production). The rule that makes both true: <strong>when unsure, run everything.</strong></p>
+
+  <h2 id="changed-files">2. Why a list of changed files, not the code</h2>
+  <p>You might expect the agent to read the change itself, the code difference. In many companies the QA team cannot do that: the application lives in a repository QA has no access to. So the design here follows the realistic setup. The development pipeline, after it ships a change, sends QA only <strong>a list of the file names that changed</strong>. The agent maps names to tests.</p>
+  <p>It sounds like a weakness. It is also a constraint that keeps the agent honest. A file name and the names and contents of the tests are all it sees, so when a file's purpose is not clear from those, it has to say so. Phase 9 wires the real trigger. For now you supply the list by hand.</p>
+
+  <h2 id="three-layers">3. Three layers, in order</h2>
+  <ol>
+    <li><strong>A mapping, written by a person, applied by code.</strong> "When <code>frontend/src/pages/Cart.js</code> changes, run the cart and checkout tests." Free, instant, identical every time.</li>
+    <li><strong>An agent for files the mapping does not cover.</strong> A new file, a renamed one. It proposes tests, each with a confidence, or says it cannot judge.</li>
+    <li><strong>A decision rule in code</strong> that accepts only trusted proposals and otherwise runs the full suite.</li>
+  </ol>
+  <p>The order is the lesson. Put as much as possible in layer 1, because rules are cheap and reliable. Use layer 2 only for the remainder. Make layer 3 strict, because it is the part you can trust.</p>
+
+  <h2 id="mapping">4. The mapping</h2>
+  <p>Save this as <code>agents/test-mapping.json</code>. The paths are PeakAndPack's real files, taken from the app repository. Adjust the test paths to match your own <code>tests/</code> folder.</p>
+  <pre><code>[
+  {"match": "frontend/src/api.js", "tests": ["tests/smoke/store.smoke.spec.ts", "tests/shop/browse.spec.ts", "tests/shop/cart.spec.ts", "tests/shop/checkout.spec.ts", "tests/auth/auth.spec.ts"], "why": "every page calls the API through this file"},
+  {"match": "frontend/src/pages/Cart.js", "tests": ["tests/shop/cart.spec.ts", "tests/shop/checkout.spec.ts"], "why": "the cart page and the step after it"},
+  {"match": "frontend/src/pages/Checkout.js", "tests": ["tests/shop/checkout.spec.ts"], "why": "the checkout page"},
+  {"match": "backend/public/admin/payment-sandbox.html", "tests": ["tests/shop/checkout.spec.ts"], "why": "the payment form that checkout embeds"},
+  {"match": "frontend/src/pages/Login.js", "tests": ["tests/auth/auth.spec.ts"], "why": "login"},
+  {"match": "frontend/src/pages/Register.js", "tests": ["tests/auth/auth.spec.ts"], "why": "registration"},
+  {"match": "frontend/src/context/AuthContext.js", "tests": ["tests/auth/auth.spec.ts", "tests/shop/cart.spec.ts"], "why": "who is signed in"},
+  {"match": "frontend/src/pages/Products.js", "tests": ["tests/shop/browse.spec.ts", "tests/smoke/store.smoke.spec.ts"], "why": "the product list"},
+  {"match": "frontend/src/components/", "tests": ["tests/shop/browse.spec.ts"], "why": "shared controls used on the product list"},
+  {"match": "frontend/src/index.css", "tests": ["tests/mobile/layout.spec.ts"], "why": "layout and styling"},
+  {"match": "frontend/src/widgets.css", "tests": ["tests/mobile/layout.spec.ts"], "why": "layout and styling"},
+  {"match": "backend/admin-routes.js", "tests": ["tests/admin/admin-panel.spec.ts", "tests/api/api.spec.ts"], "why": "the admin API"},
+  {"match": "backend/public/admin/", "tests": ["tests/admin/admin-panel.spec.ts"], "why": "the admin panel page"},
+  {"match": "frontend/public/admin/", "tests": ["tests/admin/admin-panel.spec.ts"], "why": "the admin panel copy served with the store"},
+  {"match": "backend/server.js", "tests": ["tests/api/api.spec.ts", "tests/smoke/store.smoke.spec.ts"], "why": "the store API"}
+]</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li>Each line is one rule with three parts. <code>match</code> is a file path, or a folder path ending in <code>/</code> that covers everything inside it. <code>tests</code> lists the spec files to run. <code>why</code> is a short reason.</li>
+        <li><strong>Why a <code>why</code> field:</strong> the reason ends up in the report. Six months from now, "run the checkout tests because the payment form changed" is something a person can argue with. A bare list of file names is not.</li>
+        <li><code>frontend/src/api.js</code> maps to five spec files, because every page talks to the server through it. A change there could affect anything, so it maps to a wide set.</li>
+        <li>Rules overlap on purpose. A file can match several rules, and the selection is the union of all of them.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2 id="selection">5. Applying the mapping, and the decision rule</h2>
+  <pre><code>import { readFileSync } from 'node:fs';
+
+export type MappingRule = { match: string; tests: string[]; why: string };
+export type Selection = {
+  tests: string[];            // spec files to run
+  unmapped: string[];         // changed files no rule covered
+  reasons: Record&lt;string, string[]&gt;;   // spec file -&gt; why it was chosen
+};
+
+// A rule's match is a path prefix or an exact file path.
+const covers = (rule: MappingRule, file: string) =&gt;
+  file === rule.match || (rule.match.endsWith('/') &amp;&amp; file.startsWith(rule.match));
+
+export function selectFromMapping(changedFiles: string[], rules: MappingRule[]): Selection {
+  const tests = new Set&lt;string&gt;();
+  const unmapped: string[] = [];
+  const reasons: Record&lt;string, string[]&gt; = {};
+
+  for (const file of changedFiles) {
+    const hits = rules.filter((rule) =&gt; covers(rule, file));
+    if (hits.length === 0) unmapped.push(file);
+    for (const rule of hits) {
+      for (const test of rule.tests) {
+        tests.add(test);
+        (reasons[test] ??= []).push(`${file}: ${rule.why}`);
+      }
+    }
+  }
+  return { tests: [...tests].sort(), unmapped, reasons };
+}
+
+export function loadMapping(path = 'test-mapping.json'): MappingRule[] {
+  return JSON.parse(readFileSync(path, 'utf-8')) as MappingRule[];
+}
+
+export type AgentPick = { file: string; test: string; confidence: number; reason: string };
+export type AgentAnswer = { picks: AgentPick[]; cannot_judge: string[] };
+
+export type Decision = {
+  runAll: boolean;
+  tests: string[];
+  why: string[];
+};
+
+const ADD_AT = 0.7;   // below this, the agent's suggestion is noted but not trusted
+
+// The rule that keeps the agent honest: when anything is unclear, run everything.
+export function decide(
+  selection: Selection,
+  answer: AgentAnswer | null,       // null: the agent was not asked, or did not answer
+  knownTests: string[],             // spec files that really exist
+): Decision {
+  const tests = new Set(selection.tests);
+  const why = Object.entries(selection.reasons).map(([t, r]) =&gt; `${t}: ${r.join('; ')}`);
+
+  if (selection.unmapped.length === 0) return { runAll: false, tests: [...tests].sort(), why };
+
+  if (answer === null) {
+    return { runAll: true, tests: [], why: [...why, `Unmapped files and no agent answer: ${selection.unmapped.join(', ')}`] };
+  }
+  if (answer.cannot_judge.length &gt; 0) {
+    return { runAll: true, tests: [], why: [...why, `The agent could not judge: ${answer.cannot_judge.join(', ')}`] };
+  }
+  const covered = new Set&lt;string&gt;();   // changed files that got at least one trusted pick
+  for (const pick of answer.picks) {
+    if (!knownTests.includes(pick.test)) {
+      why.push(`Ignored ${pick.test}: no such spec file`);   // an invented file name
+    } else if (pick.confidence &lt; ADD_AT) {
+      why.push(`Ignored ${pick.test}: confidence ${pick.confidence} is below ${ADD_AT}`);
+    } else {
+      tests.add(pick.test);
+      covered.add(pick.file);
+      why.push(`${pick.test}: agent, confidence ${pick.confidence}: ${pick.reason}`);
+    }
+  }
+
+  // A changed file nobody could place is not "no tests needed", it is "we do not know"
+  const unplaced = selection.unmapped.filter((file) =&gt; !covered.has(file));
+  if (unplaced.length &gt; 0) {
+    return { runAll: true, tests: [], why: [...why, `No trusted pick for: ${unplaced.join(', ')}`] };
+  }
+  return { runAll: false, tests: [...tests].sort(), why };
+}</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>covers</code> says whether a rule covers a file: an exact match, or the file is inside the rule's folder.</li>
+        <li><code>selectFromMapping</code> goes through each changed file, collects the tests of every matching rule, and notes the files nothing matched (<code>unmapped</code>). It also records, for each test, the reasons it was chosen.</li>
+        <li><code>decide</code> is the rule that matters. With no unmapped files, the mapping's answer stands and the agent is not needed. With unmapped files and no agent answer, <code>runAll</code> is true. If the agent says it could not judge, <code>runAll</code> is true.</li>
+        <li>Each agent pick is checked three ways. A test file that does not exist is ignored: models invent file names. A pick below 0.7 confidence is noted but not trusted. Only trusted picks join the selection.</li>
+        <li>The last block is the one that is easy to forget. A changed file with <em>no trusted pick</em> is not "no tests needed". It is "we do not know", so the answer is to run everything. Without this, one unplaced file could quietly drop out.</li>
+      </ul>
+    </div>
+  </details>
+  <p>Here is how the rule behaved on seven made-up situations, run with a fake agent answer in each case. <code>Wishlist.js</code> stands for a new page nobody has written a rule for:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Situation</th><th>Decision</th></tr></thead>
+    <tbody>
+      <tr><td>Every changed file is mapped</td><td>Run the mapped specs. The agent is not asked.</td></tr>
+      <tr><td>A new file, and no agent answer (it was down)</td><td><strong>Run everything</strong></td></tr>
+      <tr><td>The agent places it, with confidence 0.8, on a real spec</td><td>Add that spec to the selection</td></tr>
+      <tr><td>The agent names a spec file that does not exist</td><td>Ignored, so the file is unplaced: <strong>run everything</strong></td></tr>
+      <tr><td>The agent places it with confidence 0.4</td><td>Ignored, so the file is unplaced: <strong>run everything</strong></td></tr>
+      <tr><td>The agent says it cannot judge the file</td><td><strong>Run everything</strong></td></tr>
+      <tr><td>Two new files, and the agent places only one</td><td>The other is unplaced: <strong>run everything</strong></td></tr>
+    </tbody>
+  </table></div>
+  <p>Read the right-hand column. Only one situation in the list lets the agent narrow the suite on its own, and it needs a real test, a high confidence and every unmapped file covered. Everything else widens. That asymmetry is deliberate: the agent can only make the run bigger or approve its own narrow pick under strict conditions. It cannot quietly drop a test.</p>
+
+  <h2 id="agent">6. The agent</h2>
+  <pre><code>import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { sep } from 'node:path';
+import { query } from '@anthropic-ai/claude-agent-sdk';
+import { decide, loadMapping, selectFromMapping, type AgentAnswer } from './select-tests.js';
+
+// The dev pipeline sends this list. This script never sees the app's code.
+const changedFiles: string[] = JSON.parse(process.env.CHANGED_FILES ?? readFileSync('changed-files.json', 'utf-8'));
+
+const testsDir = process.env.TESTS_DIR ?? '../tests';
+const knownTests = readdirSync(testsDir, { recursive: true, encoding: 'utf-8' })
+  .filter((f) =&gt; f.endsWith('.spec.ts'))
+  .map((f) =&gt; `tests/${f.split(sep).join('/')}`);   // Windows paths use \ ; the mapping uses /
+
+const selection = selectFromMapping(changedFiles, loadMapping());
+let answer: AgentAnswer | null = null;
+
+if (selection.unmapped.length &gt; 0) {
+  const run = query({
+    prompt: `The PeakAndPack shop changed these files, and no mapping rule covers them:
+${selection.unmapped.map((f) =&gt; `- ${f}`).join('\n')}
+
+You cannot see the app's code, only these file paths and the test files in ${testsDir}.
+Test files that exist:
+${knownTests.map((t) =&gt; `- ${t}`).join('\n')}
+
+For each changed file, decide which of those test files could be affected. Read the test files if you need to.
+Each pick names the changed file it is about ("file"), the test file ("test") and a confidence from 0 to 1.
+If a changed file's name and the tests give you no basis to judge,
+put the file in cannot_judge instead of guessing.`,
+    options: {
+      cwd: process.cwd(),
+      allowedTools: ['Read', 'Glob', 'Grep'],
+      permissionMode: 'dontAsk',          // anything not allowed above is refused, with nobody to ask
+      maxTurns: 10,
+      maxBudgetUsd: 0.5,
+      outputFormat: {
+        type: 'json_schema',
+        schema: {
+          type: 'object',
+          properties: {
+            picks: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  file: { type: 'string' },
+                  test: { type: 'string' },
+                  confidence: { type: 'number' },
+                  reason: { type: 'string' },
+                },
+                required: ['file', 'test', 'confidence', 'reason'],
+              },
+            },
+            cannot_judge: { type: 'array', items: { type: 'string' } },
+          },
+          required: ['picks', 'cannot_judge'],
+        },
+      },
+    },
+  });
+
+  for await (const message of run) {
+    if (message.type === 'result' &amp;&amp; message.subtype === 'success') {
+      answer = (message.structured_output as AgentAnswer | undefined) ?? null;
+    }
+  }
+}
+
+const decision = decide(selection, answer, knownTests);
+writeFileSync('selection.json', JSON.stringify({ changedFiles, ...decision }, null, 2));
+console.log(decision.runAll ? 'Run the full suite.' : `Run ${decision.tests.length} spec file(s):\n${decision.tests.join('\n')}`);
+console.log('\nWhy:\n' + decision.why.map((w) =&gt; `- ${w}`).join('\n'));</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li>The changed-file list comes from the <code>CHANGED_FILES</code> environment variable, or from a <code>changed-files.json</code> file. <strong>Why both:</strong> the pipeline will pass it in the environment, and while you are practising a file is easier.</li>
+        <li><code>knownTests</code> lists the spec files that really exist, by reading the tests folder. The <code>split(sep).join('/')</code> turns Windows <code>\</code> separators into the <code>/</code> the mapping uses. Without that line, no Windows path would ever match.</li>
+        <li>The agent is only called when something is unmapped. A run where every file is covered makes no model call, costs nothing and cannot vary.</li>
+        <li>The prompt shows the agent exactly what it can and cannot see, lists the real spec files, and tells it to use <code>cannot_judge</code> instead of guessing.</li>
+        <li><code>allowedTools</code> is read-only (<code>Read</code>, <code>Glob</code>, <code>Grep</code>) and <code>permissionMode: 'dontAsk'</code> means anything else is refused without a question. <strong>Why:</strong> in a pipeline nobody is there to answer a question, so "refuse" is the only safe default.</li>
+        <li><code>outputFormat</code> with a <code>json_schema</code> forces the answer into a fixed shape: a list of picks (each with the changed <code>file</code>, the <code>test</code>, a <code>confidence</code> and a <code>reason</code>) plus <code>cannot_judge</code>. <strong>Why a schema:</strong> code can only act on an answer it can read. Free text would need guesswork to parse.</li>
+        <li>The result arrives as <code>structured_output</code>. If it is missing, <code>answer</code> stays <code>null</code>, which <code>decide</code> treats as "run everything".</li>
+        <li>The final lines write <code>selection.json</code> (what Phase 9's pipeline reads) and print the decision with every reason.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2 id="try">7. Try it without the agent first</h2>
+  <p>The mapping layer needs no model, so you can run and read it today. From the <code>agents</code> folder, point <code>TESTS_DIR</code> at a folder that has the test layout (PeakAndPack's own <code>e2e/tests</code> folder works) and give it two changed files:</p>
+  <pre><code># bash or Git Bash
+CHANGED_FILES='["frontend/src/pages/Cart.js","backend/admin-routes.js"]' TESTS_DIR=../../PeakAndPackShopDemo/e2e/tests npx tsx regression-agent.ts
+
+# Windows PowerShell
+$env:CHANGED_FILES='["frontend/src/pages/Cart.js","backend/admin-routes.js"]'; $env:TESTS_DIR='../../PeakAndPackShopDemo/e2e/tests'; npx tsx regression-agent.ts</code></pre>
+  <p>The output should be four spec files, each with its reason:</p>
+  <pre><code>Run 4 spec file(s):
+tests/admin/admin-panel.spec.ts
+tests/api/api.spec.ts
+tests/shop/cart.spec.ts
+tests/shop/checkout.spec.ts
+
+Why:
+- tests/shop/cart.spec.ts: frontend/src/pages/Cart.js: the cart page and the step after it
+- tests/shop/checkout.spec.ts: frontend/src/pages/Cart.js: the cart page and the step after it
+- tests/admin/admin-panel.spec.ts: backend/admin-routes.js: the admin API
+- tests/api/api.spec.ts: backend/admin-routes.js: the admin API</code></pre>
+  <p>That output is real, from running exactly this on PeakAndPack's repository. Then add a file the mapping has never seen to the list, such as <code>frontend/src/pages/Wishlist.js</code>, and run it again. With the agent available it asks the model. Without it, you get the full-suite decision.</p>
+
+  <h2 id="history">8. Check it against your own history</h2>
+  <p>A design that looks sensible is not the same as one that works. Test it on changes that already happened. This small script prints the files one commit changed, in the format the pipeline will send:</p>
+  <pre><code>import { execFileSync } from 'node:child_process';
+
+// Prints the files one commit changed, as the JSON list the pipeline would send.
+// Usage: npx tsx commit-files.ts C:/path/to/PeakAndPackShopDemo 75d1365
+const [repoPath, sha] = process.argv.slice(2);
+if (!repoPath || !sha) throw new Error('Usage: npx tsx commit-files.ts &lt;path to the app repo&gt; &lt;commit sha&gt;');
+
+const output = execFileSync('git', ['diff', '--name-only', `${sha}~1`, sha], { cwd: repoPath, encoding: 'utf-8' });
+const files = output.split('\n').filter((line) =&gt; line.trim() !== '');
+
+console.log(JSON.stringify(files));</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>execFileSync('git', [...])</code> runs Git and waits for the answer. Passing the arguments as a list, not one string, avoids quoting problems with spaces in paths.</li>
+        <li><code>git diff --name-only &lt;sha&gt;~1 &lt;sha&gt;</code> lists the files that differ between a commit and the one before it (<code>~1</code> means "one before"). That is exactly "what this change touched".</li>
+        <li>The last lines drop empty lines and print the result as JSON, ready to use as <code>CHANGED_FILES</code>.</li>
+      </ul>
+    </div>
+  </details>
+  <p>Running the mapping layer alone over the ten most recent commits of PeakAndPackShopDemo gave this (no agent involved, so every unmapped file means "run everything"):</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Commit</th><th>Files changed</th><th>Decision</th><th>Subject</th></tr></thead>
+    <tbody>
+      <tr><td><code>75d1365</code></td><td>46</td><td>Full suite (workflow, README, others unmapped)</td><td>update new features</td></tr>
+      <tr><td><code>6f13f61</code></td><td>3</td><td>1 spec file</td><td>added missing files</td></tr>
+      <tr><td><code>889e9f6</code></td><td>3</td><td>1 spec file</td><td>covered rest of playwright and new AI capsule</td></tr>
+      <tr><td><code>f3ef33b</code></td><td>1</td><td>Full suite (<code>backend/package.json</code>)</td><td>Upgrade better-sqlite3 to v11</td></tr>
+      <tr><td><code>f4f5b2c</code></td><td>4</td><td>4 spec files</td><td>Move admin panel into backend root</td></tr>
+      <tr><td><code>e81a0ab</code></td><td>1</td><td>Full suite (<code>backend/package.json</code>)</td><td>updated</td></tr>
+      <tr><td><code>86d996f</code></td><td>1</td><td>Full suite (<code>backend/package.json</code>)</td><td>updated</td></tr>
+      <tr><td><code>06e0a67</code></td><td>1</td><td>Full suite (<code>backend/package.json</code>)</td><td>updated backend package.json</td></tr>
+      <tr><td><code>2e62eff</code></td><td>2</td><td>Full suite (<code>.gitignore</code>, <code>package.json</code>)</td><td>Add .gitignore for backend</td></tr>
+      <tr><td><code>623502f</code></td><td>5</td><td>Full suite (<code>App.js</code>, <code>ProductDetail.js</code> unmapped)</td><td>Add admin panel and Playwright features</td></tr>
+    </tbody>
+  </table></div>
+  <p>Read it as a tester would. Three of ten narrowed, and seven ran everything. Look at <em>why</em> the seven did:</p>
+  <ul>
+    <li><strong><code>backend/package.json</code> changing is a good reason to run everything.</strong> A dependency upgrade (the database library here) can affect any test. The fallback gave the right answer without a rule. You could add an explicit rule to make that intention visible.</li>
+    <li><strong>A 46-file commit is a "run everything" case anyway.</strong> The workflow and README files are unmapped, which is fine: they affect no test.</li>
+    <li><strong>The first run showed a real gap.</strong> Before the rule for <code>frontend/public/admin/</code> was added, the admin panel's copy served with the store was unmapped. Running the mapping over real commits is how you find rules you missed.</li>
+    <li><strong>A real project would fall back to the full suite often.</strong> That is the safe direction. It means the time saved is smaller than a demo suggests. Measure it before you promise a number.</li>
+  </ul>
+  <p>Green history cannot tell you whether the selection <em>missed</em> something, because if nothing failed there was nothing to miss. Use the deliberate-regression method in the assignment for that.</p>
+
+  <h2 id="mistakes">9. Common mistakes</h2>
+  <ul>
+    <li><strong>Letting the agent do the whole job.</strong> A model re-deciding every file every run is slow, costs money and varies. Rules first.</li>
+    <li><strong>No fallback.</strong> Selection without a safety net is a way to ship a regression the full suite would have caught.</li>
+    <li><strong>Trusting a confidence number as if it were measured.</strong> A model's "0.9" is a rough feeling, not a probability. That is why the decision rule only uses it as a threshold and checks the rest in code.</li>
+    <li><strong>Never running the full suite.</strong> Selection is a speed-up for the change run. A scheduled full run (Playwright Phase 12's nightly job) is what catches a selection error.</li>
+    <li><strong>Letting the mapping rot.</strong> New files need rules. Review the "unmapped" list each week.</li>
+  </ul>
+
+  <h2 id="deliverables">10. Deliverables</h2>
+  <ul>
+    <li><code>agents/regression-agent.ts</code>, <code>select-tests.ts</code> and <code>commit-files.ts</code>: the three scripts</li>
+    <li><code>agents/test-mapping.json</code>: the mapping, edited to match your repository</li>
+    <li><code>regression-report.md</code>: your results from the retrospective and the deliberate-regression test, with the numbers</li>
+  </ul>
+
+  <hr style="border:none;border-top:1px solid var(--border);margin:0">
+
+  <div class="assignment">
+    <div class="a-label">Assignment</div>
+    <h3>Find out whether the selection would have missed anything</h3>
+    <p>Part 1: take the last ten commits of PeakAndPackShopDemo, produce the changed-file list for each with <code>commit-files.ts</code>, and record the decision. Part 2: pick five source files. For each, make a small, deliberate change that would break a visible behaviour (for example change a label in <code>Cart.js</code>), run <em>only the selected specs</em>, and check whether the change is caught. Put both results in <code>regression-report.md</code>.</p>
+    <details class="solution">
+      <summary>Show solution: try it yourself first</summary>
+      <div class="solution-body">
+        <p>Your numbers will differ. This is what a useful report contains:</p>
+        <ul>
+          <li><strong>Part 1:</strong> the table, plus a count of narrowed against full-suite decisions and a one-line reason for each full-suite decision. Expect many "unmapped" results on a small project.</li>
+          <li><strong>Part 2:</strong> for each of the five changes, "selected specs caught it" or "selected specs missed it". A miss is the most valuable result in the report, because it names a gap in the mapping. Add the missing rule and rerun to show it is closed.</li>
+          <li><strong>The time column:</strong> specs selected against the total, and the run time of each. Do not claim a saving the table does not show.</li>
+        </ul>
+        <p>A mapping that catches five of five deliberate regressions is a good sign, not proof. It means these five were covered. Say that in the report, in those words.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="bonus">
+    <div class="b-label">Bonus challenge</div>
+    <p><strong>Add a rule that says "run everything".</strong> Extend the mapping so a change to <code>backend/package.json</code> or <code>frontend/package.json</code> always runs the full suite, and show the reason in the report. Is making the intention explicit better than letting the fallback produce the same result? Think about what happens when someone later adds a mapping rule for <code>package.json</code> without realising what it implies.</p>
+  </div>
+
+
+  <div class="series-nav">
+    <span class="label">Navigate the series</span>
+    <div class="nav-pair">
+      <a href="04-agenticseries-test-generation.html" class="nav-blog"><span class="nav-blog-arrow" aria-hidden="true">&larr;</span><div><div class="nav-blog-title">Phase 4: Agentic Test Generation</div><div class="nav-blog-sub">Drafts that a person curates</div></div></a>
+      <a href="09-agenticseries-full-pipeline.html" class="nav-blog"><div><div class="nav-blog-title">Phase 9: The Full Pipeline</div><div class="nav-blog-sub">Everything wired together, with gates</div></div><span class="nav-blog-arrow" aria-hidden="true">&rarr;</span></a>
+    </div>
+  </div>
+
+  <div style="margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+    <p style="font-size:.8rem;color:var(--text-3);">Written by RN &nbsp;&middot;&nbsp; The Quality Strategist &nbsp;&middot;&nbsp; Agentic SDLC, Part 1</p>
+  </div>
+
+</main>
+
+<footer>
+  <p><a href="../../index.html">The Quality Strategist</a> &nbsp;&middot;&nbsp; Built with intention. Tested with care. &nbsp;&middot;&nbsp; &copy; 2026</p>
+</footer>
+
+<script>
+(function(){
+  var btn = document.getElementById('themeToggle');
+  function isLight(){ return document.documentElement.getAttribute('data-theme') === 'light'; }
+  function sync(){ btn.textContent = isLight() ? 'Dark' : 'Light'; }
+  sync();
+  btn.addEventListener('click', function(){
+    if(isLight()){
+      document.documentElement.removeAttribute('data-theme');
+      try{ localStorage.setItem('pw-theme','dark'); }catch(e){}
+    } else {
+      document.documentElement.setAttribute('data-theme','light');
+      try{ localStorage.setItem('pw-theme','light'); }catch(e){}
+    }
+    sync();
+  });
+})();
+</script>
+
+</body>
+</html>
