@@ -218,7 +218,7 @@ await page.waitForTimeout(1500);</code></pre>
     </div>
     <div class="ba-block after">
       <div class="ba-label">After: one standard, enforced at review, not just known</div>
-<pre><code>// CONTRIBUTING.md, section 2: Locators and waits
+<pre><code>// CONTRIBUTING.md, section 2: Locators, assertions and waits
 // - getByRole/getByLabel/getByText only. A CSS selector needs a comment
 //   explaining why nothing else worked.
 // - No waitForTimeout. Ever. The convention check and PR review both block on it.
@@ -258,16 +258,20 @@ await page.waitForTimeout(1500);</code></pre>
     <p>Without a rule, every missing role/label becomes a testid request, and the app fills up with test-only attributes.</p>
   </div>
 
-  <p>Here is a conventions file for the real PeakAndPack suite. Every rule in it is one the suite actually follows today (I checked the folders, tags, fixtures and test ids against the files), and the numbered sections are the five conventions above plus layout and known bugs:</p>
+  <p>Here is a conventions file for the real PeakAndPack suite. Every rule in it is one the suite actually follows today (I checked the folders, tags, fixtures and test ids against the files), and the numbered sections are the five conventions above plus layout, known bugs and the deliberate limits:</p>
 <pre><code># Contributing to the PeakAndPack tests
 
 ## 1. Layout
 - `tests/&lt;area&gt;/&lt;name&gt;.spec.ts`: areas are `smoke`, `shop`, `auth`, `api`, `admin`, `known-bugs`, `a11y`, `mobile`.
 - `pages/`: page objects. `fixtures/`: fixtures. `helpers/`: helpers. Nothing else goes in `tests/`.
 
-## 2. Locators and waits
-- `getByRole`, `getByLabel`, `getByText` only. `getByTestId` only when nothing else can identify the element (section 6).
+## 2. Locators, assertions and waits
+- `getByRole`, `getByLabel`, `getByPlaceholder` and `getByText` first. `getByTitle` and `getByAltText` for icons and images.
+  `getByTestId` only when nothing else can identify the element (section 6).
 - A CSS selector (`page.locator('...')`) needs a comment saying why nothing else worked.
+- `force: true` needs a comment naming the check it skips.
+- Assertions are web-first: `await expect(locator).toBeVisible()`, never `expect(await locator.isVisible()).toBe(true)`.
+  The first retries until it passes. The second looks once.
 - No `waitForTimeout`, no `networkidle`. Wait for a response (`waitForResponse`) or an assertion that retries.
 
 ## 3. Names
@@ -286,6 +290,7 @@ await page.waitForTimeout(1500);</code></pre>
 ## 5. Data and fixtures
 - Every test creates its own customer: use the `customer`, `loggedInPage`, `seededCart` and `pm` fixtures.
 - Never log in as the shared demo account in a test that changes data.
+- The credentials in the tests are the demo app's own. A real password never goes in a test.
 
 ## 6. Test ids
 A `data-testid` is requested only when no role, label or visible text can identify the element on its own.
@@ -293,11 +298,19 @@ PeakAndPack has two: `product-card` (a repeated container with nothing to name i
 
 ## 7. Known bugs
 A test for a bug is written to describe the correct behaviour and marked `test.fail()`.
+`test.fail()` is satisfied by any failure, a typo included. So run the test once without that line,
+and write the failure it gave in a comment: that is the reason it is expected to fail.
 It is never edited to match the broken behaviour. When the bug is fixed the test turns red:
 delete the `test.fail()` line.
 
 ## 8. Before you open a PR
-Run `node scripts/check-conventions.js` and fix what it reports. Then go through the PR checklist.</code></pre>
+Run `npm run typecheck`, `npm run lint` and `npm run conventions`, and fix what they report.
+Then go through the PR checklist.
+
+## 9. Deliberate limits
+- Browsers: desktop Chrome and an emulated Pixel 7, both Chromium, so CI installs one browser.
+  Firefox and WebKit are not covered.
+- Product images come from an outside host, and this suite does not stub them. A visual test must (Phase 11).</code></pre>
   <p>Notice what the file does and does not do. It states rules, not reasons for every rule: the reasons are in Phases 2 to 12, and it points at them. And it is short enough to read before a first pull request, which is the only way it gets read.</p>
 
   <h2 id="pr-review-checklist">3. A PR review checklist for new tests</h2>
@@ -319,16 +332,18 @@ Run `node scripts/check-conventions.js` and fix what it reports. Then go through
   <p>Look at the checklist again. Some items need a person: is this assertion about something a user sees, could this be an API test? Others need no judgement at all: is there a <code>waitForTimeout</code> in the diff? Asking a reviewer to look for something a script finds in a second wastes their attention, and a tired reviewer misses it. Split the checklist in two, and let a script do the first half:</p>
 <pre><code>## New test checklist
 
-Checked by a script (node scripts/check-conventions.js):
+Checked by the pipeline (npm run typecheck, npm run lint, npm run conventions):
+- [ ] The code type-checks, and no promise is left without an await
 - [ ] No waitForTimeout or networkidle anywhere in this diff
 - [ ] No .only or test.fixme left in
-- [ ] Every CSS selector has a comment saying why
+- [ ] Every CSS selector and every force: true has a comment saying why
+- [ ] No expect(await locator.isVisible()): assertions are web-first
 - [ ] Every test has a tag, and its name describes behaviour
 
 Checked by a person:
-- [ ] Locators are role, label or text-based
-- [ ] Assertions check what a user sees, not internal state or a status code alone
-- [ ] If this covers a known bug, it fails until the bug is fixed (test.fail() with the bug id)
+- [ ] Locators are role, label, placeholder or text-based
+- [ ] UI assertions check what a user sees, not internal state or a status code alone (API tests assert status codes)
+- [ ] If this covers a known bug, it fails until the bug is fixed (test.fail() with the bug id), and you saw it fail for the reason in its comment
 - [ ] Could this be a unit or API test instead, with no loss of confidence?
 - [ ] Could this test fail? Say what change to the app would turn it red.</code></pre>
 <pre><code>// scripts/check-conventions.js
@@ -356,10 +371,14 @@ const banned = [
   { pattern: /waitForLoadState\(\s*['"]networkidle/, rule: 'networkidle: wait for a real signal instead' },
   { pattern: /\btest(\.describe)?\.only\(/, rule: '.only left in the suite' },
   { pattern: /\btest\.fixme\(/, rule: 'test.fixme hides a test: use test.fail() with a bug id, or fix it' },
+  // expect(await x.isVisible()) looks once and does not retry. A web-first assertion waits.
+  { pattern: /expect\(\s*await\s[^;]*\.(isVisible|isHidden|isEnabled|isDisabled|isChecked|isEditable)\(/, rule: 'checks once, no retry: use a web-first assertion such as await expect(locator).toBeVisible()' },
 ];
 
-// 2. A CSS selector, locator('...'), needs a comment saying why nothing better worked
+// 2. These need a comment saying why. A CSS selector, locator('...'), means nothing better worked.
+//    force: true skips Playwright's checks that the element is visible, stable and enabled.
 const cssSelector = /\.locator\(\s*['"`](?!\.\.)/;
+const forced = /\bforce:\s*true\b/;
 // A comment on the line, or in the three lines above it (one comment can explain a group of selectors)
 const hasComment = (lines, i) =&gt; [lines[i], lines[i - 1], lines[i - 2], lines[i - 3]].some((l) =&gt; l &amp;&amp; /\/\//.test(l));
 
@@ -371,6 +390,9 @@ for (const file of [...listFiles(path.join(root, 'tests')), ...listFiles(path.jo
     }
     if (cssSelector.test(line) &amp;&amp; !hasComment(lines, i)) {
       problems.push(`${file}:${i + 1}  CSS selector without a comment saying why: ${line.trim()}`);
+    }
+    if (forced.test(line) &amp;&amp; !hasComment(lines, i)) {
+      problems.push(`${file}:${i + 1}  force: true without a comment naming the check it skips: ${line.trim()}`);
     }
   });
 }
@@ -397,25 +419,70 @@ console.log('No convention problems found.');</code></pre>
       <p><strong>In plain words:</strong> a script that applies the part of the PR checklist that needs no judgement.</p>
       <ul>
         <li>The script reads the suite's files and Playwright's own list of tests. It checks only what a machine can check without judgement: the same items as the first half of the checklist.</li>
-        <li><code>banned</code> is a list of patterns that are never acceptable: <code>waitForTimeout</code>, <code>networkidle</code>, a leftover <code>.only</code>, and <code>test.fixme</code>, which silently stops a test running. Each has the rule's message.</li>
-        <li><code>cssSelector</code> finds <code>.locator('...')</code> calls (CSS selectors, Phase 2). <code>hasComment</code> accepts a <code>//</code> comment on the line or in the three lines above it, so one comment can explain a group of selectors. <code>locator('..')</code>, the step up to a parent, is allowed.</li>
+        <li><code>banned</code> is a list of patterns that are never acceptable: <code>waitForTimeout</code>, <code>networkidle</code>, a leftover <code>.only</code>, <code>test.fixme</code>, which silently stops a test running, and <code>expect(await x.isVisible())</code> (or <code>isEnabled</code>, <code>isChecked</code> and the like). That last one looks once and never retries, so it passes or fails on timing. The web-first form, <code>await expect(locator).toBeVisible()</code>, waits. Each pattern has the rule's message.</li>
+        <li><code>forced</code> finds <code>force: true</code>, which tells Playwright to skip its checks that an element is visible, stable and enabled. It is sometimes the only way through (Phase 8's recipes show a checkbox covered by a styled span), but it should be a decision someone wrote down. <code>cssSelector</code> finds <code>.locator('...')</code> calls (CSS selectors, Phase 2). <code>hasComment</code> accepts a <code>//</code> comment on the line or in the three lines above it, so one comment can explain a group of selectors. <code>locator('..')</code>, the step up to a parent, is allowed.</li>
         <li><code>npx playwright test --list --reporter=json</code> asks Playwright for every test with its tags, instead of guessing by reading the code. Any test with no tags, or a title like "test 14", is reported.</li>
         <li>The script exits with <code>1</code> when it finds anything, so a CI step that runs it fails the pull request. It prints file and line for each problem, so the fix is quick.</li>
       </ul>
     </div>
   </details>
-  <p>I tested it two ways. On a spec written to break every rule, it reported all seven problems:</p>
-<pre><code>7 convention problem(s):
+  <p>I tested it two ways. On a spec written to break every rule, it reported all nine problems:</p>
+<pre><code>9 convention problem(s):
 
   tests\bad.spec.ts:5  CSS selector without a comment saying why: await page.locator('#place-order-btn').click();
   tests\bad.spec.ts:6  waitForTimeout: wait for a real signal instead
-  tests\bad.spec.ts:9  .only left in the suite
-  tests\bad.spec.ts:10  networkidle: wait for a real signal instead
-  tests\bad.spec.ts:13  test.fixme hides a test: use test.fail() with a bug id, or fix it
+  tests\bad.spec.ts:7  checks once, no retry: use a web-first assertion such as await expect(locator).toBeVisible()
+  tests\bad.spec.ts:10  .only left in the suite
+  tests\bad.spec.ts:11  networkidle: wait for a real signal instead
+  tests\bad.spec.ts:12  force: true without a comment naming the check it skips: await page.getByRole('checkbox', { name: 'Camping' }).check({ force: true });
+  tests\bad.spec.ts:15  test.fixme hides a test: use test.fail() with a bug id, or fix it
   bad.spec.ts:3  no tag: "checkout completes"
-  bad.spec.ts:9  title does not describe behaviour: "test 14"</code></pre>
-  <p>Then on the real PeakAndPack suite, as a reviewer would on a pull request. It found five problems: the login and register forms use CSS selectors with no comment saying why (their labels aren't linked to their inputs). The suite I had written failed its own checklist. Each fix was one line, a comment saying why, and the second run printed <code>No convention problems found.</code> That is the checklist working: not a rule for juniors, but one that catches whoever wrote the suite.</p>
+  bad.spec.ts:10  title does not describe behaviour: "test 14"</code></pre>
+  <p>Then on the real PeakAndPack suite, as a reviewer would on a pull request. It first found five problems: the login and register forms use CSS selectors with no comment saying why (their labels aren't linked to their inputs). When I added the <code>force: true</code> rule it found two more, in the browse tests, where two checkboxes are checked with <code>force</code> and nothing said why. The suite I had written failed its own checklist. Each fix was one line, a comment saying why, and the next run printed <code>No convention problems found.</code> That is the checklist working: not a rule for juniors, but one that catches whoever wrote the suite.</p>
   <p>Run it in the pipeline from Phase 12 before the tests (<code>node scripts/check-conventions.js</code>), so a pull request that breaks a convention fails in seconds, not after a review round trip.</p>
+
+  <h3 id="lint-and-types">What a script reading text cannot see</h3>
+  <p>The convention script reads lines. Two kinds of mistake need a tool that understands the code. A missing <code>await</code> turns a check into a promise that nobody waits for, so the test passes without checking anything. And a type error can slip through, because Playwright runs TypeScript without checking its types. Playwright's own best-practices page recommends two checks for these: the lint rule <code>@typescript-eslint/no-floating-promises</code>, and <code>tsc --noEmit</code> (the type checker, told to check and write nothing).</p>
+<pre><code>// eslint.config.mjs
+import tseslint from 'typescript-eslint';
+
+// One rule, the one Playwright's own best-practices page recommends:
+// a promise that is never awaited (a missing "await") is an error.
+export default [
+  { ignores: ['node_modules/', 'playwright-report/', 'test-results/', 'scripts/'] },
+  {
+    files: ['**/*.ts'],
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
+    },
+    plugins: { '@typescript-eslint': tseslint.plugin },
+    rules: { '@typescript-eslint/no-floating-promises': 'error' },
+  },
+];</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>ignores</code> keeps the linter out of folders that hold output and plain JavaScript scripts.</li>
+        <li><code>parser: tseslint.parser</code> lets ESLint read TypeScript. <code>projectService: true</code> gives it the project's type information, which this rule needs: it has to know which calls return a promise.</li>
+        <li><code>no-floating-promises: 'error'</code> reports any promise that is not awaited, returned, or explicitly ignored. In a Playwright test that is nearly always a forgotten <code>await</code>.</li>
+        <li>It is one rule on purpose. A suite that starts with thirty lint rules gets them switched off. One rule with a clear reason gets kept.</li>
+      </ul>
+    </div>
+  </details>
+  <p>Add three scripts to <code>package.json</code>, and run them in the pipeline before the tests:</p>
+<pre><code>"typecheck": "tsc --noEmit",
+"lint": "eslint .",
+"conventions": "node scripts/check-conventions.js"</code></pre>
+<pre><code>      - name: Check the test code
+        working-directory: e2e
+        run: |
+          npm run typecheck
+          npm run lint
+          npm run conventions</code></pre>
+  <p>I checked that the rule bites. A spec with <code>page.goto('/');</code> and <code>expect(page.getByTestId('product-card')).toBeVisible();</code>, both missing their <code>await</code>, passed Playwright's own run and was stopped by the linter, which reported each line with "Promises must be awaited". The real suite passes all three checks. They take seconds and need no app running, so they belong at the front of the pipeline.</p>
+
 
   <h2 id="suite-health">4. Measuring suite health</h2>
   <p>"How's the suite doing" needs a real answer, not a feeling. Three numbers matter more than raw test count:</p>
