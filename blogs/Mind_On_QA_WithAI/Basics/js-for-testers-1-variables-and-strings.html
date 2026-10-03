@@ -207,6 +207,7 @@ details.explain[open] summary::before{transform:rotate(90deg)}
     <li>Store values with <code>const</code> and <code>let</code>, and know which to use</li>
     <li>Tell the five everyday data types apart, and check a value's type</li>
     <li>Build text from values with <code>+</code> and with template literals</li>
+    <li>Check and tidy text with <code>includes</code>, <code>replace</code> and <code>trim</code></li>
     <li>Read the three errors beginners hit most with variables</li>
   </ul>
 
@@ -325,6 +326,7 @@ console.log(productName);
       </tbody>
     </table>
   </div>
+  <p>Text can sit in single quotes or double quotes: <code>'Headlamp'</code> and <code>"Headlamp"</code> are the same string. Pick one style and stay with it. This series uses single quotes.</p>
   <p><code>typeof</code> tells you a value's type, which is handy when a test behaves strangely:</p>
   <pre><code>const productName = 'Headlamp';
 const price = 24.99;
@@ -431,6 +433,53 @@ console.log(cartUrl); // https://peakandpackshopdemo.onrender.com/api/cart</code
     <p><strong>The <code>+</code> trap.</strong> <code>+</code> adds numbers, but joins text, and if either side is text, it joins. So <code>89 + 1</code> is <code>90</code>, but <code>'89.00' + 1</code> is <code>'89.001'</code>. A price read from a page is text (section 5), so adding to it without converting it first gives nonsense, quietly.</p>
   </div>
 
+  <h2 id="text-helpers">7. Text helpers: checking and tidying text</h2>
+  <p>Tests read text from a page or a response, then ask questions about it: does this address contain <code>/api/cart</code>? Remove the <code>$</code> from this price. Cut the stray spaces off this label. Text comes with built-in helpers for exactly this. You call one with a dot after the value, the way <code>.toFixed(2)</code> worked on a number in section 6.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Helper</th><th>What it does</th><th>Example</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td><code>includes('x')</code></td><td>Is this piece of text inside?</td><td><code>'Camping Stove'.includes('Stove')</code></td><td><code>true</code></td></tr>
+        <tr><td><code>replace('a', 'b')</code></td><td>Swaps the first match for other text</td><td><code>'$89.00'.replace('$', '')</code></td><td><code>'89.00'</code></td></tr>
+        <tr><td><code>trim()</code></td><td>Cuts spaces and line breaks off both ends</td><td><code>'  Headlamp '.trim()</code></td><td><code>'Headlamp'</code></td></tr>
+        <tr><td><code>toLowerCase()</code></td><td>Turns every letter into a small one</td><td><code>'TENT'.toLowerCase()</code></td><td><code>'tent'</code></td></tr>
+        <tr><td><code>split(',')</code></td><td>Cuts the text into a list at every comma</td><td><code>'a,b'.split(',')</code></td><td><code>['a', 'b']</code></td></tr>
+        <tr><td><code>slice(0, 4)</code></td><td>Takes a piece, by position</td><td><code>'Camping'.slice(0, 4)</code></td><td><code>'Camp'</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre><code>const url = 'https://peakandpackshopdemo.onrender.com/api/cart';
+console.log(url.includes('/api/cart')); // true
+console.log(url.includes('/API/cart')); // false: capital letters count
+
+const priceText = '$89.00';
+const withoutSymbol = priceText.replace('$', '');
+console.log(withoutSymbol);        // 89.00
+console.log(typeof withoutSymbol); // string: still text
+console.log(priceText);            // $89.00: the original is unchanged
+
+const typed = '  Headlamp \n';
+console.log(`[${typed.trim()}]`);  // [Headlamp]
+
+console.log('Camping'.toLowerCase());      // camping
+const categories = 'Camping,Trekking,Climbing';
+console.log(categories.split(','));        // [ 'Camping', 'Trekking', 'Climbing' ]
+console.log('Trekking Poles'.slice(0, 8)); // Trekking</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>url.includes('/api/cart')</code> answers <code>true</code> or <code>false</code>: is that piece of text anywhere inside the address? It is <strong>case-sensitive</strong>, so <code>'/API/cart'</code> is not the same and answers <code>false</code>. Playwright tests use this a lot, to pick out one request among many: <code>response.url().includes('/api/cart')</code>.</li>
+        <li><code>priceText.replace('$', '')</code> gives back new text with the first <code>$</code> swapped for nothing (two quotes with nothing between them). Text can't be changed in place, so <code>priceText</code> still holds <code>'$89.00'</code>, and you keep the new text in its own constant.</li>
+        <li><code>typeof withoutSymbol</code> is <code>'string'</code>. Removing the <code>$</code> leaves <code>'89.00'</code>, which looks like a number but is still text, so the <code>+</code> trap from section 6 still applies. Part 3 shows how to turn it into a real number.</li>
+        <li><code>typed.trim()</code> cuts the spaces and the line break (<code>\n</code>) off both ends. The square brackets in the template literal only show where the text now starts and ends.</li>
+        <li><code>categories.split(',')</code> breaks one piece of text into a list of three, cutting at every comma. Lists are Part 2.</li>
+        <li><code>slice(0, 8)</code> takes the characters from position 0 up to, but not including, position 8. Positions start at 0, just like list positions in Part 2.</li>
+      </ul>
+    </div>
+  </details>
+  <p>One more you will meet: <code>replace</code> only swaps the <strong>first</strong> match. <code>'a-b-c'.replace('-', '')</code> gives <code>'ab-c'</code>. To swap every match, use <code>replaceAll</code>: <code>'a-b-c'.replaceAll('-', '')</code> gives <code>'abc'</code>.</p>
+
   <div class="callout red">
     <p><strong>Common mistakes.</strong></p>
     <ul style="margin:.5rem 0 0 1.2rem;">
@@ -439,6 +488,8 @@ console.log(cartUrl); // https://peakandpackshopdemo.onrender.com/api/cart</code
       <li><strong>Forgetting spaces when joining with <code>+</code>.</strong> <code>'Total:' + price</code> prints <code>Total:24.99</code>. Template literals make this harder to get wrong.</li>
       <li><strong>Ordinary quotes around a template.</strong> <code>'Hi ${name}'</code> prints the <code>${name}</code> literally. Templates need backticks.</li>
       <li><strong>Reading <code>undefined</code> as "the app is broken".</strong> Check your own spelling first: a misspelled name is the most common cause.</li>
+      <li><strong>Expecting <code>includes</code> to ignore capital letters.</strong> <code>'Stove'.includes('stove')</code> is <code>false</code>. Make both sides the same case first, for example with <code>toLowerCase()</code>.</li>
+      <li><strong>Expecting <code>replace</code> to change the original.</strong> It returns new text and leaves the original alone, and it swaps only the first match. Keep the result in a constant.</li>
     </ul>
   </div>
 
@@ -464,6 +515,8 @@ console.log(cartUrl); // https://peakandpackshopdemo.onrender.com/api/cart</code
       <li>Build the same sentence with a template literal, this time showing the price with two decimals: <code>Sleeping Bag (-15C) costs $89.00</code>.</li>
       <li>Build a unique test email like <code>test-1790830940302@example.com</code>. Run the file twice: does it change?</li>
       <li>Predict, then print: <code>price + 1</code> and <code>priceFromPage + 1</code>. Why are they different, and why does this matter in a test?</li>
+      <li>Create <code>priceText = '$89.00'</code>, the way a price looks on the page. Print it with the <code>$</code> removed using <code>replace</code>, the type of that result, and whether <code>priceText</code> includes a <code>$</code>.</li>
+      <li>Print <code>'  Sleeping Bag (-15C) '</code> with the spaces trimmed off both ends, inside square brackets so you can see where the text starts and stops.</li>
       <li>Break it on purpose, one at a time, and read each error: change the product's name; create a <code>const</code> with no value; print a variable you never created; print <code>ProductName</code>, with a capital P.</li>
     </ol>
 
@@ -519,7 +572,14 @@ console.log(`test-${Date.now()}@example.com`);
 // 15. + adds numbers, but joins text
 console.log(price + 1, priceFromPage + 1);
 
-// 16. Break it on purpose (remove the // from one line at a time)
+// 16. Text helpers: a price as it looks on the page
+const priceText = '$89.00';
+console.log(priceText.replace('$', ''), typeof priceText.replace('$', ''), priceText.includes('$'));
+
+// 17. trim() cuts the spaces off both ends
+console.log(`[${'  Sleeping Bag (-15C) '.trim()}]`);
+
+// 18. Break it on purpose (remove the // from one line at a time)
 // productName = 'Tent';     // TypeError: Assignment to constant variable.
 // const supplier;           // SyntaxError: Missing initializer in const declaration
 // console.log(rating);      // ReferenceError: rating is not defined
@@ -533,14 +593,17 @@ string
 Sleeping Bag (-15C) costs $89
 Sleeping Bag (-15C) costs $89.00
 test-1790830940302@example.com
-90 89.001</code></pre>
+90 89.001
+89.00 string true
+[Sleeping Bag (-15C)]</code></pre>
       <p><strong>What to notice.</strong></p>
       <ul>
         <li><strong>The review rating's type changed</strong>, from <code>undefined</code> to <code>number</code>, once step 9 gave it a value. A variable's type is whatever it holds right now.</li>
         <li><strong><code>-89.00</code> prints as <code>-89</code></strong>, because numbers don't keep trailing zeros. Step 13's <code>.toFixed(2)</code> brings them back for display.</li>
         <li><strong>The discount code's type is <code>object</code>,</strong> JavaScript's <code>typeof null</code> quirk. Check for null with <code>=== null</code>.</li>
         <li><strong>Step 15:</strong> <code>price + 1</code> adds, giving <code>90</code>. <code>priceFromPage + 1</code> joins, giving <code>'89.001'</code>, because one side is text. A test that adds to a price read from the page, without converting it, gets nonsense and doesn't complain.</li>
-        <li><strong>Step 16</strong> shows three kinds of error: a constant can't change (TypeError), a constant must start with a value (SyntaxError, which stops the file before anything runs), and a name that doesn't exist (ReferenceError). <code>ProductName</code> fails because names are case-sensitive.</li>
+        <li><strong>Step 16:</strong> <code>replace</code> removes the <code>$</code>, but the result, <code>'89.00'</code>, is still a string. Only a real number can be added to or compared with another number.</li>
+        <li><strong>Step 18</strong> shows three kinds of error: a constant can't change (TypeError), a constant must start with a value (SyntaxError, which stops the file before anything runs), and a name that doesn't exist (ReferenceError). <code>ProductName</code> fails because names are case-sensitive.</li>
       </ul>
     </div>
   </details>

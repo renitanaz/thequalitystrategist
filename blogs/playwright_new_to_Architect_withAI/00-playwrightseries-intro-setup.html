@@ -278,12 +278,14 @@ test('product list loads', async ({ page }) => {
   <h2 id="check-node">2. Get Node.js and VS Code ready</h2>
   <p>You need two free tools:</p>
   <ul>
-    <li><strong>Node.js</strong>, which runs Playwright. Get it from <a href="https://nodejs.org" target="_blank" style="color:var(--purple)">nodejs.org</a>, and choose the version marked <strong>LTS</strong>: long-term support. That's the version that has been properly tested and stays supported. The newer releases are for trying out features, not for depending on.</li>
+    <li><strong>Node.js</strong>, which runs Playwright. Get it from <a href="https://nodejs.org" target="_blank" style="color:var(--purple)">nodejs.org</a>, and choose the version marked <strong>LTS</strong>: long-term support. That's the version that has been properly tested and stays supported. The newer releases are for trying out features, not for depending on. On the download page, pick the installer that matches your computer: Windows or macOS, and the processor type, <code>x64</code> for Intel and AMD chips, <code>ARM64</code> for Apple's M chips and newer ARM Windows laptops. If you're unsure, your computer's About or System settings page names its processor.</li>
     <li><strong>VS Code</strong>, the code editor this series uses. Get it from <a href="https://code.visualstudio.com" target="_blank" style="color:var(--purple)">code.visualstudio.com</a>.</li>
   </ul>
   <p>Already have Node.js? Check its version. Open a terminal (Mac: search "Terminal"; Windows: search "PowerShell") and run:</p>
   <pre><code># Prints your Node.js version. Playwright needs 18 or higher.
-node --version</code></pre>
+node --version
+# Prints your npm version. npm comes with Node.js and installs Playwright in step 3.
+npm --version</code></pre>
   <details class="explain">
     <summary>Explain this code, line by line</summary>
     <div class="explain-body">
@@ -292,6 +294,7 @@ node --version</code></pre>
         <li><strong>Node.js</strong> is the program that runs JavaScript outside a web browser. Playwright is written in JavaScript, so it needs Node.js to run.</li>
         <li><code>node</code> starts Node.js.</li>
         <li><code>--version</code> is an <strong>option</strong>. Options start with two dashes and change what a command does. This one says "print your version, then stop".</li>
+        <li><code>npm --version</code> does the same for <strong>npm</strong>, the tool that downloads packages, and that installs Playwright in step 3. It arrives with Node.js, so if the first command worked, this one should too. You'll see something like <code>10.8.2</code>; any recent number is fine.</li>
         <li>In a terminal block, lines starting with <code>#</code> are comments, like <code>//</code> in code. They're notes for you, not something to type.</li>
         <li><strong>What you'll see:</strong> something like <code>v20.17.0</code>. The first number, the major version, is the one that matters. Playwright needs 18 or higher.</li>
       </ul>
@@ -326,7 +329,7 @@ npm init playwright@latest</code></pre>
       </ul>
       <p><strong>What the installer creates:</strong></p>
       <ul>
-        <li><code>package.json</code>: the project's ID card. It holds the project's name and the list of packages it needs.</li>
+        <li><code>package.json</code>: the project's ID card. It holds the project's name and the list of packages it needs. Open it after the install and you'll find Playwright under <code>devDependencies</code>: packages used while developing and testing. A project that ships an app also has <code>dependencies</code>, the packages the app needs to run. A test project only needs the first list.</li>
         <li><code>package-lock.json</code>: the exact version of every package installed, so the project installs identically on another computer.</li>
         <li><code>node_modules/</code>: the downloaded packages themselves. It's large and can be rebuilt from <code>package.json</code> at any time, so it never goes into Git. Playwright lives in here, so every project has its own copy, and two projects can use different versions. If you ever clone a project from GitHub, this folder won't be there: run <code>npm install</code> inside the project to rebuild it.</li>
         <li><code>playwright.config.ts</code>: Playwright's settings (step 4).</li>
@@ -357,6 +360,7 @@ npm init playwright@latest</code></pre>
     <img src="phase0-happy-hacking.png" width="864" height="98" loading="lazy" alt="The end of the installer output: Happy hacking!, followed by the PowerShell prompt in the peakandpack-tests folder">
     <figcaption>The last line of a successful install.</figcaption>
   </figure>
+  <p>Now open the project in VS Code: choose File, then Open Folder, and pick <code>peakandpack-tests</code>. From here on, use VS Code's own terminal (Terminal, then New Terminal). It opens already inside the project folder, so a command can't run in the wrong place.</p>
   <p>Before you write a single test, put this project under version control. Every later phase, especially Phase 12's CI setup, assumes your test code lives in a Git repo on GitHub. New to Git? The <a href="../Mind_On_QA_WithAI/Basics/git-for-qa.html" style="color:var(--purple)">Git for QA primer</a> covers <code>init</code>, committing, branching, and pushing to GitHub in one page.</p>
   <pre><code># Start tracking this folder with Git
 git init
@@ -535,7 +539,7 @@ test('product search is available', async ({ page }) => {
       <ul>
         <li><code>test(...)</code> creates one test. The text in quotes is its name, which appears in the results. Name it after what should be true: when it fails, the name alone tells you what broke.</li>
         <li><code>async</code> marks the test as containing steps that take time, like loading a page. It's required whenever the steps use <code>await</code>.</li>
-        <li><code>({ page })</code>: Playwright hands the test a fresh, empty browser tab called <code>page</code>. Every test gets its own, so tests can't interfere with each other.</li>
+        <li><code>({ page })</code>: Playwright hands the test a fresh, empty browser tab called <code>page</code>. Playwright calls anything it hands to a test, ready to use, a <strong>fixture</strong>, and <code>page</code> is the one you'll use most. Every test gets its own, so tests can't interfere with each other.</li>
         <li><code>=&gt; {</code> starts the test's steps, which run until the matching <code>});</code>.</li>
       </ul>
       <p><strong>Step 1: open the site.</strong> <code>await page.goto('/');</code></p>

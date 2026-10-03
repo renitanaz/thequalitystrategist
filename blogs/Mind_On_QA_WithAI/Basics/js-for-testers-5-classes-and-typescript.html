@@ -280,6 +280,38 @@ console.log(bensCart.owner, bensCart.items.length, bensCart.total());           
     <p><strong>Two errors you'll meet.</strong> Forget <code>new</code>, as in <code>Cart('Ana')</code>, and you get <code>TypeError: Class constructor Cart cannot be invoked without 'new'</code>. Forget <code>this.</code> inside a method, writing <code>items.push(...)</code>, and you get <code>ReferenceError: items is not defined</code>: without <code>this.</code>, the method looks for an ordinary variable called <code>items</code>, and there isn't one.</p>
   </div>
 
+  <h3 id="date">A class that comes with JavaScript: Date</h3>
+  <p>Not every class is one you write. JavaScript ships with some, and tests use one of them all the time: <strong><code>Date</code></strong>. A test that picks a delivery date must still work next month, so it can't type a date. It works the date out from today. You build a <code>Date</code> with <code>new</code>, the same way you built a <code>Cart</code>:</p>
+  <pre><code>const later = new Date(2026, 9, 3);   // 3 October 2026 (the month counts from 0)
+later.setDate(later.getDate() + 40);  // move it 40 days on: JavaScript fixes the month and year
+
+console.log(later.getDate());         // 12   (the day of the month)
+console.log(later.getMonth());        // 10   (November, counting from 0)
+console.log(later.getFullYear());     // 2026
+console.log(later.toLocaleString('en-US', { month: 'long' }));   // November
+console.log(later.toLocaleString('en-US', { month: 'short' }));  // Nov
+
+// Put it together the way a date picker shows it
+console.log(`${later.toLocaleString('en-US', { month: 'short' })} ${later.getDate()}, ${later.getFullYear()}`);
+// Nov 12, 2026
+
+const day = later.getDate().toString();   // 12 as text, ready to match text on a page</code></pre>
+  <details class="explain">
+    <summary>Explain this code, line by line</summary>
+    <div class="explain-body">
+      <ul>
+        <li><code>new Date(2026, 9, 3)</code> builds a date from a year, a month and a day. <code>new Date()</code> with nothing inside builds <em>right now</em>, which is what a test usually wants. This example uses a fixed date so its output is the same for everyone.</li>
+        <li><code>later.setDate(later.getDate() + 40)</code> reads the day of the month, adds 40, and writes the result back. The date is changed in place. <strong>You don't count months.</strong> Day 43 of October becomes the 12th of November on its own, and December 31 plus one becomes January 1 of the next year.</li>
+        <li><code>getDate()</code> is the day of the month, from 1 to 31. <code>getMonth()</code> is the month as a number, and <code>getFullYear()</code> is the four-digit year.</li>
+        <li><code>toLocaleString('en-US', { month: 'long' })</code> gives the month's name in English: <code>'November'</code>. With <code>'short'</code> you get <code>'Nov'</code>. The curly braces hold an <em>object</em> of options (Part 2).</li>
+        <li><code>.toString()</code> turns a number into text: <code>12</code> becomes <code>'12'</code>. A date picker's days are text on the page, and a test looks for text, so the number has to become text first.</li>
+      </ul>
+    </div>
+  </details>
+  <div class="callout amber">
+    <p><strong>Two traps.</strong> <code>getMonth()</code> counts from 0, so January is <code>0</code> and November is <code>10</code>. That is why <code>new Date(2026, 9, 3)</code> is October, not September. And <code>getDate()</code> is the day of the <em>month</em>, not the day of the week. The Playwright series uses all of this in the UI recipes page, to pick a date from a calendar.</p>
+  </div>
+
   <h2 id="share-class">3. Sharing a class between files</h2>
   <p>Classes are exported and imported like Part 4's functions. Each file that imports the class builds its own instances with <code>new</code>:</p>
   <pre><code>// helpers/cart.js
